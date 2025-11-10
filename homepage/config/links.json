@@ -1,0 +1,94 @@
+{
+  "categories": [
+    {
+      "name": "Development",
+      "links": [
+        {
+          "title": "GitHub",
+          "url": "https://github.com",
+          "icon": "github"
+        },
+        {
+          "title": "Stack Overflow",
+          "url": "https://stackoverflow.com",
+          "icon": "layers"
+        },
+        {
+          "title": "MDN Web Docs",
+          "url": "https://developer.mozilla.org",
+          "icon": "book-open"
+        },
+        {
+          "title": "npm",
+          "url": "https://www.npmjs.com",
+          "icon": "package"
+        }
+      ]
+    },
+    {
+      "name": "Social",
+      "links": [
+        {
+          "title": "Twitter/X",
+          "url": "https://twitter.com",
+          "icon": "twitter"
+        },
+        {
+          "title": "Reddit",
+          "url": "https://reddit.com",
+          "icon": "message-circle"
+        },
+        {
+          "title": "LinkedIn",
+          "url": "https://linkedin.com",
+          "icon": "linkedin"
+        }
+      ]
+    },
+    {
+      "name": "Tools",
+      "links": [
+        {
+          "title": "ChatGPT",
+          "url": "https://chat.openai.com",
+          "icon": "bot"
+        },
+        {
+          "title": "Claude",
+          "url": "https://claude.ai",
+          "icon": "sparkles"
+        },
+        {
+          "title": "Figma",
+          "url": "https://figma.com",
+          "icon": "figma"
+        },
+        {
+          "title": "Vercel",
+          "url": "https://vercel.com",
+          "icon": "triangle"
+        }
+      ]
+    },
+    {
+      "name": "Entertainment",
+      "links": [
+        {
+          "title": "YouTube",
+          "url": "https://youtube.com",
+          "icon": "youtube"
+        },
+        {
+          "title": "Netflix",
+          "url": "https://netflix.com",
+          "icon": "tv"
+        },
+        {
+          "title": "Spotify",
+          "url": "https://spotify.com",
+          "icon": "music"
+        }
+      ]
+    }
+  ]
+}
