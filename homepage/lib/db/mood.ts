@@ -1,0 +1,122 @@
+import { execute, query, queryOne } from "./index";
+
+export interface MoodEntry {
+  id: number;
+  date: string; // YYYY-MM-DD format
+  rating: number; // 1-5
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Create a new mood entry
+ */
+export function createMoodEntry(
+  date: string,
+  rating: number,
+  note?: string
+): MoodEntry {
+  const result = execute(
+    `INSERT INTO mood_entries (date, rating, note)
+     VALUES (?, ?, ?)
+     ON CONFLICT(date) DO UPDATE SET
+       rating = excluded.rating,
+       note = excluded.note,
+       updated_at = CURRENT_TIMESTAMP`,
+    [date, rating, note || null]
+  );
+
+  const entry = getMoodEntry(date);
+  if (!entry) {
+    throw new Error("Failed to create mood entry");
+  }
+
+  return entry;
+}
+
+/**
+ * Get mood entry for a specific date
+ */
+export function getMoodEntry(date: string): MoodEntry | undefined {
+  return queryOne<MoodEntry>(
+    "SELECT * FROM mood_entries WHERE date = ?",
+    [date]
+  );
+}
+
+/**
+ * Get mood entries in a date range
+ */
+export function getMoodEntriesInRange(
+  startDate: string,
+  endDate: string
+): MoodEntry[] {
+  return query<MoodEntry>(
+    "SELECT * FROM mood_entries WHERE date BETWEEN ? AND ? ORDER BY date ASC",
+    [startDate, endDate]
+  );
+}
+
+/**
+ * Get all mood entries
+ */
+export function getAllMoodEntries(): MoodEntry[] {
+  return query<MoodEntry>(
+    "SELECT * FROM mood_entries ORDER BY date DESC"
+  );
+}
+
+/**
+ * Get mood entries for current year
+ */
+export function getMoodEntriesForYear(year: number): MoodEntry[] {
+  const startDate = `${year}-01-01`;
+  const endDate = `${year}-12-31`;
+  return getMoodEntriesInRange(startDate, endDate);
+}
+
+/**
+ * Update mood entry
+ */
+export function updateMoodEntry(
+  date: string,
+  rating: number,
+  note?: string
+): boolean {
+  const result = execute(
+    "UPDATE mood_entries SET rating = ?, note = ? WHERE date = ?",
+    [rating, note || null, date]
+  );
+
+  return result.changes > 0;
+}
+
+/**
+ * Delete mood entry
+ */
+export function deleteMoodEntry(date: string): boolean {
+  const result = execute("DELETE FROM mood_entries WHERE date = ?", [date]);
+  return result.changes > 0;
+}
+
+/**
+ * Get mood statistics
+ */
+export function getMoodStatistics(): {
+  total: number;
+  average: number;
+  byRating: Record<number, number>;
+} {
+  const entries = getAllMoodEntries();
+  const total = entries.length;
+  const sum = entries.reduce((acc, entry) => acc + entry.rating, 0);
+  const average = total > 0 ? sum / total : 0;
+
+  const byRating: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  entries.forEach((entry) => {
+    byRating[entry.rating] = (byRating[entry.rating] || 0) + 1;
+  });
+
+  return { total, average, byRating };
+}
