@@ -1,4 +1,52 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Task } from "@/lib/db/tasks";
+import { TaskForm } from "@/components/widgets/task-form";
+import { TaskList } from "@/components/widgets/task-list";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+type FilterType = "all" | "active" | "completed";
+
 export default function TasksPage() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [filter, setFilter] = useState<FilterType>("all");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [filter]);
+
+  const fetchTasks = async () => {
+    try {
+      setIsLoading(true);
+      let url = "/api/tasks";
+
+      if (filter === "active") {
+        url += "?completed=false";
+      } else if (filter === "completed") {
+        url += "?completed=true";
+      }
+
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setTasks(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch tasks:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const stats = {
+    total: tasks.length,
+    active: tasks.filter((t) => !t.completed).length,
+    completed: tasks.filter((t) => t.completed).length,
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -8,11 +56,45 @@ export default function TasksPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border bg-card p-8 text-center">
-        <p className="text-muted-foreground">
-          Task manager coming in Phase 3...
-        </p>
-      </div>
+      {/* Task Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Add New Task</CardTitle>
+          <CardDescription>Create a task with optional due date and priority</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TaskForm onTaskAdded={fetchTasks} />
+        </CardContent>
+      </Card>
+
+      {/* Task List */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Your Tasks</CardTitle>
+              <CardDescription>
+                {stats.total} total • {stats.active} active • {stats.completed} completed
+              </CardDescription>
+            </div>
+
+            <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="completed">Completed</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
+          ) : (
+            <TaskList tasks={tasks} onTasksChanged={fetchTasks} />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

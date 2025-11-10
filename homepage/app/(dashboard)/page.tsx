@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { QuickLinks } from "@/components/widgets/quick-links";
 import { getAllMediaItems } from "@/lib/mdx";
 import { MediaCard } from "@/components/widgets/media-card";
+import { ExerciseStats } from "@/components/widgets/exercise-stats";
+import { ExerciseCharts } from "@/components/widgets/exercise-charts";
 import { ArrowRight } from "lucide-react";
 
 export default function DashboardPage() {
@@ -47,49 +49,19 @@ export default function DashboardPage() {
         </section>
       )}
 
+      {/* Exercise Stats */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold tracking-tight">Exercise</h2>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ExerciseStats />
+          <ExerciseCharts />
+        </div>
+      </section>
+
       {/* Widget Placeholders */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight">Coming Soon</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {/* Mood Tracker Widget */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Mood Tracker</CardTitle>
-              <CardDescription>Track your daily mood</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Year-in-pixels view coming in Phase 3...
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Tasks Widget */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Tasks</CardTitle>
-              <CardDescription>Your todo list</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Task manager coming in Phase 3...
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Exercise Widget */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Exercise</CardTitle>
-              <CardDescription>Strava activity tracking</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Exercise stats coming in Phase 4...
-              </p>
-            </CardContent>
-          </Card>
-
           {/* Steam Widget */}
           <Card>
             <CardHeader>

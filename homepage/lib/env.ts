@@ -111,7 +111,7 @@ export const env = createEnv({
     // Feature Flags
     ENABLE_STEAM: process.env.ENABLE_STEAM,
     ENABLE_STRAVA: process.env.ENABLE_STRAVA,
-    ENABLE_HOMEASSISTANT: process.env.HOMEASSISTANT,
+    ENABLE_HOMEASSISTANT: process.env.ENABLE_HOMEASSISTANT,
     ENABLE_PLEX: process.env.ENABLE_PLEX,
 
     // Cache TTL

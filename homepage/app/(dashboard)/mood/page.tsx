@@ -1,4 +1,8 @@
+import { MoodHeatmap } from "@/components/widgets/mood-heatmap";
+
 export default function MoodPage() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <div className="space-y-6">
       <div>
@@ -8,11 +12,7 @@ export default function MoodPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border bg-card p-8 text-center">
-        <p className="text-muted-foreground">
-          Mood tracker coming in Phase 3...
-        </p>
-      </div>
+      <MoodHeatmap year={currentYear} />
     </div>
   );
 }

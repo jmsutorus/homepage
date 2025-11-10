@@ -57,3 +57,73 @@ AFTER UPDATE ON tasks
 BEGIN
   UPDATE tasks SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+-- Strava Athlete Table
+-- Stores athlete profile information
+CREATE TABLE IF NOT EXISTS strava_athlete (
+  id INTEGER PRIMARY KEY,
+  username TEXT,
+  firstname TEXT,
+  lastname TEXT,
+  city TEXT,
+  state TEXT,
+  country TEXT,
+  sex TEXT,
+  premium BOOLEAN DEFAULT 0,
+  profile_medium TEXT,
+  profile TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_sync TIMESTAMP
+);
+
+-- Strava Activities Table
+-- Stores exercise activities from Strava
+CREATE TABLE IF NOT EXISTS strava_activities (
+  id INTEGER PRIMARY KEY,
+  athlete_id INTEGER,
+  name TEXT NOT NULL,
+  distance REAL DEFAULT 0,
+  moving_time INTEGER DEFAULT 0,
+  elapsed_time INTEGER DEFAULT 0,
+  total_elevation_gain REAL DEFAULT 0,
+  type TEXT,
+  sport_type TEXT,
+  start_date TEXT NOT NULL,
+  start_date_local TEXT,
+  timezone TEXT,
+  achievement_count INTEGER DEFAULT 0,
+  kudos_count INTEGER DEFAULT 0,
+  trainer BOOLEAN DEFAULT 0,
+  commute BOOLEAN DEFAULT 0,
+  average_speed REAL,
+  max_speed REAL,
+  average_heartrate REAL,
+  max_heartrate REAL,
+  elev_high REAL,
+  elev_low REAL,
+  pr_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (athlete_id) REFERENCES strava_athlete(id)
+);
+
+-- Indexes for strava_activities
+CREATE INDEX IF NOT EXISTS idx_strava_activities_athlete_id ON strava_activities(athlete_id);
+CREATE INDEX IF NOT EXISTS idx_strava_activities_start_date ON strava_activities(start_date);
+CREATE INDEX IF NOT EXISTS idx_strava_activities_type ON strava_activities(type);
+CREATE INDEX IF NOT EXISTS idx_strava_activities_sport_type ON strava_activities(sport_type);
+
+-- Trigger to update updated_at timestamp on strava_athlete
+CREATE TRIGGER IF NOT EXISTS update_strava_athlete_timestamp
+AFTER UPDATE ON strava_athlete
+BEGIN
+  UPDATE strava_athlete SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Trigger to update updated_at timestamp on strava_activities
+CREATE TRIGGER IF NOT EXISTS update_strava_activities_timestamp
+AFTER UPDATE ON strava_activities
+BEGIN
+  UPDATE strava_activities SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
