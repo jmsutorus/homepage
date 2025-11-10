@@ -32,7 +32,7 @@ function getIcon(iconName: string) {
     .join("");
 
   // Get the icon component from lucide-react
-  const IconComponent = (LucideIcons as Record<string, React.ComponentType<{ className?: string }>>)[
+  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[
     pascalCase
   ];
 
