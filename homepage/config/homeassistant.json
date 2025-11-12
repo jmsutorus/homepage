@@ -1,0 +1,34 @@
+{
+  "sensors": [
+    {
+      "entityId": "sensor.living_room_temperature",
+      "name": "Living Room Temp",
+      "icon": "thermometer",
+      "unit": "°F"
+    },
+    {
+      "entityId": "sensor.bedroom_humidity",
+      "name": "Bedroom Humidity",
+      "icon": "droplet",
+      "unit": "%"
+    },
+    {
+      "entityId": "sensor.office_temperature",
+      "name": "Office Temp",
+      "icon": "thermometer",
+      "unit": "°F"
+    },
+    {
+      "entityId": "binary_sensor.front_door",
+      "name": "Front Door",
+      "icon": "door-closed",
+      "type": "binary"
+    },
+    {
+      "entityId": "binary_sensor.garage_door",
+      "name": "Garage Door",
+      "icon": "garage",
+      "type": "binary"
+    }
+  ]
+}

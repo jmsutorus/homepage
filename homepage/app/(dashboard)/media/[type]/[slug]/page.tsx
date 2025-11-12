@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { getMediaBySlug, getAllMedia } from "@/lib/mdx";
+import { getMediaBySlug, getAllMedia } from "@/lib/media";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Star } from "lucide-react";
+import { ArrowLeft, Star, Pencil } from "lucide-react";
+import { DeleteMediaButton } from "@/components/widgets/delete-media-button";
 
 interface MediaDetailPageProps {
   params: Promise<{
@@ -51,16 +52,38 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Back Button */}
-      <Button variant="ghost" asChild>
-        <Link href="/media">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Media
-        </Link>
-      </Button>
+      {/* Navigation Buttons */}
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" asChild>
+          <Link href="/media">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Media
+          </Link>
+        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href={`/media/${type}/${slug}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </Link>
+          </Button>
+          <DeleteMediaButton slug={slug} mediaType={type} />
+        </div>
+      </div>
 
       {/* Header */}
       <div className="space-y-4">
+        {/* Image */}
+        {frontmatter.poster && (
+          <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted">
+            <img
+              src={frontmatter.poster}
+              alt={frontmatter.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
         <h1 className="text-4xl font-bold tracking-tight">{frontmatter.title}</h1>
 
         <div className="flex items-center gap-3 flex-wrap">
@@ -95,15 +118,15 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
         )}
 
         {/* Date */}
-        {(frontmatter.dateWatched || frontmatter.dateStarted) && (
+        {(frontmatter.completed || frontmatter.started) && (
           <p className="text-sm text-muted-foreground">
-            {frontmatter.dateWatched
-              ? `Watched on ${new Date(frontmatter.dateWatched).toLocaleDateString("en-US", {
+            {frontmatter.completed
+              ? `Completed on ${new Date(frontmatter.completed).toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
                 })}`
-              : `Started on ${new Date(frontmatter.dateStarted!).toLocaleDateString("en-US", {
+              : `Started on ${new Date(frontmatter.started!).toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
@@ -116,9 +139,15 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
       <hr className="border-border" />
 
       {/* Content */}
-      <div className="prose prose-neutral dark:prose-invert max-w-none">
-        <MDXRemote source={content} />
-      </div>
+      {content && content.trim() ? (
+        <article className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-base prose-p:leading-7 prose-a:text-blue-500 hover:prose-a:text-blue-600 prose-strong:font-semibold prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-img:rounded-lg">
+          <MDXRemote source={content} />
+        </article>
+      ) : (
+        <div className="text-center py-12 text-muted-foreground">
+          <p>No content available. Click "Edit" to add a description.</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,18 +1,12 @@
-export default function ExercisePage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Exercise Tracking</h1>
-        <p className="text-muted-foreground">
-          Monitor your running progress with Strava integration
-        </p>
-      </div>
+import { getDatabase } from "@/lib/db";
+import { ExercisePageClient } from "./page-client";
 
-      <div className="rounded-lg border bg-card p-8 text-center">
-        <p className="text-muted-foreground">
-          Exercise tracking coming in Phase 4...
-        </p>
-      </div>
-    </div>
-  );
+export default function ExercisePage() {
+  // Get athlete data for Strava sync
+  const db = getDatabase();
+  const athlete = db
+    .prepare("SELECT id, last_sync FROM strava_athlete ORDER BY last_sync DESC LIMIT 1")
+    .get() as { id: number; last_sync: string } | undefined;
+
+  return <ExercisePageClient athleteId={athlete?.id} lastSync={athlete?.last_sync} />;
 }

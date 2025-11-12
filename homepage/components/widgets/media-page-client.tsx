@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { MediaItem } from "@/lib/mdx";
+import { MediaItem } from "@/lib/media";
 import { MediaGrid } from "@/components/widgets/media-grid";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Plus } from "lucide-react";
+import Link from "next/link";
 
 interface MediaPageClientProps {
   allMedia: MediaItem[];
@@ -43,11 +45,19 @@ export function MediaPageClient({ allMedia }: MediaPageClientProps) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Media Library</h1>
-        <p className="text-muted-foreground">
-          Track movies, TV shows, and books you're watching/reading
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Media Library</h1>
+          <p className="text-muted-foreground">
+            Track movies, TV shows, and books you're watching/reading
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/media/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Create New
+          </Link>
+        </Button>
       </div>
 
       {/* Filters and Search */}

@@ -1,5 +1,3 @@
-import { auth } from "@/lib/auth";
-
 const STRAVA_API_BASE = "https://www.strava.com/api/v3";
 
 export interface StravaActivity {
@@ -132,26 +130,16 @@ export interface StravaStats {
  */
 async function stravaFetch<T>(
   endpoint: string,
-  options: RequestInit = {}
+  accessToken: string
 ): Promise<T> {
-  const session = await auth();
-
-  if (!session?.accessToken) {
-    throw new Error("No Strava access token found. Please sign in.");
-  }
-
-  if (session.error === "RefreshAccessTokenError") {
-    throw new Error(
-      "Unable to refresh access token. Please sign in again."
-    );
+  if (!accessToken) {
+    throw new Error("No Strava access token provided.");
   }
 
   const url = `${STRAVA_API_BASE}${endpoint}`;
   const response = await fetch(url, {
-    ...options,
     headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-      ...options.headers,
+      Authorization: `Bearer ${accessToken}`,
     },
   });
 
@@ -166,27 +154,30 @@ async function stravaFetch<T>(
 /**
  * Get the authenticated athlete's profile
  */
-export async function getAthlete(): Promise<StravaAthlete> {
-  return stravaFetch<StravaAthlete>("/athlete");
+export async function getAthlete(accessToken: string): Promise<StravaAthlete> {
+  return stravaFetch<StravaAthlete>("/athlete", accessToken);
 }
 
 /**
  * Get the authenticated athlete's statistics
  */
 export async function getAthleteStats(
-  athleteId: number
+  athleteId: number,
+  accessToken: string
 ): Promise<StravaStats> {
-  return stravaFetch<StravaStats>(`/athletes/${athleteId}/stats`);
+  return stravaFetch<StravaStats>(`/athletes/${athleteId}/stats`, accessToken);
 }
 
 /**
  * Get the authenticated athlete's activities
+ * @param accessToken - Strava access token
  * @param page - Page number (default 1)
  * @param perPage - Number of activities per page (default 30, max 200)
  * @param before - Unix timestamp to filter activities before
  * @param after - Unix timestamp to filter activities after
  */
 export async function getActivities(
+  accessToken: string,
   page = 1,
   perPage = 30,
   before?: number,
@@ -200,66 +191,27 @@ export async function getActivities(
   if (before) params.append("before", before.toString());
   if (after) params.append("after", after.toString());
 
-  return stravaFetch<StravaActivity[]>(`/athlete/activities?${params}`);
+  return stravaFetch<StravaActivity[]>(`/athlete/activities?${params}`, accessToken);
 }
 
 /**
  * Get a specific activity by ID
  */
 export async function getActivity(
-  activityId: number
+  activityId: number,
+  accessToken: string
 ): Promise<StravaActivity> {
-  return stravaFetch<StravaActivity>(`/activities/${activityId}`);
+  return stravaFetch<StravaActivity>(`/activities/${activityId}`, accessToken);
 }
 
 /**
  * Get recent activities (last 30 days)
  */
-export async function getRecentActivities(): Promise<StravaActivity[]> {
+export async function getRecentActivities(accessToken: string): Promise<StravaActivity[]> {
   const thirtyDaysAgo = Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60;
-  return getActivities(1, 200, undefined, thirtyDaysAgo);
+  return getActivities(accessToken, 1, 200, undefined, thirtyDaysAgo);
 }
 
-/**
- * Format distance from meters to kilometers/miles
- */
-export function formatDistance(meters: number, unit: "km" | "mi" = "km"): string {
-  if (unit === "mi") {
-    const miles = meters * 0.000621371;
-    return `${miles.toFixed(2)} mi`;
-  }
-  const km = meters / 1000;
-  return `${km.toFixed(2)} km`;
-}
-
-/**
- * Format duration from seconds to human readable
- */
-export function formatDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-  if (minutes > 0) {
-    return `${minutes}m ${secs}s`;
-  }
-  return `${secs}s`;
-}
-
-/**
- * Format pace from meters per second
- */
-export function formatPace(
-  metersPerSecond: number,
-  unit: "km" | "mi" = "km"
-): string {
-  if (unit === "mi") {
-    const milesPerHour = metersPerSecond * 2.23694;
-    return `${milesPerHour.toFixed(2)} mph`;
-  }
-  const kmPerHour = metersPerSecond * 3.6;
-  return `${kmPerHour.toFixed(2)} km/h`;
-}
+// Re-export utility functions from the utils module
+// This allows existing code to continue importing from this file
+export { formatDistance, formatDuration, formatPace } from "@/lib/utils/strava";

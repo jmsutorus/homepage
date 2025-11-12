@@ -1,27 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncStravaData } from "@/lib/services/strava-sync";
-import { auth } from "@/lib/auth";
 
 /**
  * POST /api/strava/sync
- * Body: { full?: boolean }
+ * Body: { accessToken: string, full?: boolean }
  * Sync Strava activities to database
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const body = await request.json().catch(() => ({}));
+    const { accessToken, full = false } = body;
 
-    if (!session?.athleteId) {
+    if (!accessToken) {
       return NextResponse.json(
-        { error: "Not authenticated with Strava" },
-        { status: 401 }
+        { error: "Access token is required" },
+        { status: 400 }
       );
     }
 
-    const body = await request.json().catch(() => ({}));
-    const full = body.full === true;
-
-    const result = await syncStravaData(full);
+    const result = await syncStravaData(accessToken, full);
 
     if (!result.success) {
       return NextResponse.json(
@@ -34,6 +31,7 @@ export async function POST(request: NextRequest) {
       success: true,
       activitiesSynced: result.activitiesSynced,
       athleteSynced: result.athleteSynced,
+      athleteId: result.athleteId,
     });
   } catch (error) {
     console.error("Error in Strava sync API:", error);

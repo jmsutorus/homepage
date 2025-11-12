@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Activity, TrendingUp, Clock, MapPin } from "lucide-react";
-import { formatDistance, formatDuration } from "@/lib/api/strava";
+import { Activity, TrendingUp, Clock, MapPin, ExternalLink } from "lucide-react";
+import { formatDistance, formatDuration } from "@/lib/utils/strava";
 import { format } from "date-fns";
 
 interface StravaActivity {
@@ -40,7 +39,6 @@ export function ExerciseStats() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [needsSync, setNeedsSync] = useState(false);
 
   useEffect(() => {
@@ -66,24 +64,6 @@ export function ExerciseStats() {
     }
   };
 
-  const handleSync = async () => {
-    try {
-      setIsSyncing(true);
-      const response = await fetch("/api/strava/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ full: false }),
-      });
-
-      if (response.ok) {
-        await fetchActivities();
-      }
-    } catch (error) {
-      console.error("Failed to sync activities:", error);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
 
   const activityTypeColors: Record<string, string> = {
     Run: "bg-orange-500/10 text-orange-500",
@@ -111,20 +91,17 @@ export function ExerciseStats() {
     return (
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Exercise Stats</CardTitle>
-              <CardDescription>Connect to Strava to see your activities</CardDescription>
-            </div>
-            <Button onClick={handleSync} disabled={isSyncing} size="sm">
-              <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? "animate-spin" : ""}`} />
-              Sync
-            </Button>
-          </div>
+          <CardTitle>Exercise Stats</CardTitle>
+          <CardDescription>No Strava activities synced yet</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            No activities found. Sign in with Strava to sync your data.
+          <div className="text-center py-8 space-y-4">
+            <Activity className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+            <div>
+              <p className="text-muted-foreground">
+                No activities found. Use the Strava Sync widget below to sync your data.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -134,23 +111,15 @@ export function ExerciseStats() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Exercise Stats</CardTitle>
-            <CardDescription>
-              {lastSync
-                ? `Last synced: ${format(new Date(lastSync), "MMM d, h:mm a")}`
-                : "Never synced"}
-              {needsSync && (
-                <span className="ml-2 text-orange-500">(Sync recommended)</span>
-              )}
-            </CardDescription>
-          </div>
-          <Button onClick={handleSync} disabled={isSyncing} size="sm">
-            <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? "animate-spin" : ""}`} />
-            Sync
-          </Button>
-        </div>
+        <CardTitle>Exercise Stats</CardTitle>
+        <CardDescription>
+          {lastSync
+            ? `Last synced: ${format(new Date(lastSync), "MMM d, h:mm a")}`
+            : "Never synced"}
+          {needsSync && (
+            <span className="ml-2 text-orange-500">(Sync recommended)</span>
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Statistics */}
@@ -188,14 +157,19 @@ export function ExerciseStats() {
             Recent Activities
           </h3>
           <div className="space-y-2">
-            {activities.map((activity) => (
-              <div
+            {activities.slice(0, 5).map((activity) => (
+              <a
                 key={activity.id}
-                className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                href={`https://www.strava.com/activities/${activity.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer group"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium truncate">{activity.name}</p>
+                    <p className="font-medium truncate group-hover:text-primary transition-colors">
+                      {activity.name}
+                    </p>
                     <Badge
                       variant="secondary"
                       className={
@@ -224,10 +198,13 @@ export function ExerciseStats() {
                     )}
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {format(new Date(activity.start_date), "MMM d")}
+                <div className="flex items-center gap-2">
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(activity.start_date), "MMM d")}
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </div>

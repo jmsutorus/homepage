@@ -20,6 +20,11 @@ export const env = createEnv({
     STRAVA_CLIENT_ID: z.string().optional(),
     STRAVA_CLIENT_SECRET: z.string().optional(),
 
+    // Google Calendar API
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    GOOGLE_REDIRECT_URI: z.string().url().optional(),
+
     // Steam API
     STEAM_API_KEY: z.string().optional(),
     STEAM_ID: z.string().optional(),
@@ -95,6 +100,11 @@ export const env = createEnv({
     // Strava
     STRAVA_CLIENT_ID: process.env.STRAVA_CLIENT_ID,
     STRAVA_CLIENT_SECRET: process.env.STRAVA_CLIENT_SECRET,
+
+    // Google Calendar
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI,
 
     // Steam
     STEAM_API_KEY: process.env.STEAM_API_KEY,

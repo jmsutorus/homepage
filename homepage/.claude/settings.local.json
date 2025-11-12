@@ -12,13 +12,14 @@
       "Bash(curl:*)",
       "Bash(docker exec:*)",
       "Bash(docker cp:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "mcp__context7__resolve-library-id"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "shadcn"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

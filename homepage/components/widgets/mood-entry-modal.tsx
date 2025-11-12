@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +35,12 @@ export function MoodEntryModal({
   const [rating, setRating] = useState(initialRating);
   const [note, setNote] = useState(initialNote);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Update state when props change (when a different date is selected)
+  useEffect(() => {
+    setRating(initialRating);
+    setNote(initialNote);
+  }, [initialRating, initialNote, date]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -73,7 +79,7 @@ export function MoodEntryModal({
                   key={value}
                   type="button"
                   onClick={() => setRating(value)}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                  className={`cursor-pointer flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
                     rating === value
                       ? "border-primary bg-primary/5 scale-105"
                       : "border-border hover:border-primary/50"
@@ -101,10 +107,10 @@ export function MoodEntryModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+          <Button className="cursor-pointer" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button className="cursor-pointer" onClick={handleSave} disabled={isSaving}>
             {isSaving ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>

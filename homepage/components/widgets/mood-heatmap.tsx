@@ -5,6 +5,8 @@ import HeatMap from "@uiw/react-heat-map";
 import { MoodEntryModal } from "./mood-entry-modal";
 import { MoodEntry } from "@/lib/db/mood";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface MoodHeatmapProps {
   year?: number;
@@ -47,6 +49,7 @@ export function MoodHeatmap({ year = new Date().getFullYear() }: MoodHeatmapProp
   // Handle cell click
   const handleCellClick = (date: string) => {
     const existing = moodData.find((entry) => entry.date === date);
+    console.log("Clicked date:", date, "Existing entry:", existing);
     setSelectedDate(date);
     setSelectedMood(existing || null);
     setIsModalOpen(true);
@@ -71,6 +74,27 @@ export function MoodHeatmap({ year = new Date().getFullYear() }: MoodHeatmapProp
       console.error("Failed to save mood:", error);
       throw error;
     }
+  };
+
+  // Check if today's mood exists
+  const getTodayString = () => {
+    const today = new Date();
+    console.log("Today's date:", today);
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(today.getDate()).padStart(2, '0');
+    console.log("Formatted date:", `${year}-${month}-${day}`);
+    return `${year}/${month}/${day}`; // YYYY/MM/DD format in local timezone
+  };
+
+  const todayString = getTodayString();
+  const hasTodaysMood = moodData.some((entry) => entry.date === todayString);
+
+  // Handle quick add for today
+  const handleQuickAddToday = () => {
+    setSelectedDate(todayString);
+    setSelectedMood(null);
+    setIsModalOpen(true);
   };
 
   // Color mapping for moods
@@ -103,10 +127,20 @@ export function MoodHeatmap({ year = new Date().getFullYear() }: MoodHeatmapProp
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Mood Tracker</CardTitle>
-          <CardDescription>
-            Year in Pixels - {year} • Click any day to add or edit your mood
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>Mood Tracker</CardTitle>
+              <CardDescription>
+                Year in Pixels - {year} • Click any day to add or edit your mood
+              </CardDescription>
+            </div>
+            {!hasTodaysMood && (
+              <Button onClick={handleQuickAddToday} size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Today
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">

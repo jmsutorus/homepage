@@ -2,10 +2,13 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuickLinks } from "@/components/widgets/quick-links";
-import { getAllMediaItems } from "@/lib/mdx";
+import { getAllMediaItems } from "@/lib/media";
 import { MediaCard } from "@/components/widgets/media-card";
-import { ExerciseStats } from "@/components/widgets/exercise-stats";
-import { ExerciseCharts } from "@/components/widgets/exercise-charts";
+import { SteamStatus } from "@/components/widgets/steam-status";
+import { HomeAssistantWidget } from "@/components/widgets/home-assistant-widget";
+import { PlexStatus } from "@/components/widgets/plex-status";
+import { MoodMonthView } from "@/components/widgets/mood-month-view";
+import { RecentTasks } from "@/components/widgets/recent-tasks";
 import { ArrowRight } from "lucide-react";
 
 export default function DashboardPage() {
@@ -29,6 +32,12 @@ export default function DashboardPage() {
         <QuickLinks />
       </section>
 
+      {/* Mood Tracker & Recent Tasks */}
+      <section className="grid gap-4 md:grid-cols-2">
+        <MoodMonthView />
+        <RecentTasks />
+      </section>
+
       {/* Recent Media */}
       {recentMedia.length > 0 && (
         <section className="space-y-4">
@@ -49,57 +58,18 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* Exercise Stats */}
+      {/* Gaming & Services */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold tracking-tight">Exercise</h2>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <ExerciseStats />
-          <ExerciseCharts />
-        </div>
-      </section>
-
-      {/* Widget Placeholders */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold tracking-tight">Coming Soon</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Gaming & Services</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {/* Steam Widget */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Steam</CardTitle>
-              <CardDescription>Gaming activity</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Steam status coming in Phase 4...
-              </p>
-            </CardContent>
-          </Card>
+          <SteamStatus />
 
           {/* Plex Widget */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Plex Server</CardTitle>
-              <CardDescription>Media server status</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Server status coming in Phase 4...
-              </p>
-            </CardContent>
-          </Card>
+          <PlexStatus />
 
           {/* Home Assistant Widget */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Home Assistant</CardTitle>
-              <CardDescription>Smart home sensors</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Sensor data coming in Phase 4...
-              </p>
-            </CardContent>
-          </Card>
+          <HomeAssistantWidget />
         </div>
       </section>
     </div>

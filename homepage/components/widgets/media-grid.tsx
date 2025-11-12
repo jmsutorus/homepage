@@ -1,4 +1,4 @@
-import { MediaItem } from "@/lib/mdx";
+import { MediaItem } from "@/lib/media";
 import { MediaCard } from "./media-card";
 
 interface MediaGridProps {

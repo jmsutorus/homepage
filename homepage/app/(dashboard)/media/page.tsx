@@ -1,4 +1,4 @@
-import { getAllMediaItems } from "@/lib/mdx";
+import { getAllMediaItems } from "@/lib/media";
 import { MediaPageClient } from "@/components/widgets/media-page-client";
 
 export default function MediaPage() {

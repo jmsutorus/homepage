@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { formatDistance } from "@/lib/api/strava";
+import { formatDistance } from "@/lib/utils/strava";
 import { format, startOfWeek, endOfWeek, eachWeekOfInterval, subMonths } from "date-fns";
 
 interface Activity {
@@ -114,7 +114,7 @@ export function ExerciseCharts() {
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            No activities found. Sync with Strava to see your trends.
+            No activities found. Use the Strava Sync widget below to sync your data.
           </div>
         </CardContent>
       </Card>
@@ -127,19 +127,19 @@ export function ExerciseCharts() {
         return {
           dataKey: "distance",
           label: "Distance (km)",
-          color: "hsl(var(--chart-1))",
+          color: "#3b82f6", // Blue
         };
       case "time":
         return {
           dataKey: "time",
           label: "Time (hours)",
-          color: "hsl(var(--chart-2))",
+          color: "#10b981", // Green
         };
       case "count":
         return {
           dataKey: "count",
           label: "Activities",
-          color: "hsl(var(--chart-3))",
+          color: "#f59e0b", // Amber
         };
     }
   };
@@ -165,7 +165,7 @@ export function ExerciseCharts() {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis
               dataKey="week"
@@ -184,8 +184,15 @@ export function ExerciseCharts() {
               }}
               labelStyle={{ color: "hsl(var(--foreground))" }}
             />
-            <Bar dataKey={config.dataKey} fill={config.color} radius={[4, 4, 0, 0]} />
-          </BarChart>
+            <Line
+              type="monotone"
+              dataKey={config.dataKey}
+              stroke={config.color}
+              strokeWidth={3}
+              dot={{ fill: config.color, strokeWidth: 2, r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
         </ResponsiveContainer>
 
         {/* Summary stats below chart */}

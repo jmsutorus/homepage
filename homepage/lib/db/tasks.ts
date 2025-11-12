@@ -6,6 +6,7 @@ export interface Task {
   id: number;
   title: string;
   completed: boolean;
+  completed_date: string | null; // YYYY-MM-DD format
   due_date: string | null; // ISO 8601 format
   priority: TaskPriority;
   created_at: string;
@@ -120,6 +121,17 @@ export function updateTask(
   if (updates.completed !== undefined) {
     fields.push("completed = ?");
     params.push(updates.completed ? 1 : 0);
+
+    // Set completed_date when marking task as complete
+    if (updates.completed) {
+      const today = new Date().toISOString().split("T")[0];
+      fields.push("completed_date = ?");
+      params.push(today);
+    } else {
+      // Clear completed_date when marking task as incomplete
+      fields.push("completed_date = ?");
+      params.push(null);
+    }
   }
 
   if (updates.due_date !== undefined) {

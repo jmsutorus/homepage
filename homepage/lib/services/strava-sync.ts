@@ -9,35 +9,37 @@ import {
   getActivities,
   getLastSyncTime,
 } from "@/lib/db/strava";
-import { auth } from "@/lib/auth";
 
 export interface SyncResult {
   success: boolean;
   activitiesSynced: number;
   athleteSynced: boolean;
+  athleteId?: number;
   error?: string;
 }
 
 /**
  * Sync athlete profile from Strava API to database
  */
-async function syncAthlete(): Promise<boolean> {
+async function syncAthlete(accessToken: string): Promise<number | null> {
   try {
-    const athlete = await getAthleteFromAPI();
+    const athlete = await getAthleteFromAPI(accessToken);
     upsertAthlete(athlete);
-    return true;
+    return athlete.id;
   } catch (error) {
     console.error("Failed to sync athlete:", error);
-    return false;
+    return null;
   }
 }
 
 /**
  * Sync activities from Strava API to database
+ * @param accessToken - Strava access token
  * @param athleteId - The athlete ID to sync activities for
  * @param full - If true, sync all activities. If false, sync only new activities since last sync
  */
 async function syncActivities(
+  accessToken: string,
   athleteId: number,
   full = false
 ): Promise<number> {
@@ -55,7 +57,7 @@ async function syncActivities(
 
     // Fetch activities from API
     // We'll fetch up to 200 activities at a time (Strava API limit)
-    const activities = await getActivitiesFromAPI(1, 200, undefined, after);
+    const activities = await getActivitiesFromAPI(accessToken, 1, 200, undefined, after);
 
     if (activities.length === 0) {
       return 0;
@@ -73,25 +75,24 @@ async function syncActivities(
 
 /**
  * Perform a full sync of athlete and activities
+ * @param accessToken - Strava access token
  * @param full - If true, sync all activities. If false, sync only new activities since last sync
  */
-export async function syncStravaData(full = false): Promise<SyncResult> {
+export async function syncStravaData(accessToken: string, full = false): Promise<SyncResult> {
   try {
-    const session = await auth();
-
-    if (!session?.athleteId) {
+    if (!accessToken) {
       return {
         success: false,
         activitiesSynced: 0,
         athleteSynced: false,
-        error: "No authenticated athlete found",
+        error: "No access token provided",
       };
     }
 
     // Sync athlete profile
-    const athleteSynced = await syncAthlete();
+    const athleteId = await syncAthlete(accessToken);
 
-    if (!athleteSynced) {
+    if (!athleteId) {
       return {
         success: false,
         activitiesSynced: 0,
@@ -101,12 +102,13 @@ export async function syncStravaData(full = false): Promise<SyncResult> {
     }
 
     // Sync activities
-    const activitiesSynced = await syncActivities(session.athleteId, full);
+    const activitiesSynced = await syncActivities(accessToken, athleteId, full);
 
     return {
       success: true,
       activitiesSynced,
       athleteSynced: true,
+      athleteId,
     };
   } catch (error) {
     console.error("Error syncing Strava data:", error);

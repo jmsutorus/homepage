@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MediaItem } from "@/lib/mdx";
+import { MediaItem } from "@/lib/media";
 import { Star } from "lucide-react";
 
 interface MediaCardProps {
@@ -26,11 +26,13 @@ export function MediaCard({ item }: MediaCardProps) {
     <Link href={href} className="block group">
       <Card className="overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02]">
         {/* Image */}
-        {frontmatter.imageUrl && (
+        {frontmatter.poster && (
           <div className="relative aspect-[2/3] overflow-hidden bg-muted">
-            <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">
-              {frontmatter.title}
-            </div>
+            <img
+              src={frontmatter.poster}
+              alt={frontmatter.title}
+              className="w-full h-full object-cover"
+            />
           </div>
         )}
 
@@ -69,11 +71,11 @@ export function MediaCard({ item }: MediaCardProps) {
           )}
 
           {/* Date */}
-          {(frontmatter.dateWatched || frontmatter.dateStarted) && (
+          {(frontmatter.completed || frontmatter.started) && (
             <p className="text-xs text-muted-foreground">
-              {frontmatter.dateWatched
-                ? `Watched: ${new Date(frontmatter.dateWatched).toLocaleDateString()}`
-                : `Started: ${new Date(frontmatter.dateStarted!).toLocaleDateString()}`}
+              {frontmatter.completed
+                ? `Completed: ${new Date(frontmatter.completed).toLocaleDateString()}`
+                : `Started: ${new Date(frontmatter.started!).toLocaleDateString()}`}
             </p>
           )}
         </CardContent>
