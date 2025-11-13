@@ -18,7 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MarkdownPreview } from './markdown-preview';
-import { Upload, FileText, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { IMDBSearchModal, type IMDBMediaData } from './imdb-search-modal';
+import { BookSearchModal, type BookData } from './book-search-modal';
+import { Upload, FileText, CheckCircle2, XCircle, AlertCircle, Film, BookOpen } from 'lucide-react';
 
 interface MediaFrontmatter {
   title: string;
@@ -92,6 +94,8 @@ export function MediaEditor({
   const [importResults, setImportResults] = useState<ImportResult[]>([]);
   const [isImporting, setIsImporting] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false);
+  const [isIMDBModalOpen, setIsIMDBModalOpen] = useState(false);
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
 
   // Helper function to convert ISO date to YYYY-MM-DD format
   const normalizeDate = (dateString: string): string => {
@@ -714,6 +718,54 @@ export function MediaEditor({
     });
   };
 
+  const handleIMDBMediaSelect = (data: IMDBMediaData) => {
+    // Populate the form with IMDB data
+    setFrontmatter({
+      ...frontmatter,
+      title: data.title || frontmatter.title,
+      type: data.type || frontmatter.type,
+      rating: data.rating !== undefined ? data.rating : frontmatter.rating,
+      released: data.released || frontmatter.released,
+      genres: data.genres && data.genres.length > 0 ? data.genres : frontmatter.genres,
+      poster: data.poster || frontmatter.poster,
+      description: data.description || frontmatter.description,
+      length: data.length || frontmatter.length,
+    });
+
+    // Show success message
+    setUploadMessage(`✅ Successfully loaded data for "${data.title}" from IMDB!`);
+    setError(null);
+
+    // Clear the message after a few seconds
+    setTimeout(() => {
+      setUploadMessage(null);
+    }, 5000);
+  };
+
+  const handleBookSelect = (data: BookData) => {
+    // Populate the form with book data
+    setFrontmatter({
+      ...frontmatter,
+      title: data.title || frontmatter.title,
+      type: 'book',
+      rating: data.rating !== undefined ? data.rating : frontmatter.rating,
+      released: data.released || frontmatter.released,
+      genres: data.genres && data.genres.length > 0 ? data.genres : frontmatter.genres,
+      poster: data.poster || frontmatter.poster,
+      description: data.description || frontmatter.description,
+      length: data.length || frontmatter.length,
+    });
+
+    // Show success message
+    setUploadMessage(`✅ Successfully loaded data for "${data.title}" from Google Books!`);
+    setError(null);
+
+    // Clear the message after a few seconds
+    setTimeout(() => {
+      setUploadMessage(null);
+    }, 5000);
+  };
+
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -772,16 +824,38 @@ export function MediaEditor({
           <CardContent className="pt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Import Markdown File</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Choose File
-                </Button>
+                <h3 className="text-lg font-semibold">Quick Import</h3>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    onClick={() => setIsIMDBModalOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <Film className="h-4 w-4 mr-2" />
+                    Search IMDB
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    onClick={() => setIsBookModalOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Search Books
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload File
+                  </Button>
+                </div>
               </div>
 
               {/* Hidden file input */}
@@ -812,10 +886,13 @@ export function MediaEditor({
                   Drag and drop a markdown file here
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  or click "Choose File" above to browse
+                  or click "Upload File" above to browse
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
                   Supports .md files with frontmatter. Select multiple files for batch import.
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 font-medium">
+                  💡 Tip: Use "Search IMDB" for movies/TV or "Search Books" for instant metadata!
                 </p>
               </div>
             </div>
@@ -1330,6 +1407,20 @@ export function MediaEditor({
           </Button>
         </div>
       )}
+
+      {/* IMDB Search Modal */}
+      <IMDBSearchModal
+        open={isIMDBModalOpen}
+        onOpenChange={setIsIMDBModalOpen}
+        onMediaSelect={handleIMDBMediaSelect}
+      />
+
+      {/* Book Search Modal */}
+      <BookSearchModal
+        open={isBookModalOpen}
+        onOpenChange={setIsBookModalOpen}
+        onBookSelect={handleBookSelect}
+      />
     </form>
   );
 }

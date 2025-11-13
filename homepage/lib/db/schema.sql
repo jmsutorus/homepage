@@ -292,3 +292,38 @@ AFTER UPDATE ON events
 BEGIN
   UPDATE events SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+-- Parks Table
+-- Stores park entries (National Parks, State Parks, Wilderness areas, etc.) with markdown content
+CREATE TABLE IF NOT EXISTS parks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT UNIQUE NOT NULL, -- URL-friendly identifier (e.g., 'yosemite-national-park')
+  title TEXT NOT NULL,
+  category TEXT CHECK(category IN ('National Park', 'State Park', 'Wilderness', 'Monument', 'Recreation Area', 'City Park', 'National Seashore', 'National Forest', 'Other')) NOT NULL,
+  state TEXT, -- US State abbreviation or full name
+  poster TEXT, -- Image URL for park photo
+  description TEXT, -- Short description of the park
+  visited TEXT, -- ISO date string (YYYY-MM-DD) - date visited
+  tags TEXT, -- JSON array of tag strings
+  rating INTEGER CHECK(rating BETWEEN 0 AND 10),
+  featured BOOLEAN DEFAULT 0, -- Whether to feature on homepage
+  published BOOLEAN DEFAULT 1, -- Whether to show publicly
+  content TEXT NOT NULL, -- Markdown content (body)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for parks
+CREATE INDEX IF NOT EXISTS idx_parks_category ON parks(category);
+CREATE INDEX IF NOT EXISTS idx_parks_state ON parks(state);
+CREATE INDEX IF NOT EXISTS idx_parks_slug ON parks(slug);
+CREATE INDEX IF NOT EXISTS idx_parks_visited ON parks(visited);
+CREATE INDEX IF NOT EXISTS idx_parks_featured ON parks(featured);
+CREATE INDEX IF NOT EXISTS idx_parks_published ON parks(published);
+
+-- Trigger to update updated_at timestamp on parks
+CREATE TRIGGER IF NOT EXISTS update_parks_timestamp
+AFTER UPDATE ON parks
+BEGIN
+  UPDATE parks SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;

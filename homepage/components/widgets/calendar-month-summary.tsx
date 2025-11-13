@@ -8,6 +8,7 @@ import type { CalendarDayData } from "@/lib/db/calendar";
 import type { MediaContent } from "@/lib/db/media";
 import type { DBStravaActivity } from "@/lib/db/strava";
 import type { Event } from "@/lib/db/events";
+import type { ParkContent } from "@/lib/db/parks";
 import {
   Film,
   Tv,
@@ -17,6 +18,7 @@ import {
   Calendar,
   MapPin,
   Timer,
+  Trees,
 } from "lucide-react";
 
 interface MonthSummaryProps {
@@ -54,15 +56,17 @@ export function CalendarMonthSummary({
 }: MonthSummaryProps) {
   const router = useRouter();
 
-  // Extract all media, activities, and events from the calendar data
+  // Extract all media, activities, events, and parks from the calendar data
   const allMedia: MediaContent[] = [];
   const allActivities: DBStravaActivity[] = [];
   const allEvents: Event[] = [];
+  const allParks: ParkContent[] = [];
 
   calendarData.forEach((dayData) => {
     allMedia.push(...dayData.media);
     allActivities.push(...dayData.activities);
     allEvents.push(...dayData.events);
+    allParks.push(...dayData.parks);
   });
 
   // Group media by type
@@ -93,11 +97,16 @@ export function CalendarMonthSummary({
     router.push(`/calendar?year=${year}&month=${month}#${event.date}`);
   };
 
+  const handleParkClick = (slug: string) => {
+    router.push(`/parks/${slug}`);
+  };
+
   const hasMedia = allMedia.length > 0;
   const hasActivities = allActivities.length > 0;
   const hasEvents = uniqueEvents.length > 0;
+  const hasParks = allParks.length > 0;
 
-  if (!hasMedia && !hasActivities && !hasEvents) {
+  if (!hasMedia && !hasActivities && !hasEvents && !hasParks) {
     return null;
   }
 
@@ -178,6 +187,69 @@ export function CalendarMonthSummary({
                 );
               }
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Parks Visited */}
+      {hasParks && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trees className="h-5 w-5" />
+              Parks Visited ({allParks.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              {allParks.map((park) => (
+                <div
+                  key={park.id}
+                  className="cursor-pointer group"
+                  onClick={() => handleParkClick(park.slug)}
+                >
+                  <div className="relative aspect-[2/3] overflow-hidden rounded-lg border bg-muted">
+                    {park.poster ? (
+                      <img
+                        src={park.poster}
+                        alt={park.title}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <Trees className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                    )}
+                    {park.rating && (
+                      <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        {park.rating}/10
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-sm font-medium line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                      {park.title}
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      <Badge variant="outline" className="text-xs">
+                        {park.category}
+                      </Badge>
+                      {park.state && (
+                        <Badge variant="secondary" className="text-xs">
+                          {park.state}
+                        </Badge>
+                      )}
+                    </div>
+                    {park.visited && (
+                      <p className="text-xs text-muted-foreground">
+                        {formatDateSafe(park.visited)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}

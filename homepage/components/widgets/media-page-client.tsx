@@ -14,7 +14,7 @@ interface MediaPageClientProps {
 }
 
 export function MediaPageClient({ allMedia }: MediaPageClientProps) {
-  const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter and search media
@@ -41,6 +41,7 @@ export function MediaPageClient({ allMedia }: MediaPageClientProps) {
     movie: allMedia.filter((item) => item.frontmatter.type === "movie").length,
     tv: allMedia.filter((item) => item.frontmatter.type === "tv").length,
     book: allMedia.filter((item) => item.frontmatter.type === "book").length,
+    game: allMedia.filter((item) => item.frontmatter.type === "game").length,
   };
 
   return (
@@ -49,7 +50,7 @@ export function MediaPageClient({ allMedia }: MediaPageClientProps) {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Media Library</h1>
           <p className="text-muted-foreground">
-            Track movies, TV shows, and books you're watching/reading
+            Track movies, TV shows, books, and video games you're watching/reading/playing
           </p>
         </div>
         <Button asChild>
@@ -68,6 +69,7 @@ export function MediaPageClient({ allMedia }: MediaPageClientProps) {
             <TabsTrigger value="movie">Movies ({stats.movie})</TabsTrigger>
             <TabsTrigger value="tv">TV ({stats.tv})</TabsTrigger>
             <TabsTrigger value="book">Books ({stats.book})</TabsTrigger>
+            <TabsTrigger value="game">Games ({stats.game})</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -89,7 +91,7 @@ export function MediaPageClient({ allMedia }: MediaPageClientProps) {
         emptyMessage={
           searchQuery
             ? `No results found for "${searchQuery}"`
-            : `No ${activeTab === "all" ? "media" : `${activeTab}s`} found`
+            : `No ${activeTab === "all" ? "media" : activeTab === "game" ? "games" : `${activeTab}s`} found`
         }
       />
     </div>

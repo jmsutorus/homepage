@@ -37,6 +37,12 @@ export const env = createEnv({
     TAUTULLI_URL: z.string().url().optional(),
     TAUTULLI_API_KEY: z.string().optional(),
 
+    // OMDb API (for IMDB data)
+    OMDB_API_KEY: z.string().optional(),
+
+    // Google Books API (for book data)
+    GOOGLE_BOOKS_API_KEY: z.string().optional(),
+
     // Feature Flags
     ENABLE_STEAM: z
       .string()
@@ -117,6 +123,12 @@ export const env = createEnv({
     // Tautulli
     TAUTULLI_URL: process.env.TAUTULLI_URL,
     TAUTULLI_API_KEY: process.env.TAUTULLI_API_KEY,
+
+    // OMDb
+    OMDB_API_KEY: process.env.OMDB_API_KEY,
+
+    // Google Books
+    GOOGLE_BOOKS_API_KEY: process.env.GOOGLE_BOOKS_API_KEY,
 
     // Feature Flags
     ENABLE_STEAM: process.env.ENABLE_STEAM,

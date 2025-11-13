@@ -29,6 +29,12 @@ export function Header() {
               Media
             </Link>
             <Link
+              href="/parks"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Parks
+            </Link>
+            <Link
               href="/tasks"
               className="transition-colors hover:text-foreground/80 text-foreground/60"
             >

@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { CalendarDayData } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CalendarDayCellProps {
@@ -47,7 +47,8 @@ export function CalendarDayCell({
   const hasMedia = (data?.media.length ?? 0) > 0;
   const hasTasks = (data?.tasks.length ?? 0) > 0;
   const hasEvents = (data?.events.length ?? 0) > 0;
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents;
+  const hasParks = (data?.parks.length ?? 0) > 0;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks;
 
   // Get mood icon
   const MoodIcon = hasMood ? MOOD_ICONS[data!.mood!.rating].icon : null;
@@ -131,6 +132,17 @@ export function CalendarDayCell({
             </div>
           )}
 
+          {/* Parks visited */}
+          {hasParks && (
+            <div className="flex items-center gap-1">
+              <Trees className="h-3 w-3 text-emerald-600 flex-shrink-0" />
+              <span className="text-emerald-600 truncate">
+                {data!.parks[0].title}
+                {data!.parks.length > 1 && ` +${data!.parks.length - 1}`}
+              </span>
+            </div>
+          )}
+
           {/* Events */}
           {hasEvents && (
             <div className="flex items-center gap-1">
@@ -186,6 +198,9 @@ export function CalendarDayCell({
           )}
           {hasMedia && (
             <div className="w-2 h-2 rounded-full bg-purple-500" title="Media" />
+          )}
+          {hasParks && (
+            <div className="w-2 h-2 rounded-full bg-emerald-600" title="Parks" />
           )}
           {hasEvents && (
             <div className="w-2 h-2 rounded-full bg-indigo-500" title="Events" />

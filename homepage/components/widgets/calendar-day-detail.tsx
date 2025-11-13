@@ -20,7 +20,8 @@ import {
   X,
   Calendar,
   MapPin,
-  Timer
+  Timer,
+  Trees
 } from "lucide-react";
 import { cn, formatDateSafe, formatDateLongSafe } from "@/lib/utils";
 import { EventEditDialog } from "./event-edit-dialog";
@@ -64,6 +65,10 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
     router.push(`/media/${type}/${slug}`);
   };
 
+  const handleParkClick = (slug: string) => {
+    router.push(`/parks/${slug}`);
+  };
+
   const handleEventUpdated = () => {
     // Call the parent's onDataChange callback to refresh the data
     onDataChange?.();
@@ -74,7 +79,8 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
   const hasMedia = (data?.media.length ?? 0) > 0;
   const hasTasks = (data?.tasks.length ?? 0) > 0;
   const hasEvents = (data?.events.length ?? 0) > 0;
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents;
+  const hasParks = (data?.parks.length ?? 0) > 0;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks;
 
   // Get today's date for comparison
   const today = new Date().toISOString().split("T")[0];
@@ -236,6 +242,36 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Parks Section */}
+        {hasParks && data && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Trees className="h-4 w-4" />
+              Parks Visited ({data.parks.length})
+            </h3>
+            <div className="space-y-2">
+              {data.parks.map((park) => (
+                <div
+                  key={park.id}
+                  className="pl-6 border-l-2 border-emerald-600 cursor-pointer hover:bg-accent/50 rounded-r-md transition-colors -ml-1 pl-7 py-2"
+                  onClick={() => handleParkClick(park.slug)}
+                >
+                  <p className="font-medium text-emerald-700 dark:text-emerald-400">{park.title}</p>
+                  <div className="flex gap-2 text-xs text-muted-foreground">
+                    <Badge variant="outline" className="text-xs">{park.category}</Badge>
+                    {park.state && (
+                      <span>{park.state}</span>
+                    )}
+                    {park.rating && (
+                      <span>Rating: {park.rating}/10</span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

@@ -11,7 +11,7 @@ This is a personal dashboard application built with Next.js, designed to be a ce
   - **Home Assistant**: Monitor and interact with your smart home devices.
   - **Plex (via Tautulli)**: Check the status of your Plex media server.
   - **Google Calendar**: Connect to see your upcoming events.
-- **Media Tracking**: Keep a log of movies, TV shows, and books you've consumed.
+- **Media Tracking**: Keep a log of movies, TV shows, and books you've consumed with **IMDB search integration** (for movies/TV) and **Google Books search integration** (for books) for easy data entry.
 - **Mood Journal**: Track your mood over time with a heatmap visualization.
 - **Task Management**: A simple to-do list to manage daily tasks.
 - **Activity Calendar**: A calendar view of your Strava activities.
@@ -56,6 +56,31 @@ Update `.env.local` with your credentials for the services you want to use. See 
 - `GOOGLE_CALENDAR_SETUP.md`
 - `STRAVA_SETUP.md`
 - `STRAVA_TOKEN_GUIDE.md`
+
+**Optional: IMDB Integration (for Movie/TV Search)**
+To enable the IMDB search feature when creating new media entries:
+
+1. Get a free API key from [OMDb API](https://www.omdbapi.com/apikey.aspx)
+2. Add the API key to your `.env.local`:
+   ```
+   OMDB_API_KEY=your_api_key_here
+   ```
+3. The "Search IMDB" button will now work in the media creation form!
+
+**Optional: Google Books Integration (for Book Search)**
+To enable the Google Books search feature when creating new media entries:
+
+1. (Optional but recommended) Get a free API key:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   - Create a new project or select an existing one
+   - Enable the "Books API"
+   - Create credentials (API Key)
+2. Add the API key to your `.env.local`:
+   ```
+   GOOGLE_BOOKS_API_KEY=your_api_key_here
+   ```
+3. The "Search Books" button will now work with higher quota limits!
+   - Note: The Books API works without a key but with lower request limits
 
 ### 4. Database Setup
 

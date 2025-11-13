@@ -4,6 +4,7 @@ import type { DBStravaActivity } from "./strava";
 import type { MediaContent } from "./media";
 import type { Task } from "./tasks";
 import type { Event } from "./events";
+import type { ParkContent } from "./parks";
 
 export interface CalendarDayData {
   date: string; // YYYY-MM-DD format
@@ -12,6 +13,7 @@ export interface CalendarDayData {
   media: MediaContent[];
   tasks: Task[];
   events: Event[];
+  parks: ParkContent[];
 }
 
 /**
@@ -73,6 +75,21 @@ export function getEventsInRange(
 }
 
 /**
+ * Get parks visited in a date range
+ */
+export function getParksVisitedInRange(
+  startDate: string,
+  endDate: string
+): ParkContent[] {
+  return query<ParkContent>(
+    `SELECT * FROM parks
+     WHERE visited BETWEEN ? AND ?
+     ORDER BY visited ASC`,
+    [startDate, endDate]
+  );
+}
+
+/**
  * Get all calendar data for a date range, grouped by day
  */
 export function getCalendarDataForRange(
@@ -89,6 +106,7 @@ export function getCalendarDataForRange(
   const media = getMediaCompletedInRange(startDate, endDate);
   const tasks = getTasksInRange(startDate, endDate);
   const events = getEventsInRange(startDate, endDate);
+  const parks = getParksVisitedInRange(startDate, endDate);
 
   // Create a map of date -> data
   const calendarMap = new Map<string, CalendarDayData>();
@@ -105,6 +123,7 @@ export function getCalendarDataForRange(
       media: [],
       tasks: [],
       events: [],
+      parks: [],
     });
   }
 
@@ -175,6 +194,16 @@ export function getCalendarDataForRange(
         if (dayData) {
           dayData.events.push(event);
         }
+      }
+    }
+  });
+
+  // Add parks (by visited date)
+  parks.forEach((park) => {
+    if (park.visited) {
+      const dayData = calendarMap.get(park.visited);
+      if (dayData) {
+        dayData.parks.push(park);
       }
     }
   });
