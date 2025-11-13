@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getMediaBySlug, getAllMedia } from "@/lib/media";
+import { formatDateLongSafe } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, Pencil } from "lucide-react";
@@ -72,67 +73,80 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
       </div>
 
       {/* Header */}
-      <div className="space-y-4">
-        {/* Image */}
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
+        {/* Poster Image */}
         {frontmatter.poster && (
-          <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted">
+          <div className="w-full md:w-[300px] rounded-lg overflow-hidden bg-muted">
             <img
               src={frontmatter.poster}
               alt={frontmatter.title}
-              className="w-full h-full object-cover"
+              className="w-full h-auto object-cover"
             />
           </div>
         )}
 
-        <h1 className="text-4xl font-bold tracking-tight">{frontmatter.title}</h1>
+        {/* Metadata */}
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold tracking-tight">{frontmatter.title.replace(/-/g, ' ')}</h1>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Type Badge */}
-          <Badge variant="outline" className="capitalize">
-            {frontmatter.type}
-          </Badge>
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Type Badge */}
+            <Badge variant="outline" className="capitalize">
+              {frontmatter.type}
+            </Badge>
 
-          {/* Status Badge */}
-          <Badge className={statusColors[frontmatter.status]}>
-            {frontmatter.status}
-          </Badge>
+            {/* Status Badge */}
+            <Badge className={statusColors[frontmatter.status]}>
+              {frontmatter.status}
+            </Badge>
 
-          {/* Rating */}
-          {frontmatter.rating && (
-            <div className="flex items-center gap-1">
-              <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
-              <span className="font-semibold">{frontmatter.rating} / 5</span>
+            {/* Rating */}
+            {frontmatter.rating && (
+              <div className="flex items-center gap-1">
+                <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+                <span className="font-semibold">{frontmatter.rating} / 10</span>
+              </div>
+            )}
+          </div>
+
+          {/* Genres */}
+          {frontmatter.genres && frontmatter.genres.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {frontmatter.genres.map((genre) => (
+                <Badge key={genre} variant="secondary">
+                  {genre}
+                </Badge>
+              ))}
             </div>
           )}
+
+          {/* Tags */}
+          {frontmatter.tags && frontmatter.tags.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {frontmatter.tags.map((tag) => (
+                <Badge key={tag} variant="outline">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Date */}
+          {(frontmatter.completed || frontmatter.started) && (
+            <p className="text-sm text-muted-foreground">
+              {frontmatter.completed
+                ? `Completed on ${formatDateLongSafe(frontmatter.completed, "en-US")}`
+                : `Started on ${formatDateLongSafe(frontmatter.started!, "en-US")}`}
+            </p>
+          )}
+
+          {/* Description */}
+          {frontmatter.description && (
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {frontmatter.description}
+            </p>
+          )}
         </div>
-
-        {/* Genres */}
-        {frontmatter.genres && frontmatter.genres.length > 0 && (
-          <div className="flex gap-2 flex-wrap">
-            {frontmatter.genres.map((genre) => (
-              <Badge key={genre} variant="secondary">
-                {genre}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Date */}
-        {(frontmatter.completed || frontmatter.started) && (
-          <p className="text-sm text-muted-foreground">
-            {frontmatter.completed
-              ? `Completed on ${new Date(frontmatter.completed).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}`
-              : `Started on ${new Date(frontmatter.started!).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}`}
-          </p>
-        )}
       </div>
 
       {/* Divider */}

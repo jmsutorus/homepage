@@ -79,12 +79,10 @@ export function MoodHeatmap({ year = new Date().getFullYear() }: MoodHeatmapProp
   // Check if today's mood exists
   const getTodayString = () => {
     const today = new Date();
-    console.log("Today's date:", today);
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
     const day = String(today.getDate()).padStart(2, '0');
-    console.log("Formatted date:", `${year}-${month}-${day}`);
-    return `${year}/${month}/${day}`; // YYYY/MM/DD format in local timezone
+    return `${year}-${month}-${day}`; // YYYY-MM-DD format in local timezone
   };
 
   const todayString = getTodayString();

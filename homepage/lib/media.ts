@@ -19,6 +19,7 @@ export interface MediaFrontmatter {
   genres?: string[];
   poster?: string;
   tags?: string[];
+  description?: string;
   length?: string;
   featured?: boolean;
   published?: boolean;
@@ -48,6 +49,7 @@ function dbToMediaItem(dbMedia: MediaContent): MediaItem {
       genres: parseGenres(dbMedia.genres),
       poster: dbMedia.poster ?? undefined,
       tags: parseTags(dbMedia.tags),
+      description: dbMedia.description ?? undefined,
       length: dbMedia.length ?? undefined,
       featured: dbMedia.featured === 1,
       published: dbMedia.published === 1,
@@ -157,4 +159,31 @@ export function sortMediaByRating(media: MediaItem[]): MediaItem[] {
     const ratingB = b.frontmatter.rating || 0;
     return ratingB - ratingA;
   });
+}
+
+/**
+ * Get recently completed media sorted by completion date (newest first)
+ * @param limit - Number of items to return (default: 4)
+ */
+export function getRecentlyCompletedMedia(limit: number = 4): MediaItem[] {
+  try {
+    const allMedia = dbGetAllMedia();
+
+    // Filter for completed media with a completed date
+    const completedMedia = allMedia
+      .filter(item => item.status === "completed" && item.completed)
+      .map(dbToMediaItem);
+
+    // Sort by completed date (newest first)
+    const sortedMedia = completedMedia.sort((a, b) => {
+      const dateA = a.frontmatter.completed || "";
+      const dateB = b.frontmatter.completed || "";
+      return dateB.localeCompare(dateA);
+    });
+
+    return sortedMedia.slice(0, limit);
+  } catch (error) {
+    console.error("Error getting recently completed media", error);
+    return [];
+  }
 }

@@ -40,8 +40,9 @@ export function MoodMonthView() {
         const data = await response.json();
         // Filter for current month only
         const currentMonthData = data.filter((entry: MoodEntry) => {
-          const entryDate = new Date(entry.date);
-          return entryDate.getMonth() === currentMonth && entryDate.getFullYear() === currentYear;
+          // Parse date components directly to avoid timezone issues
+          const [year, month] = entry.date.split("-").map(Number);
+          return month - 1 === currentMonth && year === currentYear;
         });
         setMoodData(currentMonthData);
       }

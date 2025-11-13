@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { formatDateSafe } from '@/lib/utils';
 import { useMemo } from 'react';
 
 interface MediaFrontmatter {
@@ -88,6 +89,7 @@ export function MarkdownPreview({ frontmatter, content }: MarkdownPreviewProps) 
                 src={frontmatter.poster}
                 alt={frontmatter.title}
                 className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
               />
             </div>
           )}
@@ -114,13 +116,13 @@ export function MarkdownPreview({ frontmatter, content }: MarkdownPreviewProps) 
 
               {frontmatter.completed && (
                 <span className="text-sm text-muted-foreground">
-                  Completed: {new Date(frontmatter.completed).toLocaleDateString()}
+                  Completed: {formatDateSafe(frontmatter.completed)}
                 </span>
               )}
 
               {frontmatter.started && (
                 <span className="text-sm text-muted-foreground">
-                  Started: {new Date(frontmatter.started).toLocaleDateString()}
+                  Started: {formatDateSafe(frontmatter.started)}
                 </span>
               )}
             </div>

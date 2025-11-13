@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MediaItem } from "@/lib/media";
+import { formatDateSafe } from "@/lib/utils";
 import { Star } from "lucide-react";
 
 interface MediaCardProps {
@@ -32,6 +33,7 @@ export function MediaCard({ item }: MediaCardProps) {
               src={frontmatter.poster}
               alt={frontmatter.title}
               className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
             />
           </div>
         )}
@@ -39,7 +41,7 @@ export function MediaCard({ item }: MediaCardProps) {
         <CardContent className="p-4 space-y-2">
           {/* Title */}
           <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">
-            {frontmatter.title}
+            {frontmatter.title.replace(/-/g, ' ')}
           </h3>
 
           {/* Status and Rating */}
@@ -74,8 +76,8 @@ export function MediaCard({ item }: MediaCardProps) {
           {(frontmatter.completed || frontmatter.started) && (
             <p className="text-xs text-muted-foreground">
               {frontmatter.completed
-                ? `Completed: ${new Date(frontmatter.completed).toLocaleDateString()}`
-                : `Started: ${new Date(frontmatter.started!).toLocaleDateString()}`}
+                ? `Completed: ${formatDateSafe(frontmatter.completed)}`
+                : `Started: ${formatDateSafe(frontmatter.started!)}`}
             </p>
           )}
         </CardContent>

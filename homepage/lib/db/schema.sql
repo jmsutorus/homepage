@@ -239,6 +239,7 @@ CREATE TABLE IF NOT EXISTS media_content (
   genres TEXT, -- JSON array of genre strings
   poster TEXT, -- Image URL for poster/cover
   tags TEXT, -- JSON array of tag strings
+  description TEXT, -- Short description or plot summary
   length TEXT, -- Runtime/page count/episode count as string
   creator TEXT, -- JSON array of creator strings (directors/authors)
   featured BOOLEAN DEFAULT 0, -- Whether to feature on homepage

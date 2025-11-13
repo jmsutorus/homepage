@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { formatDateLongSafe } from "@/lib/utils";
 import { Smile, Meh, Frown, TrendingUp, TrendingDown } from "lucide-react";
 
 interface MoodEntryModalProps {
@@ -54,12 +55,7 @@ export function MoodEntryModal({
     }
   };
 
-  const formattedDate = new Date(date).toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const formattedDate = formatDateLongSafe(date, "en-US");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

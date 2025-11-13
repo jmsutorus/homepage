@@ -13,6 +13,7 @@ export interface MediaContent {
   genres: string | null; // JSON array of genre strings
   poster: string | null; // Image URL
   tags: string | null; // JSON array of tag strings
+  description: string | null; // Short description or plot summary
   length: string | null; // Runtime/page count as string
   creator: string | null; // JSON array of creator strings (directors/authors)
   featured: number; // SQLite boolean (0 or 1)
@@ -34,6 +35,7 @@ export interface MediaContentInput {
   genres?: string[]; // Will be converted to JSON
   poster?: string;
   tags?: string[]; // Will be converted to JSON
+  description?: string;
   length?: string;
   creator?: string[]; // Will be converted to JSON
   featured?: boolean;
@@ -52,8 +54,8 @@ export function createMedia(data: MediaContentInput): MediaContent {
   const result = execute(
     `INSERT INTO media_content (
       slug, title, type, status, rating, started, completed, released,
-      genres, poster, tags, length, creator, featured, published, content
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      genres, poster, tags, description, length, creator, featured, published, content
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.slug,
       data.title,
@@ -66,6 +68,7 @@ export function createMedia(data: MediaContentInput): MediaContent {
       genresJson,
       data.poster || null,
       tagsJson,
+      data.description || null,
       data.length || null,
       creatorJson,
       data.featured ? 1 : 0,
@@ -205,6 +208,10 @@ export function updateMedia(
   if (data.tags !== undefined) {
     updates.push("tags = ?");
     params.push(data.tags ? JSON.stringify(data.tags) : null);
+  }
+  if (data.description !== undefined) {
+    updates.push("description = ?");
+    params.push(data.description);
   }
   if (data.length !== undefined) {
     updates.push("length = ?");

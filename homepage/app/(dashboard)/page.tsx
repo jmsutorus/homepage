@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuickLinks } from "@/components/widgets/quick-links";
-import { getAllMediaItems } from "@/lib/media";
+import { getRecentlyCompletedMedia } from "@/lib/media";
 import { MediaCard } from "@/components/widgets/media-card";
 import { SteamStatus } from "@/components/widgets/steam-status";
 import { HomeAssistantWidget } from "@/components/widgets/home-assistant-widget";
@@ -12,8 +12,8 @@ import { RecentTasks } from "@/components/widgets/recent-tasks";
 import { ArrowRight } from "lucide-react";
 
 export default function DashboardPage() {
-  // Get recent media (last 4 items)
-  const recentMedia = getAllMediaItems().slice(0, 4);
+  // Get recently completed media sorted by completion date (most recent first)
+  const recentMedia = getRecentlyCompletedMedia(4);
 
   return (
     <div className="space-y-8">
@@ -38,11 +38,11 @@ export default function DashboardPage() {
         <RecentTasks />
       </section>
 
-      {/* Recent Media */}
+      {/* Recently Completed Media */}
       {recentMedia.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold tracking-tight">Recent Media</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">Recently Completed</h2>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/media">
                 View all

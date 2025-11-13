@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
       genres: frontmatter.genres,
       poster: frontmatter.poster,
       tags: frontmatter.tags,
+      description: frontmatter.description,
       length: frontmatter.length,
       featured: frontmatter.featured,
       published: frontmatter.published,

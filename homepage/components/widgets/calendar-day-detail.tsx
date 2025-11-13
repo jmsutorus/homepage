@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { CalendarDayData } from "@/lib/db/calendar";
+import type { Event } from "@/lib/db/events";
 import {
   Smile,
   Frown,
@@ -19,11 +22,13 @@ import {
   MapPin,
   Timer
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatDateSafe, formatDateLongSafe } from "@/lib/utils";
+import { EventEditDialog } from "./event-edit-dialog";
 
 interface CalendarDayDetailProps {
   date: string;
   data?: CalendarDayData;
+  onDataChange?: () => void;
 }
 
 // Mood icon mapping
@@ -43,13 +48,26 @@ const MEDIA_ICONS: Record<string, typeof Film> = {
   game: Gamepad2,
 };
 
-export function CalendarDayDetail({ date, data }: CalendarDayDetailProps) {
-  const formattedDate = new Date(date).toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetailProps) {
+  const router = useRouter();
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const formattedDate = formatDateLongSafe(date, "en-US");
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleMediaClick = (type: string, slug: string) => {
+    router.push(`/media/${type}/${slug}`);
+  };
+
+  const handleEventUpdated = () => {
+    // Call the parent's onDataChange callback to refresh the data
+    onDataChange?.();
+  };
 
   const hasMood = data?.mood !== null && data?.mood !== undefined;
   const hasActivities = (data?.activities.length ?? 0) > 0;
@@ -119,7 +137,11 @@ export function CalendarDayDetail({ date, data }: CalendarDayDetailProps) {
             </h3>
             <div className="space-y-3">
               {data.events.map((event) => (
-                <div key={event.id} className="pl-6 border-l-2 border-indigo-500">
+                <div
+                  key={event.id}
+                  className="pl-6 border-l-2 border-indigo-500 cursor-pointer hover:bg-accent/50 rounded-r-md transition-colors -ml-1 pl-7 py-2"
+                  onClick={() => handleEventClick(event)}
+                >
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <p className="font-medium text-indigo-700 dark:text-indigo-400">{event.title}</p>
@@ -145,7 +167,7 @@ export function CalendarDayDetail({ date, data }: CalendarDayDetailProps) {
                         )}
                         {event.end_date && event.end_date !== event.date && (
                           <Badge variant="secondary" className="text-xs">
-                            Multi-day event (until {new Date(event.end_date).toLocaleDateString()})
+                            Multi-day event (until {formatDateSafe(event.end_date)})
                           </Badge>
                         )}
                       </div>
@@ -196,7 +218,11 @@ export function CalendarDayDetail({ date, data }: CalendarDayDetailProps) {
               {data.media.map((item) => {
                 const MediaIcon = MEDIA_ICONS[item.type] || Film;
                 return (
-                  <div key={item.id} className="pl-6 border-l-2 border-purple-500">
+                  <div
+                    key={item.id}
+                    className="pl-6 border-l-2 border-purple-500 cursor-pointer hover:bg-accent/50 rounded-r-md transition-colors -ml-1 pl-7 py-2"
+                    onClick={() => handleMediaClick(item.type, item.slug)}
+                  >
                     <div className="flex items-center gap-2">
                       <MediaIcon className="h-4 w-4 text-purple-500" />
                       <p className="font-medium text-purple-700 dark:text-purple-400">{item.title}</p>
@@ -234,7 +260,7 @@ export function CalendarDayDetail({ date, data }: CalendarDayDetailProps) {
                     <p className="text-sm text-red-700 dark:text-red-400">{task.title}</p>
                     {task.due_date && (
                       <p className="text-xs text-muted-foreground">
-                        Due: {new Date(task.due_date).toLocaleDateString()}
+                        Due: {formatDateSafe(task.due_date)}
                       </p>
                     )}
                   </div>
@@ -254,7 +280,7 @@ export function CalendarDayDetail({ date, data }: CalendarDayDetailProps) {
                     <p className="text-sm text-yellow-700 dark:text-yellow-400">{task.title}</p>
                     {task.due_date && (
                       <p className="text-xs text-muted-foreground">
-                        Due: {new Date(task.due_date).toLocaleDateString()}
+                        Due: {formatDateSafe(task.due_date)}
                       </p>
                     )}
                   </div>
@@ -274,7 +300,7 @@ export function CalendarDayDetail({ date, data }: CalendarDayDetailProps) {
                     <p className="text-sm text-green-700 dark:text-green-400 line-through">{task.title}</p>
                     {task.completed_date && (
                       <p className="text-xs text-muted-foreground">
-                        Completed: {new Date(task.completed_date).toLocaleDateString()}
+                        Completed: {formatDateSafe(task.completed_date)}
                       </p>
                     )}
                   </div>
@@ -284,6 +310,16 @@ export function CalendarDayDetail({ date, data }: CalendarDayDetailProps) {
           </div>
         )}
       </CardContent>
+
+      {/* Event Edit Dialog */}
+      {selectedEvent && (
+        <EventEditDialog
+          event={selectedEvent}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          onEventUpdated={handleEventUpdated}
+        />
+      )}
     </Card>
   );
 }

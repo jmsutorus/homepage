@@ -31,6 +31,7 @@ interface MediaFrontmatter {
   genres?: string[];
   poster?: string;
   tags?: string[];
+  description?: string;
   length?: string;
   featured?: boolean;
   published?: boolean;
@@ -246,6 +247,14 @@ export function MediaEditor({
           case 'image':
             parsedFrontmatter.poster = value;
             break;
+          case 'description':
+          case 'plot':
+          case 'summary':
+            // Use description field, or plot/summary if description doesn't exist
+            if (!parsedFrontmatter.description) {
+              parsedFrontmatter.description = value;
+            }
+            break;
           case 'length':
           case 'runtime':
           case 'duration':
@@ -422,6 +431,14 @@ export function MediaEditor({
           case 'image':
             parsedFrontmatter.poster = value;
             break;
+          case 'description':
+          case 'plot':
+          case 'summary':
+            // Use description field, or plot/summary if description doesn't exist
+            if (!parsedFrontmatter.description) {
+              parsedFrontmatter.description = value;
+            }
+            break;
           case 'length':
           case 'runtime':
           case 'duration':
@@ -463,8 +480,30 @@ export function MediaEditor({
           parsedFrontmatter.type = 'movie';
         } else if (normalizedCategory === 'books' || normalizedCategory === 'novel' || normalizedCategory === 'reading') {
           parsedFrontmatter.type = 'book';
-        } else if (normalizedCategory === 'games' || normalizedCategory === 'gaming' || normalizedCategory === 'video game') {
+        } else if (normalizedCategory === 'games' || normalizedCategory === 'gaming' || normalizedCategory === 'video game' || normalizedCategory === 'video_games') {
           parsedFrontmatter.type = 'game';
+        }
+      }
+
+      // If type still not set, try to infer from tags
+      if (!parsedFrontmatter.type && parsedFrontmatter.tags && parsedFrontmatter.tags.length > 0) {
+        for (const tag of parsedFrontmatter.tags) {
+          const normalizedTag = tag.toLowerCase().trim();
+
+          // Check if tag matches valid types or their aliases
+          if (['movie', 'film', 'movies'].includes(normalizedTag)) {
+            parsedFrontmatter.type = 'movie';
+            break;
+          } else if (['tv', 'television', 'series', 'show'].includes(normalizedTag)) {
+            parsedFrontmatter.type = 'tv';
+            break;
+          } else if (['book', 'books', 'novel', 'reading'].includes(normalizedTag)) {
+            parsedFrontmatter.type = 'book';
+            break;
+          } else if (['game', 'games', 'gaming', 'video game', 'video_games'].includes(normalizedTag)) {
+            parsedFrontmatter.type = 'game';
+            break;
+          }
         }
       }
 
@@ -1066,26 +1105,40 @@ export function MediaEditor({
                   />
                 </div>
 
+                {/* Description */}
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={frontmatter.description || ''}
+                    onChange={(e) =>
+                      setFrontmatter({ ...frontmatter, description: e.target.value })
+                    }
+                    placeholder="Short description or plot summary..."
+                    className="min-h-[100px]"
+                  />
+                </div>
+
                 {/* Genres */}
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="genres">Genres</Label>
                   <div className="flex gap-2">
-                    <Select value={genreInput} onValueChange={setGenreInput}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select genre" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {GENRE_OPTIONS.map((genre) => (
-                          <SelectItem key={genre} value={genre}>
-                            {genre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      id="genres"
+                      value={genreInput}
+                      onChange={(e) => setGenreInput(e.target.value)}
+                      placeholder="Enter genre"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addGenre();
+                        }
+                      }}
+                    />
                     <Button
                       type="button"
                       onClick={addGenre}
-                      disabled={!genreInput}
+                      disabled={!genreInput.trim()}
                       variant="outline"
                     >
                       Add

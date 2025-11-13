@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { CalendarDayCell } from "./calendar-day-cell";
 import { CalendarDayDetail } from "./calendar-day-detail";
+import { CalendarMonthSummary } from "./calendar-month-summary";
 import { MoodEntryModal } from "./mood-entry-modal";
 import { EventModal, type EventFormData } from "./event-modal";
 import type { CalendarDayData } from "@/lib/db/calendar";
@@ -40,6 +41,11 @@ export function CalendarView({ year, month, calendarData }: CalendarViewProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDayForDetail, setSelectedDayForDetail] = useState<string | null>(null);
 
+  // Clear selected day when month/year changes
+  useEffect(() => {
+    setSelectedDayForDetail(null);
+  }, [year, month]);
+
   // Get first day of month and total days
   const firstDay = new Date(year, month - 1, 1).getDay(); // 0-6 (Sun-Sat)
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -66,9 +72,8 @@ export function CalendarView({ year, month, calendarData }: CalendarViewProps) {
   };
 
   const handleOpenMoodModal = (date: string) => {
-    // Convert date from YYYY-MM-DD to YYYY/MM/DD format
-    const formattedDate = date.replace(/-/g, '/');
-    setSelectedDate(formattedDate);
+    // Use YYYY-MM-DD format directly
+    setSelectedDate(date);
     setIsMoodModalOpen(true);
   };
 
@@ -86,13 +91,10 @@ export function CalendarView({ year, month, calendarData }: CalendarViewProps) {
     if (!selectedDate) return;
 
     try {
-      // Convert date back to YYYY-MM-DD format for API
-      const apiDate = selectedDate.replace(/\//g, '-');
-
       const response = await fetch("/api/mood", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: apiDate, rating, note }),
+        body: JSON.stringify({ date: selectedDate, rating, note }),
       });
 
       if (response.ok) {
@@ -235,8 +237,16 @@ export function CalendarView({ year, month, calendarData }: CalendarViewProps) {
         <CalendarDayDetail
           date={selectedDayForDetail}
           data={calendarData.get(selectedDayForDetail)}
+          onDataChange={() => router.refresh()}
         />
       )}
+
+      {/* Month Summary */}
+      <CalendarMonthSummary
+        calendarData={calendarData}
+        year={year}
+        month={month}
+      />
 
       {/* Mood Entry Modal */}
       {selectedDate && (
@@ -244,8 +254,8 @@ export function CalendarView({ year, month, calendarData }: CalendarViewProps) {
           open={isMoodModalOpen}
           onOpenChange={setIsMoodModalOpen}
           date={selectedDate}
-          initialRating={calendarData.get(selectedDate.replace(/\//g, '-'))?.mood?.rating}
-          initialNote={calendarData.get(selectedDate.replace(/\//g, '-'))?.mood?.note || ""}
+          initialRating={calendarData.get(selectedDate)?.mood?.rating}
+          initialNote={calendarData.get(selectedDate)?.mood?.note || ""}
           onSave={handleSaveMood}
         />
       )}
