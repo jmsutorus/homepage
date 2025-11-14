@@ -35,6 +35,12 @@ export function Header() {
               Parks
             </Link>
             <Link
+              href="/journals"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Journals
+            </Link>
+            <Link
               href="/tasks"
               className="transition-colors hover:text-foreground/80 text-foreground/60"
             >

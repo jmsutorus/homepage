@@ -23,7 +23,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
         <p className="text-muted-foreground">
-          View your daily activities, moods, media, parks, and tasks
+          View your daily activities, moods, media, parks, journals, and tasks
         </p>
       </div>
 

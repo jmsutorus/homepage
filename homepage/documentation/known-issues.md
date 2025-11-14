@@ -69,16 +69,32 @@ grep -r "new Date.*toLocaleDateString" --include="*.tsx" --include="*.ts"
 ```
 
 **Related Database Fields:**
-This issue affects any date field stored in `YYYY-MM-DD` format:
+This issue affects any date field stored in `YYYY-MM-DD` format or SQLite TIMESTAMP format (`YYYY-MM-DD HH:MM:SS`):
 - `media_content.completed` - Media completion dates
 - `media_content.started` - Media start dates
 - `media_content.released` - Media release dates
+- `media_content.created_at` - Timestamp
+- `media_content.updated_at` - Timestamp
 - `events.date` - Event dates
 - `events.end_date` - Event end dates
+- `events.created_at` - Timestamp
+- `events.updated_at` - Timestamp
 - `tasks.due_date` - Task due dates
 - `tasks.completed_date` - Task completion dates
+- `tasks.created_at` - Timestamp
+- `tasks.updated_at` - Timestamp
 - `strava_activities.start_date_local` - Activity dates
+- `strava_activities.created_at` - Timestamp
+- `strava_activities.updated_at` - Timestamp
 - `mood_entries.date` - Mood entry dates
+- `mood_entries.created_at` - Timestamp
+- `mood_entries.updated_at` - Timestamp
+- `parks.visited` - Park visit dates
+- `parks.created_at` - Timestamp
+- `parks.updated_at` - Timestamp
+- `journals.daily_date` - Daily journal dates
+- `journals.created_at` - Timestamp
+- `journals.updated_at` - Timestamp
 
 ### Sub-Issue: Mood Modal Date Format Conversion
 
@@ -111,6 +127,95 @@ const handleOpenMoodModal = (date: string) => {
   setIsMoodModalOpen(true);
 };
 ```
+
+### Sub-Issue: SQLite Timestamp Format Handling
+
+**Problem:**
+The journal detail page and other pages were showing "Invalid" for created_at and updated_at dates because the `formatDateSafe()` and `formatDateLongSafe()` utility functions didn't properly handle SQLite TIMESTAMP format (`YYYY-MM-DD HH:MM:SS` with space separator).
+
+**Root Cause:**
+The utility functions only split on "T" to extract the date part from ISO datetime strings (`YYYY-MM-DDTHH:MM:SS`), but SQLite stores timestamps with a space separator (`YYYY-MM-DD HH:MM:SS`). When passed a SQLite timestamp, the functions would try to parse the entire string including the time portion, resulting in invalid date parsing.
+
+**Example of the Bug:**
+```typescript
+// SQLite timestamp format
+const timestamp = "2025-11-14 18:12:55";
+
+// OLD CODE - Only splits on "T", doesn't handle space separator
+const datePart = dateString.split("T")[0]; // Returns "2025-11-14 18:12:55" (unchanged)
+const [year, month, day] = datePart.split("-").map(Number);
+// Result: [2025, 11, "14 18:12:55"] - day becomes NaN after Number()
+// Date display: "Invalid Date"
+```
+
+**Solution:**
+Updated both `formatDateSafe()` and `formatDateLongSafe()` to split on both "T" and space " " characters to handle both ISO format and SQLite TIMESTAMP format:
+
+```typescript
+// CORRECT - Handles both "T" and space separators
+const datePart = dateString.split("T")[0].split(" ")[0];
+// For "2025-11-14 18:12:55": Returns "2025-11-14"
+// For "2025-11-14T18:12:55": Returns "2025-11-14"
+// For "2025-11-14": Returns "2025-11-14"
+```
+
+**Files Fixed:**
+- `lib/utils.ts` - Updated `formatDateSafe()` and `formatDateLongSafe()` to handle SQLite timestamps
+
+**Prevention:**
+- The utility functions now handle all common date/timestamp formats automatically
+- Always use `formatDateSafe()` or `formatDateLongSafe()` for displaying any date fields from the database
+- No conversion needed for SQLite TIMESTAMP fields - the utility functions handle them correctly
+
+**Related Pages:**
+- `app/(dashboard)/journals/[slug]/page.tsx` - Journal detail page created_at/updated_at
+- Any page displaying `created_at` or `updated_at` timestamp fields from SQLite
+
+### Sub-Issue: Calendar Not Displaying General Journals
+
+**Problem:**
+General journals were not appearing on the calendar page, only daily journals were showing up. The calendar remained empty on dates when general journals were created.
+
+**Root Cause:**
+The calendar integration code in `lib/db/calendar.ts` was extracting the date from `created_at` timestamps using only `.split('T')[0]`, which works for ISO format (`YYYY-MM-DDTHH:MM:SS`) but not for SQLite TIMESTAMP format (`YYYY-MM-DD HH:MM:SS`). When a general journal's `created_at` was `2025-11-14 18:12:55`, the code would try to use the entire timestamp string as a date key instead of just `2025-11-14`, causing the calendar lookup to fail.
+
+**Example of the Bug:**
+```typescript
+// SQLite timestamp
+const timestamp = "2025-11-14 18:12:55";
+
+// OLD CODE - Only splits on "T"
+dateStr = journal.created_at.split('T')[0];
+// Result: "2025-11-14 18:12:55" (unchanged)
+
+// Calendar tries to find day with key "2025-11-14 18:12:55"
+const dayData = calendarMap.get(dateStr); // Returns undefined
+// Journal is never added to calendar
+```
+
+**Solution:**
+Updated the journal mapping code in `getCalendarDataForRange()` to split on both "T" and space characters:
+
+```typescript
+// CORRECT - Handles both ISO and SQLite timestamp formats
+dateStr = journal.created_at.split('T')[0].split(' ')[0];
+// For "2025-11-14 18:12:55": Returns "2025-11-14"
+// For "2025-11-14T18:12:55": Returns "2025-11-14"
+// Calendar correctly finds day with key "2025-11-14"
+```
+
+**Files Fixed:**
+- `lib/db/calendar.ts` - Fixed general journal date extraction in `getCalendarDataForRange()`
+
+**Prevention:**
+- When extracting dates from timestamp fields for calendar display or date-based grouping, always use `.split('T')[0].split(' ')[0]` to handle both formats
+- Test calendar integration with actual database data that uses SQLite TIMESTAMP format
+- Verify both daily and general journals appear on the calendar after creation
+
+**Related Components:**
+- `components/widgets/calendar-day-cell.tsx` - Displays journals on calendar grid
+- `components/widgets/calendar-day-detail.tsx` - Displays journals in daily detail view
+- `app/(dashboard)/calendar/page.tsx` - Calendar page that shows journals
 
 ---
 

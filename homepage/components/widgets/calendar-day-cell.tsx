@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { CalendarDayData } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CalendarDayCellProps {
@@ -48,7 +48,8 @@ export function CalendarDayCell({
   const hasTasks = (data?.tasks.length ?? 0) > 0;
   const hasEvents = (data?.events.length ?? 0) > 0;
   const hasParks = (data?.parks.length ?? 0) > 0;
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks;
+  const hasJournals = (data?.journals.length ?? 0) > 0;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals;
 
   // Get mood icon
   const MoodIcon = hasMood ? MOOD_ICONS[data!.mood!.rating].icon : null;
@@ -143,6 +144,17 @@ export function CalendarDayCell({
             </div>
           )}
 
+          {/* Journals */}
+          {hasJournals && (
+            <div className="flex items-center gap-1">
+              <BookOpen className="h-3 w-3 flex-shrink-0 text-[#CC5500]" />
+              <span className="truncate text-[#CC5500]">
+                {data!.journals[0].title}
+                {data!.journals.length > 1 && ` +${data!.journals.length - 1}`}
+              </span>
+            </div>
+          )}
+
           {/* Events */}
           {hasEvents && (
             <div className="flex items-center gap-1">
@@ -201,6 +213,9 @@ export function CalendarDayCell({
           )}
           {hasParks && (
             <div className="w-2 h-2 rounded-full bg-emerald-600" title="Parks" />
+          )}
+          {hasJournals && (
+            <div className="w-2 h-2 rounded-full bg-[#CC5500]" title="Journals" />
           )}
           {hasEvents && (
             <div className="w-2 h-2 rounded-full bg-indigo-500" title="Events" />

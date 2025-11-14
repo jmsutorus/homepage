@@ -9,6 +9,7 @@ import type { MediaContent } from "@/lib/db/media";
 import type { DBStravaActivity } from "@/lib/db/strava";
 import type { Event } from "@/lib/db/events";
 import type { ParkContent } from "@/lib/db/parks";
+import type { JournalContent } from "@/lib/db/journals";
 import {
   Film,
   Tv,
@@ -19,6 +20,7 @@ import {
   MapPin,
   Timer,
   Trees,
+  BookOpen,
 } from "lucide-react";
 
 interface MonthSummaryProps {
@@ -56,17 +58,19 @@ export function CalendarMonthSummary({
 }: MonthSummaryProps) {
   const router = useRouter();
 
-  // Extract all media, activities, events, and parks from the calendar data
+  // Extract all media, activities, events, parks, and journals from the calendar data
   const allMedia: MediaContent[] = [];
   const allActivities: DBStravaActivity[] = [];
   const allEvents: Event[] = [];
   const allParks: ParkContent[] = [];
+  const allJournals: JournalContent[] = [];
 
   calendarData.forEach((dayData) => {
     allMedia.push(...dayData.media);
     allActivities.push(...dayData.activities);
     allEvents.push(...dayData.events);
     allParks.push(...dayData.parks);
+    allJournals.push(...dayData.journals);
   });
 
   // Group media by type
@@ -101,12 +105,17 @@ export function CalendarMonthSummary({
     router.push(`/parks/${slug}`);
   };
 
+  const handleJournalClick = (slug: string) => {
+    router.push(`/journals/${slug}`);
+  };
+
   const hasMedia = allMedia.length > 0;
   const hasActivities = allActivities.length > 0;
   const hasEvents = uniqueEvents.length > 0;
   const hasParks = allParks.length > 0;
+  const hasJournals = allJournals.length > 0;
 
-  if (!hasMedia && !hasActivities && !hasEvents && !hasParks) {
+  if (!hasMedia && !hasActivities && !hasEvents && !hasParks && !hasJournals) {
     return null;
   }
 
@@ -246,6 +255,48 @@ export function CalendarMonthSummary({
                         {formatDateSafe(park.visited)}
                       </p>
                     )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Journals */}
+      {hasJournals && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Journals ({allJournals.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {allJournals.map((journal) => (
+                <div
+                  key={journal.id}
+                  className="p-3 rounded-lg border bg-card cursor-pointer hover:bg-accent/50 transition-colors"
+                  onClick={() => handleJournalClick(journal.slug)}
+                >
+                  <div className="space-y-1">
+                    <p className="font-medium text-[#CC5500] dark:text-[#ff6a1a]">
+                      {journal.title}
+                    </p>
+                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {journal.journal_type}
+                      </Badge>
+                      {journal.tags && journal.tags.length > 0 && (
+                        <span>{journal.tags.slice(0, 3).join(", ")}</span>
+                      )}
+                      {journal.journal_type === "daily" && journal.daily_date ? (
+                        <span>{formatDateSafe(journal.daily_date)}</span>
+                      ) : (
+                        <span>{formatDateSafe(journal.created_at)}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

@@ -327,3 +327,57 @@ AFTER UPDATE ON parks
 BEGIN
   UPDATE parks SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+-- Journals Table
+-- Stores journal entries with markdown content and flexible tagging
+CREATE TABLE IF NOT EXISTS journals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT UNIQUE NOT NULL, -- URL-friendly identifier (e.g., 'my-day-2024-01-15')
+  title TEXT NOT NULL,
+  journal_type TEXT CHECK(journal_type IN ('daily', 'general')) DEFAULT 'general', -- Type of journal
+  daily_date TEXT, -- ISO date string (YYYY-MM-DD) - only for daily journals
+  mood INTEGER CHECK(mood BETWEEN 0 AND 10), -- Mood/rating scale (optional for general, linked for daily)
+  tags TEXT, -- JSON array of tag strings for flexible categorization
+  featured BOOLEAN DEFAULT 0, -- Whether to feature on homepage
+  published BOOLEAN DEFAULT 1, -- Whether to show publicly
+  content TEXT NOT NULL, -- Markdown content (body)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(journal_type, daily_date) -- Ensure only one daily journal per date
+);
+
+-- Indexes for journals
+CREATE INDEX IF NOT EXISTS idx_journals_slug ON journals(slug);
+CREATE INDEX IF NOT EXISTS idx_journals_featured ON journals(featured);
+CREATE INDEX IF NOT EXISTS idx_journals_published ON journals(published);
+CREATE INDEX IF NOT EXISTS idx_journals_created_at ON journals(created_at);
+CREATE INDEX IF NOT EXISTS idx_journals_updated_at ON journals(updated_at);
+CREATE INDEX IF NOT EXISTS idx_journals_journal_type ON journals(journal_type);
+CREATE INDEX IF NOT EXISTS idx_journals_daily_date ON journals(daily_date);
+
+-- Trigger to update updated_at timestamp on journals
+CREATE TRIGGER IF NOT EXISTS update_journals_timestamp
+AFTER UPDATE ON journals
+BEGIN
+  UPDATE journals SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Journal Links Table
+-- Extensible linking system allowing journals to reference any object type
+-- Links can point to media, parks, other journals, strava activities, or future object types
+CREATE TABLE IF NOT EXISTS journal_links (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  journal_id INTEGER NOT NULL, -- The journal containing the link
+  linked_type TEXT NOT NULL, -- Type of linked object: 'media', 'park', 'journal', 'activity'
+  linked_id INTEGER NOT NULL, -- ID of the linked object in its respective table
+  linked_slug TEXT, -- Slug of linked object (for easier lookups, optional)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (journal_id) REFERENCES journals(id) ON DELETE CASCADE
+);
+
+-- Indexes for journal_links (optimized for common queries)
+CREATE INDEX IF NOT EXISTS idx_journal_links_journal_id ON journal_links(journal_id);
+CREATE INDEX IF NOT EXISTS idx_journal_links_linked_type ON journal_links(linked_type);
+CREATE INDEX IF NOT EXISTS idx_journal_links_linked_id ON journal_links(linked_id);
+CREATE INDEX IF NOT EXISTS idx_journal_links_type_id ON journal_links(linked_type, linked_id);
+CREATE INDEX IF NOT EXISTS idx_journal_links_type_slug ON journal_links(linked_type, linked_slug);

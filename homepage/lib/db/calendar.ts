@@ -5,6 +5,7 @@ import type { MediaContent } from "./media";
 import type { Task } from "./tasks";
 import type { Event } from "./events";
 import type { ParkContent } from "./parks";
+import type { JournalContent } from "./journals";
 
 export interface CalendarDayData {
   date: string; // YYYY-MM-DD format
@@ -14,6 +15,7 @@ export interface CalendarDayData {
   tasks: Task[];
   events: Event[];
   parks: ParkContent[];
+  journals: JournalContent[];
 }
 
 /**
@@ -90,6 +92,36 @@ export function getParksVisitedInRange(
 }
 
 /**
+ * Get journals in a date range
+ * - Daily journals by daily_date
+ * - General journals by created_at date
+ */
+export function getJournalsInRange(
+  startDate: string,
+  endDate: string
+): JournalContent[] {
+  // Need to parse tags from JSON and convert featured/published from number to boolean
+  const rawJournals = query<any>(
+    `SELECT * FROM journals
+     WHERE (journal_type = 'daily' AND daily_date BETWEEN ? AND ?)
+        OR (journal_type = 'general' AND DATE(created_at) BETWEEN ? AND ?)
+     ORDER BY
+       CASE
+         WHEN journal_type = 'daily' THEN daily_date
+         ELSE DATE(created_at)
+       END ASC`,
+    [startDate, endDate, startDate, endDate]
+  );
+
+  return rawJournals.map((journal: any) => ({
+    ...journal,
+    tags: journal.tags ? JSON.parse(journal.tags) : [],
+    featured: journal.featured === 1,
+    published: journal.published === 1,
+  }));
+}
+
+/**
  * Get all calendar data for a date range, grouped by day
  */
 export function getCalendarDataForRange(
@@ -107,6 +139,7 @@ export function getCalendarDataForRange(
   const tasks = getTasksInRange(startDate, endDate);
   const events = getEventsInRange(startDate, endDate);
   const parks = getParksVisitedInRange(startDate, endDate);
+  const journals = getJournalsInRange(startDate, endDate);
 
   // Create a map of date -> data
   const calendarMap = new Map<string, CalendarDayData>();
@@ -124,6 +157,7 @@ export function getCalendarDataForRange(
       tasks: [],
       events: [],
       parks: [],
+      journals: [],
     });
   }
 
@@ -204,6 +238,27 @@ export function getCalendarDataForRange(
       const dayData = calendarMap.get(park.visited);
       if (dayData) {
         dayData.parks.push(park);
+      }
+    }
+  });
+
+  // Add journals
+  journals.forEach((journal) => {
+    let dateStr: string | null = null;
+
+    if (journal.journal_type === 'daily' && journal.daily_date) {
+      // Daily journals use daily_date
+      dateStr = journal.daily_date;
+    } else if (journal.journal_type === 'general' && journal.created_at) {
+      // General journals use created_at date
+      // Handle both ISO format (YYYY-MM-DDTHH:MM:SS) and SQLite TIMESTAMP (YYYY-MM-DD HH:MM:SS)
+      dateStr = journal.created_at.split('T')[0].split(' ')[0];
+    }
+
+    if (dateStr) {
+      const dayData = calendarMap.get(dateStr);
+      if (dayData) {
+        dayData.journals.push(journal);
       }
     }
   });

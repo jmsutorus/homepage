@@ -21,7 +21,8 @@ import {
   Calendar,
   MapPin,
   Timer,
-  Trees
+  Trees,
+  BookOpen
 } from "lucide-react";
 import { cn, formatDateSafe, formatDateLongSafe } from "@/lib/utils";
 import { EventEditDialog } from "./event-edit-dialog";
@@ -69,6 +70,10 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
     router.push(`/parks/${slug}`);
   };
 
+  const handleJournalClick = (slug: string) => {
+    router.push(`/journals/${slug}`);
+  };
+
   const handleEventUpdated = () => {
     // Call the parent's onDataChange callback to refresh the data
     onDataChange?.();
@@ -80,7 +85,8 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
   const hasTasks = (data?.tasks.length ?? 0) > 0;
   const hasEvents = (data?.events.length ?? 0) > 0;
   const hasParks = (data?.parks.length ?? 0) > 0;
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks;
+  const hasJournals = (data?.journals.length ?? 0) > 0;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals;
 
   // Get today's date for comparison
   const today = new Date().toISOString().split("T")[0];
@@ -268,6 +274,35 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
                     )}
                     {park.rating && (
                       <span>Rating: {park.rating}/10</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Journals Section */}
+        {hasJournals && data && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Journals ({data.journals.length})
+            </h3>
+            <div className="space-y-2">
+              {data.journals.map((journal) => (
+                <div
+                  key={journal.id}
+                  className="pl-6 border-l-2 border-[#CC5500] cursor-pointer hover:bg-accent/50 rounded-r-md transition-colors -ml-1 pl-7 py-2"
+                  onClick={() => handleJournalClick(journal.slug)}
+                >
+                  <p className="font-medium text-[#CC5500] dark:text-[#ff6a1a]">{journal.title}</p>
+                  <div className="flex gap-2 text-xs text-muted-foreground">
+                    <Badge variant="outline" className="text-xs capitalize">
+                      {journal.journal_type}
+                    </Badge>
+                    {journal.tags && journal.tags.length > 0 && (
+                      <span>{journal.tags.slice(0, 2).join(", ")}</span>
                     )}
                   </div>
                 </div>
