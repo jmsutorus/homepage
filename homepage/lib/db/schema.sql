@@ -1,7 +1,7 @@
 -- Homepage Database Schema
 -- SQLite database for mood tracking, task management, and API caching
 
--- Better-Auth Tables
+-- Auth.js (NextAuth) Tables
 -- User authentication and session management
 
 -- User Table
@@ -63,33 +63,40 @@ CREATE INDEX IF NOT EXISTS idx_account_userId ON account(userId);
 CREATE INDEX IF NOT EXISTS idx_account_providerId ON account(providerId);
 
 -- Mood Entries Table
--- Stores daily mood ratings and notes
+-- Stores daily mood ratings and notes (per user)
 CREATE TABLE IF NOT EXISTS mood_entries (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  date TEXT UNIQUE NOT NULL,
+  userId TEXT NOT NULL,
+  date TEXT NOT NULL,
   rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
   note TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, date)
 );
 
--- Index for faster date lookups
+-- Indexes for faster lookups
+CREATE INDEX IF NOT EXISTS idx_mood_entries_userId ON mood_entries(userId);
 CREATE INDEX IF NOT EXISTS idx_mood_entries_date ON mood_entries(date);
 
 -- Tasks Table
--- Stores todo items with priorities and due dates
+-- Stores todo items with priorities and due dates (per user)
 CREATE TABLE IF NOT EXISTS tasks (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
   title TEXT NOT NULL,
   completed BOOLEAN DEFAULT 0 NOT NULL,
   completed_date TEXT, -- YYYY-MM-DD format, set when task is marked complete
   due_date TEXT,
   priority TEXT CHECK(priority IN ('low', 'medium', 'high')) DEFAULT 'medium',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
 );
 
 -- Indexes for filtering and sorting
+CREATE INDEX IF NOT EXISTS idx_tasks_userId ON tasks(userId);
 CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
 CREATE INDEX IF NOT EXISTS idx_tasks_completed_date ON tasks(completed_date);
 CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
@@ -122,9 +129,10 @@ BEGIN
 END;
 
 -- Strava Athlete Table
--- Stores athlete profile information
+-- Stores athlete profile information (per user)
 CREATE TABLE IF NOT EXISTS strava_athlete (
   id INTEGER PRIMARY KEY,
+  userId TEXT NOT NULL,
   username TEXT,
   firstname TEXT,
   lastname TEXT,
@@ -137,13 +145,18 @@ CREATE TABLE IF NOT EXISTS strava_athlete (
   profile TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  last_sync TIMESTAMP
+  last_sync TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
 );
 
+-- Index for strava_athlete
+CREATE INDEX IF NOT EXISTS idx_strava_athlete_userId ON strava_athlete(userId);
+
 -- Strava Activities Table
--- Stores exercise activities from Strava
+-- Stores exercise activities from Strava (per user)
 CREATE TABLE IF NOT EXISTS strava_activities (
   id INTEGER PRIMARY KEY,
+  userId TEXT NOT NULL,
   athlete_id INTEGER,
   name TEXT NOT NULL,
   distance REAL DEFAULT 0,
@@ -168,10 +181,12 @@ CREATE TABLE IF NOT EXISTS strava_activities (
   pr_count INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
   FOREIGN KEY (athlete_id) REFERENCES strava_athlete(id)
 );
 
 -- Indexes for strava_activities
+CREATE INDEX IF NOT EXISTS idx_strava_activities_userId ON strava_activities(userId);
 CREATE INDEX IF NOT EXISTS idx_strava_activities_athlete_id ON strava_activities(athlete_id);
 CREATE INDEX IF NOT EXISTS idx_strava_activities_start_date ON strava_activities(start_date);
 CREATE INDEX IF NOT EXISTS idx_strava_activities_type ON strava_activities(type);
@@ -192,9 +207,10 @@ BEGIN
 END;
 
 -- Workout Activities Table
--- Stores custom workout activities/sessions
+-- Stores custom workout activities/sessions (per user)
 CREATE TABLE IF NOT EXISTS workout_activities (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
   date TEXT NOT NULL, -- ISO date string (YYYY-MM-DD)
   time TEXT NOT NULL, -- Time in HH:MM format
   length INTEGER NOT NULL, -- Duration in minutes
@@ -208,10 +224,12 @@ CREATE TABLE IF NOT EXISTS workout_activities (
   strava_activity_id INTEGER, -- Link to actual Strava activity if completed
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
   FOREIGN KEY (strava_activity_id) REFERENCES strava_activities(id) ON DELETE SET NULL
 );
 
 -- Indexes for workout activities
+CREATE INDEX IF NOT EXISTS idx_workout_activities_userId ON workout_activities(userId);
 CREATE INDEX IF NOT EXISTS idx_workout_activities_date ON workout_activities(date);
 CREATE INDEX IF NOT EXISTS idx_workout_activities_type ON workout_activities(type);
 CREATE INDEX IF NOT EXISTS idx_workout_activities_completed ON workout_activities(completed);
@@ -225,10 +243,11 @@ BEGIN
 END;
 
 -- Media Content Table
--- Stores media library entries (movies, TV shows, books, video games) with markdown content
+-- Stores media library entries (movies, TV shows, books, video games) with markdown content (per user)
 CREATE TABLE IF NOT EXISTS media_content (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  slug TEXT UNIQUE NOT NULL, -- URL-friendly identifier (e.g., 'the-matrix')
+  userId TEXT NOT NULL,
+  slug TEXT NOT NULL, -- URL-friendly identifier (e.g., 'the-matrix')
   title TEXT NOT NULL,
   type TEXT CHECK(type IN ('movie', 'tv', 'book', 'game')) NOT NULL,
   status TEXT CHECK(status IN ('in-progress', 'completed', 'planned')) NOT NULL,
@@ -246,10 +265,13 @@ CREATE TABLE IF NOT EXISTS media_content (
   published BOOLEAN DEFAULT 1, -- Whether to show publicly
   content TEXT NOT NULL, -- Markdown content (body)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, slug)
 );
 
 -- Indexes for media_content
+CREATE INDEX IF NOT EXISTS idx_media_content_userId ON media_content(userId);
 CREATE INDEX IF NOT EXISTS idx_media_content_type ON media_content(type);
 CREATE INDEX IF NOT EXISTS idx_media_content_status ON media_content(status);
 CREATE INDEX IF NOT EXISTS idx_media_content_slug ON media_content(slug);
@@ -265,9 +287,10 @@ BEGIN
 END;
 
 -- Events Table
--- Stores calendar events with notifications
+-- Stores calendar events with notifications (per user)
 CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
   location TEXT,
@@ -278,10 +301,12 @@ CREATE TABLE IF NOT EXISTS events (
   end_date TEXT, -- ISO date string (YYYY-MM-DD) - for multi-day events
   notifications TEXT, -- JSON array of notification objects: [{type: string, time: number, timeObject: string}]
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
 );
 
 -- Indexes for events
+CREATE INDEX IF NOT EXISTS idx_events_userId ON events(userId);
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
 CREATE INDEX IF NOT EXISTS idx_events_end_date ON events(end_date);
 CREATE INDEX IF NOT EXISTS idx_events_all_day ON events(all_day);
@@ -294,10 +319,11 @@ BEGIN
 END;
 
 -- Parks Table
--- Stores park entries (National Parks, State Parks, Wilderness areas, etc.) with markdown content
+-- Stores park entries (National Parks, State Parks, Wilderness areas, etc.) with markdown content (per user)
 CREATE TABLE IF NOT EXISTS parks (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  slug TEXT UNIQUE NOT NULL, -- URL-friendly identifier (e.g., 'yosemite-national-park')
+  userId TEXT NOT NULL,
+  slug TEXT NOT NULL, -- URL-friendly identifier (e.g., 'yosemite-national-park')
   title TEXT NOT NULL,
   category TEXT CHECK(category IN ('National Park', 'State Park', 'Wilderness', 'Monument', 'Recreation Area', 'City Park', 'National Seashore', 'National Forest', 'Other')) NOT NULL,
   state TEXT, -- US State abbreviation or full name
@@ -310,10 +336,13 @@ CREATE TABLE IF NOT EXISTS parks (
   published BOOLEAN DEFAULT 1, -- Whether to show publicly
   content TEXT NOT NULL, -- Markdown content (body)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, slug)
 );
 
 -- Indexes for parks
+CREATE INDEX IF NOT EXISTS idx_parks_userId ON parks(userId);
 CREATE INDEX IF NOT EXISTS idx_parks_category ON parks(category);
 CREATE INDEX IF NOT EXISTS idx_parks_state ON parks(state);
 CREATE INDEX IF NOT EXISTS idx_parks_slug ON parks(slug);
@@ -329,10 +358,11 @@ BEGIN
 END;
 
 -- Journals Table
--- Stores journal entries with markdown content and flexible tagging
+-- Stores journal entries with markdown content and flexible tagging (per user)
 CREATE TABLE IF NOT EXISTS journals (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  slug TEXT UNIQUE NOT NULL, -- URL-friendly identifier (e.g., 'my-day-2024-01-15')
+  userId TEXT NOT NULL,
+  slug TEXT NOT NULL, -- URL-friendly identifier (e.g., 'my-day-2024-01-15')
   title TEXT NOT NULL,
   journal_type TEXT CHECK(journal_type IN ('daily', 'general')) DEFAULT 'general', -- Type of journal
   daily_date TEXT, -- ISO date string (YYYY-MM-DD) - only for daily journals
@@ -343,10 +373,13 @@ CREATE TABLE IF NOT EXISTS journals (
   content TEXT NOT NULL, -- Markdown content (body)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(journal_type, daily_date) -- Ensure only one daily journal per date
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, slug),
+  UNIQUE(userId, journal_type, daily_date) -- Ensure only one daily journal per date per user
 );
 
 -- Indexes for journals
+CREATE INDEX IF NOT EXISTS idx_journals_userId ON journals(userId);
 CREATE INDEX IF NOT EXISTS idx_journals_slug ON journals(slug);
 CREATE INDEX IF NOT EXISTS idx_journals_featured ON journals(featured);
 CREATE INDEX IF NOT EXISTS idx_journals_published ON journals(published);
@@ -363,19 +396,22 @@ BEGIN
 END;
 
 -- Journal Links Table
--- Extensible linking system allowing journals to reference any object type
+-- Extensible linking system allowing journals to reference any object type (per user)
 -- Links can point to media, parks, other journals, strava activities, or future object types
 CREATE TABLE IF NOT EXISTS journal_links (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
   journal_id INTEGER NOT NULL, -- The journal containing the link
   linked_type TEXT NOT NULL, -- Type of linked object: 'media', 'park', 'journal', 'activity'
   linked_id INTEGER NOT NULL, -- ID of the linked object in its respective table
   linked_slug TEXT, -- Slug of linked object (for easier lookups, optional)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
   FOREIGN KEY (journal_id) REFERENCES journals(id) ON DELETE CASCADE
 );
 
 -- Indexes for journal_links (optimized for common queries)
+CREATE INDEX IF NOT EXISTS idx_journal_links_userId ON journal_links(userId);
 CREATE INDEX IF NOT EXISTS idx_journal_links_journal_id ON journal_links(journal_id);
 CREATE INDEX IF NOT EXISTS idx_journal_links_linked_type ON journal_links(linked_type);
 CREATE INDEX IF NOT EXISTS idx_journal_links_linked_id ON journal_links(linked_id);

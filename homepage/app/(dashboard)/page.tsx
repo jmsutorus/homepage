@@ -10,10 +10,14 @@ import { PlexStatus } from "@/components/widgets/plex-status";
 import { MoodMonthView } from "@/components/widgets/mood-month-view";
 import { RecentTasks } from "@/components/widgets/recent-tasks";
 import { ArrowRight } from "lucide-react";
+import { getUserId } from "@/lib/auth/server";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // Require authentication
+  const userId = await getUserId();
+
   // Get recently completed media sorted by completion date (most recent first)
-  const recentMedia = getRecentlyCompletedMedia(4);
+  const recentMedia = getRecentlyCompletedMedia(4, userId);
 
   return (
     <div className="space-y-8">

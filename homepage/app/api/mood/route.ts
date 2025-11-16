@@ -6,6 +6,7 @@ import {
   getMoodEntriesForYear,
   getAllMoodEntries,
 } from "@/lib/db/mood";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * GET /api/mood
@@ -17,6 +18,7 @@ import {
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const date = searchParams.get("date");
     const year = searchParams.get("year");
@@ -25,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     // Get specific date
     if (date) {
-      const entry = getMoodEntry(date);
+      const entry = getMoodEntry(date, userId);
       if (!entry) {
         return NextResponse.json({ error: "Mood entry not found" }, { status: 404 });
       }
@@ -34,18 +36,18 @@ export async function GET(request: NextRequest) {
 
     // Get year
     if (year) {
-      const entries = getMoodEntriesForYear(parseInt(year, 10));
+      const entries = getMoodEntriesForYear(parseInt(year, 10), userId);
       return NextResponse.json(entries);
     }
 
     // Get date range
     if (startDate && endDate) {
-      const entries = getMoodEntriesInRange(startDate, endDate);
+      const entries = getMoodEntriesInRange(startDate, endDate, userId);
       return NextResponse.json(entries);
     }
 
     // Get all
-    const entries = getAllMoodEntries();
+    const entries = getAllMoodEntries(userId);
     return NextResponse.json(entries);
   } catch (error) {
     console.error("Error fetching mood entries:", error);
@@ -62,6 +64,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const body = await request.json();
     const { date, rating, note } = body;
 
@@ -81,7 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or update mood entry
-    const entry = createMoodEntry(date, rating, note);
+    const entry = createMoodEntry(date, rating, note, userId);
 
     return NextResponse.json(entry, { status: 200 });
   } catch (error) {
