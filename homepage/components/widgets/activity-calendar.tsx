@@ -227,7 +227,7 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
                   key={idx}
                   onClick={() => setSelectedDate(day)}
                   className={`
-                    min-h-[80px] p-2 rounded-lg border transition-colors
+                    cursor-pointer min-h-[80px] p-2 rounded-lg border transition-colors
                     ${!isCurrentMonth ? "bg-muted/30 text-muted-foreground" : "bg-background"}
                     ${isToday ? "border-blue-500 border-2 ring-1 ring-blue-500/20" : "border-border"}
                     ${isSelected ? "ring-2 ring-primary" : ""}

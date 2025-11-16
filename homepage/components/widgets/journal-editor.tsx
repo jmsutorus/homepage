@@ -379,7 +379,7 @@ export function JournalEditor({
                         <button
                           type="button"
                           onClick={() => removeTag(tag)}
-                          className="ml-2 hover:text-red-500"
+                          className="cursor-pointer ml-2 hover:text-red-500"
                         >
                           ×
                         </button>

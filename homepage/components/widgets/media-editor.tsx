@@ -1228,7 +1228,7 @@ export function MediaEditor({
                         <button
                           type="button"
                           onClick={() => removeGenre(genre)}
-                          className="ml-2 hover:text-red-500"
+                          className="cursor-pointer ml-2 hover:text-red-500"
                         >
                           ×
                         </button>
@@ -1269,7 +1269,7 @@ export function MediaEditor({
                         <button
                           type="button"
                           onClick={() => removeTag(tag)}
-                          className="ml-2 hover:text-red-500"
+                          className="cursor-pointer ml-2 hover:text-red-500"
                         >
                           ×
                         </button>

@@ -180,7 +180,7 @@ export function MoodMonthView() {
                   <button
                     key={day.dateString}
                     onClick={() => handleDayClick(day.dateString)}
-                    className={`aspect-square rounded-sm text-xs font-medium transition-all hover:scale-110 hover:z-10 relative ${colorClass} ${
+                    className={`cursor-pointer aspect-square rounded-sm text-xs font-medium transition-all hover:scale-110 hover:z-10 relative ${colorClass} ${
                       isToday ? "ring-2 ring-primary ring-offset-1" : ""
                     } ${moodRating === 0 ? "text-muted-foreground" : "text-white"}`}
                   >

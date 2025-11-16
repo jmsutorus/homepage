@@ -167,7 +167,7 @@ export function LinkPicker({ links, onLinksChange }: LinkPickerProps) {
                   <button
                     type="button"
                     onClick={() => removeLink(link.linkedType, link.linkedId)}
-                    className="hover:text-red-500"
+                    className="cursor-pointer hover:text-red-500"
                   >
                     <X className="h-3 w-3" />
                   </button>
