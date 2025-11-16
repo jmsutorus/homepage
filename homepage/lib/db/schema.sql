@@ -417,3 +417,54 @@ CREATE INDEX IF NOT EXISTS idx_journal_links_linked_type ON journal_links(linked
 CREATE INDEX IF NOT EXISTS idx_journal_links_linked_id ON journal_links(linked_id);
 CREATE INDEX IF NOT EXISTS idx_journal_links_type_id ON journal_links(linked_type, linked_id);
 CREATE INDEX IF NOT EXISTS idx_journal_links_type_slug ON journal_links(linked_type, linked_slug);
+
+-- Quick Link Categories Table
+-- Stores user-customizable link category sections for the homepage (per user)
+CREATE TABLE IF NOT EXISTS quick_link_categories (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  order_index INTEGER NOT NULL DEFAULT 0, -- Order in which categories are displayed
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for quick_link_categories
+CREATE INDEX IF NOT EXISTS idx_quick_link_categories_userId ON quick_link_categories(userId);
+CREATE INDEX IF NOT EXISTS idx_quick_link_categories_order ON quick_link_categories(userId, order_index);
+
+-- Trigger to update updated_at timestamp on quick_link_categories
+CREATE TRIGGER IF NOT EXISTS update_quick_link_categories_timestamp
+AFTER UPDATE ON quick_link_categories
+BEGIN
+  UPDATE quick_link_categories SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Quick Links Table
+-- Stores individual links within categories (per user)
+CREATE TABLE IF NOT EXISTS quick_links (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  category_id INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  url TEXT NOT NULL,
+  icon TEXT NOT NULL DEFAULT 'link', -- Lucide icon name in kebab-case
+  order_index INTEGER NOT NULL DEFAULT 0, -- Order within the category
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES quick_link_categories(id) ON DELETE CASCADE
+);
+
+-- Indexes for quick_links
+CREATE INDEX IF NOT EXISTS idx_quick_links_userId ON quick_links(userId);
+CREATE INDEX IF NOT EXISTS idx_quick_links_category_id ON quick_links(category_id);
+CREATE INDEX IF NOT EXISTS idx_quick_links_order ON quick_links(category_id, order_index);
+
+-- Trigger to update updated_at timestamp on quick_links
+CREATE TRIGGER IF NOT EXISTS update_quick_links_timestamp
+AFTER UPDATE ON quick_links
+BEGIN
+  UPDATE quick_links SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
