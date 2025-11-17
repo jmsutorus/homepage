@@ -1,10 +1,10 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import type { CalendarDayData } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface CalendarDayCellProps {
   day: number;
@@ -42,14 +42,34 @@ export function CalendarDayCell({
   onOpenMoodModal,
   onDayClick,
 }: CalendarDayCellProps) {
+  const router = useRouter();
   const hasMood = data?.mood !== null && data?.mood !== undefined;
-  const hasActivities = (data?.activities.length ?? 0) > 0;
   const hasMedia = (data?.media.length ?? 0) > 0;
   const hasTasks = (data?.tasks.length ?? 0) > 0;
   const hasEvents = (data?.events.length ?? 0) > 0;
   const hasParks = (data?.parks.length ?? 0) > 0;
   const hasJournals = (data?.journals.length ?? 0) > 0;
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals;
+
+  // Separate upcoming and completed workout activities
+  const upcomingWorkoutActivities = data?.workoutActivities.filter((w) => !w.completed) ?? [];
+  const completedWorkoutActivities = data?.workoutActivities.filter((w) => w.completed) ?? [];
+
+  // Get IDs of Strava activities that are linked to completed workouts
+  const linkedStravaActivityIds = new Set(
+    completedWorkoutActivities
+      .filter((w) => w.strava_activity_id)
+      .map((w) => w.strava_activity_id!)
+  );
+
+  // Filter out Strava activities that are already linked to completed workouts
+  const unlinkedStravaActivities = data?.activities.filter(
+    (activity) => !linkedStravaActivityIds.has(activity.id)
+  ) ?? [];
+
+  const hasActivities = unlinkedStravaActivities.length > 0;
+  const hasWorkoutActivities = upcomingWorkoutActivities.length > 0 || completedWorkoutActivities.length > 0;
+
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities;
 
   // Get mood icon
   const MoodIcon = hasMood ? MOOD_ICONS[data!.mood!.rating].icon : null;
@@ -58,9 +78,9 @@ export function CalendarDayCell({
   // Get today's date for comparison
   const today = new Date().toISOString().split("T")[0];
 
-  // Check if this day is today or in the past and doesn't have a mood
+  // Check if this day is today or in the past and doesn't have a journal
   const isPastOrToday = date <= today;
-  const shouldShowAddMood = isPastOrToday && !hasMood;
+  const shouldShowAddJournal = isPastOrToday && !hasJournals;
 
   // Categorize tasks by status (compare to TODAY, not the cell's date)
   const completedTasks = data?.tasks.filter((t) => t.completed) ?? [];
@@ -87,18 +107,18 @@ export function CalendarDayCell({
           {day}
         </span>
 
-        {/* Mood indicator or Add Mood button */}
+        {/* Mood indicator or Add Journal button */}
         {hasMood && MoodIcon ? (
           <MoodIcon className={cn("h-4 w-4", moodColor)} />
-        ) : shouldShowAddMood ? (
+        ) : shouldShowAddJournal ? (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onOpenMoodModal(date);
+              router.push(`/journals/new?type=daily&date=${date}`);
             }}
             className="cursor-pointer h-4 w-4 rounded-full bg-muted hover:bg-primary/20 flex items-center justify-center transition-colors"
-            title="Add mood for this day"
-            aria-label={`Add mood for ${date}`}
+            title="Add daily journal for this day"
+            aria-label={`Add daily journal for ${date}`}
           >
             <Plus className="h-3 w-3 text-muted-foreground" />
           </button>
@@ -108,12 +128,44 @@ export function CalendarDayCell({
       {/* Content */}
       {hasAnyData ? (
         <div className="flex-1 space-y-1 text-xs overflow-hidden">
-          {/* Activities */}
+          {/* Strava Activities (not linked to workouts) */}
           {hasActivities && (
             <div className="flex items-center gap-1">
               <Activity className="h-3 w-3 text-blue-500 flex-shrink-0" />
               <span className="text-blue-500 truncate">
-                {data!.activities.length} {data!.activities.length === 1 ? "activity" : "activities"}
+                {unlinkedStravaActivities.length} {unlinkedStravaActivities.length === 1 ? "activity" : "activities"}
+              </span>
+            </div>
+          )}
+
+          {/* Upcoming Workout Activities */}
+          {upcomingWorkoutActivities.length > 0 && (
+            <div className="flex items-center gap-1">
+              <Dumbbell className="h-3 w-3 text-orange-500 flex-shrink-0" />
+              <span className="text-orange-500 truncate">
+                {upcomingWorkoutActivities[0].time} - {upcomingWorkoutActivities[0].type}
+                {upcomingWorkoutActivities.length > 1 && ` +${upcomingWorkoutActivities.length - 1}`}
+              </span>
+            </div>
+          )}
+
+          {/* Completed Workout Activities */}
+          {completedWorkoutActivities.length > 0 && upcomingWorkoutActivities.length === 0 && (
+            <div className="flex items-center gap-1">
+              <Dumbbell className="h-3 w-3 text-green-500 flex-shrink-0" />
+              <span className="text-green-500 truncate">
+                {(() => {
+                  const firstWorkout = completedWorkoutActivities[0];
+                  const linkedStrava = firstWorkout.strava_activity_id
+                    ? data?.activities.find((a) => a.id === firstWorkout.strava_activity_id)
+                    : null;
+
+                  if (linkedStrava) {
+                    const distance = linkedStrava.distance ? `${(linkedStrava.distance / 1000).toFixed(1)}km` : '';
+                    return `${linkedStrava.name}${distance ? ` - ${distance}` : ''}${completedWorkoutActivities.length > 1 ? ` +${completedWorkoutActivities.length - 1}` : ''}`;
+                  }
+                  return `${completedWorkoutActivities.length} ${completedWorkoutActivities.length === 1 ? 'workout' : 'workouts'} completed`;
+                })()}
               </span>
             </div>
           )}
@@ -207,6 +259,12 @@ export function CalendarDayCell({
         <div className="flex gap-1 mt-1">
           {hasActivities && (
             <div className="w-2 h-2 rounded-full bg-blue-500" title="Activities" />
+          )}
+          {upcomingWorkoutActivities.length > 0 && (
+            <div className="w-2 h-2 rounded-full bg-orange-500" title="Upcoming Workouts" />
+          )}
+          {completedWorkoutActivities.length > 0 && (
+            <div className="w-2 h-2 rounded-full bg-green-600" title="Completed Workouts" />
           )}
           {hasMedia && (
             <div className="w-2 h-2 rounded-full bg-purple-500" title="Media" />

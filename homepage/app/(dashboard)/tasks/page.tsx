@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Task } from "@/lib/db/tasks";
 import { TaskForm } from "@/components/widgets/task-form";
 import { TaskList } from "@/components/widgets/task-list";
+import { CategoryManager } from "@/components/widgets/category-manager";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -64,6 +65,17 @@ export default function TasksPage() {
         </CardHeader>
         <CardContent>
           <TaskForm onTaskAdded={fetchTasks} />
+        </CardContent>
+      </Card>
+
+      {/* Category Manager */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Manage Categories</CardTitle>
+          <CardDescription>Add, edit, or remove task categories</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CategoryManager onCategoriesChanged={fetchTasks} />
         </CardContent>
       </Card>
 

@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Edit, CheckCircle2, MapPin, TrendingUp, Exte
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isBefore, startOfToday } from "date-fns";
 import { AddActivityModal } from "./add-activity-modal";
 import { CompleteActivityModal } from "./complete-activity-modal";
+import type { WorkoutActivity } from "@/lib/db/workout-activities";
 
 interface Exercise {
   description: string;
@@ -20,21 +21,6 @@ interface StravaActivity {
   name: string;
   distance: number;
   total_elevation_gain: number;
-}
-
-interface WorkoutActivity {
-  id: number;
-  date: string;
-  time: string;
-  length: number;
-  difficulty: "easy" | "moderate" | "hard" | "very hard";
-  type: "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
-  exercises: string;
-  notes?: string;
-  completed: boolean;
-  completed_at?: string | null;
-  completion_notes?: string | null;
-  strava_activity_id?: number | null;
 }
 
 interface ActivityCalendarProps {

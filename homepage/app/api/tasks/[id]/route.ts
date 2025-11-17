@@ -7,7 +7,7 @@ interface RouteContext {
 
 /**
  * PATCH /api/tasks/[id]
- * Body: { title?, completed?, dueDate?, priority? }
+ * Body: { title?, completed?, dueDate?, priority?, category? }
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
@@ -30,6 +30,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       completed?: boolean;
       due_date?: string;
       priority?: TaskPriority;
+      category?: string | null;
     } = {};
 
     if (body.title !== undefined) {
@@ -46,6 +47,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (body.priority !== undefined) {
       updates.priority = body.priority as TaskPriority;
+    }
+
+    if (body.category !== undefined) {
+      updates.category = body.category || null;
     }
 
     const success = updateTask(taskId, updates);

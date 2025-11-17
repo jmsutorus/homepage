@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { CalendarIcon, Plus } from "lucide-react";
-import { TaskPriority } from "@/lib/db/tasks";
+import { TaskPriority, TaskCategory } from "@/lib/db/tasks";
 
 interface TaskFormProps {
   onTaskAdded: () => void;
@@ -18,8 +18,27 @@ interface TaskFormProps {
 export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
+  const [category, setCategory] = useState<string>("");
+  const [categories, setCategories] = useState<TaskCategory[]>([]);
   const [dueDate, setDueDate] = useState<Date | undefined>();
   const [isAdding, setIsAdding] = useState(false);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/task-categories");
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +53,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         body: JSON.stringify({
           title: title.trim(),
           priority,
+          category: category || undefined,
           dueDate: dueDate?.toISOString(),
         }),
       });
@@ -41,6 +61,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       if (response.ok) {
         setTitle("");
         setPriority("medium");
+        setCategory("");
         setDueDate(undefined);
         onTaskAdded();
       }
@@ -85,6 +106,25 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
               <SelectItem value="low">Low Priority</SelectItem>
               <SelectItem value="medium">Medium Priority</SelectItem>
               <SelectItem value="high">High Priority</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex-1">
+          <Label htmlFor="category" className="sr-only">
+            Category
+          </Label>
+          <Select value={category || "none"} onValueChange={(value) => setCategory(value === "none" ? "" : value)}>
+            <SelectTrigger id="category">
+              <SelectValue placeholder="No category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No category</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.name}>
+                  {cat.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

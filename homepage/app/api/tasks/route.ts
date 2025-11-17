@@ -6,6 +6,7 @@ import { createTask, getAllTasks, TaskPriority, TaskFilter } from "@/lib/db/task
  * Query params:
  * - completed: Filter by completion status (true/false)
  * - priority: Filter by priority (low/medium/high)
+ * - category: Filter by category name
  * - search: Search in title
  */
 export async function GET(request: NextRequest) {
@@ -13,6 +14,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const completedParam = searchParams.get("completed");
     const priority = searchParams.get("priority") as TaskPriority | null;
+    const category = searchParams.get("category");
     const search = searchParams.get("search");
 
     const filter: TaskFilter = {};
@@ -23,6 +25,10 @@ export async function GET(request: NextRequest) {
 
     if (priority) {
       filter.priority = priority;
+    }
+
+    if (category !== null) {
+      filter.category = category || undefined;
     }
 
     if (search) {
@@ -42,12 +48,12 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/tasks
- * Body: { title: string, dueDate?: string, priority?: string }
+ * Body: { title: string, dueDate?: string, priority?: string, category?: string }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, dueDate, priority } = body;
+    const { title, dueDate, priority, category } = body;
 
     // Validate input
     if (!title || typeof title !== "string" || title.trim().length === 0) {
@@ -61,7 +67,8 @@ export async function POST(request: NextRequest) {
     const task = createTask(
       title.trim(),
       dueDate || undefined,
-      (priority as TaskPriority) || "medium"
+      (priority as TaskPriority) || "medium",
+      category || undefined
     );
 
     return NextResponse.json(task, { status: 201 });

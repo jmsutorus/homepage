@@ -88,6 +88,11 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
               <Badge variant="secondary" className={priorityColors[task.priority]}>
                 {task.priority}
               </Badge>
+              {task.category && (
+                <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">
+                  {task.category}
+                </Badge>
+              )}
               {task.due_date && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />

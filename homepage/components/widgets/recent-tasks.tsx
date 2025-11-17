@@ -147,6 +147,14 @@ export function RecentTasks() {
                       >
                         {task.priority}
                       </Badge>
+                      {task.category && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] px-1.5 py-0 h-4 bg-purple-500/10 text-purple-500"
+                        >
+                          {task.category}
+                        </Badge>
+                      )}
                       {dueDateStatus && (
                         <div className={`flex items-center gap-1 text-xs ${dueDateStatus.className}`}>
                           <Calendar className="h-3 w-3" />

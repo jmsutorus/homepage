@@ -6,7 +6,7 @@ import { MediaGrid } from "@/components/widgets/media-grid";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 interface MediaPageClientProps {
@@ -16,10 +16,40 @@ interface MediaPageClientProps {
 export function MediaPageClient({ allMedia }: MediaPageClientProps) {
   const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showPlanned, setShowPlanned] = useState(false);
 
-  // Filter and search media
+  // Separate in-progress, planned, and completed media
+  const { inProgressMedia, plannedMedia, completedMedia } = useMemo(() => {
+    // First separate by completion status
+    // In Progress: no completed date AND status is not "planned"
+    const inProgress = allMedia.filter((item) => !item.frontmatter.completed && item.frontmatter.status !== "planned");
+    // Planned: status is "planned"
+    const planned = allMedia.filter((item) => item.frontmatter.status === "planned");
+    // Completed: has completed date
+    const completed = allMedia.filter((item) => item.frontmatter.completed);
+
+    // Sort in-progress by started date (most recent first)
+    const sortedInProgress = [...inProgress].sort((a, b) => {
+      const dateA = a.frontmatter.started || "";
+      const dateB = b.frontmatter.started || "";
+      return dateB.localeCompare(dateA);
+    });
+
+    // Sort planned by title alphabetically
+    const sortedPlanned = [...planned].sort((a, b) => {
+      return a.frontmatter.title.localeCompare(b.frontmatter.title);
+    });
+
+    return {
+      inProgressMedia: sortedInProgress,
+      plannedMedia: sortedPlanned,
+      completedMedia: completed,
+    };
+  }, [allMedia]);
+
+  // Filter and search media (only apply to completed media)
   const filteredMedia = useMemo(() => {
-    let filtered = allMedia;
+    let filtered = completedMedia;
 
     // Filter by type
     if (activeTab !== "all") {
@@ -34,7 +64,45 @@ export function MediaPageClient({ allMedia }: MediaPageClientProps) {
     }
 
     return filtered;
-  }, [allMedia, activeTab, searchQuery]);
+  }, [completedMedia, activeTab, searchQuery]);
+
+  // Filter in-progress media by type and search
+  const filteredInProgress = useMemo(() => {
+    let filtered = inProgressMedia;
+
+    // Filter by type
+    if (activeTab !== "all") {
+      filtered = filtered.filter((item) => item.frontmatter.type === activeTab);
+    }
+
+    // Search by title
+    if (searchQuery) {
+      filtered = filtered.filter((item) =>
+        item.frontmatter.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [inProgressMedia, activeTab, searchQuery]);
+
+  // Filter planned media by type and search
+  const filteredPlanned = useMemo(() => {
+    let filtered = plannedMedia;
+
+    // Filter by type
+    if (activeTab !== "all") {
+      filtered = filtered.filter((item) => item.frontmatter.type === activeTab);
+    }
+
+    // Search by title
+    if (searchQuery) {
+      filtered = filtered.filter((item) =>
+        item.frontmatter.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [plannedMedia, activeTab, searchQuery]);
 
   const stats = {
     all: allMedia.length,
@@ -50,7 +118,7 @@ export function MediaPageClient({ allMedia }: MediaPageClientProps) {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Media Library</h1>
           <p className="text-muted-foreground">
-            Track movies, TV shows, books, and video games you're watching/reading/playing
+            Track movies, TV shows, books, and video games you&apos;re watching/reading/playing
           </p>
         </div>
         <Button asChild>
@@ -85,15 +153,80 @@ export function MediaPageClient({ allMedia }: MediaPageClientProps) {
         </div>
       </div>
 
-      {/* Media Grid */}
-      <MediaGrid
-        items={filteredMedia}
-        emptyMessage={
-          searchQuery
+      {/* In Progress Section */}
+      {filteredInProgress.length > 0 && (
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">In Progress</h2>
+            <p className="text-sm text-muted-foreground">
+              Currently watching, reading, or playing ({filteredInProgress.length})
+            </p>
+          </div>
+          <MediaGrid
+            items={filteredInProgress}
+            emptyMessage=""
+          />
+        </div>
+      )}
+
+      {/* Planned Section (Collapsible) */}
+      {filteredPlanned.length > 0 && (
+        <div className="space-y-4">
+          <button
+            onClick={() => setShowPlanned(!showPlanned)}
+            className="cursor-pointer flex items-center gap-2 w-full text-left group"
+          >
+            {showPlanned ? (
+              <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            )}
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold tracking-tight group-hover:text-foreground/80 transition-colors">
+                Planned
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Planning to watch, read, or play ({filteredPlanned.length})
+              </p>
+            </div>
+          </button>
+          {showPlanned && (
+            <MediaGrid
+              items={filteredPlanned}
+              emptyMessage=""
+            />
+          )}
+        </div>
+      )}
+
+      {/* Completed Media Grid */}
+      {filteredMedia.length > 0 && (
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Completed</h2>
+            <p className="text-sm text-muted-foreground">
+              Finished watching, reading, or playing ({filteredMedia.length})
+            </p>
+          </div>
+          <MediaGrid
+            items={filteredMedia}
+            emptyMessage={
+              searchQuery
+                ? `No results found for "${searchQuery}"`
+                : `No ${activeTab === "all" ? "media" : activeTab === "game" ? "games" : `${activeTab}s`} found`
+            }
+          />
+        </div>
+      )}
+
+      {/* Empty state when no media at all */}
+      {filteredInProgress.length === 0 && filteredPlanned.length === 0 && filteredMedia.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          {searchQuery
             ? `No results found for "${searchQuery}"`
-            : `No ${activeTab === "all" ? "media" : activeTab === "game" ? "games" : `${activeTab}s`} found`
-        }
-      />
+            : `No ${activeTab === "all" ? "media" : activeTab === "game" ? "games" : `${activeTab}s`} found`}
+        </div>
+      )}
     </div>
   );
 }

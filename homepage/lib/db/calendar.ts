@@ -6,6 +6,7 @@ import type { Task } from "./tasks";
 import type { Event } from "./events";
 import type { ParkContent } from "./parks";
 import type { JournalContent } from "./journals";
+import type { WorkoutActivity } from "./workout-activities";
 
 export interface CalendarDayData {
   date: string; // YYYY-MM-DD format
@@ -16,6 +17,7 @@ export interface CalendarDayData {
   events: Event[];
   parks: ParkContent[];
   journals: JournalContent[];
+  workoutActivities: WorkoutActivity[];
 }
 
 /**
@@ -122,6 +124,21 @@ export function getJournalsInRange(
 }
 
 /**
+ * Get workout activities in a date range
+ */
+export function getWorkoutActivitiesInRange(
+  startDate: string,
+  endDate: string
+): WorkoutActivity[] {
+  return query<WorkoutActivity>(
+    `SELECT * FROM workout_activities
+     WHERE date BETWEEN ? AND ?
+     ORDER BY date ASC, time ASC`,
+    [startDate, endDate]
+  );
+}
+
+/**
  * Get all calendar data for a date range, grouped by day
  */
 export function getCalendarDataForRange(
@@ -140,6 +157,7 @@ export function getCalendarDataForRange(
   const events = getEventsInRange(startDate, endDate);
   const parks = getParksVisitedInRange(startDate, endDate);
   const journals = getJournalsInRange(startDate, endDate);
+  const workoutActivities = getWorkoutActivitiesInRange(startDate, endDate);
 
   // Create a map of date -> data
   const calendarMap = new Map<string, CalendarDayData>();
@@ -158,6 +176,7 @@ export function getCalendarDataForRange(
       events: [],
       parks: [],
       journals: [],
+      workoutActivities: [],
     });
   }
 
@@ -260,6 +279,14 @@ export function getCalendarDataForRange(
       if (dayData) {
         dayData.journals.push(journal);
       }
+    }
+  });
+
+  // Add workout activities (by date)
+  workoutActivities.forEach((workoutActivity) => {
+    const dayData = calendarMap.get(workoutActivity.date);
+    if (dayData) {
+      dayData.workoutActivities.push(workoutActivity);
     }
   });
 

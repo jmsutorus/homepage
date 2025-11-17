@@ -806,6 +806,23 @@ export function MediaEditor({
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      {/* Save and Cancel Buttons */}
+      {!isBatchMode && (
+        <div className="flex gap-4 justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isSaving}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSaving || !frontmatter.title}>
+            {isSaving ? 'Saving...' : mode === 'create' ? 'Create' : 'Save Changes'}
+          </Button>
+        </div>
+      )}
+
       {error && (
         <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded">
           {error}
@@ -1389,23 +1406,6 @@ export function MediaEditor({
           <MarkdownPreview frontmatter={frontmatter} content={content} />
         </TabsContent>
       </Tabs>
-      )}
-
-      {/* Action Buttons - Only show when not in batch mode */}
-      {!isBatchMode && (
-        <div className="flex gap-4 justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={isSaving}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSaving || !frontmatter.title}>
-            {isSaving ? 'Saving...' : mode === 'create' ? 'Create' : 'Save Changes'}
-          </Button>
-        </div>
       )}
 
       {/* IMDB Search Modal */}

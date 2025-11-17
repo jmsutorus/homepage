@@ -4,8 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { CalendarDayData } from "@/lib/db/calendar";
 import type { Event } from "@/lib/db/events";
+import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import {
   Smile,
   Frown,
@@ -22,10 +25,13 @@ import {
   MapPin,
   Timer,
   Trees,
-  BookOpen
+  BookOpen,
+  Dumbbell,
+  CheckCircle2
 } from "lucide-react";
 import { cn, formatDateSafe, formatDateLongSafe } from "@/lib/utils";
 import { EventEditDialog } from "./event-edit-dialog";
+import { CompleteActivityModal } from "./complete-activity-modal";
 
 interface CalendarDayDetailProps {
   date: string;
@@ -54,6 +60,8 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
   const router = useRouter();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [completingActivity, setCompletingActivity] = useState<WorkoutActivity | null>(null);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
   const formattedDate = formatDateLongSafe(date, "en-US");
 
@@ -79,14 +87,71 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
     onDataChange?.();
   };
 
+  const handleCompleteActivity = (activity: WorkoutActivity) => {
+    setCompletingActivity(activity);
+    setIsCompleteModalOpen(true);
+  };
+
+  const handleActivityCompleted = () => {
+    setIsCompleteModalOpen(false);
+    setCompletingActivity(null);
+    // Refresh calendar data
+    onDataChange?.();
+  };
+
+  // Helper to check if a workout activity is in the past
+  const isActivityInPast = (activity: WorkoutActivity) => {
+    const activityDateTime = new Date(`${activity.date}T${activity.time}`);
+    return activityDateTime < new Date();
+  };
+
+  // Handler for toggling task completion
+  const handleToggleTaskComplete = async (taskId: number, completed: boolean) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !completed }),
+      });
+
+      if (response.ok) {
+        // Refresh calendar data
+        onDataChange?.();
+      } else {
+        console.error("Failed to update task");
+      }
+    } catch (error) {
+      console.error("Failed to update task:", error);
+    }
+  };
+
   const hasMood = data?.mood !== null && data?.mood !== undefined;
-  const hasActivities = (data?.activities.length ?? 0) > 0;
   const hasMedia = (data?.media.length ?? 0) > 0;
   const hasTasks = (data?.tasks.length ?? 0) > 0;
   const hasEvents = (data?.events.length ?? 0) > 0;
   const hasParks = (data?.parks.length ?? 0) > 0;
   const hasJournals = (data?.journals.length ?? 0) > 0;
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals;
+
+  // Workout activities
+  const upcomingWorkoutActivities = data?.workoutActivities.filter((w) => !w.completed) ?? [];
+  const completedWorkoutActivities = data?.workoutActivities.filter((w) => w.completed) ?? [];
+  const hasWorkoutActivities = upcomingWorkoutActivities.length > 0 || completedWorkoutActivities.length > 0;
+
+  // Get IDs of Strava activities that are linked to completed workouts
+  const linkedStravaActivityIds = new Set(
+    completedWorkoutActivities
+      .filter((w) => w.strava_activity_id)
+      .map((w) => w.strava_activity_id!)
+  );
+
+  // Filter out Strava activities that are already linked to completed workouts
+  const unlinkedStravaActivities = data?.activities.filter(
+    (activity) => !linkedStravaActivityIds.has(activity.id)
+  ) ?? [];
+
+  const hasActivities = unlinkedStravaActivities.length > 0;
+
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities;
 
   // Get today's date for comparison
   const today = new Date().toISOString().split("T")[0];
@@ -191,15 +256,187 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
           </div>
         )}
 
-        {/* Activities Section */}
+        {/* Workout Activities Section */}
+        {hasWorkoutActivities && data && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Dumbbell className="h-4 w-4" />
+              Workouts ({upcomingWorkoutActivities.length + completedWorkoutActivities.length})
+            </h3>
+
+            {/* Upcoming Workouts */}
+            {upcomingWorkoutActivities.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Planned ({upcomingWorkoutActivities.length})
+                </h4>
+                {upcomingWorkoutActivities.map((workout) => {
+                  const exercises = JSON.parse(workout.exercises);
+                  const difficultyColors = {
+                    "easy": "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+                    "moderate": "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+                    "hard": "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
+                    "very hard": "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                  };
+                  const canComplete = isActivityInPast(workout);
+                  return (
+                    <div key={workout.id} className="pl-6 border-l-2 border-orange-500 space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-orange-700 dark:text-orange-400">
+                          {workout.time}
+                        </span>
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {workout.type}
+                        </Badge>
+                        <Badge className={cn("text-xs capitalize", difficultyColors[workout.difficulty])}>
+                          {workout.difficulty}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{workout.length} min</span>
+                      </div>
+                      {exercises.length > 0 && (
+                        <div className="mt-1 space-y-0.5">
+                          {exercises.slice(0, 2).map((exercise: any, idx: number) => (
+                            <p key={idx} className="text-xs text-muted-foreground pl-2">
+                              • {exercise.description}
+                              {exercise.sets && exercise.reps && ` - ${exercise.sets}x${exercise.reps}`}
+                              {exercise.weight && ` @ ${exercise.weight}lbs`}
+                              {exercise.duration && ` - ${exercise.duration} min`}
+                            </p>
+                          ))}
+                          {exercises.length > 2 && (
+                            <p className="text-xs text-muted-foreground pl-2">
+                              +{exercises.length - 2} more exercises
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {workout.notes && (
+                        <p className="text-xs text-muted-foreground mt-1 italic">{workout.notes}</p>
+                      )}
+                      {canComplete && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-7 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950"
+                          onClick={() => handleCompleteActivity(workout)}
+                        >
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          Mark as Complete
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Completed Workouts */}
+            {completedWorkoutActivities.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1">
+                  <CheckSquare className="h-3 w-3" />
+                  Completed ({completedWorkoutActivities.length})
+                </h4>
+                {completedWorkoutActivities.map((workout) => {
+                  const exercises = JSON.parse(workout.exercises);
+                  const difficultyColors = {
+                    "easy": "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+                    "moderate": "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+                    "hard": "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
+                    "very hard": "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                  };
+                  // Find linked Strava activity
+                  const linkedStrava = workout.strava_activity_id
+                    ? data?.activities.find((a) => a.id === workout.strava_activity_id)
+                    : null;
+
+                  return (
+                    <div key={workout.id} className="pl-6 border-l-2 border-green-500 space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                          {workout.time}
+                        </span>
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {workout.type}
+                        </Badge>
+                        <Badge className={cn("text-xs capitalize", difficultyColors[workout.difficulty])}>
+                          {workout.difficulty}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{workout.length} min</span>
+                      </div>
+
+                      {/* Show Strava activity data if linked */}
+                      {linkedStrava && (
+                        <div className="bg-blue-50 dark:bg-blue-950/30 rounded p-2 space-y-1">
+                          <div className="flex items-center gap-1">
+                            <Activity className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                            <p className="text-xs font-medium text-blue-700 dark:text-blue-400">
+                              Strava: {linkedStrava.name}
+                            </p>
+                          </div>
+                          <div className="flex gap-3 text-xs text-blue-600 dark:text-blue-400 pl-4">
+                            {linkedStrava.distance && (
+                              <span>{(linkedStrava.distance / 1000).toFixed(2)} km</span>
+                            )}
+                            {linkedStrava.moving_time && (
+                              <span>{Math.round(linkedStrava.moving_time / 60)} min</span>
+                            )}
+                            {linkedStrava.average_speed && (
+                              <span>
+                                {(() => {
+                                  // Convert m/s to min/km
+                                  const speedKmH = linkedStrava.average_speed * 3.6;
+                                  const paceMinPerKm = 60 / speedKmH;
+                                  const minutes = Math.floor(paceMinPerKm);
+                                  const seconds = Math.round((paceMinPerKm - minutes) * 60);
+                                  return `${minutes}:${seconds.toString().padStart(2, '0')}/km`;
+                                })()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {exercises.length > 0 && (
+                        <div className="mt-1 space-y-0.5">
+                          {exercises.slice(0, 2).map((exercise: any, idx: number) => (
+                            <p key={idx} className="text-xs text-muted-foreground pl-2">
+                              • {exercise.description}
+                              {exercise.sets && exercise.reps && ` - ${exercise.sets}x${exercise.reps}`}
+                              {exercise.weight && ` @ ${exercise.weight}lbs`}
+                              {exercise.duration && ` - ${exercise.duration} min`}
+                            </p>
+                          ))}
+                          {exercises.length > 2 && (
+                            <p className="text-xs text-muted-foreground pl-2">
+                              +{exercises.length - 2} more exercises
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {workout.completion_notes && (
+                        <p className="text-xs text-muted-foreground mt-1 italic">
+                          Note: {workout.completion_notes}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Strava Activities (not linked to workouts) Section */}
         {hasActivities && data && (
           <div className="space-y-2">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Activity className="h-4 w-4" />
-              Activities ({data.activities.length})
+              Strava Activities ({unlinkedStravaActivities.length})
             </h3>
             <div className="space-y-2">
-              {data.activities.map((activity) => (
+              {unlinkedStravaActivities.map((activity) => (
                 <div key={activity.id} className="pl-6 border-l-2 border-blue-500">
                   <p className="font-medium text-blue-700 dark:text-blue-400">{activity.name}</p>
                   <div className="flex gap-3 text-xs text-muted-foreground">
@@ -327,13 +564,27 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
                   Overdue ({overdueTasks.length})
                 </h4>
                 {overdueTasks.map((task) => (
-                  <div key={task.id} className="pl-6 border-l-2 border-red-500">
-                    <p className="text-sm text-red-700 dark:text-red-400">{task.title}</p>
-                    {task.due_date && (
-                      <p className="text-xs text-muted-foreground">
-                        Due: {formatDateSafe(task.due_date)}
-                      </p>
-                    )}
+                  <div key={task.id} className="pl-6 border-l-2 border-red-500 flex items-start gap-2">
+                    <Checkbox
+                      checked={task.completed}
+                      onCheckedChange={() => handleToggleTaskComplete(task.id, task.completed)}
+                      className="cursor-pointer mt-0.5"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm text-red-700 dark:text-red-400">{task.title}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {task.due_date && (
+                          <p className="text-xs text-muted-foreground">
+                            Due: {formatDateSafe(task.due_date)}
+                          </p>
+                        )}
+                        {task.category && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-purple-500/10 text-purple-500">
+                            {task.category}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -347,13 +598,28 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
                   Upcoming ({upcomingTasks.length})
                 </h4>
                 {upcomingTasks.map((task) => (
-                  <div key={task.id} className="pl-6 border-l-2 border-yellow-500">
-                    <p className="text-sm text-yellow-700 dark:text-yellow-400">{task.title}</p>
-                    {task.due_date && (
-                      <p className="text-xs text-muted-foreground">
-                        Due: {formatDateSafe(task.due_date)}
-                      </p>
-                    )}
+                  <div key={task.id} className="pl-6 border-l-2 border-yellow-500 flex items-start gap-2">
+                    <Checkbox
+                      checked={task.completed}
+                      onCheckedChange={() => handleToggleTaskComplete(task.id, task.completed)}
+                      className="cursor-pointer mt-0.5"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm text-yellow-700 dark:text-yellow-400">{task.title}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        
+                        {task.due_date && (
+                          <p className="text-xs text-muted-foreground">
+                            Due: {formatDateSafe(task.due_date)}
+                          </p>
+                        )}
+                        {task.category && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-purple-500/10 text-purple-500">
+                            {task.category}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -367,13 +633,28 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
                   Completed ({completedTasks.length})
                 </h4>
                 {completedTasks.map((task) => (
-                  <div key={task.id} className="pl-6 border-l-2 border-green-500">
-                    <p className="text-sm text-green-700 dark:text-green-400 line-through">{task.title}</p>
-                    {task.completed_date && (
-                      <p className="text-xs text-muted-foreground">
-                        Completed: {formatDateSafe(task.completed_date)}
-                      </p>
-                    )}
+                  <div key={task.id} className="pl-6 border-l-2 border-green-500 flex items-start gap-2">
+                    <Checkbox
+                      checked={task.completed}
+                      onCheckedChange={() => handleToggleTaskComplete(task.id, task.completed)}
+                      className="cursor-pointer mt-0.5"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm text-green-700 dark:text-green-400 line-through">{task.title}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        
+                        {task.completed_date && (
+                          <p className="text-xs text-muted-foreground">
+                            Completed: {formatDateSafe(task.completed_date)}
+                          </p>
+                        )}
+                        {task.category && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-purple-500/10 text-purple-500">
+                            {task.category}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -391,6 +672,14 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
           onEventUpdated={handleEventUpdated}
         />
       )}
+
+      {/* Complete Activity Modal */}
+      <CompleteActivityModal
+        activity={completingActivity}
+        isOpen={isCompleteModalOpen}
+        onOpenChange={setIsCompleteModalOpen}
+        onActivityCompleted={handleActivityCompleted}
+      />
     </Card>
   );
 }

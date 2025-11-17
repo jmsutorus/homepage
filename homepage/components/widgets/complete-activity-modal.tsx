@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2, Activity } from "lucide-react";
+import type { WorkoutActivity } from "@/lib/db/workout-activities";
 
 interface StravaActivity {
   id: number;
@@ -17,18 +18,6 @@ interface StravaActivity {
   sport_type: string;
   start_date: string;
   start_date_local: string;
-}
-
-interface WorkoutActivity {
-  id: number;
-  date: string;
-  time: string;
-  length: number;
-  difficulty: "easy" | "moderate" | "hard" | "very hard";
-  type: "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
-  exercises: string;
-  notes?: string;
-  completed: boolean;
 }
 
 interface CompleteActivityModalProps {
