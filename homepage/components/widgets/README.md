@@ -2,15 +2,16 @@
 
 Dashboard widget components for the homepage.
 
-## Purpose
-This directory contains all the interactive widgets that appear on the dashboard:
-- Mood tracker
-- Media grid
-- Exercise stats
-- Steam status
-- Plex status
-- Home Assistant widgets
-- Task list
-- Quick links
+This directory contains all the interactive widgets that appear on the dashboard. The widgets are organized into the following categories:
 
-Each widget is a self-contained component that can be placed in the dashboard grid.
+- `/calendar`: Widgets related to the calendar, events, and activities.
+- `/exercise`: Widgets for tracking exercise and workouts.
+- `/home-assistant`: Widgets for interacting with Home Assistant.
+- `/journal`: Widgets for the journaling feature.
+- `/media`: Widgets for displaying and managing media.
+- `/mood`: Widgets for the mood tracker.
+- `/parks`: Widgets for the parks tracker.
+- `/quick-links`: Widgets for managing and displaying quick links.
+- `/shared`: Shared components used by multiple widgets.
+- `/steam`: Widgets for displaying Steam status.
+- `/tasks`: Widgets for the task list.

@@ -1,23 +1,35 @@
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { QuickLinks } from "@/components/widgets/quick-links";
+import { QuickLinks } from "@/components/widgets/quick-links/quick-links";
 import { getRecentlyCompletedMedia } from "@/lib/media";
-import { MediaCard } from "@/components/widgets/media-card";
-import { SteamStatus } from "@/components/widgets/steam-status";
-import { HomeAssistantWidget } from "@/components/widgets/home-assistant-widget";
-import { PlexStatus } from "@/components/widgets/plex-status";
-import { MoodMonthView } from "@/components/widgets/mood-month-view";
-import { RecentTasks } from "@/components/widgets/recent-tasks";
+import { MediaCard } from "@/components/widgets/media/media-card";
+import { SteamStatus } from "@/components/widgets/steam/steam-status";
+import { HomeAssistantWidget } from "@/components/widgets/home-assistant/home-assistant-widget";
+import { PlexStatus } from "@/components/widgets/media/plex-status";
+import { MiniCalendar } from "@/components/widgets/calendar/mini-calendar";
+import { RecentTasks } from "@/components/widgets/tasks/recent-tasks";
 import { ArrowRight } from "lucide-react";
 import { getUserId } from "@/lib/auth/server";
+import { getCalendarDataForMonth } from "@/lib/db/calendar";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ year?: string; month?: string }>;
+}) {
   // Require authentication
   const userId = await getUserId();
 
   // Get recently completed media sorted by completion date (most recent first)
-  const recentMedia = getRecentlyCompletedMedia(4, userId);
+  const recentMedia = getRecentlyCompletedMedia(4);
+
+  // Get calendar data for current month
+  const params = await searchParams;
+  const now = new Date();
+  const currentYear = params.year ? parseInt(params.year) : now.getFullYear();
+  const currentMonth = params.month ? parseInt(params.month) : now.getMonth() + 1;
+  const calendarData = getCalendarDataForMonth(currentYear, currentMonth);
 
   return (
     <div className="space-y-8">
@@ -36,9 +48,9 @@ export default async function DashboardPage() {
         <QuickLinks />
       </section>
 
-      {/* Mood Tracker & Recent Tasks */}
+      {/* Calendar & Recent Tasks */}
       <section className="grid gap-4 md:grid-cols-2">
-        <MoodMonthView />
+        <MiniCalendar year={currentYear} month={currentMonth} calendarData={calendarData} />
         <RecentTasks />
       </section>
 

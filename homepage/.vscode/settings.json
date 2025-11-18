@@ -1,4 +1,51 @@
 {
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "tasks": [
+        {
+            "label": "Claude",
+            "type": "Git Bash",
+            "command": "claude",
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "presentation": {
+                "panel": "dedicated",
+                "focus": true,
+                "echo": false
+            },
+            "icon": "star-full",
+            "color": "orange"
+        },
+        {
+            "label": "Gemini",
+            "type": "Git Bash",
+            "command": "gemini",
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "presentation": {
+                "panel": "dedicated",
+                "focus": true,
+                "echo": false
+            },
+            "icon": "regex",
+            "color": "blue"
+        },
+        {
+            "label": "Server",
+            "type": "Git Bash",
+            "command": "npm run dev",
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "presentation": {
+                "panel": "dedicated",
+                "focus": false,
+                "echo": false
+            },
+            "icon": "server",
+            "color": "red"
+        }
+    ]
 }

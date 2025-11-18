@@ -6,7 +6,7 @@ import { formatDateLongSafe } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, Pencil } from "lucide-react";
-import { DeleteMediaButton } from "@/components/widgets/delete-media-button";
+import { DeleteMediaButton } from "@/components/widgets/media/delete-media-button";
 
 interface MediaDetailPageProps {
   params: Promise<{

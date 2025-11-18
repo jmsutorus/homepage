@@ -22,11 +22,11 @@ export function MediaPageClient({ allMedia }: MediaPageClientProps) {
   const { inProgressMedia, plannedMedia, completedMedia } = useMemo(() => {
     // First separate by completion status
     // In Progress: no completed date AND status is not "planned"
-    const inProgress = allMedia.filter((item) => !item.frontmatter.completed && item.frontmatter.status !== "planned");
+    const inProgress = allMedia.filter((item) => item.frontmatter.status === "in-progress");
     // Planned: status is "planned"
     const planned = allMedia.filter((item) => item.frontmatter.status === "planned");
     // Completed: has completed date
-    const completed = allMedia.filter((item) => item.frontmatter.completed);
+    const completed = allMedia.filter((item) => item.frontmatter.completed && item.frontmatter.status === "completed");
 
     // Sort in-progress by started date (most recent first)
     const sortedInProgress = [...inProgress].sort((a, b) => {
