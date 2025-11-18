@@ -139,6 +139,7 @@ export function MiniCalendar({ year, month, calendarData }: MiniCalendarProps) {
             const hasEvents = (dayData?.events.length ?? 0) > 0;
             const hasParks = (dayData?.parks.length ?? 0) > 0;
             const hasJournals = (dayData?.journals.length ?? 0) > 0;
+            const hasGithub = (dayData?.githubEvents.length ?? 0) > 0;
 
             return (
               <button
@@ -179,6 +180,9 @@ export function MiniCalendar({ year, month, calendarData }: MiniCalendarProps) {
                   )}
                   {hasJournals && (
                     <div className={cn("w-1.5 h-1.5 rounded-full", CalendarColors.journal.bg)} title="Journals" />
+                  )}
+                  {hasGithub && (
+                    <div className={cn("w-1.5 h-1.5 rounded-full", CalendarColors.github.bg)} title="Github Activity" />
                   )}
                 </div>
               </button>
@@ -233,6 +237,10 @@ export function MiniCalendar({ year, month, calendarData }: MiniCalendarProps) {
             <div className="flex items-center gap-1">
               <div className={cn("w-2 h-2 rounded-full", CalendarColors.journal.bg)} />
               <span>Journals</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className={cn("w-2 h-2 rounded-full", CalendarColors.github.bg)} />
+              <span>GitHub</span>
             </div>
           </div>
         </div>
