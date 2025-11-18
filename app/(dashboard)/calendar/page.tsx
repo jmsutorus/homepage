@@ -1,5 +1,8 @@
 import { getCalendarDataForMonth } from "@/lib/db/calendar";
 import { CalendarView } from "@/components/widgets/calendar/calendar-view";
+import { auth } from "@/auth";
+import { getGithubActivity } from "@/lib/github";
+import { queryOne } from "@/lib/db";
 
 interface CalendarPageProps {
   searchParams: Promise<{
@@ -16,7 +19,31 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   const currentYear = params.year ? parseInt(params.year) : now.getFullYear();
   const currentMonth = params.month ? parseInt(params.month) : now.getMonth() + 1; // JavaScript months are 0-indexed
 
-  const calendarData = getCalendarDataForMonth(currentYear, currentMonth);
+  // Fetch GitHub activity if user is authenticated and has linked account
+  const session = await auth();
+  let githubEvents: any[] = [];
+
+  if (session?.user?.id) {
+    // Get GitHub token from account table
+    const account = queryOne<{ accessToken: string }>(
+      "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
+      [session.user.id]
+    );
+
+    if (account?.accessToken) {
+      const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`;
+      const lastDay = new Date(currentYear, currentMonth, 0).getDate();
+      const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+      
+      githubEvents = await getGithubActivity(
+        account.accessToken,
+        startDate,
+        endDate
+      );
+    }
+  }
+
+  const calendarData = getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
 
   return (
     <div className="space-y-6">

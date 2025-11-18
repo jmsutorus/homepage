@@ -7,6 +7,7 @@ import type { Event } from "./events";
 import type { ParkContent } from "./parks";
 import type { JournalContent } from "./journals";
 import type { WorkoutActivity } from "./workout-activities";
+import type { GithubEvent } from "@/lib/github";
 
 export interface CalendarDayData {
   date: string; // YYYY-MM-DD format
@@ -18,6 +19,7 @@ export interface CalendarDayData {
   parks: ParkContent[];
   journals: JournalContent[];
   workoutActivities: WorkoutActivity[];
+  githubEvents: GithubEvent[];
 }
 
 /**
@@ -143,7 +145,8 @@ export function getWorkoutActivitiesInRange(
  */
 export function getCalendarDataForRange(
   startDate: string,
-  endDate: string
+  endDate: string,
+  githubEvents: GithubEvent[] = []
 ): Map<string, CalendarDayData> {
   // Get all data
   const moods = query<MoodEntry>(
@@ -177,6 +180,7 @@ export function getCalendarDataForRange(
       parks: [],
       journals: [],
       workoutActivities: [],
+      githubEvents: [],
     });
   }
 
@@ -290,6 +294,17 @@ export function getCalendarDataForRange(
     }
   });
 
+  // Add GitHub events
+  githubEvents.forEach((event) => {
+    if (event.created_at) {
+      const dateStr = event.created_at.split("T")[0];
+      const dayData = calendarMap.get(dateStr);
+      if (dayData) {
+        dayData.githubEvents.push(event);
+      }
+    }
+  });
+
   return calendarMap;
 }
 
@@ -298,11 +313,12 @@ export function getCalendarDataForRange(
  */
 export function getCalendarDataForMonth(
   year: number,
-  month: number // 1-12
+  month: number, // 1-12
+  githubEvents: GithubEvent[] = []
 ): Map<string, CalendarDayData> {
   const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
   const lastDay = new Date(year, month, 0).getDate();
   const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
-  return getCalendarDataForRange(startDate, endDate);
+  return getCalendarDataForRange(startDate, endDate, githubEvents);
 }

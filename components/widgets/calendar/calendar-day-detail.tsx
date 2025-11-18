@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { CalendarDayData } from "@/lib/db/calendar";
 import type { Event } from "@/lib/db/events";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
+import type { GithubEvent } from "@/lib/github";
 import {
   Smile,
   Frown,
@@ -27,7 +28,8 @@ import {
   Trees,
   BookOpen,
   Dumbbell,
-  CheckCircle2
+  CheckCircle2,
+  Github
 } from "lucide-react";
 import { cn, formatDateSafe, formatDateLongSafe } from "@/lib/utils";
 import { EventEditDialog } from "./event-edit-dialog";
@@ -131,6 +133,7 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
   const hasEvents = (data?.events.length ?? 0) > 0;
   const hasParks = (data?.parks.length ?? 0) > 0;
   const hasJournals = (data?.journals.length ?? 0) > 0;
+  const hasGithub = (data?.githubEvents.length ?? 0) > 0;
 
   // Workout activities
   const upcomingWorkoutActivities = data?.workoutActivities.filter((w) => !w.completed) ?? [];
@@ -151,7 +154,7 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
 
   const hasActivities = unlinkedStravaActivities.length > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub;
 
   // Get today's date for comparison
   const today = new Date().toISOString().split("T")[0];
@@ -450,6 +453,52 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
                       <Badge variant="outline" className="text-xs">{activity.type}</Badge>
                     )}
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* GitHub Section */}
+        {hasGithub && data && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Github className="h-4 w-4" />
+              GitHub Activity ({data.githubEvents.length})
+            </h3>
+            <div className="space-y-2">
+              {data.githubEvents.map((event) => (
+                <div key={event.id} className="pl-6 border-l-2 border-zinc-500 dark:border-zinc-400">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      {event.type.replace("Event", "")}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {event.repo.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      {new Date(event.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  {event.payload && (event.payload as any).commits && (
+                    <div className="mt-1 space-y-1">
+                      {(event.payload as any).commits.map((commit: any) => (
+                        <p key={commit.sha} className="text-xs text-muted-foreground pl-2 border-l-2 border-zinc-200 dark:border-zinc-700 truncate">
+                          {commit.message}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                  {event.type === "PullRequestEvent" && (event.payload as any)?.pull_request && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {(event.payload as any).action} PR #{(event.payload as any).number}: {(event.payload as any).pull_request.title}
+                    </p>
+                  )}
+                  {event.type === "IssuesEvent" && (event.payload as any)?.issue && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {(event.payload as any).action} issue #{(event.payload as any).issue.number}: {(event.payload as any).issue.title}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

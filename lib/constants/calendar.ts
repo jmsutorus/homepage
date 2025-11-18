@@ -1,46 +1,50 @@
 export const CalendarColors = {
   activity: {
-    text: "text-blue-500",
-    bg: "bg-blue-500",
+    bg: "bg-orange-500",
+    text: "text-orange-500",
   },
   workout: {
     upcoming: {
-      text: "text-orange-500",
-      bg: "bg-orange-500",
+      bg: "bg-blue-400",
+      text: "text-blue-400",
     },
     completed: {
-      text: "text-green-500",
-      bg: "bg-green-600",
+      bg: "bg-blue-600",
+      text: "text-blue-600",
     },
   },
   media: {
-    text: "text-purple-500",
     bg: "bg-purple-500",
+    text: "text-purple-500",
   },
   park: {
-    text: "text-emerald-600",
-    bg: "bg-emerald-600",
+    bg: "bg-green-600",
+    text: "text-green-600",
   },
   journal: {
-    text: "text-[#CC5500]",
-    bg: "bg-[#CC5500]",
+    bg: "bg-amber-500",
+    text: "text-amber-500",
   },
   event: {
-    text: "text-indigo-500",
-    bg: "bg-indigo-500",
+    bg: "bg-sky-500",
+    text: "text-sky-500",
   },
   task: {
     overdue: {
-      text: "text-red-500",
       bg: "bg-red-500",
+      text: "text-red-500",
     },
     upcoming: {
-      text: "text-yellow-500",
-      bg: "bg-yellow-500",
+      bg: "bg-slate-500",
+      text: "text-slate-500",
     },
     completed: {
-      text: "text-green-500",
-      bg: "bg-green-500",
+      bg: "bg-emerald-500",
+      text: "text-emerald-500",
     },
   },
-} as const;
+  github: {
+    bg: "bg-zinc-800 dark:bg-zinc-200",
+    text: "text-zinc-800 dark:text-zinc-200",
+  },
+};

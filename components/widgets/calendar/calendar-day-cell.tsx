@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import type { CalendarDayData } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { CalendarColors } from "@/lib/constants/calendar";
@@ -50,6 +50,7 @@ export function CalendarDayCell({
   const hasEvents = (data?.events.length ?? 0) > 0;
   const hasParks = (data?.parks.length ?? 0) > 0;
   const hasJournals = (data?.journals.length ?? 0) > 0;
+  const hasGithub = (data?.githubEvents.length ?? 0) > 0;
 
   // Separate upcoming and completed workout activities
   const upcomingWorkoutActivities = data?.workoutActivities.filter((w) => !w.completed) ?? [];
@@ -70,7 +71,7 @@ export function CalendarDayCell({
   const hasActivities = unlinkedStravaActivities.length > 0;
   const hasWorkoutActivities = upcomingWorkoutActivities.length > 0 || completedWorkoutActivities.length > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub;
 
   // Get mood icon
   const MoodIcon = hasMood ? MOOD_ICONS[data!.mood!.rating].icon : null;
@@ -248,6 +249,16 @@ export function CalendarDayCell({
               </span>
             </div>
           )}
+
+          {/* GitHub Activity */}
+          {hasGithub && (
+            <div className="flex items-center gap-1">
+              <Github className={cn("h-3 w-3 flex-shrink-0", CalendarColors.github.text)} />
+              <span className={cn("truncate", CalendarColors.github.text)}>
+                {data!.githubEvents.length} {data!.githubEvents.length === 1 ? "event" : "events"}
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
@@ -287,6 +298,9 @@ export function CalendarDayCell({
           )}
           {completedTasks.length > 0 && (
             <div className={cn("w-2 h-2 rounded-full", CalendarColors.task.completed.bg)} title="Completed Tasks" />
+          )}
+          {hasGithub && (
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.github.bg)} title="GitHub Activity" />
           )}
         </div>
       )}

@@ -5,7 +5,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Settings } from "lucide-react";
 
 export function Header() {
   const { user, isAuthenticated } = useAuth();
@@ -81,6 +81,17 @@ export function Header() {
                 >
                   <LogOut className="h-4 w-4" />
                   <span className="hidden md:inline-block">Sign out</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="gap-2"
+                >
+                  <Link href="/settings">
+                    <Settings className="h-4 w-4" />
+                    <span className="hidden md:inline-block">Settings</span>
+                  </Link>
                 </Button>
               </>
             )}
