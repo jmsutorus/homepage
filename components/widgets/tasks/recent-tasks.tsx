@@ -105,7 +105,7 @@ export function RecentTasks() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Recent Tasks</CardTitle>
+            <CardTitle>Tasks</CardTitle>
             <CardDescription>Your upcoming tasks</CardDescription>
           </div>
           <Button variant="ghost" size="sm" asChild>

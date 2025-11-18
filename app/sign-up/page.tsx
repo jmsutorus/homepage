@@ -48,7 +48,7 @@ export default function SignUpPage() {
       }
 
       // Redirect to homepage
-      router.push("/");
+      router.push("/home");
       router.refresh();
     } catch (err: any) {
       console.error("Sign up error:", err);
@@ -72,7 +72,7 @@ export default function SignUpPage() {
 
     try {
       // Use Auth.js native Google OAuth
-      await nextAuthSignIn("google", { callbackUrl: "/" });
+      await nextAuthSignIn("google", { callbackUrl: "/home" });
     } catch (err: any) {
       console.error("Google sign up error:", err);
       setError(err.message || "Failed to sign up with Google");

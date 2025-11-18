@@ -5,6 +5,7 @@ import type { CalendarDayData } from "@/lib/db/calendar";
 import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { CalendarColors } from "@/lib/constants/calendar";
 
 interface CalendarDayCellProps {
   day: number;
@@ -131,8 +132,8 @@ export function CalendarDayCell({
           {/* Strava Activities (not linked to workouts) */}
           {hasActivities && (
             <div className="flex items-center gap-1">
-              <Activity className="h-3 w-3 text-blue-500 flex-shrink-0" />
-              <span className="text-blue-500 truncate">
+              <Activity className={cn("h-3 w-3 flex-shrink-0", CalendarColors.activity.text)} />
+              <span className={cn("truncate", CalendarColors.activity.text)}>
                 {unlinkedStravaActivities.length} {unlinkedStravaActivities.length === 1 ? "activity" : "activities"}
               </span>
             </div>
@@ -141,8 +142,8 @@ export function CalendarDayCell({
           {/* Upcoming Workout Activities */}
           {upcomingWorkoutActivities.length > 0 && (
             <div className="flex items-center gap-1">
-              <Dumbbell className="h-3 w-3 text-orange-500 flex-shrink-0" />
-              <span className="text-orange-500 truncate">
+              <Dumbbell className={cn("h-3 w-3 flex-shrink-0", CalendarColors.workout.upcoming.text)} />
+              <span className={cn("truncate", CalendarColors.workout.upcoming.text)}>
                 {upcomingWorkoutActivities[0].time} - {upcomingWorkoutActivities[0].type}
                 {upcomingWorkoutActivities.length > 1 && ` +${upcomingWorkoutActivities.length - 1}`}
               </span>
@@ -152,8 +153,8 @@ export function CalendarDayCell({
           {/* Completed Workout Activities */}
           {completedWorkoutActivities.length > 0 && upcomingWorkoutActivities.length === 0 && (
             <div className="flex items-center gap-1">
-              <Dumbbell className="h-3 w-3 text-green-500 flex-shrink-0" />
-              <span className="text-green-500 truncate">
+              <Dumbbell className={cn("h-3 w-3 flex-shrink-0", CalendarColors.workout.completed.text)} />
+              <span className={cn("truncate", CalendarColors.workout.completed.text)}>
                 {(() => {
                   const firstWorkout = completedWorkoutActivities[0];
                   const linkedStrava = firstWorkout.strava_activity_id
@@ -176,9 +177,9 @@ export function CalendarDayCell({
               {(() => {
                 const mediaType = data!.media[0].type;
                 const MediaIcon = MEDIA_ICONS[mediaType] || Film;
-                return <MediaIcon className="h-3 w-3 text-purple-500 flex-shrink-0" />;
+                return <MediaIcon className={cn("h-3 w-3 flex-shrink-0", CalendarColors.media.text)} />;
               })()}
-              <span className="text-purple-500 truncate">
+              <span className={cn("truncate", CalendarColors.media.text)}>
                 {data!.media[0].title}
                 {data!.media.length > 1 && ` +${data!.media.length - 1}`}
               </span>
@@ -188,8 +189,8 @@ export function CalendarDayCell({
           {/* Parks visited */}
           {hasParks && (
             <div className="flex items-center gap-1">
-              <Trees className="h-3 w-3 text-emerald-600 flex-shrink-0" />
-              <span className="text-emerald-600 truncate">
+              <Trees className={cn("h-3 w-3 flex-shrink-0", CalendarColors.park.text)} />
+              <span className={cn("truncate", CalendarColors.park.text)}>
                 {data!.parks[0].title}
                 {data!.parks.length > 1 && ` +${data!.parks.length - 1}`}
               </span>
@@ -199,8 +200,8 @@ export function CalendarDayCell({
           {/* Journals */}
           {hasJournals && (
             <div className="flex items-center gap-1">
-              <BookOpen className="h-3 w-3 flex-shrink-0 text-[#CC5500]" />
-              <span className="truncate text-[#CC5500]">
+              <BookOpen className={cn("h-3 w-3 flex-shrink-0", CalendarColors.journal.text)} />
+              <span className={cn("truncate", CalendarColors.journal.text)}>
                 {data!.journals[0].title}
                 {data!.journals.length > 1 && ` +${data!.journals.length - 1}`}
               </span>
@@ -210,8 +211,8 @@ export function CalendarDayCell({
           {/* Events */}
           {hasEvents && (
             <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3 text-indigo-500 flex-shrink-0" />
-              <span className="text-indigo-500 truncate">
+              <Calendar className={cn("h-3 w-3 flex-shrink-0", CalendarColors.event.text)} />
+              <span className={cn("truncate", CalendarColors.event.text)}>
                 {data!.events[0].title}
                 {data!.events.length > 1 && ` +${data!.events.length - 1}`}
               </span>
@@ -221,8 +222,8 @@ export function CalendarDayCell({
           {/* Overdue Tasks */}
           {overdueTasks.length > 0 && (
             <div className="flex items-center gap-1">
-              <X className="h-3 w-3 text-red-500 flex-shrink-0" />
-              <span className="text-red-500 truncate">
+              <X className={cn("h-3 w-3 flex-shrink-0", CalendarColors.task.overdue.text)} />
+              <span className={cn("truncate", CalendarColors.task.overdue.text)}>
                 {overdueTasks.length} task overdue
               </span>
             </div>
@@ -231,8 +232,8 @@ export function CalendarDayCell({
           {/* Upcoming Tasks (includes due today and future) */}
           {upcomingTasks.length > 0 && (
             <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3 text-yellow-500 flex-shrink-0" />
-              <span className="text-yellow-500 truncate">
+              <Clock className={cn("h-3 w-3 flex-shrink-0", CalendarColors.task.upcoming.text)} />
+              <span className={cn("truncate", CalendarColors.task.upcoming.text)}>
                 {upcomingTasks.length} task upcoming
               </span>
             </div>
@@ -241,8 +242,8 @@ export function CalendarDayCell({
           {/* Completed Tasks */}
           {completedTasks.length > 0 && (
             <div className="flex items-center gap-1">
-              <CheckSquare className="h-3 w-3 text-green-500 flex-shrink-0" />
-              <span className="text-green-500 truncate">
+              <CheckSquare className={cn("h-3 w-3 flex-shrink-0", CalendarColors.task.completed.text)} />
+              <span className={cn("truncate", CalendarColors.task.completed.text)}>
                 {completedTasks.length} task completed
               </span>
             </div>
@@ -258,34 +259,34 @@ export function CalendarDayCell({
       {hasAnyData && (
         <div className="flex gap-1 mt-1">
           {hasActivities && (
-            <div className="w-2 h-2 rounded-full bg-blue-500" title="Activities" />
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.activity.bg)} title="Activities" />
           )}
           {upcomingWorkoutActivities.length > 0 && (
-            <div className="w-2 h-2 rounded-full bg-orange-500" title="Upcoming Workouts" />
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.workout.upcoming.bg)} title="Upcoming Workouts" />
           )}
           {completedWorkoutActivities.length > 0 && (
-            <div className="w-2 h-2 rounded-full bg-green-600" title="Completed Workouts" />
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.workout.completed.bg)} title="Completed Workouts" />
           )}
           {hasMedia && (
-            <div className="w-2 h-2 rounded-full bg-purple-500" title="Media" />
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.media.bg)} title="Media" />
           )}
           {hasParks && (
-            <div className="w-2 h-2 rounded-full bg-emerald-600" title="Parks" />
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.park.bg)} title="Parks" />
           )}
           {hasJournals && (
-            <div className="w-2 h-2 rounded-full bg-[#CC5500]" title="Journals" />
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.journal.bg)} title="Journals" />
           )}
           {hasEvents && (
-            <div className="w-2 h-2 rounded-full bg-indigo-500" title="Events" />
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.event.bg)} title="Events" />
           )}
           {overdueTasks.length > 0 && (
-            <div className="w-2 h-2 rounded-full bg-red-500" title="Overdue Tasks" />
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.task.overdue.bg)} title="Overdue Tasks" />
           )}
           {upcomingTasks.length > 0 && (
-            <div className="w-2 h-2 rounded-full bg-yellow-500" title="Upcoming Tasks" />
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.task.upcoming.bg)} title="Upcoming Tasks" />
           )}
           {completedTasks.length > 0 && (
-            <div className="w-2 h-2 rounded-full bg-green-500" title="Completed Tasks" />
+            <div className={cn("w-2 h-2 rounded-full", CalendarColors.task.completed.bg)} title="Completed Tasks" />
           )}
         </div>
       )}

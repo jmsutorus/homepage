@@ -10,8 +10,8 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
 
   // Public paths that don't require authentication
-  const publicPaths = ["/sign-in", "/sign-up", "/auth/error"];
-  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
+  const publicPaths = ["/", "/sign-in", "/sign-up", "/auth/error"];
+  const isPublicPath = publicPaths.some((path) => pathname === path || (path !== "/" && pathname.startsWith(path)));
 
   // Auth API routes (always allow)
   const isAuthRoute = pathname.startsWith("/api/auth");
@@ -28,8 +28,13 @@ export default auth((req) => {
   }
 
   // Redirect to home if trying to access auth pages while logged in
-  if (isLoggedIn && isPublicPath) {
-    return NextResponse.redirect(new URL("/", req.url));
+  if (isLoggedIn && (pathname === "/sign-in" || pathname === "/sign-up")) {
+    return NextResponse.redirect(new URL("/home", req.url));
+  }
+
+  // Redirect to dashboard home if logged in and visiting landing page
+  if (isLoggedIn && pathname === "/") {
+    return NextResponse.redirect(new URL("/home", req.url));
   }
 
   return NextResponse.next();
