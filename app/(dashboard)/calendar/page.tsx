@@ -44,7 +44,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     }
   }
 
-  const calendarData = getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
+  const calendarData = await getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
   const calendarColors = await getCalendarColorsForUser();
 
   return (

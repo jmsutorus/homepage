@@ -8,6 +8,9 @@ import type { ParkContent } from "./parks";
 import type { JournalContent } from "./journals";
 import type { WorkoutActivity } from "./workout-activities";
 import type { GithubEvent } from "@/lib/github";
+import type { HabitCompletion } from "./habits";
+import { getHabitCompletionsForRange } from "./habits";
+import { auth } from "@/auth";
 
 export interface CalendarDayData {
   date: string; // YYYY-MM-DD format
@@ -20,6 +23,7 @@ export interface CalendarDayData {
   journals: JournalContent[];
   workoutActivities: WorkoutActivity[];
   githubEvents: GithubEvent[];
+  habitCompletions: HabitCompletion[];
 }
 
 /**
@@ -143,11 +147,14 @@ export function getWorkoutActivitiesInRange(
 /**
  * Get all calendar data for a date range, grouped by day
  */
-export function getCalendarDataForRange(
+export async function getCalendarDataForRange(
   startDate: string,
   endDate: string,
   githubEvents: GithubEvent[] = []
-): Map<string, CalendarDayData> {
+): Promise<Map<string, CalendarDayData>> {
+  const session = await auth();
+  const userId = session?.user?.id;
+
   // Get all data
   const moods = query<MoodEntry>(
     `SELECT * FROM mood_entries WHERE date BETWEEN ? AND ?`,
@@ -161,6 +168,7 @@ export function getCalendarDataForRange(
   const parks = getParksVisitedInRange(startDate, endDate);
   const journals = getJournalsInRange(startDate, endDate);
   const workoutActivities = getWorkoutActivitiesInRange(startDate, endDate);
+  const habitCompletions = userId ? getHabitCompletionsForRange(userId, startDate, endDate) : [];
 
   // Create a map of date -> data
   const calendarMap = new Map<string, CalendarDayData>();
@@ -181,6 +189,7 @@ export function getCalendarDataForRange(
       journals: [],
       workoutActivities: [],
       githubEvents: [],
+      habitCompletions: [],
     });
   }
 
@@ -305,17 +314,25 @@ export function getCalendarDataForRange(
     }
   });
 
+  // Add habit completions
+  habitCompletions.forEach((completion) => {
+    const dayData = calendarMap.get(completion.date);
+    if (dayData) {
+      dayData.habitCompletions.push(completion);
+    }
+  });
+
   return calendarMap;
 }
 
 /**
  * Get calendar data for a specific month
  */
-export function getCalendarDataForMonth(
+export async function getCalendarDataForMonth(
   year: number,
   month: number, // 1-12
   githubEvents: GithubEvent[] = []
-): Map<string, CalendarDayData> {
+): Promise<Map<string, CalendarDayData>> {
   const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
   const lastDay = new Date(year, month, 0).getDate();
   const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;

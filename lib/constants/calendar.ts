@@ -47,4 +47,8 @@ export const CalendarColors = {
     bg: "bg-zinc-800 dark:bg-zinc-200",
     text: "text-zinc-800 dark:text-zinc-200",
   },
+  habit: {
+    bg: "bg-violet-600",
+    text: "text-violet-600",
+  },
 };

@@ -495,3 +495,50 @@ BEGIN
 END;
 
 
+
+-- Habits Table
+-- Stores user-defined habits to track (per user)
+CREATE TABLE IF NOT EXISTS habits (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  frequency TEXT DEFAULT 'daily', -- 'daily', 'weekly', etc.
+  target INTEGER DEFAULT 1, -- Number of times per period
+  active BOOLEAN DEFAULT 1, -- Whether the habit is currently being tracked
+  order_index INTEGER DEFAULT 0, -- Display order
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for habits
+CREATE INDEX IF NOT EXISTS idx_habits_userId ON habits(userId);
+CREATE INDEX IF NOT EXISTS idx_habits_active ON habits(active);
+
+-- Trigger to update updated_at timestamp on habits
+CREATE TRIGGER IF NOT EXISTS update_habits_timestamp
+AFTER UPDATE ON habits
+BEGIN
+  UPDATE habits SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Habit Completions Table
+-- Stores completion records for habits (per user)
+CREATE TABLE IF NOT EXISTS habit_completions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  habit_id INTEGER NOT NULL,
+  userId TEXT NOT NULL, -- Denormalized for easier querying
+  date TEXT NOT NULL, -- ISO date string (YYYY-MM-DD)
+  completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  value INTEGER DEFAULT 1, -- Amount completed (for future use with numeric targets)
+  FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(habit_id, date) -- Initially assume 1 completion per day per habit
+);
+
+-- Indexes for habit_completions
+CREATE INDEX IF NOT EXISTS idx_habit_completions_habit_id ON habit_completions(habit_id);
+CREATE INDEX IF NOT EXISTS idx_habit_completions_userId ON habit_completions(userId);
+CREATE INDEX IF NOT EXISTS idx_habit_completions_date ON habit_completions(date);
+CREATE INDEX IF NOT EXISTS idx_habit_completions_user_date ON habit_completions(userId, date);

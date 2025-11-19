@@ -52,6 +52,7 @@ export function CalendarDayCell({
   const hasParks = (data?.parks.length ?? 0) > 0;
   const hasJournals = (data?.journals.length ?? 0) > 0;
   const hasGithub = (data?.githubEvents.length ?? 0) > 0;
+  const hasHabits = (data?.habitCompletions.length ?? 0) > 0;
 
   // Separate upcoming and completed workout activities
   const upcomingWorkoutActivities = data?.workoutActivities.filter((w) => !w.completed) ?? [];
@@ -72,7 +73,7 @@ export function CalendarDayCell({
   const hasActivities = unlinkedStravaActivities.length > 0;
   const hasWorkoutActivities = upcomingWorkoutActivities.length > 0 || completedWorkoutActivities.length > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits;
 
   // Get mood icon
   const MoodIcon = hasMood ? MOOD_ICONS[data!.mood!.rating].icon : null;
@@ -92,7 +93,7 @@ export function CalendarDayCell({
 
   return (
     <Card
-      onClick={() => onDayClick(date)}
+      onClick={() => router.push(`/daily/${date}`)}
       className={cn(
         "min-h-[120px] p-2 flex flex-col hover:shadow-md transition-all cursor-pointer",
         isToday && "ring-2 ring-primary",
@@ -260,6 +261,16 @@ export function CalendarDayCell({
               </span>
             </div>
           )}
+
+          {/* Habits */}
+          {hasHabits && (
+            <div className="flex items-center gap-1">
+              <CheckSquare className={cn("h-3 w-3 flex-shrink-0", colors.habit?.text || "text-purple-500")} />
+              <span className={cn("truncate", colors.habit?.text || "text-purple-500")}>
+                {data!.habitCompletions.length} {data!.habitCompletions.length === 1 ? "habit" : "habits"}
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
@@ -302,6 +313,9 @@ export function CalendarDayCell({
           )}
           {hasGithub && (
             <div className={cn("w-2 h-2 rounded-full", colors.github?.bg)} title="GitHub Activity" />
+          )}
+          {hasHabits && (
+            <div className={cn("w-2 h-2 rounded-full", colors.habit?.bg || "bg-purple-500")} title="Habits Completed" />
           )}
         </div>
       )}

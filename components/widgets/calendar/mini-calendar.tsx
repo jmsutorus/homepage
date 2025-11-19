@@ -140,11 +140,12 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
             const hasParks = (dayData?.parks.length ?? 0) > 0;
             const hasJournals = (dayData?.journals.length ?? 0) > 0;
             const hasGithub = (dayData?.githubEvents.length ?? 0) > 0;
+            const hasHabits = (dayData?.habitCompletions.length ?? 0) > 0;
 
             return (
               <button
                 key={dateStr}
-                onClick={() => router.push(`/calendar?year=${year}&month=${month}#${dateStr}`)}
+                onClick={() => router.push(`/daily/${dateStr}`)}
                 className={cn(
                   "aspect-square rounded-md border bg-card flex flex-col items-start justify-between p-1.5 text-xs font-medium transition-all cursor-pointer",
                   "hover:bg-accent hover:shadow-md",
@@ -183,6 +184,9 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
                   )}
                   {hasGithub && (
                     <div className={cn("w-1.5 h-1.5 rounded-full", colors.github?.bg)} title="Github Activity" />
+                  )}
+                  {hasHabits && (
+                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.habit?.bg || "bg-purple-500")} title="Habits Completed" />
                   )}
                 </div>
               </button>
@@ -241,6 +245,10 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
             <div className="flex items-center gap-1">
               <div className={cn("w-2 h-2 rounded-full", colors.github?.bg)} />
               <span>GitHub</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className={cn("w-2 h-2 rounded-full", colors.habit?.bg || "bg-purple-500")} />
+              <span>Habits</span>
             </div>
           </div>
         </div>
