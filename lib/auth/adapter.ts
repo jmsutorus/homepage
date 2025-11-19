@@ -1,6 +1,7 @@
 import type { Adapter, AdapterUser, AdapterAccount, AdapterSession, VerificationToken } from "@auth/core/adapters";
 import Database from "better-sqlite3";
 import { randomUUID } from "crypto";
+import { populateUserColorsFromDefaults } from "../db/calendar-colors";
 
 export function SQLiteAdapter(dbPath: string): Adapter {
   const db = new Database(dbPath);
@@ -27,6 +28,14 @@ export function SQLiteAdapter(dbPath: string): Adapter {
         now,
         now
       );
+
+      // Populate default calendar colors for the new user
+      try {
+        populateUserColorsFromDefaults(id);
+      } catch (error) {
+        console.error("Failed to populate default calendar colors for user:", id, error);
+        // Don't fail user creation if color population fails
+      }
 
       return {
         id,

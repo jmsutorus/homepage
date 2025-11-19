@@ -3,6 +3,7 @@ import { CalendarView } from "@/components/widgets/calendar/calendar-view";
 import { auth } from "@/auth";
 import { getGithubActivity } from "@/lib/github";
 import { queryOne } from "@/lib/db";
+import { getCalendarColorsForUser } from "@/lib/actions/calendar-colors";
 
 interface CalendarPageProps {
   searchParams: Promise<{
@@ -34,7 +35,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
       const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`;
       const lastDay = new Date(currentYear, currentMonth, 0).getDate();
       const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
-      
+
       githubEvents = await getGithubActivity(
         account.accessToken,
         startDate,
@@ -44,6 +45,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   }
 
   const calendarData = getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
+  const calendarColors = await getCalendarColorsForUser();
 
   return (
     <div className="space-y-6">
@@ -58,6 +60,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
         year={currentYear}
         month={currentMonth}
         calendarData={calendarData}
+        colors={calendarColors}
       />
     </div>
   );

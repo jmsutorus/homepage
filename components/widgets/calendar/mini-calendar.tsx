@@ -7,12 +7,12 @@ import { ChevronLeft, ChevronRight, Calendar, Smile, Frown, Meh } from "lucide-r
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CalendarColors } from "@/lib/constants/calendar";
 
 interface MiniCalendarProps {
   year: number;
   month: number;
   calendarData: Map<string, CalendarDayData>;
+  colors: any;
 }
 
 const DAYS_OF_WEEK = ["S", "M", "T", "W", "T", "F", "S"];
@@ -30,7 +30,7 @@ const MOOD_ICONS: Record<number, { icon: typeof Smile; color: string }> = {
   5: { icon: Smile, color: "text-emerald-500" },
 };
 
-export function MiniCalendar({ year, month, calendarData }: MiniCalendarProps) {
+export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendarProps) {
   const router = useRouter();
 
   // Get first day of month and total days
@@ -161,28 +161,28 @@ export function MiniCalendar({ year, month, calendarData }: MiniCalendarProps) {
                 {/* Color indicators */}
                 <div className="flex gap-0.5 flex-wrap">
                   {hasActivities && (
-                    <div className={cn("w-1.5 h-1.5 rounded-full", CalendarColors.activity.bg)} title="Strava Activities" />
+                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.activity?.bg)} title="Strava Activities" />
                   )}
                   {hasWorkouts && (
-                    <div className={cn("w-1.5 h-1.5 rounded-full", CalendarColors.workout.upcoming.bg)} title="Workouts" />
+                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.workout?.upcoming?.bg)} title="Workouts" />
                   )}
                   {hasMedia && (
-                    <div className={cn("w-1.5 h-1.5 rounded-full", CalendarColors.media.bg)} title="Media" />
+                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.media?.bg)} title="Media" />
                   )}
                   {hasTasks && (
-                    <div className={cn("w-1.5 h-1.5 rounded-full", CalendarColors.task.upcoming.bg)} title="Tasks" />
+                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.task?.upcoming?.bg)} title="Tasks" />
                   )}
                   {hasEvents && (
-                    <div className={cn("w-1.5 h-1.5 rounded-full", CalendarColors.event.bg)} title="Events" />
+                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.event?.bg)} title="Events" />
                   )}
                   {hasParks && (
-                    <div className={cn("w-1.5 h-1.5 rounded-full", CalendarColors.park.bg)} title="Parks" />
+                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.park?.bg)} title="Parks" />
                   )}
                   {hasJournals && (
-                    <div className={cn("w-1.5 h-1.5 rounded-full", CalendarColors.journal.bg)} title="Journals" />
+                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.journal?.bg)} title="Journals" />
                   )}
                   {hasGithub && (
-                    <div className={cn("w-1.5 h-1.5 rounded-full", CalendarColors.github.bg)} title="Github Activity" />
+                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.github?.bg)} title="Github Activity" />
                   )}
                 </div>
               </button>
@@ -211,35 +211,35 @@ export function MiniCalendar({ year, month, calendarData }: MiniCalendarProps) {
           {/* Activity Type Legend */}
           <div className="flex items-center justify-center flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
-              <div className={cn("w-2 h-2 rounded-full", CalendarColors.activity.bg)} />
+              <div className={cn("w-2 h-2 rounded-full", colors.activity?.bg)} />
               <span>Activities</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className={cn("w-2 h-2 rounded-full", CalendarColors.workout.upcoming.bg)} />
+              <div className={cn("w-2 h-2 rounded-full", colors.workout?.upcoming?.bg)} />
               <span>Workouts</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className={cn("w-2 h-2 rounded-full", CalendarColors.media.bg)} />
+              <div className={cn("w-2 h-2 rounded-full", colors.media?.bg)} />
               <span>Media</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className={cn("w-2 h-2 rounded-full", CalendarColors.task.upcoming.bg)} />
+              <div className={cn("w-2 h-2 rounded-full", colors.task?.upcoming?.bg)} />
               <span>Tasks</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className={cn("w-2 h-2 rounded-full", CalendarColors.event.bg)} />
+              <div className={cn("w-2 h-2 rounded-full", colors.event?.bg)} />
               <span>Events</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className={cn("w-2 h-2 rounded-full", CalendarColors.park.bg)} />
+              <div className={cn("w-2 h-2 rounded-full", colors.park?.bg)} />
               <span>Parks</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className={cn("w-2 h-2 rounded-full", CalendarColors.journal.bg)} />
+              <div className={cn("w-2 h-2 rounded-full", colors.journal?.bg)} />
               <span>Journals</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className={cn("w-2 h-2 rounded-full", CalendarColors.github.bg)} />
+              <div className={cn("w-2 h-2 rounded-full", colors.github?.bg)} />
               <span>GitHub</span>
             </div>
           </div>

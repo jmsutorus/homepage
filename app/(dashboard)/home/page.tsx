@@ -15,6 +15,7 @@ import { getCalendarDataForMonth } from "@/lib/db/calendar";
 import { auth } from "@/auth";
 import { getGithubActivity } from "@/lib/github";
 import { queryOne } from "@/lib/db";
+import { getCalendarColorsForUser } from "@/lib/actions/calendar-colors";
 
 export default async function DashboardPage({
   searchParams,
@@ -58,6 +59,7 @@ export default async function DashboardPage({
   }
 
   const calendarData = getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
+  const calendarColors = await getCalendarColorsForUser();
 
   return (
     <div className="space-y-8">
@@ -78,7 +80,7 @@ export default async function DashboardPage({
 
       {/* Calendar & Recent Tasks */}
       <section className="grid gap-4 md:grid-cols-2">
-        <MiniCalendar year={currentYear} month={currentMonth} calendarData={calendarData} />
+        <MiniCalendar year={currentYear} month={currentMonth} calendarData={calendarData} colors={calendarColors} />
         <RecentTasks />
       </section>
 

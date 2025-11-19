@@ -17,8 +17,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LinkPicker } from '@/components/widgets/link-picker';
-import { MoodEntryModal } from '@/components/widgets/mood-entry-modal';
+import { LinkPicker } from '@/components/widgets/shared/link-picker';
+import { MoodEntryModal } from '@/components/widgets/mood/mood-entry-modal';
 import { JournalLink } from '@/lib/db/journals';
 
 interface JournalFrontmatter {

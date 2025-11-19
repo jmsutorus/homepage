@@ -16,6 +16,7 @@ interface CalendarViewProps {
   year: number;
   month: number; // 1-12
   calendarData: Map<string, CalendarDayData>;
+  colors: any;
 }
 
 const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -34,7 +35,7 @@ const MONTH_NAMES = [
   "December",
 ];
 
-export function CalendarView({ year, month, calendarData }: CalendarViewProps) {
+export function CalendarView({ year, month, calendarData, colors }: CalendarViewProps) {
   const router = useRouter();
   const [isMoodModalOpen, setIsMoodModalOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -226,6 +227,7 @@ export function CalendarView({ year, month, calendarData }: CalendarViewProps) {
                 isSelected={dateStr === selectedDayForDetail}
                 onOpenMoodModal={handleOpenMoodModal}
                 onDayClick={handleDayClick}
+                colors={colors}
               />
             );
           })}

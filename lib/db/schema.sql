@@ -468,3 +468,30 @@ AFTER UPDATE ON quick_links
 BEGIN
   UPDATE quick_links SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+-- Calendar Colors Table
+-- Stores customizable color settings for calendar items (per user)
+CREATE TABLE IF NOT EXISTS calendar_colors (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  category TEXT NOT NULL, -- e.g., 'activity', 'workout.upcoming', 'workout.completed', 'media', 'park', etc.
+  bg_color TEXT NOT NULL, -- Tailwind background color class (e.g., 'bg-orange-500')
+  text_color TEXT NOT NULL, -- Tailwind text color class (e.g., 'text-orange-500')
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, category)
+);
+
+-- Indexes for calendar_colors
+CREATE INDEX IF NOT EXISTS idx_calendar_colors_userId ON calendar_colors(userId);
+CREATE INDEX IF NOT EXISTS idx_calendar_colors_category ON calendar_colors(category);
+
+-- Trigger to update updated_at timestamp on calendar_colors
+CREATE TRIGGER IF NOT EXISTS update_calendar_colors_timestamp
+AFTER UPDATE ON calendar_colors
+BEGIN
+  UPDATE calendar_colors SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+

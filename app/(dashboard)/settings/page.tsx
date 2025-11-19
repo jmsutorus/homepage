@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 import { getConnectedAccounts } from "@/lib/actions/settings";
 import { IntegrationsCard } from "@/components/widgets/settings/integrations-card";
 import { MediaTagsGenresManager } from "@/components/widgets/settings/media-tags-genres-manager";
+import { CalendarColorsManager } from "@/components/widgets/settings/calendar-colors-manager";
 
 export default async function SettingsPage() {
   const connectedAccounts = await getConnectedAccounts();
@@ -21,6 +22,8 @@ export default async function SettingsPage() {
             Manage your account settings and preferences.
           </p>
         </div>
+
+        <CalendarColorsManager />
 
         <MediaTagsGenresManager />
 
