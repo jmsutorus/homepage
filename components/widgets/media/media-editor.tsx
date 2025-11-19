@@ -17,7 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MarkdownPreview } from './markdown-preview';
+import { MarkdownPreview } from '../shared/markdown-preview';
 import { IMDBSearchModal, type IMDBMediaData } from './imdb-search-modal';
 import { BookSearchModal, type BookData } from './book-search-modal';
 import { Upload, FileText, CheckCircle2, XCircle, AlertCircle, Film, BookOpen } from 'lucide-react';

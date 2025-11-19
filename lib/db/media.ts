@@ -350,3 +350,115 @@ export function getMediaWithGenres(media: MediaContent): MediaContent & {
     genresParsed: parseGenres(media.genres),
   };
 }
+
+/**
+ * Get all unique genres across all media
+ */
+export function getAllUniqueGenres(): string[] {
+  const allMedia = getAllMedia();
+  const genreSet = new Set<string>();
+
+  allMedia.forEach((media) => {
+    const genres = parseGenres(media.genres);
+    genres.forEach((genre) => genreSet.add(genre));
+  });
+
+  return Array.from(genreSet).sort();
+}
+
+/**
+ * Get all unique tags across all media
+ */
+export function getAllUniqueTags(): string[] {
+  const allMedia = getAllMedia();
+  const tagSet = new Set<string>();
+
+  allMedia.forEach((media) => {
+    const tags = parseTags(media.tags);
+    tags.forEach((tag) => tagSet.add(tag));
+  });
+
+  return Array.from(tagSet).sort();
+}
+
+/**
+ * Rename a genre across all media entries
+ */
+export function renameGenre(oldName: string, newName: string): number {
+  const allMedia = getAllMedia();
+  let updatedCount = 0;
+
+  allMedia.forEach((media) => {
+    const genres = parseGenres(media.genres);
+    const index = genres.indexOf(oldName);
+
+    if (index !== -1) {
+      genres[index] = newName;
+      updateMedia(media.slug, { genres });
+      updatedCount++;
+    }
+  });
+
+  return updatedCount;
+}
+
+/**
+ * Rename a tag across all media entries
+ */
+export function renameTag(oldName: string, newName: string): number {
+  const allMedia = getAllMedia();
+  let updatedCount = 0;
+
+  allMedia.forEach((media) => {
+    const tags = parseTags(media.tags);
+    const index = tags.indexOf(oldName);
+
+    if (index !== -1) {
+      tags[index] = newName;
+      updateMedia(media.slug, { tags });
+      updatedCount++;
+    }
+  });
+
+  return updatedCount;
+}
+
+/**
+ * Delete a genre from all media entries
+ */
+export function deleteGenre(name: string): number {
+  const allMedia = getAllMedia();
+  let updatedCount = 0;
+
+  allMedia.forEach((media) => {
+    const genres = parseGenres(media.genres);
+    const filtered = genres.filter((g) => g !== name);
+
+    if (filtered.length !== genres.length) {
+      updateMedia(media.slug, { genres: filtered });
+      updatedCount++;
+    }
+  });
+
+  return updatedCount;
+}
+
+/**
+ * Delete a tag from all media entries
+ */
+export function deleteTag(name: string): number {
+  const allMedia = getAllMedia();
+  let updatedCount = 0;
+
+  allMedia.forEach((media) => {
+    const tags = parseTags(media.tags);
+    const filtered = tags.filter((t) => t !== name);
+
+    if (filtered.length !== tags.length) {
+      updateMedia(media.slug, { tags: filtered });
+      updatedCount++;
+    }
+  });
+
+  return updatedCount;
+}

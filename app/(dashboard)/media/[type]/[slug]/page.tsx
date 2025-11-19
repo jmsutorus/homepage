@@ -113,9 +113,11 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
           {frontmatter.genres && frontmatter.genres.length > 0 && (
             <div className="flex gap-2 flex-wrap">
               {frontmatter.genres.map((genre) => (
-                <Badge key={genre} variant="secondary">
-                  {genre}
-                </Badge>
+                <Link key={genre} href={`/media?genres=${encodeURIComponent(genre)}`}>
+                  <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 transition-colors">
+                    {genre}
+                  </Badge>
+                </Link>
               ))}
             </div>
           )}
@@ -124,9 +126,11 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
           {frontmatter.tags && frontmatter.tags.length > 0 && (
             <div className="flex gap-2 flex-wrap">
               {frontmatter.tags.map((tag) => (
-                <Badge key={tag} variant="outline">
-                  {tag}
-                </Badge>
+                <Link key={tag} href={`/media?tags=${encodeURIComponent(tag)}`}>
+                  <Badge variant="outline" className="cursor-pointer hover:bg-accent transition-colors">
+                    {tag}
+                  </Badge>
+                </Link>
               ))}
             </div>
           )}

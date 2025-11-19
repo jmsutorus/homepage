@@ -7,6 +7,7 @@ export const metadata: Metadata = {
 
 import { getConnectedAccounts } from "@/lib/actions/settings";
 import { IntegrationsCard } from "@/components/widgets/settings/integrations-card";
+import { MediaTagsGenresManager } from "@/components/widgets/settings/media-tags-genres-manager";
 
 export default async function SettingsPage() {
   const connectedAccounts = await getConnectedAccounts();
@@ -20,12 +21,8 @@ export default async function SettingsPage() {
             Manage your account settings and preferences.
           </p>
         </div>
-        
-        <div className="rounded-lg border p-8 text-center">
-          <p className="text-muted-foreground">
-            Settings will be available here soon. You will be able to configure integrations and site colors.
-          </p>
-        </div>
+
+        <MediaTagsGenresManager />
 
         <IntegrationsCard connectedAccounts={connectedAccounts} />
       </div>

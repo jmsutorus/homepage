@@ -1,6 +1,7 @@
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
+import Strava from "next-auth/providers/strava";
 
 /**
  * Edge-compatible Auth.js configuration (no database adapter, no Node.js modules)
@@ -18,6 +19,16 @@ export default {
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID!,
       clientSecret: process.env.AUTH_GITHUB_SECRET!,
+    }),
+    // Strava OAuth Provider
+    Strava({
+      clientId: process.env.AUTH_STRAVA_ID!,
+      clientSecret: process.env.AUTH_STRAVA_SECRET!,
+      authorization: {
+        params: {
+          scope: "read,activity:read_all",
+        },
+      },
     }),
   ],
 

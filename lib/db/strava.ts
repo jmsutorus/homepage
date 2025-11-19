@@ -313,6 +313,17 @@ export function getYTDStats(athleteId: number) {
 }
 
 /**
+ * Delete a single activity by ID
+ */
+export function deleteActivity(activityId: number): boolean {
+  const result = execute(
+    "DELETE FROM strava_activities WHERE id = ?",
+    [activityId]
+  );
+  return result.changes > 0;
+}
+
+/**
  * Delete all activities for an athlete
  */
 export function deleteActivities(athleteId: number): boolean {

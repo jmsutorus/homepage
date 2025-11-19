@@ -4,7 +4,17 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Edit, CheckCircle2, MapPin, TrendingUp, ExternalLink } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ChevronLeft, ChevronRight, Edit, CheckCircle2, MapPin, TrendingUp, ExternalLink, Trash2 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isBefore, startOfToday } from "date-fns";
 import { AddActivityModal } from "../exercise/add-activity-modal";
 import { CompleteActivityModal } from "../exercise/complete-activity-modal";
@@ -38,6 +48,9 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
   const [completingActivity, setCompletingActivity] = useState<WorkoutActivity | null>(null);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
   const [stravaActivities, setStravaActivities] = useState<Map<number, StravaActivity>>(new Map());
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [activityToDelete, setActivityToDelete] = useState<WorkoutActivity | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchActivities = async () => {
     try {
@@ -149,6 +162,37 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
     const activityDate = new Date(`${activity.date}T${activity.time}`);
     const now = new Date();
     return isBefore(activityDate, now);
+  };
+
+  const handleDeleteClick = (activity: WorkoutActivity, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActivityToDelete(activity);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!activityToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/activities/${activityToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // Remove activity from local state
+        setActivities((prev) => prev.filter((a) => a.id !== activityToDelete.id));
+        onActivityUpdated?.();
+      } else {
+        console.error("Failed to delete activity");
+      }
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setActivityToDelete(null);
+    }
   };
 
   return (
@@ -278,6 +322,14 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={(e) => handleDeleteClick(activity, e)}
+                          >
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
                           {!activity.completed && isActivityInPast(activity) && (
                             <Button
                               variant="outline"
@@ -363,6 +415,28 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
         </div>
       </CardContent>
     </Card>
+
+    {/* Delete Confirmation Dialog */}
+    <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Activity</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete this activity? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDeleteConfirm}
+            disabled={isDeleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }
