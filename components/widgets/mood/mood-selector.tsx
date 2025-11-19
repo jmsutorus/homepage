@@ -1,13 +1,15 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Smile, Frown, Meh } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 
 interface MoodSelectorProps {
   date: string;
   currentMood: number | null;
+  onMoodUpdated?: () => void;
 }
 
 const MOODS = [
@@ -18,17 +20,37 @@ const MOODS = [
   { rating: 5, icon: Smile, color: "text-emerald-500", label: "Great" },
 ];
 
-export function MoodSelector({ date, currentMood }: MoodSelectorProps) {
+export function MoodSelector({ date, currentMood, onMoodUpdated }: MoodSelectorProps) {
+  const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
 
-  const handleMoodSelect = (rating: number) => {
-    // Navigate to mood creation/edit page or trigger server action
-    // For now, we'll redirect to the journal edit page with mood param if no journal exists,
-    // or we might need a dedicated mood action.
-    // Since mood is tied to journal in the current schema (mostly), 
-    // let's redirect to journal creation/edit for now.
-    
-    router.push(`/journals/new?type=daily&date=${date}&mood=${rating}`);
+  const handleMoodSelect = async (rating: number) => {
+    if (isSaving) return;
+
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/mood", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date, rating, note: "" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save mood");
+      }
+
+      // Trigger refresh of data
+      if (onMoodUpdated) {
+        onMoodUpdated();
+      } else {
+        // Fallback to router refresh for server component pages
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Failed to save mood:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

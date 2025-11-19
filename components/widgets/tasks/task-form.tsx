@@ -47,6 +47,11 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
 
     setIsAdding(true);
     try {
+      // Format due date as YYYY-MM-DD to avoid timezone issues
+      const dueDateString = dueDate
+        ? `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${String(dueDate.getDate()).padStart(2, '0')}`
+        : undefined;
+
       const response = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,7 +59,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
           title: title.trim(),
           priority,
           category: category || undefined,
-          dueDate: dueDate?.toISOString(),
+          dueDate: dueDateString,
         }),
       });
 

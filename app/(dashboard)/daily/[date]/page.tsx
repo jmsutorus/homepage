@@ -8,6 +8,11 @@ import { DailyHabits } from "@/components/widgets/habits/daily-habits";
 import { DailyJournalPreview } from "@/components/widgets/journal/daily-journal-preview";
 import { MoodSelector } from "@/components/widgets/mood/mood-selector";
 import { getMoodForDate } from "@/lib/db/journals";
+import { getCalendarDataForDate } from "@/lib/db/calendar";
+import { auth } from "@/auth";
+import { getGithubActivity } from "@/lib/github";
+import { queryOne } from "@/lib/db";
+import { DailyActivities } from "@/components/widgets/daily/daily-activities";
 
 interface DailyPageProps {
   params: Promise<{
@@ -21,6 +26,87 @@ export default async function DailyPage({ params }: DailyPageProps) {
   const habits = await getHabitsAction();
   const completions = await getHabitCompletionsAction(date);
   const mood = getMoodForDate(date);
+
+  // Fetch GitHub activity if user is authenticated and has linked account
+  const session = await auth();
+  let githubEvents: any[] = [];
+
+  if (session?.user?.id) {
+    // Get GitHub token from account table
+    const account = queryOne<{ accessToken: string; accountId: string }>(
+      "SELECT accessToken, accountId FROM account WHERE userId = ? AND providerId = 'github'",
+      [session.user.id]
+    );
+
+    if (account?.accessToken) {
+      githubEvents = await getGithubActivity(
+        account.accessToken,
+        date,
+        `${date}T23:59:59`
+      );
+    }
+  }
+
+  const dailyData = await getCalendarDataForDate(date, githubEvents);
+
+  // Get all tasks for the viewed date and surrounding week (7 days before/after)
+  // Calculate the date range: 7 days before to 7 days after
+  const viewedDate = new Date(date);
+  const weekBefore = new Date(viewedDate);
+  weekBefore.setDate(weekBefore.getDate() - 7);
+  const weekAfter = new Date(viewedDate);
+  weekAfter.setDate(weekAfter.getDate() + 7);
+
+  const startDateStr = weekBefore.toISOString().split("T")[0];
+  const endDateStr = weekAfter.toISOString().split("T")[0];
+
+  // Import getTasksInRange to get all relevant tasks including overdue from past week
+  const { getTasksInRange } = await import("@/lib/db/calendar");
+  console.log(session?.user?.id);
+  const allRelevantTasks = getTasksInRange(startDateStr, endDateStr, session?.user?.id);
+
+  // Debug: Log the date range and tasks found
+  console.log(`[Daily Page] Viewing date: ${date}`);
+  console.log(`[Daily Page] Fetching tasks from ${startDateStr} to ${endDateStr}`);
+  console.log(`[Daily Page] Found ${allRelevantTasks.length} tasks:`, allRelevantTasks.map(t => ({
+    id: t.id,
+    title: t.title,
+    due_date: t.due_date,
+    completed: t.completed
+  })));
+
+  // Categorize tasks based on their due date relative to the viewed date
+  const completedTasks = allRelevantTasks.filter((t) => t.completed && t.completed_date?.split("T")[0] === date) ?? [];
+
+  // Overdue: incomplete tasks with due date before the viewed date (from past 7 days)
+  const overdueTasks = allRelevantTasks.filter((t) => {
+    if (!t.due_date || t.completed) return false;
+    const taskDueDate = t.due_date.split("T")[0];
+    return taskDueDate < date;
+  }) ?? [];
+
+  // Upcoming: incomplete tasks with due date on or after the viewed date (up to 7 days ahead)
+  const upcomingTasks = allRelevantTasks.filter((t) => {
+    if (!t.due_date || t.completed) return false;
+    const taskDueDate = t.due_date.split("T")[0];
+    return taskDueDate >= date;
+  }) ?? [];
+
+  // Workout activities
+  const upcomingWorkoutActivities = dailyData?.workoutActivities.filter((w) => !w.completed) ?? [];
+  const completedWorkoutActivities = dailyData?.workoutActivities.filter((w) => w.completed) ?? [];
+
+  // Get IDs of Strava activities that are linked to completed workouts
+  const linkedStravaActivityIds = new Set(
+    completedWorkoutActivities
+      .filter((w) => w.strava_activity_id)
+      .map((w) => w.strava_activity_id!)
+  );
+
+  // Filter out Strava activities that are already linked to completed workouts
+  const unlinkedStravaActivities = dailyData?.activities.filter(
+    (activity) => !linkedStravaActivityIds.has(activity.id)
+  ) ?? [];
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
@@ -80,6 +166,16 @@ export default async function DailyPage({ params }: DailyPageProps) {
               </div>
             )}
           </section>
+
+          <DailyActivities 
+            dailyData={dailyData}
+            overdueTasks={overdueTasks}
+            upcomingTasks={upcomingTasks}
+            completedTasks={completedTasks}
+            unlinkedStravaActivities={unlinkedStravaActivities}
+            upcomingWorkoutActivities={upcomingWorkoutActivities}
+            completedWorkoutActivities={completedWorkoutActivities}
+          />
         </div>
 
         <div className="space-y-8">
@@ -89,7 +185,7 @@ export default async function DailyPage({ params }: DailyPageProps) {
             <MoodSelector date={date} currentMood={mood} />
           </section>
 
-          {/* Stats/Summary Section (Placeholder) */}
+          {/* Stats/Summary Section */}
           <section className="rounded-lg border bg-card p-4">
             <h3 className="font-medium mb-2">Summary</h3>
             <div className="text-sm text-muted-foreground space-y-2">
@@ -99,7 +195,72 @@ export default async function DailyPage({ params }: DailyPageProps) {
                   {completions.length}/{habits.length}
                 </span>
               </div>
-              {/* Add more stats here later */}
+              {dailyData && (
+                <>
+                  <div className="flex justify-between">
+                    <span>Tasks Completed</span>
+                    <span className="font-medium">
+                      {completedTasks.length}/{allRelevantTasks.length}
+                    </span>
+                  </div>
+                  { dailyData.events.length > 0 &&
+                  <div className="flex justify-between">
+                    <span>Events</span>
+                    <span className="font-medium">
+                      {dailyData.events.length}
+                    </span>
+                  </div>
+                  }
+                  { dailyData.githubEvents.length > 0 &&
+                  <div className="flex justify-between">
+                    <span>GitHub</span>
+                    <span className="font-medium">
+                      {dailyData.githubEvents.length}
+                    </span>
+                  </div>
+                  }
+                  { dailyData.media.length > 0 &&
+                  <div className="flex justify-between">
+                    <span>Media</span>
+                    <span className="font-medium">
+                      {dailyData.media.length}
+                    </span>
+                  </div>
+                  }
+                  { dailyData.parks.length > 0 &&
+                  <div className="flex justify-between">
+                    <span>Parks</span>
+                    <span className="font-medium">
+                      {dailyData.parks.length}
+                    </span>
+                  </div>
+                  }
+                  { dailyData.journals.length > 0 &&
+                  <div className="flex justify-between">
+                    <span>Journals</span>
+                    <span className="font-medium">
+                      {dailyData.journals.length}
+                    </span>
+                  </div>
+                  }
+                  { dailyData.workoutActivities.length > 0 &&
+                  <div className="flex justify-between">
+                    <span>Workouts</span>
+                    <span className="font-medium">
+                      {dailyData.workoutActivities.length}
+                    </span>
+                  </div>
+                  }
+                  { dailyData.activities.length > 0 &&
+                  <div className="flex justify-between">
+                    <span>Strava</span>
+                    <span className="font-medium">
+                      {dailyData.activities.length}
+                    </span>
+                  </div>
+                  }
+                </>
+              )}
             </div>
           </section>
         </div>

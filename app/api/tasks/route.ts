@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createTask, getAllTasks, TaskPriority, TaskFilter } from "@/lib/db/tasks";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * GET /api/tasks
@@ -11,6 +12,7 @@ import { createTask, getAllTasks, TaskPriority, TaskFilter } from "@/lib/db/task
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const completedParam = searchParams.get("completed");
     const priority = searchParams.get("priority") as TaskPriority | null;
@@ -35,7 +37,7 @@ export async function GET(request: NextRequest) {
       filter.search = search;
     }
 
-    const tasks = getAllTasks(filter);
+    const tasks = getAllTasks(filter, userId);
     return NextResponse.json(tasks);
   } catch (error) {
     console.error("Error fetching tasks:", error);
@@ -52,6 +54,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const body = await request.json();
     const { title, dueDate, priority, category } = body;
 
@@ -63,12 +66,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create task
+    // Create task with userId
     const task = createTask(
       title.trim(),
       dueDate || undefined,
       (priority as TaskPriority) || "medium",
-      category || undefined
+      category || undefined,
+      userId
     );
 
     return NextResponse.json(task, { status: 201 });

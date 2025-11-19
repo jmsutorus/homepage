@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Task } from "@/lib/db/tasks";
-import { TaskForm } from "@/components/widgets/task-form";
-import { TaskList } from "@/components/widgets/task-list";
-import { CategoryManager } from "@/components/widgets/category-manager";
+import { TaskForm } from "@/components/widgets/tasks/task-form";
+import { TaskList } from "@/components/widgets/tasks/task-list";
+import { CategoryManager } from "@/components/widgets/tasks/category-manager";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 

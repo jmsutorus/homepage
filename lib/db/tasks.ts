@@ -10,6 +10,7 @@ export interface Task {
   due_date: string | null; // ISO 8601 format
   priority: TaskPriority;
   category: string | null;
+  userId: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -35,11 +36,12 @@ export function createTask(
   title: string,
   dueDate?: string,
   priority: TaskPriority = "medium",
-  category?: string
+  category?: string,
+  userId?: string
 ): Task {
   const result = execute(
-    "INSERT INTO tasks (title, due_date, priority, category) VALUES (?, ?, ?, ?)",
-    [title, dueDate || null, priority, category || null]
+    "INSERT INTO tasks (title, due_date, priority, category, userId) VALUES (?, ?, ?, ?, ?)",
+    [title, dueDate || null, priority, category || null, userId || null]
   );
 
   const task = getTask(Number(result.lastInsertRowid));
@@ -60,9 +62,15 @@ export function getTask(id: number): Task | undefined {
 /**
  * Get all tasks with optional filtering
  */
-export function getAllTasks(filter?: TaskFilter): Task[] {
+export function getAllTasks(filter?: TaskFilter, userId?: string): Task[] {
   let sql = "SELECT * FROM tasks WHERE 1=1";
   const params: unknown[] = [];
+
+  // Filter by userId if provided
+  if (userId) {
+    sql += " AND userId = ?";
+    params.push(userId);
+  }
 
   if (filter?.completed !== undefined) {
     sql += " AND completed = ?";

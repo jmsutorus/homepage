@@ -58,18 +58,41 @@ export function getMediaCompletedInRange(
 
 /**
  * Get tasks with due date or completion in a date range
+ * Returns all tasks due in range, completed in range, or incomplete tasks in the range
  */
 export function getTasksInRange(
   startDate: string,
-  endDate: string
+  endDate: string,
+  userId?: string
 ): Task[] {
-  return query<Task>(
-    `SELECT * FROM tasks
-     WHERE (due_date BETWEEN ? AND ?)
-        OR (completed = 1 AND completed_date BETWEEN ? AND ?)
-     ORDER BY due_date ASC NULLS LAST`,
-    [startDate, endDate, startDate, endDate]
-  );
+  let sql = `SELECT DISTINCT * FROM tasks
+     WHERE (
+       (due_date BETWEEN ? AND ?)
+       OR (completed = 1 AND completed_date BETWEEN ? AND ?)
+       OR (completed = 0 AND due_date BETWEEN ? AND ?)
+     )`;
+
+  const params: any[] = [
+    startDate, endDate,           // Tasks due in range
+    startDate, endDate,           // Completed tasks in range
+    startDate, endDate            // Incomplete tasks in range
+  ];
+
+  if (userId) {
+    sql += ` AND userId = ?`;
+    params.push(userId);
+  }
+
+  sql += ` ORDER BY due_date ASC NULLS LAST`;
+
+  // Debug logging
+  console.log(`[getTasksInRange] SQL:`, sql);
+  console.log(`[getTasksInRange] Params:`, params);
+
+  const result = query<Task>(sql, params);
+  console.log(`[getTasksInRange] Found ${result.length} tasks`);
+
+  return result;
 }
 
 /**
@@ -163,7 +186,7 @@ export async function getCalendarDataForRange(
 
   const activities = getActivitiesInRange(startDate, endDate);
   const media = getMediaCompletedInRange(startDate, endDate);
-  const tasks = getTasksInRange(startDate, endDate);
+  const tasks = getTasksInRange(startDate, endDate, userId);
   const events = getEventsInRange(startDate, endDate);
   const parks = getParksVisitedInRange(startDate, endDate);
   const journals = getJournalsInRange(startDate, endDate);
@@ -338,4 +361,18 @@ export async function getCalendarDataForMonth(
   const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
   return getCalendarDataForRange(startDate, endDate, githubEvents);
+}
+
+/**
+ * Get calendar data for a specific date
+ */
+export async function getCalendarDataForDate(
+  date: string,
+  githubEvents: GithubEvent[] = []
+): Promise<CalendarDayData | undefined> {
+  const tomorrowDate = new Date(date);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 2);
+  const tomorrowDateFromDateString = tomorrowDate.toISOString().split("T")[0];
+  const map = await getCalendarDataForRange(date, tomorrowDateFromDateString, githubEvents);
+  return map.get(date);
 }
