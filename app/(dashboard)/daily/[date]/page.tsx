@@ -25,7 +25,6 @@ export default async function DailyPage({ params }: DailyPageProps) {
   const journal = getDailyJournalByDate(date);
   const allHabits = await getHabitsAction();
 
-  console.log(allHabits);
   // Filter habits to only show those created on or before the page date
   const habits = allHabits.filter(habit => {
     // Handle both ISO format (2024-01-15T10:30:00) and SQLite format (2024-01-15 10:30:00)

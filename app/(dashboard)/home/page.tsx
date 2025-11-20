@@ -17,6 +17,8 @@ import { getGithubActivity } from "@/lib/github";
 import { queryOne } from "@/lib/db";
 import { getCalendarColorsForUser } from "@/lib/actions/calendar-colors";
 
+import { ActionBanner } from "@/components/widgets/action-banner";
+
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -63,6 +65,7 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-8">
+      <ActionBanner />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
