@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X } from "lucide-react";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
+import { SuccessCheck } from "@/components/ui/animations/success-check";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
 
 interface Exercise {
   description: string;
@@ -30,6 +32,15 @@ interface AddActivityModalProps {
 export function AddActivityModal({ onActivityAdded, editActivity, isOpen, onOpenChange, showButton }: AddActivityModalProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Success dialog state
+  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => {
+      setIsModalOpen(false);
+      onActivityAdded?.();
+    },
+  });
 
   // Form state
   const [activityId, setActivityId] = useState<number | null>(null);
@@ -71,6 +82,13 @@ export function AddActivityModal({ onActivityAdded, editActivity, isOpen, onOpen
       resetForm();
     }
   }, [editActivity]);
+
+  // Reset success state when dialog opens/closes
+  useEffect(() => {
+    if (!isModalOpen) {
+      resetSuccess();
+    }
+  }, [isModalOpen, resetSuccess]);
 
   const resetForm = () => {
     setActivityId(null);
@@ -147,8 +165,14 @@ export function AddActivityModal({ onActivityAdded, editActivity, isOpen, onOpen
 
       // Reset form
       resetForm();
-      setIsModalOpen(false);
-      onActivityAdded?.();
+
+      // Show success animation for create, close immediately for edit
+      if (isEditing) {
+        setIsModalOpen(false);
+        onActivityAdded?.();
+      } else {
+        triggerSuccess();
+      }
     } catch (error) {
       console.error(`Error ${activityId ? "updating" : "creating"} activity:`, error);
       alert(`Failed to ${activityId ? "update" : "create"} activity. Please try again.`);
@@ -170,14 +194,24 @@ export function AddActivityModal({ onActivityAdded, editActivity, isOpen, onOpen
         </DialogTrigger>
       )}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit Workout Activity" : "Add Workout Activity"}</DialogTitle>
-          <DialogDescription>
-            {isEditing ? "Update your workout activity details" : "Create a new workout activity with exercises and details"}
-          </DialogDescription>
-        </DialogHeader>
+        {showSuccess ? (
+          <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-in fade-in slide-in-from-bottom-4">
+            <SuccessCheck size={120} />
+            <h3 className="text-2xl font-semibold text-green-500">Activity Logged!</h3>
+            <p className="text-muted-foreground text-center">
+              Keep up the momentum!
+            </p>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>{isEditing ? "Edit Workout Activity" : "Add Workout Activity"}</DialogTitle>
+              <DialogDescription>
+                {isEditing ? "Update your workout activity details" : "Create a new workout activity with exercises and details"}
+              </DialogDescription>
+            </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
           {/* Date and Time */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -368,6 +402,8 @@ export function AddActivityModal({ onActivityAdded, editActivity, isOpen, onOpen
             </Button>
           </div>
         </form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

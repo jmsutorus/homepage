@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DBParkCategory, ParkCategoryValue, PARK_CATEGORIES } from '@/lib/db/enums/park-enums';
+import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 
 interface ParkFrontmatter {
   title: string;
@@ -132,11 +133,17 @@ export function ParkEditor({
         throw new Error(data.error || 'Failed to save park');
       }
 
+      // Show persistent success toast for create mode
+      if (mode === 'create') {
+        showCreationSuccess('park', { persistent: true });
+      }
+
       // Redirect to the park detail page
       router.push(data.path);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      showCreationError('park', err);
       setIsSaving(false);
     }
   };

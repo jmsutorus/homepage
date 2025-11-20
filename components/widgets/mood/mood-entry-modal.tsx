@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { formatDateLongSafe } from "@/lib/utils";
 import { Smile, Meh, Frown, TrendingUp, TrendingDown } from "lucide-react";
+import { SuccessCheck } from "@/components/ui/animations/success-check";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
 
 interface MoodEntryModalProps {
   open: boolean;
@@ -37,20 +39,32 @@ export function MoodEntryModal({
   const [note, setNote] = useState(initialNote);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Success dialog state
+  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => onOpenChange(false),
+  });
+
   // Update state when props change (when a different date is selected)
   useEffect(() => {
     setRating(initialRating);
     setNote(initialNote);
   }, [initialRating, initialNote, date]);
 
+  // Reset success state when dialog opens/closes
+  useEffect(() => {
+    if (!open) {
+      resetSuccess();
+    }
+  }, [open, resetSuccess]);
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
       await onSave(rating, note);
-      onOpenChange(false);
+      triggerSuccess();
     } catch (error) {
       console.error("Failed to save mood entry:", error);
-    } finally {
       setIsSaving(false);
     }
   };
@@ -60,12 +74,22 @@ export function MoodEntryModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>How are you feeling?</DialogTitle>
-          <DialogDescription>{formattedDate}</DialogDescription>
-        </DialogHeader>
+        {showSuccess ? (
+          <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-in fade-in slide-in-from-bottom-4">
+            <SuccessCheck size={120} />
+            <h3 className="text-2xl font-semibold text-green-500">Mood Tracked!</h3>
+            <p className="text-muted-foreground text-center">
+              Thanks for checking in with yourself.
+            </p>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>How are you feeling?</DialogTitle>
+              <DialogDescription>{formattedDate}</DialogDescription>
+            </DialogHeader>
 
-        <div className="space-y-6 py-4">
+            <div className="space-y-6 py-4">
           {/* Mood Rating Selector */}
           <div className="space-y-3">
             <Label>Mood Rating</Label>
@@ -102,14 +126,16 @@ export function MoodEntryModal({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button className="cursor-pointer" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
-            Cancel
-          </Button>
-          <Button className="cursor-pointer" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save"}
-          </Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button className="cursor-pointer" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+                Cancel
+              </Button>
+              <Button className="cursor-pointer" onClick={handleSave} disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

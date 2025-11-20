@@ -21,6 +21,7 @@ import { MarkdownPreview } from '../shared/markdown-preview';
 import { IMDBSearchModal, type IMDBMediaData } from './imdb-search-modal';
 import { BookSearchModal, type BookData } from './book-search-modal';
 import { Upload, FileText, CheckCircle2, XCircle, AlertCircle, Film, BookOpen } from 'lucide-react';
+import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 
 interface MediaFrontmatter {
   title: string;
@@ -795,11 +796,17 @@ export function MediaEditor({
         throw new Error(data.error || 'Failed to save media file');
       }
 
+      // Show persistent success toast for create mode
+      if (mode === 'create') {
+        showCreationSuccess('media', { persistent: true });
+      }
+
       // Redirect to the media detail page
       router.push(data.path);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      showCreationError('media', err);
       setIsSaving(false);
     }
   };

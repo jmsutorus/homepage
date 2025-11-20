@@ -28,5 +28,30 @@ Information about this project can be found in PROJECT_KNOWLEDGE.md
 - If you must use a native `<button>` element, always include `cursor-pointer` in the className
 - A custom ESLint rule (`custom/button-cursor-pointer`) will warn if native buttons are missing cursor-pointer
 
+## Success Feedback Guidelines
+When implementing creation actions, **always add appropriate success feedback**:
+
+- **Important actions** (habits, moods, activities): Use SuccessCheck animation via `useSuccessDialog` hook
+- **Quick actions** (tasks, events, links): Use toast notifications via `showCreationSuccess()`
+- **Full-page editors** (journals, media, parks): Use persistent toasts before navigation
+- **CRITICAL:** Only show success feedback for **create** actions, NOT edits
+- **Error handling:** Always include error feedback via `showCreationError()`
+
+📖 **Comprehensive guide:** See `/documentation/SUCCESS-FEEDBACK-GUIDE.md` for:
+- Decision tree for choosing the right pattern
+- Step-by-step implementation instructions
+- Code examples for each pattern
+- Common pitfalls and solutions
+- Integration checklist
+
+### Code Review Checklist for Creation Actions
+- [ ] Success feedback is implemented for create operations
+- [ ] No success feedback appears for edit operations
+- [ ] Error feedback is implemented
+- [ ] Correct pattern is used (animation, toast, or persistent toast)
+- [ ] Auto-dismiss timing is appropriate
+- [ ] Form resets before showing success
+- [ ] Cleanup effects are in place (for dialogs)
+
 # Context
 Context and developer doumentation can be found in /documentation

@@ -8,6 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Event, EventNotification } from "@/lib/db/events";
+import { SuccessCheck } from "@/components/ui/animations/success-check";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
+import { showCreationError } from "@/lib/success-toasts";
 
 interface EventModalProps {
   open: boolean;
@@ -49,6 +52,12 @@ export function EventModal({
   });
   const [isSaving, setIsSaving] = useState(false);
 
+  // Success dialog state
+  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => onOpenChange(false),
+  });
+
   // Update form data when event or date changes
   useEffect(() => {
     if (event) {
@@ -78,6 +87,13 @@ export function EventModal({
     }
   }, [event, date]);
 
+  // Reset success state when dialog opens/closes
+  useEffect(() => {
+    if (!open) {
+      resetSuccess();
+    }
+  }, [open, resetSuccess]);
+
   const handleSave = async () => {
     if (!formData.title.trim()) {
       alert("Please enter a title for the event");
@@ -87,10 +103,15 @@ export function EventModal({
     setIsSaving(true);
     try {
       await onSave(formData);
-      onOpenChange(false);
+      // Show success animation for create, close immediately for edit
+      if (event) {
+        onOpenChange(false);
+      } else {
+        triggerSuccess();
+      }
     } catch (error) {
       console.error("Failed to save event:", error);
-      alert("Failed to save event. Please try again.");
+      showCreationError("event", error);
     } finally {
       setIsSaving(false);
     }
@@ -103,14 +124,24 @@ export function EventModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{event ? "Edit Event" : "Create New Event"}</DialogTitle>
-          <DialogDescription>
-            {event ? "Update the event details below" : "Add a new event to your calendar"}
-          </DialogDescription>
-        </DialogHeader>
+        {showSuccess ? (
+          <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-in fade-in slide-in-from-bottom-4">
+            <SuccessCheck size={120} />
+            <h3 className="text-2xl font-semibold text-green-500">Event Created!</h3>
+            <p className="text-muted-foreground text-center">
+              Your event has been added to the calendar
+            </p>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>{event ? "Edit Event" : "Create New Event"}</DialogTitle>
+              <DialogDescription>
+                {event ? "Update the event details below" : "Add a new event to your calendar"}
+              </DialogDescription>
+            </DialogHeader>
 
-        <div className="space-y-4 py-4">
+            <div className="space-y-4 py-4">
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title">
@@ -215,14 +246,16 @@ export function EventModal({
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving..." : event ? "Update Event" : "Create Event"}
-          </Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? "Saving..." : event ? "Update Event" : "Create Event"}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

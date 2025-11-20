@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon, Plus } from "lucide-react";
 import { TaskPriority, TaskCategory } from "@/lib/db/tasks";
+import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 
 interface TaskFormProps {
   onTaskAdded: () => void;
@@ -68,10 +69,14 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         setPriority("medium");
         setCategory("");
         setDueDate(undefined);
+        showCreationSuccess("task");
         onTaskAdded();
+      } else {
+        throw new Error("Failed to create task");
       }
     } catch (error) {
       console.error("Failed to create task:", error);
+      showCreationError("task", error);
     } finally {
       setIsAdding(false);
     }

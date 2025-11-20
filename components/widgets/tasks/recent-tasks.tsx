@@ -9,6 +9,8 @@ import { Task } from "@/lib/db/tasks";
 import { Calendar, CheckCircle2, ExternalLink } from "lucide-react";
 import { format, isPast, isToday } from "date-fns";
 import Link from "next/link";
+import { AnimatePresence } from "framer-motion";
+import { TaskCompletionAnimation, useTaskCompletionAnimation } from "@/components/ui/animations/task-completion-animation";
 
 const priorityColors = {
   low: "bg-blue-500/10 text-blue-500",
@@ -19,6 +21,7 @@ const priorityColors = {
 export function RecentTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { animatingTasks, startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
 
   useEffect(() => {
     fetchTasks();
@@ -47,7 +50,7 @@ export function RecentTasks() {
           return b.created_at.localeCompare(a.created_at);
         });
 
-        // Take top 5
+        // Take top 10
         setTasks(sorted.slice(0, 10));
       }
     } catch (error) {
@@ -58,6 +61,11 @@ export function RecentTasks() {
   };
 
   const handleToggleComplete = async (taskId: number, completed: boolean) => {
+    // If marking as complete, start animation first
+    if (!completed) {
+      startAnimation(taskId);
+    }
+
     try {
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: "PATCH",
@@ -66,11 +74,25 @@ export function RecentTasks() {
       });
 
       if (response.ok) {
-        fetchTasks();
+        // If marking incomplete, refresh immediately
+        if (completed) {
+          fetchTasks();
+        }
+        // For completion, task will be removed after animation finishes
       }
     } catch (error) {
       console.error("Failed to update task:", error);
+      // On error, cleanup animation state
+      if (!completed) {
+        cleanupTask(taskId);
+      }
     }
+  };
+
+  const handleAnimationComplete = (taskId: number) => {
+    cleanupTask(taskId);
+    // Remove task from local state without refetching
+    setTasks(prev => prev.filter(task => task.id !== taskId));
   };
 
   const getDueDateStatus = (dueDate: string | null) => {
@@ -124,48 +146,54 @@ export function RecentTasks() {
           </div>
         ) : (
           <div className="space-y-2">
-            {tasks.map((task) => {
-              const dueDateStatus = getDueDateStatus(task.due_date);
+            <AnimatePresence mode="popLayout">
+              {tasks.map((task) => {
+                const dueDateStatus = getDueDateStatus(task.due_date);
 
-              return (
-                <div
-                  key={task.id}
-                  className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <Checkbox
-                    checked={task.completed}
-                    onCheckedChange={() => handleToggleComplete(task.id, task.completed)}
-                    className="mt-1"
-                  />
+                return (
+                  <TaskCompletionAnimation
+                    key={task.id}
+                    isCompleted={task.completed}
+                    shouldAnimate={isAnimating(task.id)}
+                    onAnimationComplete={() => handleAnimationComplete(task.id)}
+                  >
+                    <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors">
+                      <Checkbox
+                        checked={task.completed}
+                        onCheckedChange={() => handleToggleComplete(task.id, task.completed)}
+                        className="mt-1"
+                      />
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{task.title}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge
-                        variant="secondary"
-                        className={`text-[10px] px-1.5 py-0 h-4 ${priorityColors[task.priority]}`}
-                      >
-                        {task.priority}
-                      </Badge>
-                      {task.category && (
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] px-1.5 py-0 h-4 bg-purple-500/10 text-purple-500"
-                        >
-                          {task.category}
-                        </Badge>
-                      )}
-                      {dueDateStatus && (
-                        <div className={`flex items-center gap-1 text-xs ${dueDateStatus.className}`}>
-                          <Calendar className="h-3 w-3" />
-                          <span>{dueDateStatus.text}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{task.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge
+                            variant="secondary"
+                            className={`text-[10px] px-1.5 py-0 h-4 ${priorityColors[task.priority]}`}
+                          >
+                            {task.priority}
+                          </Badge>
+                          {task.category && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1.5 py-0 h-4 bg-purple-500/10 text-purple-500"
+                            >
+                              {task.category}
+                            </Badge>
+                          )}
+                          {dueDateStatus && (
+                            <div className={`flex items-center gap-1 text-xs ${dueDateStatus.className}`}>
+                              <Calendar className="h-3 w-3" />
+                              <span>{dueDateStatus.text}</span>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
+                  </TaskCompletionAnimation>
+                );
+              })}
+            </AnimatePresence>
           </div>
         )}
       </CardContent>

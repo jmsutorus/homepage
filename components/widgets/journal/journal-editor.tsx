@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { LinkPicker } from '@/components/widgets/shared/link-picker';
 import { MoodEntryModal } from '@/components/widgets/mood/mood-entry-modal';
 import { JournalLink } from '@/lib/db/journals';
+import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 
 interface JournalFrontmatter {
   title?: string;
@@ -214,11 +215,17 @@ export function JournalEditor({
         throw new Error(data.error || 'Failed to save journal');
       }
 
+      // Show persistent success toast for create mode
+      if (mode === 'create') {
+        showCreationSuccess('journal', { persistent: true });
+      }
+
       // Redirect to the journal detail page
       router.push(data.path);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      showCreationError('journal', err);
       setIsSaving(false);
     }
   };

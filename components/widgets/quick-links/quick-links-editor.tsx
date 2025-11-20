@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, GripVertical, Save, X } from "lucide-react";
 import * as LucideIcons from "lucide-react";
+import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 
 interface QuickLink {
   id: number;
@@ -78,9 +79,13 @@ export function QuickLinksEditor({ categories: initialCategories, onSave, onCanc
         setCategories([...categories, { ...newCategory, links: [] }]);
         setNewCategoryName("");
         setShowCategoryDialog(false);
+        showCreationSuccess("category");
+      } else {
+        throw new Error("Failed to create category");
       }
     } catch (error) {
       console.error("Failed to create category:", error);
+      showCreationError("category", error);
     }
   };
 
@@ -150,9 +155,13 @@ export function QuickLinksEditor({ categories: initialCategories, onSave, onCanc
         setLinkForm({ title: "", url: "", icon: "link" });
         setShowLinkDialog(false);
         setEditingLink(null);
+        showCreationSuccess("link");
+      } else {
+        throw new Error("Failed to create link");
       }
     } catch (error) {
       console.error("Failed to create link:", error);
+      showCreationError("link", error);
     }
   };
 

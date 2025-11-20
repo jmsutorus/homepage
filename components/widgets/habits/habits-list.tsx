@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, GripVertical, Flame, Calendar, TrendingUp, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 interface HabitsListProps {
   habits: HabitWithStats[];
@@ -130,6 +132,9 @@ export function HabitsList({ habits }: HabitsListProps) {
       setIsCompleting(id);
       await completeHabitAction(id);
       setIsCompleting(null);
+      toast.success("Habit marked as complete!", {
+        description: "Great job on reaching your target!"
+      });
     }
   };
 
@@ -138,6 +143,9 @@ export function HabitsList({ habits }: HabitsListProps) {
       setIsDeleting(id);
       await deleteHabitAction(id);
       setIsDeleting(null);
+      toast.success("Habit deleted", {
+        description: "The habit has been permanently removed."
+      });
     }
   };
 
@@ -151,131 +159,141 @@ export function HabitsList({ habits }: HabitsListProps) {
 
   return (
     <div className="space-y-4">
-      {habits.map((habit) => {
-        const canBeCompleted = habit.stats.totalCompletions >= habit.target && !habit.completed;
-        const motivationalMessage = getMotivationalMessage(
-          habit.title,
-          habit.stats,
-          habit.target,
-          habit.completed
-        );
+      <AnimatePresence mode="popLayout">
+        {habits.map((habit) => {
+          const canBeCompleted = habit.stats.totalCompletions >= habit.target && !habit.completed;
+          const motivationalMessage = getMotivationalMessage(
+            habit.title,
+            habit.stats,
+            habit.target,
+            habit.completed
+          );
 
-        return (
-          <Card key={habit.id} className={cn(
-            "transition-opacity",
-            !habit.active && "opacity-60",
-            habit.completed && "border-green-500/50 bg-green-50/50 dark:bg-green-950/20"
-          )}>
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="cursor-move text-muted-foreground pt-1">
-                  <GripVertical className="h-5 w-5" />
-                </div>
+          return (
+            <motion.div
+              key={habit.id}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.2 }}
+            >
+              <Card className={cn(
+                "transition-opacity",
+                !habit.active && "opacity-60",
+                habit.completed && "border-green-500/50 bg-green-50/50 dark:bg-green-950/20"
+              )}>
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="cursor-move text-muted-foreground pt-1">
+                      <GripVertical className="h-5 w-5" />
+                    </div>
 
-                <div className="flex-1 space-y-3">
-                  {/* Title and Description */}
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className={cn("font-medium text-lg", !habit.active && "line-through")}>
-                        {habit.title}
-                      </h3>
-                      {habit.completed && (
-                        <Badge className="bg-green-600 hover:bg-green-600">
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          Completed
-                        </Badge>
-                      )}
+                    <div className="flex-1 space-y-3">
+                      {/* Title and Description */}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className={cn("font-medium text-lg", !habit.active && "line-through")}>
+                            {habit.title}
+                          </h3>
+                          {canBeCompleted && (
+                            <Badge variant="outline" className="border-yellow-500 text-yellow-700 dark:text-yellow-400">
+                              🎯 Target Reached!
+                            </Badge>
+                          )}
+                        </div>
+                        {habit.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{habit.description}</p>
+                        )}
+                      </div>
+
+                      {/* Motivational Message */}
+                      <div className={cn(
+                        "text-sm font-medium px-3 py-2 rounded-md border",
+                        habit.completed
+                          ? "text-green-700 dark:text-green-400 bg-green-100/50 dark:bg-green-900/20 border-green-300 dark:border-green-800"
+                          : canBeCompleted
+                            ? "text-yellow-700 dark:text-yellow-400 bg-yellow-100/50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800"
+                            : "text-primary bg-primary/5 border-primary/20"
+                      )}>
+                        {motivationalMessage}
+                      </div>
+
+                      {/* Stats */}
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Flame className="h-4 w-4 text-orange-500" />
+                          <span className="text-muted-foreground">Streak:</span>
+                          <span className="font-semibold">{habit.stats.currentStreak} days</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-blue-500" />
+                          <span className="text-muted-foreground">Existed:</span>
+                          <span className="font-semibold">{habit.stats.daysExisted} days</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-green-500" />
+                          <span className="text-muted-foreground">Total:</span>
+                          <span className="font-semibold">{habit.stats.totalCompletions} times</span>
+                        </div>
+                      </div>
+
+                      {/* Frequency and Target */}
+                      <div className="flex gap-2 text-xs text-muted-foreground">
+                        <span className="capitalize">{habit.frequency.replaceAll("_", " ")}</span>
+                        <span>•</span>
+                        <span>Target: {habit.target}x</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-3 pt-1">
+                      {/* Mark Complete Button */}
                       {canBeCompleted && (
-                        <Badge variant="outline" className="border-yellow-500 text-yellow-700 dark:text-yellow-400">
-                          🎯 Target Reached!
-                        </Badge>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleComplete(habit.id)}
+                          disabled={isCompleting === habit.id}
+                          className="bg-green-600 hover:bg-green-700 cursor-pointer"
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          {isCompleting === habit.id ? "Completing..." : "Mark Complete"}
+                        </Button>
                       )}
-                    </div>
-                    {habit.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{habit.description}</p>
-                    )}
-                  </div>
 
-                  {/* Motivational Message */}
-                  <div className={cn(
-                    "text-sm font-medium px-3 py-2 rounded-md border",
-                    habit.completed
-                      ? "text-green-700 dark:text-green-400 bg-green-100/50 dark:bg-green-900/20 border-green-300 dark:border-green-800"
-                      : canBeCompleted
-                        ? "text-yellow-700 dark:text-yellow-400 bg-yellow-100/50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800"
-                        : "text-primary bg-primary/5 border-primary/20"
-                  )}>
-                    {motivationalMessage}
-                  </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Active</span>
+                          <Switch
+                            checked={habit.active}
+                            onCheckedChange={() => handleToggleActive(habit)}
+                            disabled={habit.completed}
+                          />
+                        </div>
 
-                  {/* Stats */}
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Flame className="h-4 w-4 text-orange-500" />
-                      <span className="text-muted-foreground">Streak:</span>
-                      <span className="font-semibold">{habit.stats.currentStreak} days</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-blue-500" />
-                      <span className="text-muted-foreground">Existed:</span>
-                      <span className="font-semibold">{habit.stats.daysExisted} days</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                      <span className="text-muted-foreground">Total:</span>
-                      <span className="font-semibold">{habit.stats.totalCompletions} times</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(habit.id)}
+                          disabled={isDeleting === habit.id}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer group"
+                        >
+                          <motion.div
+                            whileHover={{ rotate: 15, scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </motion.div>
+                        </Button>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Frequency and Target */}
-                  <div className="flex gap-2 text-xs text-muted-foreground">
-                    <span className="capitalize">{habit.frequency.replaceAll("_", " ")}</span>
-                    <span>•</span>
-                    <span>Target: {habit.target}x</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-3 pt-1">
-                  {/* Mark Complete Button */}
-                  {canBeCompleted && (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleComplete(habit.id)}
-                      disabled={isCompleting === habit.id}
-                      className="bg-green-600 hover:bg-green-700 cursor-pointer"
-                    >
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
-                      {isCompleting === habit.id ? "Completing..." : "Mark Complete"}
-                    </Button>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Active</span>
-                      <Switch
-                        checked={habit.active}
-                        onCheckedChange={() => handleToggleActive(habit)}
-                        disabled={habit.completed}
-                      />
-                    </div>
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(habit.id)}
-                      disabled={isDeleting === habit.id}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 }
