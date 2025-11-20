@@ -1,9 +1,9 @@
-import { getHabitsAction, createHabitAction, updateHabitAction, deleteHabitAction } from "@/lib/actions/habits";
+import { getHabitsWithStatsAction } from "@/lib/actions/habits";
 import { HabitsList } from "@/components/widgets/habits/habits-list";
 import { CreateHabitForm } from "@/components/widgets/habits/create-habit-form";
 
 export default async function HabitsPage() {
-  const habits = await getHabitsAction();
+  const habits = await getHabitsWithStatsAction();
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">

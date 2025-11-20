@@ -1,21 +1,39 @@
 "use server";
 
 import { auth } from "@/auth";
-import { 
-  getHabits, 
-  getAllHabits, 
-  createHabit, 
-  updateHabit, 
-  deleteHabit, 
-  getHabitCompletions, 
-  toggleHabitCompletion 
+import {
+  getHabits,
+  getAllHabits,
+  createHabit,
+  updateHabit,
+  deleteHabit,
+  getHabitCompletions,
+  toggleHabitCompletion,
+  getHabitStats,
+  type Habit,
+  type HabitStats
 } from "@/lib/db/habits";
 import { revalidatePath } from "next/cache";
+
+export interface HabitWithStats extends Habit {
+  stats: HabitStats;
+}
 
 export async function getHabitsAction() {
   const session = await auth();
   if (!session?.user?.id) return [];
   return getHabits(session.user.id);
+}
+
+export async function getHabitsWithStatsAction(): Promise<HabitWithStats[]> {
+  const session = await auth();
+  if (!session?.user?.id) return [];
+
+  const habits = getAllHabits(session.user.id);
+  return habits.map(habit => ({
+    ...habit,
+    stats: getHabitStats(habit, session.user.id)
+  }));
 }
 
 export async function getAllHabitsAction() {

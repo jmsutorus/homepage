@@ -1,4 +1,12 @@
 import { getDatabase, query, queryOne, execute } from "@/lib/db";
+import {
+  parseISO,
+  startOfWeek,
+  startOfMonth,
+  differenceInCalendarDays,
+  differenceInCalendarWeeks,
+  differenceInCalendarMonths,
+} from "date-fns";
 
 export interface Habit {
   id: number;
@@ -211,5 +219,211 @@ export function toggleHabitCompletion(habitId: number, userId: string, date: str
   } catch (error) {
     console.error("Error toggling habit completion:", error);
     throw error;
+  }
+}
+
+export interface HabitStats {
+  daysExisted: number;
+  currentStreak: number;
+  longestStreak: number;
+  totalCompletions: number;
+}
+
+/**
+ * Calculate habit statistics
+ */
+/**
+ * Calculate habit statistics
+ */
+export function getHabitStats(habit: Habit, userId: string): HabitStats {
+  try {
+    const { frequency = 'daily', target = 1, created_at } = habit;
+    
+    // Calculate days existed
+    const createdAtDateStr = created_at.split('T')[0].split(' ')[0];
+    const [year, month, day] = createdAtDateStr.split('-').map(Number);
+    const createdDate = new Date(year, month - 1, day);
+    const today = new Date();
+    const createdMidnight = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const daysExisted = Math.floor((todayMidnight.getTime() - createdMidnight.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    // Get all completions
+    const completions = query<HabitCompletion>(
+      "SELECT date FROM habit_completions WHERE habit_id = ? AND userId = ? ORDER BY date DESC",
+      [habit.id, userId]
+    );
+
+    if (completions.length === 0) {
+      return {
+        daysExisted,
+        currentStreak: 0,
+        longestStreak: 0,
+        totalCompletions: 0,
+      };
+    }
+
+    // Group completions by period and validate against target
+    const validPeriods: number[] = []; // Timestamps of start of period
+    const isWeekly = ['three_times_a_week', 'once_a_week', 'every_week'].includes(frequency);
+    const isMonthly = frequency === 'monthly';
+    const isDaily = frequency === 'daily' || frequency === 'every_other_day';
+
+    if (isDaily) {
+      const counts = new Map<string, number>();
+      completions.forEach(c => {
+        counts.set(c.date, (counts.get(c.date) || 0) + 1);
+      });
+      
+      for (const [date, count] of counts) {
+        if (count >= target) {
+          // Use noon to avoid timezone issues when converting back/forth
+          const d = parseISO(date);
+          validPeriods.push(d.getTime());
+        }
+      }
+    } else if (isWeekly) {
+      const counts = new Map<string, number>();
+      completions.forEach(c => {
+        const date = parseISO(c.date);
+        const weekStart = startOfWeek(date, { weekStartsOn: 1 }).getTime();
+        counts.set(weekStart.toString(), (counts.get(weekStart.toString()) || 0) + 1);
+      });
+
+      for (const [weekStartStr, count] of counts) {
+        if (count >= target) {
+          validPeriods.push(Number(weekStartStr));
+        }
+      }
+    } else if (isMonthly) {
+      const counts = new Map<string, number>();
+      completions.forEach(c => {
+        const date = parseISO(c.date);
+        const monthStart = startOfMonth(date).getTime();
+        counts.set(monthStart.toString(), (counts.get(monthStart.toString()) || 0) + 1);
+      });
+
+      for (const [monthStartStr, count] of counts) {
+        if (count >= target) {
+          validPeriods.push(Number(monthStartStr));
+        }
+      }
+    }
+
+    validPeriods.sort((a, b) => b - a); // Descending
+
+    if (validPeriods.length === 0) {
+      return {
+        daysExisted,
+        currentStreak: 0,
+        longestStreak: 0,
+        totalCompletions: completions.length,
+      };
+    }
+
+    // Calculate Current Streak
+    let currentStreak = 0;
+    const latestValid = validPeriods[0];
+    let isAlive = false;
+
+    if (frequency === 'daily') {
+      const diff = differenceInCalendarDays(today, latestValid);
+      if (diff <= 1) isAlive = true; // Today or Yesterday
+    } else if (frequency === 'every_other_day') {
+      const diff = differenceInCalendarDays(today, latestValid);
+      if (diff <= 2) isAlive = true; // Today, Yesterday, or Day Before
+    } else if (isWeekly) {
+      const thisWeek = startOfWeek(today, { weekStartsOn: 1 });
+      const diff = differenceInCalendarWeeks(thisWeek, latestValid, { weekStartsOn: 1 });
+      if (diff <= 1) isAlive = true; // This week or Last week
+    } else if (isMonthly) {
+      const thisMonth = startOfMonth(today);
+      const diff = differenceInCalendarMonths(thisMonth, latestValid);
+      if (diff <= 1) isAlive = true; // This month or Last month
+    }
+
+    if (isAlive) {
+      currentStreak = 1;
+      for (let i = 0; i < validPeriods.length - 1; i++) {
+        const current = validPeriods[i];
+        const next = validPeriods[i+1];
+        
+        let diff;
+        let consecutive = false;
+
+        if (frequency === 'daily') {
+          diff = differenceInCalendarDays(current, next);
+          if (diff === 1) consecutive = true;
+        } else if (frequency === 'every_other_day') {
+          diff = differenceInCalendarDays(current, next);
+          if (diff <= 2) consecutive = true;
+        } else if (isWeekly) {
+          diff = differenceInCalendarWeeks(current, next, { weekStartsOn: 1 });
+          if (diff === 1) consecutive = true;
+        } else if (isMonthly) {
+          diff = differenceInCalendarMonths(current, next);
+          if (diff === 1) consecutive = true;
+        }
+
+        if (consecutive) {
+          currentStreak++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Calculate Longest Streak
+    let longestStreak = 0;
+    if (validPeriods.length > 0) {
+      let tempStreak = 1;
+      // Iterate ascending for longest streak calculation
+      const sortedAsc = [...validPeriods].sort((a, b) => a - b);
+      
+      for (let i = 0; i < sortedAsc.length - 1; i++) {
+        const current = sortedAsc[i];
+        const next = sortedAsc[i+1];
+        
+        let diff;
+        let consecutive = false;
+
+        if (frequency === 'daily') {
+          diff = differenceInCalendarDays(next, current);
+          if (diff === 1) consecutive = true;
+        } else if (frequency === 'every_other_day') {
+          diff = differenceInCalendarDays(next, current);
+          if (diff <= 2) consecutive = true;
+        } else if (isWeekly) {
+          diff = differenceInCalendarWeeks(next, current, { weekStartsOn: 1 });
+          if (diff === 1) consecutive = true;
+        } else if (isMonthly) {
+          diff = differenceInCalendarMonths(next, current);
+          if (diff === 1) consecutive = true;
+        }
+
+        if (consecutive) {
+          tempStreak++;
+        } else {
+          longestStreak = Math.max(longestStreak, tempStreak);
+          tempStreak = 1;
+        }
+      }
+      longestStreak = Math.max(longestStreak, tempStreak);
+    }
+
+    return {
+      daysExisted,
+      currentStreak,
+      longestStreak,
+      totalCompletions: completions.length,
+    };
+  } catch (error) {
+    console.error("Error calculating habit stats:", error);
+    return {
+      daysExisted: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      totalCompletions: 0,
+    };
   }
 }

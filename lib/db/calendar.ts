@@ -85,12 +85,7 @@ export function getTasksInRange(
 
   sql += ` ORDER BY due_date ASC NULLS LAST`;
 
-  // Debug logging
-  console.log(`[getTasksInRange] SQL:`, sql);
-  console.log(`[getTasksInRange] Params:`, params);
-
   const result = query<Task>(sql, params);
-  console.log(`[getTasksInRange] Found ${result.length} tasks`);
 
   return result;
 }

@@ -64,8 +64,9 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
     router.push(`/?year=${nextYear}&month=${nextMonth}`);
   };
 
+  // Get today's date in local timezone (not UTC)
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   return (
     <Card>

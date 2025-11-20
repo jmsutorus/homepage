@@ -23,7 +23,16 @@ interface DailyPageProps {
 export default async function DailyPage({ params }: DailyPageProps) {
   const { date } = await params;
   const journal = getDailyJournalByDate(date);
-  const habits = await getHabitsAction();
+  const allHabits = await getHabitsAction();
+
+  console.log(allHabits);
+  // Filter habits to only show those created on or before the page date
+  const habits = allHabits.filter(habit => {
+    // Handle both ISO format (2024-01-15T10:30:00) and SQLite format (2024-01-15 10:30:00)
+    const habitCreatedDate = habit.created_at.split('T')[0].split(' ')[0];
+    return habitCreatedDate <= date;
+  });
+
   const completions = await getHabitCompletionsAction(date);
   const mood = getMoodForDate(date);
 
@@ -189,12 +198,14 @@ export default async function DailyPage({ params }: DailyPageProps) {
           <section className="rounded-lg border bg-card p-4">
             <h3 className="font-medium mb-2">Summary</h3>
             <div className="text-sm text-muted-foreground space-y-2">
+              { habits.length > 0 &&
               <div className="flex justify-between">
                 <span>Habits Completed</span>
                 <span className="font-medium">
                   {completions.length}/{habits.length}
                 </span>
               </div>
+              }
               {dailyData && (
                 <>
                   <div className="flex justify-between">

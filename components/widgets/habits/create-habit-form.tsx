@@ -14,6 +14,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -28,13 +35,15 @@ export function CreateHabitForm() {
     const formData = new FormData(event.currentTarget);
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
+    const frequency = formData.get("frequency") as string;
+    const target = parseInt(formData.get("target") as string) || 1;
 
     try {
       await createHabitAction({
         title,
         description,
-        frequency: "daily", // Default for now
-        target: 1, // Default for now
+        frequency,
+        target,
       });
       setOpen(false);
     } catch (error) {
@@ -57,7 +66,7 @@ export function CreateHabitForm() {
           <DialogHeader>
             <DialogTitle>Create New Habit</DialogTitle>
             <DialogDescription>
-              Add a new habit to track daily.
+              Add a new habit to track.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -68,6 +77,35 @@ export function CreateHabitForm() {
             <div className="grid gap-2">
               <Label htmlFor="description">Description (Optional)</Label>
               <Textarea id="description" name="description" placeholder="e.g. Drink 8 glasses of water" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="frequency">Frequency</Label>
+                <Select name="frequency" defaultValue="daily">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="every_other_day">Every Other Day</SelectItem>
+                    <SelectItem value="three_times_a_week">Three Times A Week</SelectItem>
+                    <SelectItem value="once_a_week">Once A Week</SelectItem>
+                    <SelectItem value="every_week">Every Week</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="target">Target</Label>
+                <Input 
+                  id="target" 
+                  name="target" 
+                  type="number" 
+                  min="1" 
+                  defaultValue="1" 
+                  required 
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
