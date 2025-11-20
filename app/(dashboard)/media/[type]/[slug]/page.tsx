@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, Pencil } from "lucide-react";
 import { DeleteMediaButton } from "@/components/widgets/media/delete-media-button";
+import { ExportButton } from "@/components/widgets/shared/export-button";
 
 interface MediaDetailPageProps {
   params: Promise<{
@@ -62,6 +63,12 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
           </Link>
         </Button>
         <div className="flex items-center gap-2">
+          {content && (
+            <ExportButton
+              content={content}
+              filename={slug}
+            />
+          )}
           <Button variant="outline" asChild>
             <Link href={`/media/${type}/${slug}/edit`}>
               <Pencil className="mr-2 h-4 w-4" />

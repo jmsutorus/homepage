@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, Pencil, Calendar } from "lucide-react";
 import { LinkedItemsDisplay } from "@/components/widgets/shared/linked-items-display";
+import { ExportButton } from "@/components/widgets/shared/export-button";
 
 interface JournalDetailPageProps {
   params: Promise<{
@@ -55,12 +56,20 @@ export default async function JournalDetailPage({ params }: JournalDetailPagePro
         {/* Title and Edit Button */}
         <div className="flex items-start justify-between">
           <h1 className="text-4xl font-bold">{journal.title}</h1>
-          <Button variant="outline" size="sm" asChild className="cursor-pointer">
-            <Link href={`/journals/${slug}/edit`}>
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            {journal.content && (
+              <ExportButton
+                content={journal.content}
+                filename={journal.slug}
+              />
+            )}
+            <Button variant="outline" size="sm" asChild className="cursor-pointer">
+              <Link href={`/journals/${slug}/edit`}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Metadata */}

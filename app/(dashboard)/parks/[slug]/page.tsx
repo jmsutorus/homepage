@@ -6,6 +6,7 @@ import { formatDateLongSafe } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, Pencil, MapPin } from "lucide-react";
+import { ExportButton } from "@/components/widgets/shared/export-button";
 
 interface ParkDetailPageProps {
   params: Promise<{
@@ -54,12 +55,20 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
         {/* Title and Edit Button */}
         <div className="flex items-start justify-between">
           <h1 className="text-4xl font-bold">{park.title}</h1>
-          <Button variant="outline" size="sm" asChild className="cursor-pointer">
-            <Link href={`/parks/${slug}/edit`}>
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            {park.content && (
+              <ExportButton
+                content={park.content}
+                filename={park.slug}
+              />
+            )}
+            <Button variant="outline" size="sm" asChild className="cursor-pointer">
+              <Link href={`/parks/${slug}/edit`}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Metadata */}

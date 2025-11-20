@@ -29,6 +29,9 @@ export const env = createEnv({
     STEAM_API_KEY: z.string().optional(),
     STEAM_ID: z.string().optional(),
 
+    // GitHub API
+    GITHUB_TOKEN: z.string().optional(),
+
     // Home Assistant
     HOMEASSISTANT_URL: z.string().url().optional(),
     HOMEASSISTANT_TOKEN: z.string().optional(),
@@ -115,6 +118,9 @@ export const env = createEnv({
     // Steam
     STEAM_API_KEY: process.env.STEAM_API_KEY,
     STEAM_ID: process.env.STEAM_ID,
+
+    // GitHub
+    GITHUB_TOKEN: process.env.GITHUB_TOKEN,
 
     // Home Assistant
     HOMEASSISTANT_URL: process.env.HOMEASSISTANT_URL,

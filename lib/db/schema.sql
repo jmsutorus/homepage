@@ -542,3 +542,23 @@ CREATE INDEX IF NOT EXISTS idx_habit_completions_habit_id ON habit_completions(h
 CREATE INDEX IF NOT EXISTS idx_habit_completions_userId ON habit_completions(userId);
 CREATE INDEX IF NOT EXISTS idx_habit_completions_date ON habit_completions(date);
 CREATE INDEX IF NOT EXISTS idx_habit_completions_user_date ON habit_completions(userId, date);
+
+-- Steam Yearly Stats Table
+-- Stores cached steam achievement counts per game per year (per user)
+CREATE TABLE IF NOT EXISTS steam_yearly_stats (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  year INTEGER NOT NULL,
+  gameId INTEGER NOT NULL,
+  gameName TEXT NOT NULL,
+  achievements_count INTEGER DEFAULT 0,
+  total_playtime INTEGER DEFAULT 0, -- Snapshot of total playtime at sync
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, year, gameId)
+);
+
+-- Indexes for steam_yearly_stats
+CREATE INDEX IF NOT EXISTS idx_steam_yearly_stats_userId ON steam_yearly_stats(userId);
+CREATE INDEX IF NOT EXISTS idx_steam_yearly_stats_year ON steam_yearly_stats(year);
+
