@@ -65,6 +65,12 @@ export function Header() {
               Exercise
             </Link>
             <Link
+              href="/habits"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Habits
+            </Link>
+            <Link
               href={`/year/${new Date().getFullYear()}`}
               className="transition-colors hover:text-foreground/80 text-foreground/60"
             >

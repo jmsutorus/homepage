@@ -63,12 +63,24 @@ export async function updateHabitAction(id: number, data: {
   frequency?: string;
   target?: number;
   active?: boolean;
+  completed?: boolean;
   order_index?: number;
 }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
-  
+
   const habit = updateHabit(id, session.user.id, data);
+  revalidatePath("/habits");
+  revalidatePath("/daily/[date]", "page");
+  return habit;
+}
+
+export async function completeHabitAction(id: number) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  // Mark the habit as completed and inactive
+  const habit = updateHabit(id, session.user.id, { completed: true, active: false });
   revalidatePath("/habits");
   revalidatePath("/daily/[date]", "page");
   return habit;

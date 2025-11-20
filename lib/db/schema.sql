@@ -506,6 +506,7 @@ CREATE TABLE IF NOT EXISTS habits (
   frequency TEXT DEFAULT 'daily', -- 'daily', 'weekly', etc.
   target INTEGER DEFAULT 1, -- Number of times per period
   active BOOLEAN DEFAULT 1, -- Whether the habit is currently being tracked
+  completed BOOLEAN DEFAULT 0, -- Whether the habit has been marked as completed/achieved
   order_index INTEGER DEFAULT 0, -- Display order
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
