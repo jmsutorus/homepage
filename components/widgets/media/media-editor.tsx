@@ -23,6 +23,8 @@ import { BookSearchModal, type BookData } from './book-search-modal';
 import { Upload, FileText, CheckCircle2, XCircle, AlertCircle, Film, BookOpen } from 'lucide-react';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { TagInput } from '@/components/search/tag-input';
+import { TemplatePicker } from '@/components/widgets/shared/template-picker';
+import { Template } from '@/lib/constants/templates';
 
 interface MediaFrontmatter {
   title: string;
@@ -751,6 +753,14 @@ export function MediaEditor({
     }, 5000);
   };
 
+  const handleTemplateSelect = (template: Template) => {
+    if (template.content) setContent(template.content);
+    if (template.mediaType) {
+      const newType = template.mediaType;
+      setFrontmatter(prev => ({ ...prev, type: newType }));
+    }
+  };
+
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -1294,7 +1304,9 @@ export function MediaEditor({
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Content</h3>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap items-center">
+                  <TemplatePicker type="media" onSelect={handleTemplateSelect} />
+                  <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
                   <Button
                     type="button"
                     variant="outline"

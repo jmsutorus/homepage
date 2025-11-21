@@ -102,7 +102,7 @@
 - **Example**: `Home > Media > Movies > The Matrix`
 - **Benefits**: Context awareness, quick navigation up hierarchy
 
-#### 10. **Command Palette (Cmd+K, for mac, Ctrl+K for windows)**
+#### 10. **Command Palette (Cmd+K, for mac, Ctrl+K for windows)** - IMPLEMENTED
 - **Implementation**: Global search/command interface
 - **Trigger**: Cmd+K (Mac) / Ctrl+K (Windows)
 - **Features**:
@@ -126,7 +126,7 @@
 - **Clear option**: Privacy control
 - **Benefits**: Faster repeated searches
 
-#### 13. **Keyboard Shortcuts**
+#### 13. **Keyboard Shortcuts**  - IMPLEMENTED
 - **Essential shortcuts**:
   - `G` then `C` = Go to Calendar
   - `G` then `T` = Go to Tasks
@@ -138,12 +138,12 @@
 - **Visual**: Keyboard shortcut hints in UI (subtle)
 - **Help modal**: ? key shows all shortcuts
 
-#### 14. **Smart Navigation History**
+#### 14. **Smart Navigation History** - IMPLEMENTED
 - **Back/Forward**: Browser-style in-app navigation
 - **Shortcuts**: Alt+Left / Alt+Right arrows
 - **Benefits**: Faster workflow, less clicking
 
-#### 15. **Page Transition Animations**
+#### 15. **Page Transition Animations** - IMPLEMENTED
 - **Current**: Instant page changes (Next.js default)
 - **Improvement**: Subtle fade or slide transitions
 - **Duration**: 150-200ms
@@ -289,16 +289,17 @@
 
 ### Priority: MEDIUM-HIGH
 
-#### 31. **Natural Language Input**
+#### 31. **Natural Language Input** - IMPLEMENTED
 - **Feature**: Parse natural language for task creation
 - **Examples**:
-  - "Buy milk tomorrow" → task with due date
-  - "High priority: finish report by Friday" → priority + due date
-  - "Read 30 minutes daily" → habit with target
+  - "Buy milk tomorrow" → task with due date ✓
+  - "High priority: finish report by Friday" → priority + due date ✓
+  - "!!! Urgent task" → high priority ✓
 - **Library**: chrono-node for date parsing
 - **Benefits**: Faster input, more intuitive
+- **Visual**: Sparkle icon indicates when smart parsing is active
 
-#### 32. **Templates for Common Entries**
+#### 32. **Templates for Common Entries** - IMPLEMENTED
 - **Use cases**:
   - Journal templates (gratitude, daily log, dream journal)
   - Task templates (weekly review, meal prep)
@@ -318,18 +319,18 @@
 - **Visual**: Dashed border highlight on drag over
 - **Benefits**: Faster than file picker
 
-#### 35. **Inline Editing Everywhere**
+#### 35. **Inline Editing Everywhere** - NOT DOING
 - **Current**: Some lists require dialog to edit
 - **Improvement**: Click to edit inline for simple fields
 - **Pattern**: Similar to Notion database cells
 - **Benefits**: Fewer clicks, faster edits
 
-#### 36. **Copy Previous Entry**
+#### 36. **Copy Previous Entry** - NOT DOING
 - **Feature**: Duplicate yesterday's journal/habits/tasks
 - **Location**: "Copy from previous day" button
 - **Benefits**: Templates for routine entries
 
-#### 37. **Quick Reschedule**
+#### 37. **Quick Reschedule** - IMPLEMENTED
 - **Implementation**: Right-click context menu on tasks
 - **Options**:
   - Today
@@ -338,12 +339,12 @@
   - Pick date (calendar popup)
 - **Benefits**: Faster task management
 
-#### 38. **Smart Defaults**
+#### 38. **Smart Defaults** - IMPLEMENTED
 - **Examples**:
-  - Default due date = today
-  - Default priority = medium
-  - Default media status = planned
-  - Default habit frequency = daily
+  - Default due date = today ✓
+  - Default priority = medium ✓
+  - Default media status = planned ✓
+  - Default habit frequency = daily ✓
 - **Customization**: User preferences for defaults
 - **Benefits**: Fewer form fields to fill
 

@@ -82,6 +82,20 @@ export function CommandPalette({ className }: CommandPaletteProps) {
         e.preventDefault();
         setOpen((currentOpen) => !currentOpen);
       }
+
+      if (e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (
+          e.target instanceof HTMLInputElement ||
+          e.target instanceof HTMLTextAreaElement ||
+          e.target instanceof HTMLSelectElement ||
+          (e.target instanceof HTMLElement && e.target.isContentEditable)
+        ) {
+          return;
+        }
+        e.preventDefault();
+        setOpen(true);
+        setPages(["home", "shortcuts"]);
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -297,6 +311,7 @@ export function CommandPalette({ className }: CommandPaletteProps) {
         keywords: ["help", "shortcuts", "keyboard", "keys"],
         icon: <Keyboard className="h-4 w-4" />,
         action: () => setPages([...pages, "shortcuts"]),
+        shortcut: "?",
       },
     ],
   };
@@ -497,6 +512,12 @@ export function CommandPalette({ className }: CommandPaletteProps) {
           </kbd>
         </div>
         <div className="flex items-center justify-between py-2">
+          <span>Open shortcuts</span>
+          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+            ?
+          </kbd>
+        </div>
+        <div className="flex items-center justify-between py-2">
           <span>Navigate up/down</span>
           <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
             ↑ ↓
@@ -512,6 +533,18 @@ export function CommandPalette({ className }: CommandPaletteProps) {
           <span>Close palette</span>
           <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
             Esc
+          </kbd>
+        </div>
+        <div className="flex items-center justify-between py-2 mb-2">
+          <span>Back</span>
+          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+            Alt+Left Arrow
+          </kbd>
+        </div>
+        <div className="flex items-center justify-between py-2 mb-2">
+          <span>Forward</span>
+          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+            Alt+Right Arrow
           </kbd>
         </div>
 
@@ -682,6 +715,7 @@ export function CommandPalette({ className }: CommandPaletteProps) {
               placeholder="Type a command or search..."
               value={search}
               onValueChange={setSearch}
+              autoFocus
               className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>

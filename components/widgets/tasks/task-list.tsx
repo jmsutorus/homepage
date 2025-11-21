@@ -5,11 +5,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Task } from "@/lib/db/tasks";
-import { Trash2, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { TaskCompletionAnimation, useTaskCompletionAnimation } from "@/components/ui/animations/task-completion-animation";
 import { toast } from "sonner";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import { addDays, startOfToday } from "date-fns";
+import { RescheduleDialog } from "./reschedule-dialog";
+import { Calendar, Trash2, Clock, ArrowRight } from "lucide-react";
 
 interface TaskListProps {
   tasks: Task[];
@@ -26,6 +35,7 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [localTasks, setLocalTasks] = useState(tasks);
   const { animatingTasks, startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
+  const [rescheduleTaskId, setRescheduleTaskId] = useState<number | null>(null);
 
   // Update local tasks when prop changes
   useEffect(() => {
@@ -95,6 +105,28 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
     }
   };
 
+  const handleReschedule = async (taskId: number, date: Date) => {
+    // Tranform the date to the format yyyy-MM-dd
+    const formattedDate = format(date, "yyyy-MM-dd");
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dueDate: formattedDate }),
+      });
+
+      if (response.ok) {
+        toast.success("Task rescheduled", {
+          description: `Due date set to ${format(date, "MMM d, yyyy")}`
+        });
+        onTasksChanged();
+      }
+    } catch (error) {
+      console.error("Failed to reschedule task:", error);
+      toast.error("Failed to reschedule task");
+    }
+  };
+
   if (localTasks.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -113,54 +145,88 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
             shouldAnimate={isAnimating(task.id)}
             onAnimationComplete={() => handleAnimationComplete(task.id)}
           >
-            <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors group">
-              <Checkbox
-                checked={task.completed}
-                onCheckedChange={() => handleToggleComplete(task.id, task.completed)}
-                className="mt-0.5 cursor-pointer"
-              />
+            <ContextMenu>
+              <ContextMenuTrigger>
+                <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors group">
+                  <Checkbox
+                    checked={task.completed}
+                    onCheckedChange={() => handleToggleComplete(task.id, task.completed)}
+                    className="mt-0.5 cursor-pointer"
+                  />
 
-              <div className="flex-1 min-w-0">
-                <p
-                  className={`font-medium ${
-                    task.completed ? "line-through text-muted-foreground" : ""
-                  }`}
-                >
-                  {task.title}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="secondary" className={priorityColors[task.priority]}>
-                    {task.priority}
-                  </Badge>
-                  {task.category && (
-                    <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">
-                      {task.category}
-                    </Badge>
-                  )}
-                  {task.due_date && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      <span>
-                        {format(new Date(task.due_date), "MMM d, yyyy")}
-                      </span>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`font-medium ${
+                        task.completed ? "line-through text-muted-foreground" : ""
+                      }`}
+                    >
+                      {task.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className={priorityColors[task.priority]}>
+                        {task.priority}
+                      </Badge>
+                      {task.category && (
+                        <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">
+                          {task.category}
+                        </Badge>
+                      )}
+                      {task.due_date && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          <span>
+                            {format(new Date(task.due_date.replaceAll("-", "/")), "MMM d, yyyy")}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
+                  </div>
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => handleDelete(task.id)}
-                disabled={deletingId === task.id}
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => handleDelete(task.id)}
+                    disabled={deletingId === task.id}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem onClick={() => handleReschedule(task.id, startOfToday())}>
+                  <Clock className="mr-2 h-4 w-4" />
+                  Today
+                </ContextMenuItem>
+                <ContextMenuItem onClick={() => handleReschedule(task.id, addDays(startOfToday(), 1))}>
+                  <ArrowRight className="mr-2 h-4 w-4" />
+                  Tomorrow
+                </ContextMenuItem>
+                <ContextMenuItem onClick={() => handleReschedule(task.id, addDays(task.due_date || startOfToday(), 8))}>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Next Week
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+                <ContextMenuItem onClick={() => setRescheduleTaskId(task.id)}>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Pick Date...
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+                <ContextMenuItem onClick={() => handleDelete(task.id)} className="text-destructive focus:text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           </TaskCompletionAnimation>
         ))}
       </AnimatePresence>
+
+      <RescheduleDialog
+        open={!!rescheduleTaskId}
+        onOpenChange={(open) => !open && setRescheduleTaskId(null)}
+        onConfirm={(date) => rescheduleTaskId && handleReschedule(rescheduleTaskId, date)}
+      />
     </div>
   );
 }

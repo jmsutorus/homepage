@@ -22,6 +22,8 @@ import { MoodEntryModal } from '@/components/widgets/mood/mood-entry-modal';
 import { JournalLink } from '@/lib/db/journals';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { TagInput } from '@/components/search/tag-input';
+import { TemplatePicker } from '@/components/widgets/shared/template-picker';
+import { Template } from '@/lib/constants/templates';
 
 interface JournalFrontmatter {
   title?: string;
@@ -166,6 +168,21 @@ export function JournalEditor({
     } catch (error) {
       console.error('Error saving mood:', error);
       setError('Failed to save mood entry');
+    }
+  };
+
+  const handleTemplateSelect = (template: Template) => {
+    if (template.content) {
+      let newContent = template.content;
+      // Replace placeholders if any
+      const today = new Date().toLocaleDateString();
+      newContent = newContent.replace('{date}', today);
+      setContent(newContent);
+    }
+
+    if (template.tags) {
+      const newTags = [...new Set([...(frontmatter.tags || []), ...template.tags])];
+      setFrontmatter(prev => ({ ...prev, tags: newTags }));
     }
   };
 
@@ -398,7 +415,9 @@ export function JournalEditor({
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Content</h3>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap items-center">
+                  <TemplatePicker type="journal" onSelect={handleTemplateSelect} />
+                  <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
                   <Button
                     type="button"
                     variant="outline"

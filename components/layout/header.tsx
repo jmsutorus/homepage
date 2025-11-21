@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +10,12 @@ import { LogOut, Settings, Search } from "lucide-react";
 
 export function Header() {
   const { user, isAuthenticated } = useAuth();
+  const [isMac, setIsMac] = React.useState(true);
+
+  // Detect OS on mount
+  React.useEffect(() => {
+    setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0);
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -97,7 +104,7 @@ export function Header() {
               <Search className="h-4 w-4 xl:mr-2" />
               <span className="hidden xl:inline-flex">Search...</span>
               <kbd className="pointer-events-none absolute right-1.5 top-2 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 xl:flex">
-                <span className="text-xs">⌘</span>K
+                <span className="text-xs">{isMac ? "⌘" : "Ctrl"}</span>K
               </kbd>
             </Button>
           </div>

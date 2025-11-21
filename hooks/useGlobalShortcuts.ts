@@ -19,6 +19,22 @@ export function useGlobalShortcuts() {
         return;
       }
 
+      // Handle Alt+Left (Back) and Alt+Right (Forward)
+      if (e.altKey) {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          router.back();
+          return;
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault();
+          // Next.js router doesn't have forward(), use window.history
+          if (typeof window !== "undefined") {
+            window.history.forward();
+          }
+          return;
+        }
+      }
+
       // Handle "G then X" shortcuts
       if (e.key.toLowerCase() === "g" && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault();
@@ -66,6 +82,50 @@ export function useGlobalShortcuts() {
             break;
           case "s":
             router.push("/settings");
+            break;
+          default:
+            break;
+        }
+
+        // Reset
+        lastKeyRef.current = null;
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+      }
+
+      // Handle "N then X" shortcuts
+      if (e.key.toLowerCase() === "n" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        lastKeyRef.current = "n";
+
+        // Clear previous timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+
+        // Reset after 1 second
+        timeoutRef.current = setTimeout(() => {
+          lastKeyRef.current = null;
+        }, 1000);
+
+        return;
+      }
+
+      // If last key was "N", handle the second key
+      if (lastKeyRef.current === "n" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        const key = e.key.toLowerCase();
+
+        switch (key) {
+          case "m":
+            router.push("/media/new");
+            break;
+          case "j":
+            router.push("/journals/new");
+            break;
+          case "p":
+            router.push("/parks/new");
             break;
           default:
             break;

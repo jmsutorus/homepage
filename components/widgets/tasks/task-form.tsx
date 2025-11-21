@@ -1,28 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
-import { CalendarIcon, Plus } from "lucide-react";
+import { CalendarIcon, Plus, Sparkles } from "lucide-react";
 import { TaskPriority, TaskCategory } from "@/lib/db/tasks";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
+import { TemplatePicker } from "@/components/widgets/shared/template-picker";
+import { Template } from "@/lib/constants/templates";
+import { parseTaskInput, hasParseableContent } from "@/lib/utils/task-parser";
 
 interface TaskFormProps {
   onTaskAdded: () => void;
 }
 
 export function TaskForm({ onTaskAdded }: TaskFormProps) {
+  const [rawInput, setRawInput] = useState("");
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [category, setCategory] = useState<string>("");
   const [categories, setCategories] = useState<TaskCategory[]>([]);
-  const [dueDate, setDueDate] = useState<Date | undefined>();
+  const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
   const [isAdding, setIsAdding] = useState(false);
+  const [manualOverride, setManualOverride] = useState(false);
+
+  // Parse natural language input
+  const parsedContent = useMemo(() => {
+    if (!rawInput.trim()) return null;
+    return hasParseableContent(rawInput);
+  }, [rawInput]);
+
+  const showNLPHint = parsedContent && (parsedContent.hasDate || parsedContent.hasPriority);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -44,31 +58,41 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) return;
+    if (!rawInput.trim()) return;
 
     setIsAdding(true);
     try {
+      // Parse natural language input
+      const parsed = parseTaskInput(rawInput);
+
+      // Use parsed values unless user has manually overridden
+      const finalTitle = parsed.title || rawInput.trim();
+      const finalPriority = manualOverride ? priority : (parsed.priority || priority);
+      const finalDueDate = manualOverride ? dueDate : (parsed.dueDate || dueDate);
+
       // Format due date as YYYY-MM-DD to avoid timezone issues
-      const dueDateString = dueDate
-        ? `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${String(dueDate.getDate()).padStart(2, '0')}`
+      const dueDateString = finalDueDate
+        ? `${finalDueDate.getFullYear()}-${String(finalDueDate.getMonth() + 1).padStart(2, '0')}-${String(finalDueDate.getDate()).padStart(2, '0')}`
         : undefined;
 
       const response = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: title.trim(),
-          priority,
+          title: finalTitle,
+          priority: finalPriority,
           category: category || undefined,
           dueDate: dueDateString,
         }),
       });
 
       if (response.ok) {
+        setRawInput("");
         setTitle("");
         setPriority("medium");
         setCategory("");
-        setDueDate(undefined);
+        setDueDate(new Date());
+        setManualOverride(false);
         showCreationSuccess("task");
         onTaskAdded();
       } else {
@@ -82,33 +106,81 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex gap-2">
-        <Input
-          placeholder="Add a new task... (Ctrl+Enter to submit)"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && e.ctrlKey) {
-              handleSubmit(e);
-            }
-          }}
-          disabled={isAdding}
-          className="flex-1"
-        />
-        <Button type="submit" disabled={isAdding || !title.trim()}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add
-        </Button>
-      </div>
+  const handleTemplateSelect = (template: Template) => {
+    if (template.title) {
+      setRawInput(template.title);
+      setTitle(template.title);
+    }
+    if (template.priority) {
+      setPriority(template.priority);
+      setManualOverride(true);
+    }
+    if (template.category) setCategory(template.category);
+  };
 
-      <div className="flex gap-2 justify-end">
+  // Handle manual changes to priority/date
+  const handleManualPriorityChange = (value: TaskPriority) => {
+    setPriority(value);
+    setManualOverride(true);
+  };
+
+  const handleManualDateChange = (date: Date | undefined) => {
+    setDueDate(date);
+    setManualOverride(true);
+  };
+
+  return (
+    <TooltipProvider>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Input
+              placeholder='Try "Buy milk tomorrow" or "!!! Urgent task"'
+              value={rawInput}
+              onChange={(e) => {
+                setRawInput(e.target.value);
+                setTitle(e.target.value);
+                // Reset manual override when user types new input
+                if (!manualOverride) setManualOverride(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.ctrlKey) {
+                  handleSubmit(e);
+                }
+              }}
+              disabled={isAdding}
+              className={showNLPHint ? "pr-10" : ""}
+            />
+            {showNLPHint && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Sparkles className="h-4 w-4 text-amber-500 animate-pulse" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs">
+                  <p className="text-sm">
+                    Smart parsing detected!
+                    {parsedContent?.hasDate && " Date will be extracted."}
+                    {parsedContent?.hasPriority && " Priority will be set."}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <Button type="submit" disabled={isAdding || !rawInput.trim()}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add
+          </Button>
+        </div>
+
+      <div className="flex gap-2 justify-end flex-wrap">
+        <TemplatePicker type="task" onSelect={handleTemplateSelect} />
         <div>
           <Label htmlFor="priority" className="sr-only">
             Priority
           </Label>
-          <Select value={priority} onValueChange={(value: TaskPriority) => setPriority(value)}>
+          <Select value={priority} onValueChange={handleManualPriorityChange}>
             <SelectTrigger id="priority" className="cursor-pointer">
               <SelectValue />
             </SelectTrigger>
@@ -150,7 +222,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
             <Calendar
               mode="single"
               selected={dueDate}
-              onSelect={setDueDate}
+              onSelect={handleManualDateChange}
               initialFocus
             />
           </PopoverContent>
@@ -161,12 +233,13 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => setDueDate(undefined)}
+            onClick={() => handleManualDateChange(undefined)}
           >
             Clear
           </Button>
         )}
       </div>
-    </form>
+      </form>
+    </TooltipProvider>
   );
 }
