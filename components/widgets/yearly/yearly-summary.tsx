@@ -4,14 +4,15 @@ import { YearlyStats } from "@/lib/data/yearly-data";
 import { SummaryCard } from "./summary-card";
 import { MonthlyChart } from "./monthly-chart";
 import { CategoryBreakdown } from "./category-breakdown";
-import { 
-  Film, 
-  TreePine, 
-  Dumbbell, 
-  Smile, 
-  BookOpen, 
-  Github, 
-  Gamepad2, 
+import { ShareYearDialog } from "./share-year-dialog";
+import {
+  Film,
+  TreePine,
+  Dumbbell,
+  Smile,
+  BookOpen,
+  Github,
+  Gamepad2,
   RefreshCw,
   Calendar,
   CheckCircle2
@@ -58,7 +59,8 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
         </div>
         
         <div className="flex items-center gap-2">
-           <Select value={year.toString()} onValueChange={handleYearChange}>
+          <ShareYearDialog stats={stats} year={year} />
+          <Select value={year.toString()} onValueChange={handleYearChange}>
             <SelectTrigger className="w-[120px]">
               <Calendar className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Select Year" />
