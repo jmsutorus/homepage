@@ -5,6 +5,8 @@ import { getGithubActivity } from "@/lib/github";
 import { queryOne } from "@/lib/db";
 import { getCalendarColorsForUser } from "@/lib/actions/calendar-colors";
 
+export const dynamic = "force-dynamic";
+
 interface CalendarPageProps {
   searchParams: Promise<{
     year?: string;

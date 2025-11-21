@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 
 import { requireAuth } from "@/lib/auth/server";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ year: string }>;
 }

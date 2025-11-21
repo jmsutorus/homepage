@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     if (mediaType === 'tv' && data.Writer && data.Writer !== 'N/A') {
       const writers = data.Writer.split(',').map((w: string) => w.trim());
       // Avoid duplicates
-      writers.forEach((writer) => {
+      writers.forEach((writer: string) => {
         if (!creators.includes(writer)) {
           creators.push(writer);
         }

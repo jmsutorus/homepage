@@ -1,6 +1,8 @@
 import { getDatabase } from "@/lib/db";
 import { ExercisePageClient } from "./page-client";
 
+export const dynamic = "force-dynamic";
+
 export default function ExercisePage() {
   // Get athlete data for Strava sync
   const db = getDatabase();

@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   description: "User settings and configuration",
 };
 
+export const dynamic = "force-dynamic";
+
 import { getConnectedAccounts } from "@/lib/actions/settings";
 import { IntegrationsCard } from "@/components/widgets/settings/integrations-card";
 import { MediaTagsGenresManager } from "@/components/widgets/settings/media-tags-genres-manager";

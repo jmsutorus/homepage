@@ -1,5 +1,7 @@
 import { JournalEditor } from '@/components/widgets/journal/journal-editor';
 
+export const dynamic = "force-dynamic";
+
 interface NewJournalPageProps {
   searchParams: Promise<{
     type?: string;

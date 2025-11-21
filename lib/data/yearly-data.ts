@@ -157,7 +157,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   }
 
   // Mood
-  const yearMoods = getMoodEntriesForYear(year);
+  const yearMoods = getMoodEntriesForYear(year, userId);
   const moodDistribution: Record<number, number> = {};
   let moodSum = 0;
 

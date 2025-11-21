@@ -103,13 +103,13 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         </Button>
       </div>
 
-      <div className="flex gap-2">
-        <div className="flex-1">
+      <div className="flex gap-2 justify-end">
+        <div>
           <Label htmlFor="priority" className="sr-only">
             Priority
           </Label>
           <Select value={priority} onValueChange={(value: TaskPriority) => setPriority(value)}>
-            <SelectTrigger id="priority">
+            <SelectTrigger id="priority" className="cursor-pointer">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -120,12 +120,12 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
           </Select>
         </div>
 
-        <div className="flex-1">
+        <div>
           <Label htmlFor="category" className="sr-only">
             Category
           </Label>
           <Select value={category || "none"} onValueChange={(value) => setCategory(value === "none" ? "" : value)}>
-            <SelectTrigger id="category">
+            <SelectTrigger id="category" className="cursor-pointer">
               <SelectValue placeholder="No category" />
             </SelectTrigger>
             <SelectContent>

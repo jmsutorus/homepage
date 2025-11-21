@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ParkCard } from "@/components/widgets/parks/park-card";
+
+export const dynamic = "force-dynamic";
 import { getPublishedParks } from "@/lib/db/parks";
 import { Plus } from "lucide-react";
 

@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, Pencil, MapPin } from "lucide-react";
 import { ExportButton } from "@/components/widgets/shared/export-button";
+import { getRelatedParks } from "@/lib/actions/related-content";
+import { RelatedParks } from "@/components/widgets/shared/related-content";
 
 interface ParkDetailPageProps {
   params: Promise<{
@@ -14,12 +16,7 @@ interface ParkDetailPageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  const parks = getAllParks();
-  return parks.map((park) => ({
-    slug: park.slug,
-  }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
   const { slug } = await params;
@@ -28,6 +25,14 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
   if (!park) {
     notFound();
   }
+
+  // Fetch related parks based on tags and category
+  const relatedParks = await getRelatedParks(
+    slug,
+    park.tags || [],
+    park.category,
+    6
+  );
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
@@ -124,6 +129,14 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
         <article className="prose prose-neutral dark:prose-invert max-w-none">
           <MDXRemote source={park.content} />
         </article>
+      )}
+
+      {/* Related Parks */}
+      {relatedParks.length > 0 && (
+        <>
+          <div className="my-8 border-t" />
+          <RelatedParks items={relatedParks} title="Similar Parks You Might Like" />
+        </>
       )}
     </div>
   );

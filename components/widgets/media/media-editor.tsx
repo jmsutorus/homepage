@@ -22,6 +22,7 @@ import { IMDBSearchModal, type IMDBMediaData } from './imdb-search-modal';
 import { BookSearchModal, type BookData } from './book-search-modal';
 import { Upload, FileText, CheckCircle2, XCircle, AlertCircle, Film, BookOpen } from 'lucide-react';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
+import { TagInput } from '@/components/search/tag-input';
 
 interface MediaFrontmatter {
   title: string;
@@ -86,7 +87,6 @@ export function MediaEditor({
   );
   const [content, setContent] = useState(initialContent);
   const [genreInput, setGenreInput] = useState('');
-  const [tagInput, setTagInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -702,22 +702,6 @@ export function MediaEditor({
     });
   };
 
-  const addTag = () => {
-    if (tagInput.trim() && !frontmatter.tags?.includes(tagInput.trim())) {
-      setFrontmatter({
-        ...frontmatter,
-        tags: [...(frontmatter.tags || []), tagInput.trim()],
-      });
-      setTagInput('');
-    }
-  };
-
-  const removeTag = (tag: string) => {
-    setFrontmatter({
-      ...frontmatter,
-      tags: frontmatter.tags?.filter((t) => t !== tag),
-    });
-  };
 
   const handleIMDBMediaSelect = (data: IMDBMediaData) => {
     // Populate the form with IMDB data
@@ -1039,8 +1023,8 @@ export function MediaEditor({
       {!isBatchMode && (
         <Tabs defaultValue="edit" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="edit">Edit</TabsTrigger>
-            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="edit" className="cursor-pointer">Edit</TabsTrigger>
+            <TabsTrigger value="preview" className="cursor-pointer">Preview</TabsTrigger>
           </TabsList>
 
         <TabsContent value="edit" className="space-y-6">
@@ -1073,14 +1057,14 @@ export function MediaEditor({
                       setFrontmatter({ ...frontmatter, type: value })
                     }
                   >
-                    <SelectTrigger id="type">
+                    <SelectTrigger id="type" className="cursor-pointer">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="movie">Movie</SelectItem>
-                      <SelectItem value="tv">TV Show</SelectItem>
-                      <SelectItem value="book">Book</SelectItem>
-                      <SelectItem value="game">Video Game</SelectItem>
+                      <SelectItem value="movie" className="cursor-pointer">Movie</SelectItem>
+                      <SelectItem value="tv" className="cursor-pointer">TV Show</SelectItem>
+                      <SelectItem value="book" className="cursor-pointer">Book</SelectItem>
+                      <SelectItem value="game" className="cursor-pointer">Video Game</SelectItem>
                     </SelectContent>
                   </Select>
                   {mode === 'edit' && frontmatter.type !== existingType && (
@@ -1099,7 +1083,7 @@ export function MediaEditor({
                       setFrontmatter({ ...frontmatter, status: value })
                     }
                   >
-                    <SelectTrigger id="status">
+                    <SelectTrigger id="status" className="cursor-pointer">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1262,44 +1246,14 @@ export function MediaEditor({
                 </div>
 
                 {/* Tags */}
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="tags">Tags</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="tags"
-                      value={tagInput}
-                      onChange={(e) => setTagInput(e.target.value)}
-                      placeholder="Enter custom tag"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addTag();
-                        }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      onClick={addTag}
-                      disabled={!tagInput.trim()}
-                      variant="outline"
-                    >
-                      Add
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {frontmatter.tags?.map((tag) => (
-                      <Badge key={tag} variant="outline">
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => removeTag(tag)}
-                          className="cursor-pointer ml-2 hover:text-red-500"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
+                <div className="md:col-span-2">
+                  <TagInput
+                    selectedTags={frontmatter.tags || []}
+                    onTagsChange={(tags) =>
+                      setFrontmatter({ ...frontmatter, tags })
+                    }
+                    placeholder="Enter custom tag or search existing..."
+                  />
                 </div>
 
                 {/* Featured & Published */}
@@ -1307,6 +1261,7 @@ export function MediaEditor({
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="featured"
+                      className="cursor-pointer"
                       checked={frontmatter.featured}
                       onCheckedChange={(checked) =>
                         setFrontmatter({ ...frontmatter, featured: checked === true })
@@ -1319,6 +1274,7 @@ export function MediaEditor({
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="published"
+                      className="cursor-pointer"
                       checked={frontmatter.published}
                       onCheckedChange={(checked) =>
                         setFrontmatter({ ...frontmatter, published: checked === true })

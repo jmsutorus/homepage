@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createCalendarEvent, createCalendarDateTime, calculateEndDateTime } from "@/lib/api/google-calendar";
 import { createScheduledWorkout, getScheduledWorkouts } from "@/lib/db/workouts";
-import { auth } from "@/lib/auth-better";
+import { auth } from "@/auth";
 import { cookies } from "next/headers";
 
 /**

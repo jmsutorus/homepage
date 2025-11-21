@@ -186,14 +186,14 @@ export function LinkPicker({ links, onLinksChange }: LinkPickerProps) {
           <div className="space-y-2">
             <Label htmlFor="link-type">Type</Label>
             <Select value={selectedType} onValueChange={(val: any) => setSelectedType(val)}>
-              <SelectTrigger id="link-type">
+              <SelectTrigger id="link-type" className="cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="media">Media</SelectItem>
-                <SelectItem value="park">Park</SelectItem>
-                <SelectItem value="journal">Journal</SelectItem>
-                <SelectItem value="activity">Activity</SelectItem>
+                <SelectItem value="media" className="cursor-pointer">Media</SelectItem>
+                <SelectItem value="park" className="cursor-pointer">Park</SelectItem>
+                <SelectItem value="journal" className="cursor-pointer">Journal</SelectItem>
+                <SelectItem value="activity" className="cursor-pointer">Activity</SelectItem>
               </SelectContent>
             </Select>
           </div>

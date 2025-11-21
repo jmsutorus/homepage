@@ -21,6 +21,7 @@ import { LinkPicker } from '@/components/widgets/shared/link-picker';
 import { MoodEntryModal } from '@/components/widgets/mood/mood-entry-modal';
 import { JournalLink } from '@/lib/db/journals';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
+import { TagInput } from '@/components/search/tag-input';
 
 interface JournalFrontmatter {
   title?: string;
@@ -73,7 +74,6 @@ export function JournalEditor({
       linkedSlug: link.linked_slug || undefined,
     }))
   );
-  const [tagInput, setTagInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [moodModalOpen, setMoodModalOpen] = useState(false);
@@ -121,22 +121,6 @@ export function JournalEditor({
     }, 0);
   };
 
-  const addTag = () => {
-    if (tagInput.trim() && !frontmatter.tags?.includes(tagInput.trim())) {
-      setFrontmatter({
-        ...frontmatter,
-        tags: [...(frontmatter.tags || []), tagInput.trim()],
-      });
-      setTagInput('');
-    }
-  };
-
-  const removeTag = (tag: string) => {
-    setFrontmatter({
-      ...frontmatter,
-      tags: frontmatter.tags?.filter((t) => t !== tag),
-    });
-  };
 
   // Fetch mood entry for the selected date
   const fetchMoodForDate = async (date: string) => {
@@ -240,8 +224,8 @@ export function JournalEditor({
 
       <Tabs defaultValue="edit" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="edit">Edit</TabsTrigger>
-          <TabsTrigger value="preview">Preview</TabsTrigger>
+          <TabsTrigger value="edit" className="cursor-pointer">Edit</TabsTrigger>
+          <TabsTrigger value="preview" className="cursor-pointer">Preview</TabsTrigger>
         </TabsList>
 
         <TabsContent value="edit" className="space-y-6">
@@ -261,12 +245,12 @@ export function JournalEditor({
                         setFrontmatter({ ...frontmatter, journal_type: value })
                       }
                     >
-                      <SelectTrigger id="journal-type">
+                      <SelectTrigger id="journal-type" className="cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="general">General</SelectItem>
-                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="general" className="cursor-pointer">General</SelectItem>
+                        <SelectItem value="daily" className="cursor-pointer">Daily</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -355,44 +339,14 @@ export function JournalEditor({
                 <div />
 
                 {/* Tags */}
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="tags">Tags</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="tags"
-                      value={tagInput}
-                      onChange={(e) => setTagInput(e.target.value)}
-                      placeholder="Enter tag (e.g., daily, travel, work)"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addTag();
-                        }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      onClick={addTag}
-                      disabled={!tagInput.trim()}
-                      variant="outline"
-                    >
-                      Add
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {frontmatter.tags?.map((tag) => (
-                      <Badge key={tag} variant="outline">
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => removeTag(tag)}
-                          className="cursor-pointer ml-2 hover:text-red-500"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
+                <div className="md:col-span-2">
+                  <TagInput
+                    selectedTags={frontmatter.tags || []}
+                    onTagsChange={(tags) =>
+                      setFrontmatter({ ...frontmatter, tags })
+                    }
+                    placeholder="Enter tag (e.g., daily, travel, work) or search existing..."
+                  />
                 </div>
 
                 {/* Featured & Published */}
@@ -400,6 +354,7 @@ export function JournalEditor({
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="featured"
+                      className="cursor-pointer"
                       checked={frontmatter.featured}
                       onCheckedChange={(checked) =>
                         setFrontmatter({ ...frontmatter, featured: checked === true })
@@ -412,6 +367,7 @@ export function JournalEditor({
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="published"
+                      className="cursor-pointer"
                       checked={frontmatter.published}
                       onCheckedChange={(checked) =>
                         setFrontmatter({ ...frontmatter, published: checked === true })

@@ -1,5 +1,7 @@
 import { MoodHeatmap } from "@/components/widgets/mood/mood-heatmap";
 
+export const dynamic = "force-dynamic";
+
 export default function MoodPage() {
   const currentYear = new Date().getFullYear();
 

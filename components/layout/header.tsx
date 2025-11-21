@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Settings } from "lucide-react";
+import { GlobalSearch } from "@/components/search/global-search";
 
 export function Header() {
   const { user, isAuthenticated } = useAuth();
@@ -79,6 +80,9 @@ export function Header() {
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
+          <div className="w-full flex-1 md:w-auto md:flex-none">
+            <GlobalSearch />
+          </div>
           <nav className="flex items-center gap-3">
             {isAuthenticated && user && (
               <>

@@ -117,7 +117,7 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
               <Checkbox
                 checked={task.completed}
                 onCheckedChange={() => handleToggleComplete(task.id, task.completed)}
-                className="mt-0.5"
+                className="mt-0.5 cursor-pointer"
               />
 
               <div className="flex-1 min-w-0">

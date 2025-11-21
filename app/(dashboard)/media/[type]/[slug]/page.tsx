@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, Pencil } from "lucide-react";
 import { DeleteMediaButton } from "@/components/widgets/media/delete-media-button";
 import { ExportButton } from "@/components/widgets/shared/export-button";
+import { getRelatedMedia } from "@/lib/actions/related-content";
+import { RelatedMedia } from "@/components/widgets/shared/related-content";
 
 interface MediaDetailPageProps {
   params: Promise<{
@@ -16,24 +18,7 @@ interface MediaDetailPageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  const movies = getAllMedia("media/movies").map((item) => ({
-    type: "movies",
-    slug: item.slug,
-  }));
-
-  const tv = getAllMedia("media/tv").map((item) => ({
-    type: "tv",
-    slug: item.slug,
-  }));
-
-  const books = getAllMedia("media/books").map((item) => ({
-    type: "books",
-    slug: item.slug,
-  }));
-
-  return [...movies, ...tv, ...books];
-}
+export const dynamic = "force-dynamic";
 
 export default async function MediaDetailPage({ params }: MediaDetailPageProps) {
   const { type, slug } = await params;
@@ -44,6 +29,14 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
   }
 
   const { frontmatter, content } = media;
+
+  // Fetch related media based on genres and tags
+  const relatedMedia = await getRelatedMedia(
+    slug,
+    frontmatter.genres || [],
+    frontmatter.tags || [],
+    6
+  );
 
   // Status color mapping
   const statusColors: Record<string, string> = {
@@ -170,8 +163,16 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
         </article>
       ) : (
         <div className="text-center py-12 text-muted-foreground">
-          <p>No content available. Click "Edit" to add a description.</p>
+          <p>No content available. Click &quot;Edit&quot; to add a description.</p>
         </div>
+      )}
+
+      {/* Related Media */}
+      {relatedMedia.length > 0 && (
+        <>
+          <hr className="border-border" />
+          <RelatedMedia items={relatedMedia} title="You might also like" />
+        </>
       )}
     </div>
   );

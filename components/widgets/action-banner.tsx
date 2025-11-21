@@ -18,7 +18,7 @@ export async function ActionBanner() {
   
   // Fetch data in parallel
   const [moodEntry, dailyJournal, habits, habitCompletions] = await Promise.all([
-    getMoodEntry(today),
+    getMoodEntry(today, userId),
     getDailyJournalByDate(today),
     getHabits(userId),
     getHabitCompletions(userId, today)

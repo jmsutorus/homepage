@@ -2,6 +2,8 @@ import { getHabitsWithStatsAction } from "@/lib/actions/habits";
 import { HabitsList } from "@/components/widgets/habits/habits-list";
 import { CreateHabitForm } from "@/components/widgets/habits/create-habit-form";
 
+export const dynamic = "force-dynamic";
+
 export default async function HabitsPage() {
   const habits = await getHabitsWithStatsAction();
 

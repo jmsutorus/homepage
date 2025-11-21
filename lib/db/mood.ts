@@ -2,6 +2,7 @@ import { execute, query, queryOne } from "./index";
 
 export interface MoodEntry {
   id: number;
+  userId: string;
   date: string; // YYYY-MM-DD format
   rating: number; // 1-5
   note: string | null;
@@ -15,19 +16,20 @@ export interface MoodEntry {
 export function createMoodEntry(
   date: string,
   rating: number,
-  note?: string
+  note: string | undefined,
+  userId: string
 ): MoodEntry {
   const result = execute(
-    `INSERT INTO mood_entries (date, rating, note)
-     VALUES (?, ?, ?)
-     ON CONFLICT(date) DO UPDATE SET
+    `INSERT INTO mood_entries (userId, date, rating, note)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(userId, date) DO UPDATE SET
        rating = excluded.rating,
        note = excluded.note,
        updated_at = CURRENT_TIMESTAMP`,
-    [date, rating, note || null]
+    [userId, date, rating, note || null]
   );
 
-  const entry = getMoodEntry(date);
+  const entry = getMoodEntry(date, userId);
   if (!entry) {
     throw new Error("Failed to create mood entry");
   }
@@ -38,10 +40,10 @@ export function createMoodEntry(
 /**
  * Get mood entry for a specific date
  */
-export function getMoodEntry(date: string): MoodEntry | undefined {
+export function getMoodEntry(date: string, userId: string): MoodEntry | undefined {
   return queryOne<MoodEntry>(
-    "SELECT * FROM mood_entries WHERE date = ?",
-    [date]
+    "SELECT * FROM mood_entries WHERE date = ? AND userId = ?",
+    [date, userId]
   );
 }
 
@@ -50,30 +52,32 @@ export function getMoodEntry(date: string): MoodEntry | undefined {
  */
 export function getMoodEntriesInRange(
   startDate: string,
-  endDate: string
+  endDate: string,
+  userId: string
 ): MoodEntry[] {
   return query<MoodEntry>(
-    "SELECT * FROM mood_entries WHERE date BETWEEN ? AND ? ORDER BY date ASC",
-    [startDate, endDate]
+    "SELECT * FROM mood_entries WHERE userId = ? AND date BETWEEN ? AND ? ORDER BY date ASC",
+    [userId, startDate, endDate]
   );
 }
 
 /**
  * Get all mood entries
  */
-export function getAllMoodEntries(): MoodEntry[] {
+export function getAllMoodEntries(userId: string): MoodEntry[] {
   return query<MoodEntry>(
-    "SELECT * FROM mood_entries ORDER BY date DESC"
+    "SELECT * FROM mood_entries WHERE userId = ? ORDER BY date DESC",
+    [userId]
   );
 }
 
 /**
  * Get mood entries for current year
  */
-export function getMoodEntriesForYear(year: number): MoodEntry[] {
+export function getMoodEntriesForYear(year: number, userId: string): MoodEntry[] {
   const startDate = `${year}-01-01`;
   const endDate = `${year}-12-31`;
-  return getMoodEntriesInRange(startDate, endDate);
+  return getMoodEntriesInRange(startDate, endDate, userId);
 }
 
 /**
@@ -82,11 +86,12 @@ export function getMoodEntriesForYear(year: number): MoodEntry[] {
 export function updateMoodEntry(
   date: string,
   rating: number,
-  note?: string
+  note: string | undefined,
+  userId: string
 ): boolean {
   const result = execute(
-    "UPDATE mood_entries SET rating = ?, note = ? WHERE date = ?",
-    [rating, note || null, date]
+    "UPDATE mood_entries SET rating = ?, note = ? WHERE date = ? AND userId = ?",
+    [rating, note || null, date, userId]
   );
 
   return result.changes > 0;
@@ -95,20 +100,20 @@ export function updateMoodEntry(
 /**
  * Delete mood entry
  */
-export function deleteMoodEntry(date: string): boolean {
-  const result = execute("DELETE FROM mood_entries WHERE date = ?", [date]);
+export function deleteMoodEntry(date: string, userId: string): boolean {
+  const result = execute("DELETE FROM mood_entries WHERE date = ? AND userId = ?", [date, userId]);
   return result.changes > 0;
 }
 
 /**
  * Get mood statistics
  */
-export function getMoodStatistics(): {
+export function getMoodStatistics(userId: string): {
   total: number;
   average: number;
   byRating: Record<number, number>;
 } {
-  const entries = getAllMoodEntries();
+  const entries = getAllMoodEntries(userId);
   const total = entries.length;
   const sum = entries.reduce((acc, entry) => acc + entry.rating, 0);
   const average = total > 0 ? sum / total : 0;

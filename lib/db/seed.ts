@@ -8,11 +8,22 @@ import { getDatabase } from "./index";
 export function seedDatabase() {
   console.log("🌱 Seeding database with sample data...");
 
+  // Get the first user to associate data with
+  const db = getDatabase();
+  const user = db.prepare("SELECT id FROM user LIMIT 1").get() as { id: string } | undefined;
+  
+  if (!user) {
+    console.log("⚠️ No user found. Skipping seed data that requires a user.");
+    return;
+  }
+  
+  const userId = user.id;
+
   // Seed mood entries for the past 30 days
-  seedMoodEntries();
+  seedMoodEntries(userId);
 
   // Seed sample tasks
-  seedTasks();
+  seedTasks(userId);
 
   console.log("✅ Database seeding complete!");
 }
@@ -20,7 +31,7 @@ export function seedDatabase() {
 /**
  * Seed mood entries for the past 30 days
  */
-function seedMoodEntries() {
+function seedMoodEntries(userId: string) {
   console.log("  - Seeding mood entries...");
 
   const today = new Date();
@@ -62,7 +73,7 @@ function seedMoodEntries() {
     date.setDate(date.getDate() - offset);
     const dateString = date.toISOString().split("T")[0];
 
-    createMoodEntry(dateString, rating, note || undefined);
+    createMoodEntry(dateString, rating, note || undefined, userId);
   });
 
   console.log(`    ✓ Created ${moods.length} mood entries`);
@@ -71,7 +82,7 @@ function seedMoodEntries() {
 /**
  * Seed sample tasks
  */
-function seedTasks() {
+function seedTasks(userId: string) {
   console.log("  - Seeding tasks...");
 
   const tasks = [
@@ -108,7 +119,7 @@ function seedTasks() {
       }
     }
 
-    createTask(task.title, dueDate, task.priority);
+    createTask(task.title, dueDate, task.priority, undefined, userId);
   });
 
   console.log(`    ✓ Created ${tasks.length} tasks`);

@@ -563,3 +563,26 @@ CREATE TABLE IF NOT EXISTS steam_yearly_stats (
 CREATE INDEX IF NOT EXISTS idx_steam_yearly_stats_userId ON steam_yearly_stats(userId);
 CREATE INDEX IF NOT EXISTS idx_steam_yearly_stats_year ON steam_yearly_stats(year);
 
+-- Saved Searches Table
+-- Stores user's saved search configurations (per user)
+CREATE TABLE IF NOT EXISTS saved_searches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  query TEXT,
+  filters TEXT, -- JSON object of filters
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for saved_searches
+CREATE INDEX IF NOT EXISTS idx_saved_searches_userId ON saved_searches(userId);
+
+-- Trigger to update updated_at timestamp on saved_searches
+CREATE TRIGGER IF NOT EXISTS update_saved_searches_timestamp
+AFTER UPDATE ON saved_searches
+BEGIN
+  UPDATE saved_searches SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+

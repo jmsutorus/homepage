@@ -19,6 +19,8 @@ import { getCalendarColorsForUser } from "@/lib/actions/calendar-colors";
 
 import { ActionBanner } from "@/components/widgets/action-banner";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage({
   searchParams,
 }: {

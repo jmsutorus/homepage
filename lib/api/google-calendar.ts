@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import { auth } from "@/lib/auth-better";
+import { auth } from "@/auth";
 
 export interface CalendarEvent {
   id?: string;

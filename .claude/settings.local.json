@@ -13,7 +13,8 @@
       "Bash(docker exec:*)",
       "Bash(docker cp:*)",
       "Bash(python3:*)",
-      "mcp__context7__resolve-library-id"
+      "mcp__context7__resolve-library-id",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

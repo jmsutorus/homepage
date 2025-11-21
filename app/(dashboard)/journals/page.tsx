@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { JournalCard } from "@/components/widgets/journal/journal-card";
+
+export const dynamic = "force-dynamic";
 import { getPublishedJournals } from "@/lib/db/journals";
 import { Plus } from "lucide-react";
 

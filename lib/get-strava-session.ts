@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth-better";
+import { auth } from "@/auth";
 import { cookies } from "next/headers";
 
 export interface StravaSession {

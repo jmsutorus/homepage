@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, Pencil, Calendar } from "lucide-react";
 import { LinkedItemsDisplay } from "@/components/widgets/shared/linked-items-display";
 import { ExportButton } from "@/components/widgets/shared/export-button";
+import { getRelatedJournals } from "@/lib/actions/related-content";
+import { RelatedJournals } from "@/components/widgets/shared/related-content";
 
 interface JournalDetailPageProps {
   params: Promise<{
@@ -15,12 +17,7 @@ interface JournalDetailPageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  const journals = getAllJournals();
-  return journals.map((journal) => ({
-    slug: journal.slug,
-  }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function JournalDetailPage({ params }: JournalDetailPageProps) {
   const { slug } = await params;
@@ -41,6 +38,14 @@ export default async function JournalDetailPage({ params }: JournalDetailPagePro
       displayMood = moodRating;
     }
   }
+
+  // Fetch related journals based on tags and mood
+  const relatedJournals = await getRelatedJournals(
+    slug,
+    journal.tags || [],
+    displayMood !== null && displayMood !== undefined ? displayMood : undefined,
+    6
+  );
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
@@ -129,6 +134,14 @@ export default async function JournalDetailPage({ params }: JournalDetailPagePro
         <article className="prose prose-neutral dark:prose-invert max-w-none">
           <MDXRemote source={journal.content} />
         </article>
+      )}
+
+      {/* Related Journals */}
+      {relatedJournals.length > 0 && (
+        <>
+          <div className="my-8 border-t" />
+          <RelatedJournals items={relatedJournals} title="Related Journal Entries" />
+        </>
       )}
     </div>
   );

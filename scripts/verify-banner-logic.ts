@@ -21,7 +21,7 @@ async function verify() {
     console.log(`Date: ${today}`);
 
     // 1. Fetch actual data
-    const moodEntry = getMoodEntry(today);
+    const moodEntry = getMoodEntry(today, userId);
     const dailyJournal = getDailyJournalByDate(today);
     const habits = getHabits(userId);
     const habitCompletions = getHabitCompletions(userId, today);
