@@ -53,5 +53,27 @@ When implementing creation actions, **always add appropriate success feedback**:
 - [ ] Form resets before showing success
 - [ ] Cleanup effects are in place (for dialogs)
 
+## Progress Indicators Guidelines
+When displaying progress toward goals or completion status, use the animated progress components:
+
+- **`AnimatedProgress`** - Horizontal progress bar for lists and inline progress
+- **`AnimatedProgressRing`** - Circular progress for dashboards and goal displays
+
+```tsx
+import { AnimatedProgress, AnimatedProgressRing } from "@/components/ui/animations/animated-progress";
+
+// Linear bar
+<AnimatedProgress value={15} max={30} size="md" color="success" />
+
+// Circular ring
+<AnimatedProgressRing value={75} max={100} size={80} showLabel={true} />
+```
+
+📖 **Comprehensive guide:** See `/documentation/ANIMATED-PROGRESS-GUIDE.md` for:
+- Full props reference
+- Color and size guidelines
+- Usage examples
+- Best practices
+
 # Context
 Context and developer doumentation can be found in /documentation

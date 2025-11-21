@@ -5,7 +5,9 @@ import { toggleHabitCompletionAction } from "@/lib/actions/habits";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { AnimatedProgress } from "@/components/ui/animations/animated-progress";
+import { fireAchievementConfetti } from "@/lib/utils/confetti";
 
 interface DailyHabitsProps {
   habits: Habit[];
@@ -17,10 +19,13 @@ export function DailyHabits({ habits, completions, date }: DailyHabitsProps) {
   const [optimisticCompletions, setOptimisticCompletions] = useState<Set<number>>(
     new Set(completions.map(c => c.habit_id))
   );
+  const hasTriggeredConfetti = useRef(false);
 
   const handleToggle = async (habitId: number) => {
     // Optimistic update
     const newCompletions = new Set(optimisticCompletions);
+    const wasCompleting = !newCompletions.has(habitId);
+
     if (newCompletions.has(habitId)) {
       newCompletions.delete(habitId);
     } else {
@@ -28,12 +33,22 @@ export function DailyHabits({ habits, completions, date }: DailyHabitsProps) {
     }
     setOptimisticCompletions(newCompletions);
 
+    // Check if all habits are now complete (and we just completed one)
+    if (wasCompleting && newCompletions.size === habits.length && !hasTriggeredConfetti.current) {
+      hasTriggeredConfetti.current = true;
+      // Small delay for the UI to update first
+      setTimeout(() => {
+        fireAchievementConfetti("all-habits-complete");
+      }, 300);
+    }
+
     try {
       await toggleHabitCompletionAction(habitId, date);
     } catch (error) {
       // Revert on error
       console.error("Failed to toggle habit:", error);
       setOptimisticCompletions(new Set(completions.map(c => c.habit_id)));
+      hasTriggeredConfetti.current = false;
     }
   };
 
@@ -45,8 +60,25 @@ export function DailyHabits({ habits, completions, date }: DailyHabitsProps) {
     );
   }
 
+  const completedCount = optimisticCompletions.size;
+  const totalCount = habits.length;
+
   return (
     <div className="space-y-3">
+      {/* Daily Progress Summary */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-muted-foreground">Today&apos;s progress</span>
+          <span className="font-medium">{completedCount}/{totalCount} completed</span>
+        </div>
+        <AnimatedProgress
+          value={completedCount}
+          max={totalCount}
+          size="sm"
+          color={completedCount === totalCount ? "success" : "primary"}
+        />
+      </div>
+
       {habits.map((habit) => {
         const isCompleted = optimisticCompletions.has(habit.id);
         return (

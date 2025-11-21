@@ -24,6 +24,8 @@ import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { TagInput } from '@/components/search/tag-input';
 import { TemplatePicker } from '@/components/widgets/shared/template-picker';
 import { Template } from '@/lib/constants/templates';
+import { fireAchievementConfetti, isJournalMilestone, getJournalMilestoneMessage } from '@/lib/utils/confetti';
+import { toast } from 'sonner';
 
 interface JournalFrontmatter {
   title?: string;
@@ -219,6 +221,18 @@ export function JournalEditor({
       // Show persistent success toast for create mode
       if (mode === 'create') {
         showCreationSuccess('journal', { persistent: true });
+
+        // Check for milestone achievement
+        if (data.totalJournals && isJournalMilestone(data.totalJournals)) {
+          // Fire confetti for the milestone
+          setTimeout(() => {
+            fireAchievementConfetti('journal-milestone');
+            toast.success('Milestone Reached!', {
+              description: getJournalMilestoneMessage(data.totalJournals),
+              duration: 5000,
+            });
+          }, 500);
+        }
       }
 
       // Redirect to the journal detail page

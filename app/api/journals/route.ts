@@ -6,6 +6,7 @@ import {
   getJournalBySlug,
   replaceJournalLinks,
   getMoodForDate,
+  getJournalCount,
 } from "@/lib/db/journals";
 
 // Helper function to sanitize slug
@@ -109,12 +110,16 @@ export async function POST(request: NextRequest) {
     revalidatePath("/journals");
     revalidatePath(`/journals/${slug}`);
 
+    // Get total journal count for milestone detection
+    const totalJournals = getJournalCount();
+
     return NextResponse.json(
       {
         success: true,
         slug,
         path: `/journals/${slug}`,
         journal,
+        totalJournals,
       },
       { status: 201 }
     );

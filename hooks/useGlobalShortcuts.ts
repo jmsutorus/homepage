@@ -8,6 +8,14 @@ export function useGlobalShortcuts() {
   const lastKeyRef = useRef<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const getDailyDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return '/daily/' + `${year}-${month}-${day}`;
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore shortcuts when typing in input fields
@@ -82,6 +90,9 @@ export function useGlobalShortcuts() {
             break;
           case "s":
             router.push("/settings");
+            break;
+          case "d":
+            router.push(getDailyDate());
             break;
           default:
             break;

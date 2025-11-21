@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, GripVertical, Flame, Calendar, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Trash2, GripVertical, Flame, Calendar, TrendingUp, CheckCircle2, Target } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { AnimatedProgress } from "@/components/ui/animations/animated-progress";
+import { fireAchievementConfetti } from "@/lib/utils/confetti";
 
 interface HabitsListProps {
   habits: HabitWithStats[];
@@ -132,6 +134,10 @@ export function HabitsList({ habits }: HabitsListProps) {
       setIsCompleting(id);
       await completeHabitAction(id);
       setIsCompleting(null);
+
+      // Fire confetti for completing the habit target
+      fireAchievementConfetti("habit-target-reached");
+
       toast.success("Habit marked as complete!", {
         description: "Great job on reaching your target!"
       });
@@ -236,6 +242,31 @@ export function HabitsList({ habits }: HabitsListProps) {
                           <span className="text-muted-foreground">Total:</span>
                           <span className="font-semibold">{habit.stats.totalCompletions} times</span>
                         </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <Target className="h-3.5 w-3.5" />
+                            <span>Progress to target</span>
+                          </div>
+                          <span className="font-medium">
+                            {habit.stats.totalCompletions}/{habit.target}
+                          </span>
+                        </div>
+                        <AnimatedProgress
+                          value={habit.stats.totalCompletions}
+                          max={habit.target}
+                          size="md"
+                          color={
+                            habit.completed
+                              ? "success"
+                              : habit.stats.totalCompletions >= habit.target
+                                ? "warning"
+                                : "primary"
+                          }
+                        />
                       </div>
 
                       {/* Frequency and Target */}

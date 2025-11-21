@@ -176,26 +176,30 @@
 - **Benefits**: Instant feedback, feels faster
 - **Implementation**: Local state update → server action → reconcile
 
-#### 19. **Confetti Animations for Achievements**
+#### 19. **Confetti Animations for Achievements** - IMPLEMENTED
 - **Triggers**:
-  - Complete all habits for the day
-  - 7-day habit streak
-  - 30-day habit streak
-  - Complete 10 tasks in a day
-  - 365 days of journaling
-- **Library**: canvas-confetti or react-confetti
+  - Complete all habits for the day ✓
+  - Mark habit as complete (target reached) ✓
+  - Journal milestones (10, 25, 50, 100, 150, 200...) ✓
+  - 7-day habit streak (utility ready)
+  - 30-day habit streak (utility ready)
+  - Complete 10 tasks in a day (utility ready)
+- **Library**: canvas-confetti ✓
 - **Duration**: 2-3 seconds
 - **Benefits**: Celebration, dopamine hit, engagement
+- **Utility**: `lib/utils/confetti.ts` with multiple confetti styles
 
-#### 20. **Progress Bar Animations**
+#### 20. **Progress Bar Animations** - IMPLEMENTED
 - **Use cases**:
-  - Habit progress toward target
+  - Habit progress toward target ✓
+  - Daily habit completion progress ✓
   - Task completion percentage
   - Daily mood tracking streak
   - Year in Review stats
-- **Pattern**: Animated fill from 0 to current value
-- **Easing**: easeOut for natural feel
+- **Pattern**: Animated fill from 0 to current value ✓
+- **Easing**: easeOutExpo for smooth deceleration ✓
 - **Benefits**: Satisfying visual feedback
+- **Components**: AnimatedProgress (bar), AnimatedProgressRing (circular)
 
 #### 21. **Hover Preview Cards**
 - **Implementation**: On calendar day cells, hover shows preview

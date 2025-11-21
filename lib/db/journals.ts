@@ -130,6 +130,20 @@ export function getAllJournals(): JournalContent[] {
 }
 
 /**
+ * Get total count of journals
+ */
+export function getJournalCount(): number {
+  try {
+    const stmt = db.prepare("SELECT COUNT(*) as count FROM journals");
+    const result = stmt.get() as { count: number };
+    return result.count;
+  } catch (error) {
+    console.error("Error getting journal count:", error);
+    return 0;
+  }
+}
+
+/**
  * Get published journals only
  */
 export function getPublishedJournals(): JournalContent[] {
