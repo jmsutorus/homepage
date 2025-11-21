@@ -22,7 +22,6 @@ import {
   CheckSquare,
   Clock,
   X,
-  Calendar,
   MapPin,
   Timer,
   Trees,
@@ -46,13 +45,15 @@ import { DailyTasks } from "../daily/daily-tasks";
 
 interface CalendarDayDetailProps {
   date: string;
-  data?: CalendarDayData;
+  data?: CalendarDayData | null;
+  isLoading?: boolean;
+  error?: string | null;
   onDataChange?: () => void;
 }
 
 
 
-export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetailProps) {
+export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }: CalendarDayDetailProps) {
   const router = useRouter();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -60,6 +61,42 @@ export function CalendarDayDetail({ date, data, onDataChange }: CalendarDayDetai
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
   const formattedDate = formatDateLongSafe(date, "en-US");
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{formattedDate}</CardTitle>
+          <CardDescription>Loading day details...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Skeleton loading state */}
+            <div className="animate-pulse space-y-3">
+              <div className="h-4 bg-muted rounded w-3/4" />
+              <div className="h-4 bg-muted rounded w-1/2" />
+              <div className="h-20 bg-muted rounded" />
+              <div className="h-4 bg-muted rounded w-2/3" />
+              <div className="h-4 bg-muted rounded w-1/3" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{formattedDate}</CardTitle>
+          <CardDescription className="text-destructive">{error}</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);

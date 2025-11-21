@@ -27,6 +27,40 @@ export interface CalendarDayData {
 }
 
 /**
+ * Lightweight summary data for calendar grid cells
+ * Only contains counts and minimal display info for fast rendering
+ */
+export interface CalendarDaySummary {
+  date: string;
+  moodRating: number | null;
+  activityCount: number;
+  mediaCount: number;
+  mediaFirstTitle: string | null;
+  mediaFirstType: string | null;
+  taskCounts: {
+    completed: number;
+    overdue: number;
+    upcoming: number;
+  };
+  eventCount: number;
+  eventFirstTitle: string | null;
+  parkCount: number;
+  parkFirstTitle: string | null;
+  journalCount: number;
+  journalFirstTitle: string | null;
+  workoutCounts: {
+    upcoming: number;
+    completed: number;
+    firstUpcomingTime: string | null;
+    firstUpcomingType: string | null;
+    firstCompletedName: string | null;
+    firstCompletedDistance: number | null;
+  };
+  githubEventCount: number;
+  habitCount: number;
+}
+
+/**
  * Get Strava activities in a date range (by start_date_local)
  */
 export function getActivitiesInRange(
@@ -370,4 +404,101 @@ export async function getCalendarDataForDate(
   const tomorrowDateFromDateString = tomorrowDate.toISOString().split("T")[0];
   const map = await getCalendarDataForRange(date, tomorrowDateFromDateString, githubEvents);
   return map.get(date);
+}
+
+/**
+ * Convert full CalendarDayData to lightweight CalendarDaySummary
+ */
+export function convertToSummary(
+  data: CalendarDayData,
+  today: string
+): CalendarDaySummary {
+  // Get IDs of Strava activities linked to completed workouts
+  const completedWorkouts = data.workoutActivities.filter((w) => w.completed);
+  const upcomingWorkouts = data.workoutActivities.filter((w) => !w.completed);
+  const linkedStravaIds = new Set(
+    completedWorkouts
+      .filter((w) => w.strava_activity_id)
+      .map((w) => w.strava_activity_id!)
+  );
+
+  // Filter out linked Strava activities
+  const unlinkedActivities = data.activities.filter(
+    (a) => !linkedStravaIds.has(a.id)
+  );
+
+  // Get first completed workout's linked Strava activity
+  let firstCompletedName: string | null = null;
+  let firstCompletedDistance: number | null = null;
+  if (completedWorkouts.length > 0) {
+    const firstWorkout = completedWorkouts[0];
+    if (firstWorkout.strava_activity_id) {
+      const linkedStrava = data.activities.find(
+        (a) => a.id === firstWorkout.strava_activity_id
+      );
+      if (linkedStrava) {
+        firstCompletedName = linkedStrava.name;
+        firstCompletedDistance = linkedStrava.distance || null;
+      }
+    }
+  }
+
+  // Categorize tasks relative to today
+  const completedTasks = data.tasks.filter((t) => t.completed);
+  const overdueTasks = data.tasks.filter(
+    (t) => !t.completed && t.due_date && t.due_date.split("T")[0] < today
+  );
+  const upcomingTasks = data.tasks.filter(
+    (t) => !t.completed && t.due_date && t.due_date.split("T")[0] >= today
+  );
+
+  return {
+    date: data.date,
+    moodRating: data.mood?.rating ?? null,
+    activityCount: unlinkedActivities.length,
+    mediaCount: data.media.length,
+    mediaFirstTitle: data.media[0]?.title ?? null,
+    mediaFirstType: data.media[0]?.type ?? null,
+    taskCounts: {
+      completed: completedTasks.length,
+      overdue: overdueTasks.length,
+      upcoming: upcomingTasks.length,
+    },
+    eventCount: data.events.length,
+    eventFirstTitle: data.events[0]?.title ?? null,
+    parkCount: data.parks.length,
+    parkFirstTitle: data.parks[0]?.title ?? null,
+    journalCount: data.journals.length,
+    journalFirstTitle: data.journals[0]?.title ?? null,
+    workoutCounts: {
+      upcoming: upcomingWorkouts.length,
+      completed: completedWorkouts.length,
+      firstUpcomingTime: upcomingWorkouts[0]?.time ?? null,
+      firstUpcomingType: upcomingWorkouts[0]?.type ?? null,
+      firstCompletedName,
+      firstCompletedDistance,
+    },
+    githubEventCount: data.githubEvents.length,
+    habitCount: data.habitCompletions.length,
+  };
+}
+
+/**
+ * Get lightweight summary data for a month (optimized for calendar grid rendering)
+ */
+export async function getCalendarSummaryForMonth(
+  year: number,
+  month: number,
+  githubEvents: GithubEvent[] = []
+): Promise<Map<string, CalendarDaySummary>> {
+  const fullData = await getCalendarDataForMonth(year, month, githubEvents);
+  const today = new Date().toISOString().split("T")[0];
+
+  const summaryMap = new Map<string, CalendarDaySummary>();
+
+  fullData.forEach((data, date) => {
+    summaryMap.set(date, convertToSummary(data, today));
+  });
+
+  return summaryMap;
 }

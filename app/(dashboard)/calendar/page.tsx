@@ -1,4 +1,4 @@
-import { getCalendarDataForMonth } from "@/lib/db/calendar";
+import { getCalendarSummaryForMonth } from "@/lib/db/calendar";
 import { CalendarView } from "@/components/widgets/calendar/calendar-view";
 import { auth } from "@/auth";
 import { getGithubActivity } from "@/lib/github";
@@ -46,7 +46,9 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     }
   }
 
-  const calendarData = await getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
+  // Use lightweight summary data for initial render (optimized for calendar grid)
+  // Full day details are lazy-loaded on demand when user clicks a day
+  const summaryData = await getCalendarSummaryForMonth(currentYear, currentMonth, githubEvents);
   const calendarColors = await getCalendarColorsForUser();
 
   return (
@@ -61,7 +63,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
       <CalendarView
         year={currentYear}
         month={currentMonth}
-        calendarData={calendarData}
+        summaryData={summaryData}
         colors={calendarColors}
       />
     </div>

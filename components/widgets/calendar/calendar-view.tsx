@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { CalendarDayCell } from "./calendar-day-cell";
 import { CalendarDayDetail } from "./calendar-day-detail";
 import { CalendarMonthSummary } from "./calendar-month-summary";
 import { MoodEntryModal } from "../mood/mood-entry-modal";
 import { EventModal, type EventFormData } from "./event-modal";
-import type { CalendarDayData } from "@/lib/db/calendar";
+import type { CalendarDaySummary, CalendarDayData } from "@/lib/db/calendar";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 interface CalendarViewProps {
   year: number;
   month: number; // 1-12
-  calendarData: Map<string, CalendarDayData>;
+  summaryData: Map<string, CalendarDaySummary>;
   colors: any;
 }
 
@@ -35,17 +35,71 @@ const MONTH_NAMES = [
   "December",
 ];
 
-export function CalendarView({ year, month, calendarData, colors }: CalendarViewProps) {
+export function CalendarView({ year, month, summaryData, colors }: CalendarViewProps) {
   const router = useRouter();
   const [isMoodModalOpen, setIsMoodModalOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDayForDetail, setSelectedDayForDetail] = useState<string | null>(null);
 
-  // Clear selected day when month/year changes
+  // Lazy loading state for day details
+  const [dayDetailData, setDayDetailData] = useState<CalendarDayData | null>(null);
+  const [isLoadingDayDetail, setIsLoadingDayDetail] = useState(false);
+  const [dayDetailError, setDayDetailError] = useState<string | null>(null);
+
+  // Cache for loaded day details
+  const dayDetailCache = useRef<Map<string, CalendarDayData>>(new Map());
+
+  // Clear selected day and cache when month/year changes
   useEffect(() => {
     setSelectedDayForDetail(null);
+    setDayDetailData(null);
+    setDayDetailError(null);
+    dayDetailCache.current.clear();
   }, [year, month]);
+
+  // Lazy load day details when a day is selected
+  const fetchDayDetails = useCallback(async (date: string) => {
+    // Check cache first
+    const cachedData = dayDetailCache.current.get(date);
+    if (cachedData) {
+      setDayDetailData(cachedData);
+      setDayDetailError(null);
+      return;
+    }
+
+    setIsLoadingDayDetail(true);
+    setDayDetailError(null);
+
+    try {
+      const response = await fetch(`/api/calendar/day?date=${date}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to load day details");
+      }
+
+      const data = await response.json();
+
+      // Cache the result
+      dayDetailCache.current.set(date, data);
+      setDayDetailData(data);
+    } catch (error) {
+      console.error("Error fetching day details:", error);
+      setDayDetailError("Failed to load day details");
+      setDayDetailData(null);
+    } finally {
+      setIsLoadingDayDetail(false);
+    }
+  }, []);
+
+  // Fetch day details when selected day changes
+  useEffect(() => {
+    if (selectedDayForDetail) {
+      fetchDayDetails(selectedDayForDetail);
+    } else {
+      setDayDetailData(null);
+    }
+  }, [selectedDayForDetail, fetchDayDetails]);
 
   // Get first day of month and total days
   const firstDay = new Date(year, month - 1, 1).getDay(); // 0-6 (Sun-Sat)
@@ -208,7 +262,7 @@ export function CalendarView({ year, month, calendarData, colors }: CalendarView
             }
 
             const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-            const dayData = calendarData.get(dateStr);
+            const daySummary = summaryData.get(dateStr);
 
             // Check if it's today
             const today = new Date();
@@ -222,7 +276,7 @@ export function CalendarView({ year, month, calendarData, colors }: CalendarView
                 key={dateStr}
                 day={day}
                 date={dateStr}
-                data={dayData}
+                summary={daySummary}
                 isToday={isToday}
                 isSelected={dateStr === selectedDayForDetail}
                 onOpenMoodModal={handleOpenMoodModal}
@@ -234,18 +288,25 @@ export function CalendarView({ year, month, calendarData, colors }: CalendarView
         </div>
       </Card>
 
-      {/* Day Detail Card */}
+      {/* Day Detail Card - Lazy loaded */}
       {selectedDayForDetail && (
         <CalendarDayDetail
           date={selectedDayForDetail}
-          data={calendarData.get(selectedDayForDetail)}
-          onDataChange={() => router.refresh()}
+          data={dayDetailData}
+          isLoading={isLoadingDayDetail}
+          error={dayDetailError}
+          onDataChange={() => {
+            // Invalidate cache and refresh
+            dayDetailCache.current.delete(selectedDayForDetail);
+            fetchDayDetails(selectedDayForDetail);
+            router.refresh();
+          }}
         />
       )}
 
       {/* Month Summary */}
       <CalendarMonthSummary
-        calendarData={calendarData}
+        summaryData={summaryData}
         year={year}
         month={month}
       />
@@ -256,8 +317,8 @@ export function CalendarView({ year, month, calendarData, colors }: CalendarView
           open={isMoodModalOpen}
           onOpenChange={setIsMoodModalOpen}
           date={selectedDate}
-          initialRating={calendarData.get(selectedDate)?.mood?.rating}
-          initialNote={calendarData.get(selectedDate)?.mood?.note || ""}
+          initialRating={summaryData.get(selectedDate)?.moodRating ?? undefined}
+          initialNote=""
           onSave={handleSaveMood}
         />
       )}
