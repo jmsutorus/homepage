@@ -2,7 +2,7 @@ import { getDailyJournalByDate } from "@/lib/db/journals";
 import { getHabitsAction, getHabitCompletionsAction } from "@/lib/actions/habits";
 import { formatDateLongSafe } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Plus } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 import Link from "next/link";
 import { DailyHabits } from "@/components/widgets/habits/daily-habits";
 import { DailyJournalPreview } from "@/components/widgets/journal/daily-journal-preview";
@@ -13,6 +13,7 @@ import { auth } from "@/auth";
 import { getGithubActivity } from "@/lib/github";
 import { queryOne } from "@/lib/db";
 import { DailyActivities } from "@/components/widgets/daily/daily-activities";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 
 interface DailyPageProps {
   params: Promise<{
@@ -119,12 +120,13 @@ export default async function DailyPage({ params }: DailyPageProps) {
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Button variant="ghost" size="icon" asChild className="cursor-pointer">
-          <Link href="/calendar">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
+      <div className="mb-8 space-y-4">
+        <PageBreadcrumb
+          items={[
+            { label: "Calendar", href: "/calendar" },
+            { label: formatDateLongSafe(date, "en-US") },
+          ]}
+        />
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
             {formatDateLongSafe(date, "en-US")}

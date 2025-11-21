@@ -96,13 +96,13 @@
 
 ### Priority: MEDIUM-HIGH
 
-#### 9. **Breadcrumb Navigation**
+#### 9. **Breadcrumb Navigation**  - IMPLEMENTED
 - **Current**: Only back buttons on detail pages
 - **Improvement**: Breadcrumbs on nested pages
 - **Example**: `Home > Media > Movies > The Matrix`
 - **Benefits**: Context awareness, quick navigation up hierarchy
 
-#### 10. **Command Palette (Cmd+K)**
+#### 10. **Command Palette (Cmd+K, for mac, Ctrl+K for windows)**
 - **Implementation**: Global search/command interface
 - **Trigger**: Cmd+K (Mac) / Ctrl+K (Windows)
 - **Features**:

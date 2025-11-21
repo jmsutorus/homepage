@@ -5,11 +5,12 @@ import { getMediaBySlug, getAllMedia } from "@/lib/media";
 import { formatDateLongSafe } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Star, Pencil } from "lucide-react";
+import { Star, Pencil } from "lucide-react";
 import { DeleteMediaButton } from "@/components/widgets/media/delete-media-button";
 import { ExportButton } from "@/components/widgets/shared/export-button";
 import { getRelatedMedia } from "@/lib/actions/related-content";
 import { RelatedMedia } from "@/components/widgets/shared/related-content";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 
 interface MediaDetailPageProps {
   params: Promise<{
@@ -45,16 +46,20 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
     planned: "bg-gray-500/10 text-gray-500",
   };
 
+  // Format media type for display (capitalize first letter)
+  const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Navigation Buttons */}
+      {/* Breadcrumb Navigation */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" asChild>
-          <Link href="/media">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Media
-          </Link>
-        </Button>
+        <PageBreadcrumb
+          items={[
+            { label: "Media", href: "/media" },
+            { label: formattedType, href: `/media?type=${type}` },
+            { label: frontmatter.title.replace(/-/g, ' ') },
+          ]}
+        />
         <div className="flex items-center gap-2">
           {content && (
             <ExportButton

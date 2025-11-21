@@ -5,11 +5,12 @@ import { getJournalBySlug, getAllJournals, getLinksForJournal, getMoodForDate } 
 import { formatDateLongSafe } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Star, Pencil, Calendar } from "lucide-react";
+import { Star, Pencil, Calendar } from "lucide-react";
 import { LinkedItemsDisplay } from "@/components/widgets/shared/linked-items-display";
 import { ExportButton } from "@/components/widgets/shared/export-button";
 import { getRelatedJournals } from "@/lib/actions/related-content";
 import { RelatedJournals } from "@/components/widgets/shared/related-content";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 
 interface JournalDetailPageProps {
   params: Promise<{
@@ -49,13 +50,14 @@ export default async function JournalDetailPage({ params }: JournalDetailPagePro
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
-      {/* Back Button */}
-      <Button variant="ghost" asChild className="mb-6 cursor-pointer">
-        <Link href="/journals">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Journals
-        </Link>
-      </Button>
+      {/* Breadcrumb Navigation */}
+      <PageBreadcrumb
+        items={[
+          { label: "Journals", href: "/journals" },
+          { label: journal.title },
+        ]}
+        className="mb-6"
+      />
 
       <div className="space-y-6">
         {/* Title and Edit Button */}

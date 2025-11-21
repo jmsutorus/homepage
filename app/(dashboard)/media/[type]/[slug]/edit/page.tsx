@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { MediaEditor } from "@/components/widgets/media/media-editor";
 import { getMediaBySlug } from "@/lib/db/media";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 
 interface EditMediaPageProps {
   params: Promise<{
@@ -52,13 +53,26 @@ export default async function EditMediaPage({ params }: EditMediaPageProps) {
     published: media.published === 1,
   };
 
+  // Format media type for display (capitalize first letter)
+  const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Edit Media Entry</h1>
-        <p className="text-muted-foreground">
-          Update the details for {media.title}.
-        </p>
+      <div className="mb-8 space-y-4">
+        <PageBreadcrumb
+          items={[
+            { label: "Media", href: "/media" },
+            { label: formattedType, href: `/media?type=${type}` },
+            { label: media.title, href: `/media/${type}/${slug}` },
+            { label: "Edit" },
+          ]}
+        />
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Edit Media Entry</h1>
+          <p className="text-muted-foreground">
+            Update the details for {media.title}.
+          </p>
+        </div>
       </div>
 
       <MediaEditor

@@ -5,10 +5,11 @@ import { getParkBySlug, getAllParks } from "@/lib/db/parks";
 import { formatDateLongSafe } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Star, Pencil, MapPin } from "lucide-react";
+import { Star, Pencil, MapPin } from "lucide-react";
 import { ExportButton } from "@/components/widgets/shared/export-button";
 import { getRelatedParks } from "@/lib/actions/related-content";
 import { RelatedParks } from "@/components/widgets/shared/related-content";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 
 interface ParkDetailPageProps {
   params: Promise<{
@@ -36,13 +37,14 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
-      {/* Back Button */}
-      <Button variant="ghost" asChild className="mb-6 cursor-pointer">
-        <Link href="/parks">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Parks
-        </Link>
-      </Button>
+      {/* Breadcrumb Navigation */}
+      <PageBreadcrumb
+        items={[
+          { label: "Parks", href: "/parks" },
+          { label: park.title },
+        ]}
+        className="mb-6"
+      />
 
       {/* Header with poster */}
       {park.poster && (
