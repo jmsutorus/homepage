@@ -12,7 +12,9 @@ export function AchievementsList({ userAchievements }: AchievementsListProps) {
   return (
     <div className="space-y-8">
       {categories.map(category => {
-        const categoryAchievements = ACHIEVEMENTS.filter(a => a.category === category);
+        const categoryAchievements = ACHIEVEMENTS
+          .filter(a => a.category === category)
+          .sort((a, b) => a.points - b.points);
         
         return (
           <div key={category}>

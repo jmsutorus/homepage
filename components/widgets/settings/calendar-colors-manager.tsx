@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface CalendarColor {
   id: number;
@@ -53,6 +54,7 @@ export function CalendarColorsManager() {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [editedColors, setEditedColors] = useState<Record<string, { bg_color: string; text_color: string }>>({});
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     fetchColors();
@@ -154,17 +156,6 @@ export function CalendarColorsManager() {
 
   const hasChanges = Object.keys(editedColors).length > 0;
 
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Calendar Colors</CardTitle>
-          <CardDescription>Loading...</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
   return (
     <>
       <Card>
@@ -176,77 +167,96 @@ export function CalendarColorsManager() {
                 Customize the colors for different calendar item types. Changes will be reflected across all calendar views.
               </CardDescription>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setResetDialogOpen(true)}
-              disabled={saving}
-            >
-              Reset to Defaults
-            </Button>
+            <div className="flex items-center gap-2">
+              {isExpanded && (
+                <Button
+                  variant="outline"
+                  onClick={() => setResetDialogOpen(true)}
+                  disabled={saving || loading}
+                >
+                  Reset to Defaults
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Success/Error Message */}
-          {message && (
-            <div className={`p-3 rounded-lg ${message.type === "success" ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}>
-              {message.text}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {/* Header */}
-            <div className="grid grid-cols-4 gap-4 pb-2 border-b font-medium text-sm">
-              <div>Category</div>
-              <div>Preview</div>
-              <div>Background Color</div>
-              <div>Text Color</div>
-            </div>
-
-            {/* Color rows */}
-            {colors.map((color) => {
-              const bgValue = getCurrentValue(color.category, "bg_color");
-              const textValue = getCurrentValue(color.category, "text_color");
-
-              return (
-                <div key={color.category} className="grid grid-cols-4 gap-4 items-center py-2 border-b last:border-b-0">
-                  <div className="font-medium text-sm">
-                    {CATEGORY_LABELS[color.category] || color.category}
+        {isExpanded && (
+          <CardContent className="space-y-4">
+            {loading ? (
+              <div className="text-center py-4 text-muted-foreground">Loading colors...</div>
+            ) : (
+              <>
+                {/* Success/Error Message */}
+                {message && (
+                  <div className={`p-3 rounded-lg ${message.type === "success" ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}>
+                    {message.text}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className={cn("w-6 h-6 rounded", bgValue)} />
-                    <span className={cn("text-sm font-medium", textValue)}>
-                      Text
-                    </span>
+                )}
+
+                <div className="space-y-4">
+                  {/* Header */}
+                  <div className="grid grid-cols-4 gap-4 pb-2 border-b font-medium text-sm">
+                    <div>Category</div>
+                    <div>Preview</div>
+                    <div>Background Color</div>
+                    <div>Text Color</div>
                   </div>
-                  <Input
-                    value={bgValue}
-                    onChange={(e) => handleColorChange(color.category, "bg_color", e.target.value)}
-                    placeholder="e.g., bg-orange-500"
-                    className="font-mono text-sm"
-                  />
-                  <Input
-                    value={textValue}
-                    onChange={(e) => handleColorChange(color.category, "text_color", e.target.value)}
-                    placeholder="e.g., text-orange-500"
-                    className="font-mono text-sm"
-                  />
+
+                  {/* Color rows */}
+                  {colors.map((color) => {
+                    const bgValue = getCurrentValue(color.category, "bg_color");
+                    const textValue = getCurrentValue(color.category, "text_color");
+
+                    return (
+                      <div key={color.category} className="grid grid-cols-4 gap-4 items-center py-2 border-b last:border-b-0">
+                        <div className="font-medium text-sm">
+                          {CATEGORY_LABELS[color.category] || color.category}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className={cn("w-6 h-6 rounded", bgValue)} />
+                          <span className={cn("text-sm font-medium", textValue)}>
+                            Text
+                          </span>
+                        </div>
+                        <Input
+                          value={bgValue}
+                          onChange={(e) => handleColorChange(color.category, "bg_color", e.target.value)}
+                          placeholder="e.g., bg-orange-500"
+                          className="font-mono text-sm"
+                        />
+                        <Input
+                          value={textValue}
+                          onChange={(e) => handleColorChange(color.category, "text_color", e.target.value)}
+                          placeholder="e.g., text-orange-500"
+                          className="font-mono text-sm"
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
 
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Use Tailwind color classes. Examples: bg-blue-500, text-red-600, bg-emerald-400
-            </p>
-            <Button
-              onClick={handleSave}
-              disabled={!hasChanges || saving}
-            >
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
-        </CardContent>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Use Tailwind color classes. Examples: bg-blue-500, text-red-600, bg-emerald-400
+                  </p>
+                  <Button
+                    onClick={handleSave}
+                    disabled={!hasChanges || saving}
+                  >
+                    {saving ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        )}
       </Card>
 
       {/* Reset Confirmation Dialog */}

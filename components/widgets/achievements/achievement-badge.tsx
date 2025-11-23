@@ -65,7 +65,7 @@ export function AchievementBadge({ achievement, unlocked, progress, className }:
       <div className="w-full mt-auto">
         <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
           <span>{unlocked ? "Unlocked" : "Progress"}</span>
-          <span>{progress} / {achievement.target_value}</span>
+          <span>{Math.min(progress, achievement.target_value)} / {achievement.target_value}</span>
         </div>
         <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
           <div 

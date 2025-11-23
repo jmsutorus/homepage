@@ -91,6 +91,12 @@ export function useGlobalShortcuts() {
           case "s":
             router.push("/settings");
             break;
+          case "k":
+            router.push("/goals");
+            break;
+          case "a":
+            router.push("/achievements");
+            break;
           case "d":
             router.push(getDailyDate());
             break;

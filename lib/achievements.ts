@@ -18,7 +18,7 @@ export async function getUserAchievements(userId: string) {
   return map;
 }
 
-export type AchievementCategory = 'mood' | 'media' | 'habits' | 'tasks' | 'parks' | 'journal' | 'general';
+export type AchievementCategory = 'mood' | 'media' | 'habits' | 'tasks' | 'parks' | 'journal' | 'exercise' | 'general';
 
 export interface Achievement {
   id: string;
@@ -75,6 +75,27 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
   
   // Media Achievements
+
+  {
+    id: 'bookworm-1',
+    slug: 'bookworm-1',
+    title: 'Page Turner',
+    description: 'Read your first book',
+    icon: 'book-open',
+    category: 'media',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'bookworm-5',
+    slug: 'bookworm-5',
+    title: 'Avid Reader',
+    description: 'Read 5 books',
+    icon: 'book-open',
+    category: 'media',
+    points: 15,
+    target_value: 5,
+  },
   {
     id: 'bookworm-10',
     slug: 'bookworm-10',
@@ -84,6 +105,66 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: 'media',
     points: 30,
     target_value: 10,
+  },
+  {
+    id: 'bookworm-25',
+    slug: 'bookworm-25',
+    title: 'Library Regular',
+    description: 'Read 25 books',
+    icon: 'book-open',
+    category: 'media',
+    points: 40,
+    target_value: 25,
+  },
+  {
+    id: 'bookworm-50',
+    slug: 'bookworm-50',
+    title: 'Bibliophile',
+    description: 'Read 50 books',
+    icon: 'book-open',
+    category: 'media',
+    points: 50,
+    target_value: 50,
+  },
+  {
+    id: 'movie-buff-100',
+    slug: 'movie-buff-100',
+    title: 'Movie Buff',
+    description: 'Watch 100 movies',
+    icon: 'film',
+    category: 'media',
+    points: 50,
+    target_value: 10,
+  },
+  {
+    id: 'movie-buff-1',
+    slug: 'movie-buff-1',
+    title: 'Movie Fan',
+    description: 'Watch your first movie',
+    icon: 'film',
+    category: 'media',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'movie-buff-25',
+    slug: 'movie-buff-25',
+    title: 'Film Critic',
+    description: 'Watch 25 movies',
+    icon: 'film',
+    category: 'media',
+    points: 20,
+    target_value: 25,
+  },
+  {
+    id: 'movie-buff-50',
+    slug: 'movie-buff-50',
+    title: 'Cinephile',
+    description: 'Watch 50 movies',
+    icon: 'film',
+    category: 'media',
+    points: 35,
+    target_value: 50,
   },
   {
     id: 'movie-buff-100',
@@ -107,6 +188,46 @@ export const ACHIEVEMENTS: Achievement[] = [
     points: 50,
     target_value: 30,
   },
+  {
+    id: 'habit-master-1',
+    slug: 'habit-master-1',
+    title: 'Habit Starter',
+    description: 'Complete your first habit',
+    icon: 'repeat',
+    category: 'habits',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'habit-master-10',
+    slug: 'habit-master-10',
+    title: 'Consistency',
+    description: 'Complete 10 habits',
+    icon: 'repeat',
+    category: 'habits',
+    points: 15,
+    target_value: 10,
+  },
+  {
+    id: 'habit-master-50',
+    slug: 'habit-master-50',
+    title: 'Routine Builder',
+    description: 'Complete 50 habits',
+    icon: 'repeat',
+    category: 'habits',
+    points: 30,
+    target_value: 50,
+  },
+  {
+    id: 'habit-master-100',
+    slug: 'habit-master-100',
+    title: 'Habit Master',
+    description: 'Complete 100 habits',
+    icon: 'repeat',
+    category: 'habits',
+    points: 50,
+    target_value: 100,
+  },
 
   // Task Achievements
   {
@@ -129,6 +250,88 @@ export const ACHIEVEMENTS: Achievement[] = [
     points: 40,
     target_value: 5,
   },
+  {
+    id: 'task-master-1',
+    slug: 'task-master-1',
+    title: 'Getting Started',
+    description: 'Complete your first task',
+    icon: 'check-circle-2',
+    category: 'tasks',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'task-master-10',
+    slug: 'task-master-10',
+    title: 'Task Doer',
+    description: 'Complete 10 tasks',
+    icon: 'check-circle-2',
+    category: 'tasks',
+    points: 15,
+    target_value: 10,
+  },
+  {
+    id: 'task-master-50',
+    slug: 'task-master-50',
+    title: 'Productivity Pro',
+    description: 'Complete 50 tasks',
+    icon: 'check-circle-2',
+    category: 'tasks',
+    points: 30,
+    target_value: 50,
+  },
+  {
+    id: 'task-master-100',
+    slug: 'task-master-100',
+    title: 'Task Master',
+    description: 'Complete 100 tasks',
+    icon: 'check-circle-2',
+    category: 'tasks',
+    points: 50,
+    target_value: 100,
+  },
+  
+  // Exercise Achievements
+  {
+    id: 'fitness-1',
+    slug: 'fitness-1',
+    title: 'First Workout',
+    description: 'Log your first workout',
+    icon: 'dumbbell',
+    category: 'exercise',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'fitness-10',
+    slug: 'fitness-10',
+    title: 'Getting Fit',
+    description: 'Log 10 workouts',
+    icon: 'dumbbell',
+    category: 'exercise',
+    points: 15,
+    target_value: 10,
+  },
+  {
+    id: 'fitness-50',
+    slug: 'fitness-50',
+    title: 'Athlete',
+    description: 'Log 50 workouts',
+    icon: 'dumbbell',
+    category: 'exercise',
+    points: 30,
+    target_value: 50,
+  },
+  {
+    id: 'fitness-100',
+    slug: 'fitness-100',
+    title: 'Iron Will',
+    description: 'Log 100 workouts',
+    icon: 'dumbbell',
+    category: 'exercise',
+    points: 50,
+    target_value: 100,
+  },
 
   // Park Achievements
   {
@@ -141,6 +344,26 @@ export const ACHIEVEMENTS: Achievement[] = [
     points: 50,
     target_value: 10,
   },
+  {
+    id: 'explorer-1',
+    slug: 'explorer-1',
+    title: 'First Steps',
+    description: 'Visit your first national park',
+    icon: 'mountain',
+    category: 'parks',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'explorer-5',
+    slug: 'explorer-5',
+    title: 'Adventurer',
+    description: 'Visit 5 national parks',
+    icon: 'mountain',
+    category: 'parks',
+    points: 20,
+    target_value: 5,
+  },
 
   // Journal Achievements
   {
@@ -152,6 +375,36 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: 'journal',
     points: 50,
     target_value: 100,
+  },
+  {
+    id: 'memory-keeper-1',
+    slug: 'memory-keeper-1',
+    title: 'Dear Diary',
+    description: 'Create your first journal entry',
+    icon: 'pen-tool',
+    category: 'journal',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'memory-keeper-10',
+    slug: 'memory-keeper-10',
+    title: 'Storyteller',
+    description: 'Create 10 journal entries',
+    icon: 'pen-tool',
+    category: 'journal',
+    points: 15,
+    target_value: 10,
+  },
+  {
+    id: 'memory-keeper-50',
+    slug: 'memory-keeper-50',
+    title: 'Chronicler',
+    description: 'Create 50 journal entries',
+    icon: 'pen-tool',
+    category: 'journal',
+    points: 30,
+    target_value: 50,
   },
 ];
 
@@ -194,6 +447,9 @@ export async function checkAchievement(userId: string, type: AchievementCategory
       break;
     case 'journal':
       await checkJournalAchievements(userId);
+      break;
+    case 'exercise':
+      await checkExerciseAchievements(userId);
       break;
   }
 }
@@ -292,13 +548,22 @@ async function checkMediaAchievements(userId: string) {
     `SELECT COUNT(*) as count FROM media_content WHERE userId = ? AND type = 'book' AND status = 'completed'`,
     [userId]
   );
+
+  await unlockAchievement(userId, 'bookworm-1', books?.count || 0);
+  await unlockAchievement(userId, 'bookworm-5', books?.count || 0);
   await unlockAchievement(userId, 'bookworm-10', books?.count || 0);
+  await unlockAchievement(userId, 'bookworm-25', books?.count || 0);
+  await unlockAchievement(userId, 'bookworm-50', books?.count || 0);
 
   // Movie Buff
   const movies = queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM media_content WHERE userId = ? AND type = 'movie' AND status = 'completed'`,
     [userId]
   );
+
+  await unlockAchievement(userId, 'movie-buff-1', movies?.count || 0);
+  await unlockAchievement(userId, 'movie-buff-25', movies?.count || 0);
+  await unlockAchievement(userId, 'movie-buff-50', movies?.count || 0);
   await unlockAchievement(userId, 'movie-buff-100', movies?.count || 0);
 }
 
@@ -310,6 +575,12 @@ async function checkHabitAchievements(userId: string) {
     [userId]
   );
   await unlockAchievement(userId, 'habit-streak-30', completions?.count || 0);
+  
+  // Total Habits
+  await unlockAchievement(userId, 'habit-master-1', completions?.count || 0);
+  await unlockAchievement(userId, 'habit-master-10', completions?.count || 0);
+  await unlockAchievement(userId, 'habit-master-50', completions?.count || 0);
+  await unlockAchievement(userId, 'habit-master-100', completions?.count || 0);
 }
 
 async function checkTaskAchievements(userId: string) {
@@ -319,6 +590,16 @@ async function checkTaskAchievements(userId: string) {
     [userId]
   );
   await unlockAchievement(userId, 'task-master-5', todayTasks?.count || 0);
+
+  // Total Tasks
+  const totalTasks = queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM tasks WHERE userId = ? AND completed = 1`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'task-master-1', totalTasks?.count || 0);
+  await unlockAchievement(userId, 'task-master-10', totalTasks?.count || 0);
+  await unlockAchievement(userId, 'task-master-50', totalTasks?.count || 0);
+  await unlockAchievement(userId, 'task-master-100', totalTasks?.count || 0);
 }
 
 async function checkParkAchievements(userId: string) {
@@ -326,6 +607,9 @@ async function checkParkAchievements(userId: string) {
     `SELECT COUNT(*) as count FROM parks WHERE userId = ? AND visited IS NOT NULL`,
     [userId]
   );
+
+  await unlockAchievement(userId, 'explorer-1', parks?.count || 0);
+  await unlockAchievement(userId, 'explorer-5', parks?.count || 0);
   await unlockAchievement(userId, 'explorer-10', parks?.count || 0);
 }
 
@@ -334,5 +618,30 @@ async function checkJournalAchievements(userId: string) {
     `SELECT COUNT(*) as count FROM journals WHERE userId = ?`,
     [userId]
   );
+
+  await unlockAchievement(userId, 'memory-keeper-1', journals?.count || 0);
+  await unlockAchievement(userId, 'memory-keeper-10', journals?.count || 0);
+  await unlockAchievement(userId, 'memory-keeper-50', journals?.count || 0);
   await unlockAchievement(userId, 'memory-keeper-100', journals?.count || 0);
+}
+
+async function checkExerciseAchievements(userId: string) {
+  // Count Strava activities and manual workout activities
+  // We'll just sum them up for now, assuming minimal overlap or that overlap is acceptable for "total activity"
+  const stravaCount = queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM strava_activities WHERE userId = ?`,
+    [userId]
+  )?.count || 0;
+
+  const manualCount = queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM workout_activities WHERE userId = ? AND completed = 1`,
+    [userId]
+  )?.count || 0;
+
+  const totalWorkouts = stravaCount + manualCount;
+
+  await unlockAchievement(userId, 'fitness-1', totalWorkouts);
+  await unlockAchievement(userId, 'fitness-10', totalWorkouts);
+  await unlockAchievement(userId, 'fitness-50', totalWorkouts);
+  await unlockAchievement(userId, 'fitness-100', totalWorkouts);
 }
