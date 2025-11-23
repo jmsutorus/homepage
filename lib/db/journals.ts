@@ -1,11 +1,13 @@
 import Database from "better-sqlite3";
 import path from "path";
+import { checkAchievement } from "../achievements";
 
 const dbPath = path.join(process.cwd(), "data", "homepage.db");
 const db = new Database(dbPath);
 
 export interface DBJournal {
   id: number;
+  userId: string;
   slug: string;
   title: string;
   journal_type: "daily" | "general";
@@ -21,6 +23,7 @@ export interface DBJournal {
 
 export interface JournalContent {
   id: number;
+  userId: string;
   slug: string;
   title: string;
   journal_type: "daily" | "general";
@@ -58,6 +61,7 @@ export interface JournalLink {
 function dbToJournalContent(row: DBJournal): JournalContent {
   return {
     id: row.id,
+    userId: row.userId,
     slug: row.slug,
     title: row.title,
     journal_type: row.journal_type,
@@ -220,6 +224,7 @@ export function createJournal(data: {
   featured?: boolean;
   published?: boolean;
   content: string;
+  userId: string;
 }): JournalContent {
   try {
     const journalType = data.journal_type || "general";
@@ -253,8 +258,8 @@ export function createJournal(data: {
 
     const stmt = db.prepare(`
       INSERT INTO journals (
-        slug, title, journal_type, daily_date, mood, tags, featured, published, content
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        slug, title, journal_type, daily_date, mood, tags, featured, published, content, userId
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -266,13 +271,17 @@ export function createJournal(data: {
       data.tags ? JSON.stringify(data.tags) : null,
       data.featured ? 1 : 0,
       data.published !== false ? 1 : 0,
-      data.content
+      data.content,
+      data.userId
     );
 
     const journal = getJournalBySlug(slug);
     if (!journal) {
       throw new Error("Failed to create journal");
     }
+
+    // Check for achievements
+    checkAchievement(data.userId, 'journal').catch(console.error);
 
     return journal;
   } catch (error) {

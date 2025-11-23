@@ -7,6 +7,7 @@ import {
   differenceInCalendarWeeks,
   differenceInCalendarMonths,
 } from "date-fns";
+import { checkAchievement } from "../achievements";
 
 export interface Habit {
   id: number;
@@ -220,6 +221,8 @@ export function toggleHabitCompletion(habitId: number, userId: string, date: str
         "INSERT INTO habit_completions (habit_id, userId, date) VALUES (?, ?, ?)",
         [habitId, userId, date]
       );
+      // Check for achievements
+      checkAchievement(userId, 'habits').catch(console.error);
       return true; // Completed
     }
   } catch (error) {

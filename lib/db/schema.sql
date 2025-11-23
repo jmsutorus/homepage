@@ -699,3 +699,45 @@ CREATE INDEX IF NOT EXISTS idx_goal_links_linked_type ON goal_links(linked_type)
 CREATE INDEX IF NOT EXISTS idx_goal_links_linked_id ON goal_links(linked_id);
 CREATE INDEX IF NOT EXISTS idx_goal_links_type_id ON goal_links(linked_type, linked_id);
 
+-- Achievements Table
+-- Defines available achievements in the system
+CREATE TABLE IF NOT EXISTS achievements (
+  id TEXT PRIMARY KEY, -- String ID like 'early-bird', 'bookworm-1'
+  slug TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  icon TEXT NOT NULL, -- Lucide icon name
+  category TEXT NOT NULL, -- 'mood', 'media', 'habits', 'tasks', 'parks', 'journal', 'general'
+  points INTEGER DEFAULT 10,
+  target_value INTEGER DEFAULT 1, -- Value needed to unlock (e.g., 10 books)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User Achievements Table
+-- Tracks user progress and unlocked achievements
+CREATE TABLE IF NOT EXISTS user_achievements (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  achievementId TEXT NOT NULL,
+  unlocked BOOLEAN DEFAULT 0,
+  unlocked_at TIMESTAMP,
+  progress INTEGER DEFAULT 0, -- Current progress value
+  notified INTEGER DEFAULT 0, -- 0 = not notified, 1 = notified
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (achievementId) REFERENCES achievements(id) ON DELETE CASCADE,
+  UNIQUE(userId, achievementId)
+);
+
+-- Indexes for user_achievements
+CREATE INDEX IF NOT EXISTS idx_user_achievements_userId ON user_achievements(userId);
+CREATE INDEX IF NOT EXISTS idx_user_achievements_achievementId ON user_achievements(achievementId);
+CREATE INDEX IF NOT EXISTS idx_user_achievements_unlocked ON user_achievements(unlocked);
+
+-- Trigger to update updated_at timestamp on user_achievements
+CREATE TRIGGER IF NOT EXISTS update_user_achievements_timestamp
+AFTER UPDATE ON user_achievements
+BEGIN
+  UPDATE user_achievements SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;

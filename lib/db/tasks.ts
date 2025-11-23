@@ -1,4 +1,5 @@
 import { execute, query, queryOne } from "./index";
+import { checkAchievement } from "../achievements";
 
 export type TaskPriority = "low" | "medium" | "high";
 
@@ -183,6 +184,17 @@ export function updateTask(
   params.push(id);
   const sql = `UPDATE tasks SET ${fields.join(", ")} WHERE id = ?`;
   const result = execute(sql, params);
+
+  if (result.changes > 0) {
+    // Check for achievements if completed status changed to true
+    if (updates.completed === true) {
+      // Need userId. Fetch task to get it.
+      const task = getTask(id);
+      if (task && task.userId) {
+        checkAchievement(task.userId, 'tasks').catch(console.error);
+      }
+    }
+  }
 
   return result.changes > 0;
 }

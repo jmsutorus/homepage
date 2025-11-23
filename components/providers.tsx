@@ -1,8 +1,10 @@
 "use client";
 
+import * as React from "react";
 import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
+import { AchievementToastListener } from "@/components/widgets/achievements/achievement-toast-listener";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -15,6 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         {children}
         <Toaster />
+        <AchievementToastListener />
       </ThemeProvider>
     </SessionProvider>
   );

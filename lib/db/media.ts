@@ -1,7 +1,9 @@
 import { execute, query, queryOne } from "./index";
+import { checkAchievement } from "../achievements";
 
 export interface MediaContent {
   id: number;
+  userId: string;
   slug: string;
   title: string;
   type: "movie" | "tv" | "book" | "game";
@@ -248,6 +250,21 @@ export function updateMedia(
     `UPDATE media_content SET ${updates.join(", ")} WHERE slug = ?`,
     params
   );
+
+  if (result.changes > 0) {
+    // Check for achievements if status changed to completed
+    if (data.status === 'completed') {
+      // We need userId. MediaContent has userId but updateMedia doesn't take it.
+      // However, checkAchievement needs userId.
+      // The current updateMedia function doesn't seem to enforce userId ownership check explicitly 
+      // (it assumes slug is unique enough or caller handles auth).
+      // Let's fetch the media to get userId.
+      const updatedMedia = getMediaBySlug(slug);
+      if (updatedMedia) {
+        checkAchievement(updatedMedia.userId, 'media').catch(console.error);
+      }
+    }
+  }
 
   return result.changes > 0;
 }

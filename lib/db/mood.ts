@@ -1,4 +1,5 @@
 import { execute, query, queryOne } from "./index";
+import { checkAchievement } from "../achievements";
 
 export interface MoodEntry {
   id: number;
@@ -33,6 +34,9 @@ export function createMoodEntry(
   if (!entry) {
     throw new Error("Failed to create mood entry");
   }
+
+  // Check for achievements in the background
+  checkAchievement(userId, 'mood').catch(console.error);
 
   return entry;
 }

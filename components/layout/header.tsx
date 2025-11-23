@@ -89,6 +89,12 @@ export function Header() {
             >
               Year in Review
             </Link>
+            <Link
+              href="/achievements"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Achievements
+            </Link>
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">

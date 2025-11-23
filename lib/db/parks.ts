@@ -1,12 +1,14 @@
 import Database from "better-sqlite3";
 import path from "path";
 import { ParkCategoryValue } from "./enums/park-enums";
+import { checkAchievement } from "../achievements";
 
 const dbPath = path.join(process.cwd(), "data", "homepage.db");
 const db = new Database(dbPath);
 
 export interface DBPark {
   id: number;
+  userId: string;
   slug: string;
   title: string;
   category: ParkCategoryValue;
@@ -25,6 +27,7 @@ export interface DBPark {
 
 export interface ParkContent {
   id: number;
+  userId: string;
   slug: string;
   title: string;
   category: ParkCategoryValue;
@@ -47,6 +50,7 @@ export interface ParkContent {
 function dbToParkContent(row: DBPark): ParkContent {
   return {
     id: row.id,
+    userId: row.userId,
     slug: row.slug,
     title: row.title,
     category: row.category,
@@ -183,13 +187,14 @@ export function createPark(data: {
   featured?: boolean;
   published?: boolean;
   content: string;
+  userId: string;
 }): ParkContent {
   try {
     const stmt = db.prepare(`
       INSERT INTO parks (
         slug, title, category, state, poster, description,
-        visited, tags, rating, featured, published, content
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        visited, tags, rating, featured, published, content, userId
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -204,13 +209,17 @@ export function createPark(data: {
       data.rating !== undefined ? data.rating : null,
       data.featured ? 1 : 0,
       data.published !== false ? 1 : 0,
-      data.content
+      data.content,
+      data.userId
     );
 
     const park = getParkBySlug(data.slug);
     if (!park) {
       throw new Error("Failed to create park");
     }
+
+    // Check for achievements
+    checkAchievement(data.userId, 'parks').catch(console.error);
 
     return park;
   } catch (error) {
