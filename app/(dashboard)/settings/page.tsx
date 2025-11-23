@@ -11,6 +11,7 @@ import { getConnectedAccounts } from "@/lib/actions/settings";
 import { IntegrationsCard } from "@/components/widgets/settings/integrations-card";
 import { MediaTagsGenresManager } from "@/components/widgets/settings/media-tags-genres-manager";
 import { CalendarColorsManager } from "@/components/widgets/settings/calendar-colors-manager";
+import { SignOutButton } from "@/components/widgets/settings/sign-out-button";
 
 export default async function SettingsPage() {
   const connectedAccounts = await getConnectedAccounts();
@@ -30,6 +31,8 @@ export default async function SettingsPage() {
         <MediaTagsGenresManager />
 
         <IntegrationsCard connectedAccounts={connectedAccounts} />
+
+        <SignOutButton />
       </div>
     </div>
   );

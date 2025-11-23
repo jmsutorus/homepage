@@ -4,9 +4,15 @@ import * as React from "react";
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/hooks/useAuth";
-import { signOut } from "@/lib/auth/client";
+
 import { Button } from "@/components/ui/button";
-import { LogOut, Settings, Search } from "lucide-react";
+import { Settings, Search, ChevronDown, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Header() {
   const { user, isAuthenticated } = useAuth();
@@ -17,9 +23,7 @@ export function Header() {
     setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0);
   }, []);
 
-  const handleSignOut = async () => {
-    await signOut();
-  };
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -35,66 +39,83 @@ export function Header() {
             >
               Calendar
             </Link>
-            <Link
-              href="/mood"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Mood
-            </Link>
-            <Link
-              href="/media"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Media
-            </Link>
-            <Link
-              href="/parks"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Parks
-            </Link>
-            <Link
-              href="/journals"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Journals
-            </Link>
-            <Link
-              href="/tasks"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Tasks
-            </Link>
-            <Link
-              href="/exercise"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Exercise
-            </Link>
-            <Link
-              href="/habits"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Habits
-            </Link>
-            <Link
-              href="/goals"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Goals
-            </Link>
-            <Link
-              href={`/year/${new Date().getFullYear()}`}
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Year in Review
-            </Link>
-            <Link
-              href="/achievements"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Achievements
-            </Link>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 transition-colors hover:text-foreground/80 text-foreground/60 outline-none">
+                Track <ChevronDown className="h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link href="/tasks" className="w-full cursor-pointer">
+                    Tasks
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/habits" className="w-full cursor-pointer">
+                    Habits
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/exercise" className="w-full cursor-pointer">
+                    Exercise
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/mood" className="w-full cursor-pointer">
+                    Mood
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 transition-colors hover:text-foreground/80 text-foreground/60 outline-none">
+                Library <ChevronDown className="h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link href="/media" className="w-full cursor-pointer">
+                    Media
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/parks" className="w-full cursor-pointer">
+                    Parks
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/journals" className="w-full cursor-pointer">
+                    Journals
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 transition-colors hover:text-foreground/80 text-foreground/60 outline-none">
+                Progress <ChevronDown className="h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link href="/goals" className="w-full cursor-pointer">
+                    Goals
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/achievements" className="w-full cursor-pointer">
+                    Achievements
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`/year/${new Date().getFullYear()}`}
+                    className="w-full cursor-pointer"
+                  >
+                    Year in Review
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
@@ -122,31 +143,25 @@ export function Header() {
           </div>
           <nav className="flex items-center gap-3">
             {isAuthenticated && user && (
-              <>
-                <span className="hidden md:inline-block text-sm text-muted-foreground">
-                  {user.name || user.email}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span className="hidden md:inline-block">Sign out</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className="gap-2"
-                >
-                  <Link href="/settings">
-                    <Settings className="h-4 w-4" />
-                    <span className="hidden md:inline-block">Settings</span>
-                  </Link>
-                </Button>
-              </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2 px-2">
+                    <User className="h-4 w-4 md:hidden" />
+                    <span className="hidden md:inline-block text-sm text-muted-foreground">
+                      {user.name || user.email}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="w-full cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             <ThemeToggle />
           </nav>
