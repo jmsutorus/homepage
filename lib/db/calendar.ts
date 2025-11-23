@@ -10,7 +10,30 @@ import type { WorkoutActivity } from "./workout-activities";
 import type { GithubEvent } from "@/lib/github";
 import type { HabitCompletion } from "./habits";
 import { getHabitCompletionsForRange } from "./habits";
+import type { Goal, GoalMilestone } from "./goals";
 import { auth } from "@/auth";
+
+// Goal-related calendar types
+export interface CalendarGoal {
+  id: number;
+  slug: string;
+  title: string;
+  status: string;
+  target_date: string | null;
+  completed_date: string | null;
+  priority: string;
+}
+
+export interface CalendarMilestone {
+  id: number;
+  goalId: number;
+  goalSlug: string;
+  goalTitle: string;
+  title: string;
+  target_date: string | null;
+  completed: boolean;
+  completed_date: string | null;
+}
 
 export interface CalendarDayData {
   date: string; // YYYY-MM-DD format
@@ -24,6 +47,12 @@ export interface CalendarDayData {
   workoutActivities: WorkoutActivity[];
   githubEvents: GithubEvent[];
   habitCompletions: HabitCompletion[];
+  // Goals: goals with target_date on this day OR completed on this day
+  goalsDue: CalendarGoal[];
+  goalsCompleted: CalendarGoal[];
+  // Milestones: milestones with target_date on this day OR completed on this day
+  milestonesDue: CalendarMilestone[];
+  milestonesCompleted: CalendarMilestone[];
 }
 
 /**
@@ -58,6 +87,20 @@ export interface CalendarDaySummary {
   };
   githubEventCount: number;
   habitCount: number;
+  // Goal counts
+  goalCounts: {
+    due: number;
+    completed: number;
+    firstDueTitle: string | null;
+    firstDueSlug: string | null;
+  };
+  // Milestone counts
+  milestoneCounts: {
+    due: number;
+    completed: number;
+    firstDueTitle: string | null;
+    firstDueGoalSlug: string | null;
+  };
 }
 
 /**
@@ -197,6 +240,195 @@ export function getWorkoutActivitiesInRange(
 }
 
 /**
+ * Get goals in a date range (by target_date or completed_date)
+ */
+export function getGoalsInRange(
+  userId: string,
+  startDate: string,
+  endDate: string
+): CalendarGoal[] {
+  const rows = query<{
+    id: number;
+    slug: string;
+    title: string;
+    status: string;
+    target_date: string | null;
+    completed_date: string | null;
+    priority: string;
+  }>(
+    `SELECT id, slug, title, status, target_date, completed_date, priority FROM goals
+     WHERE userId = ?
+       AND status NOT IN ('archived', 'abandoned')
+       AND (
+         (DATE(target_date) BETWEEN ? AND ?)
+         OR (DATE(completed_date) BETWEEN ? AND ?)
+       )
+     ORDER BY target_date ASC`,
+    [userId, startDate, endDate, startDate, endDate]
+  );
+  return rows;
+}
+
+/**
+ * Get milestones in a date range (by target_date or completed_date)
+ * Includes goal info for navigation
+ */
+export function getMilestonesInRange(
+  userId: string,
+  startDate: string,
+  endDate: string
+): CalendarMilestone[] {
+  const rows = query<{
+    id: number;
+    goalId: number;
+    goalSlug: string;
+    goalTitle: string;
+    title: string;
+    target_date: string | null;
+    completed: number;
+    completed_date: string | null;
+  }>(
+    `SELECT m.id, m.goalId, g.slug as goalSlug, g.title as goalTitle,
+            m.title, m.target_date, m.completed, m.completed_date
+     FROM goal_milestones m
+     JOIN goals g ON m.goalId = g.id
+     WHERE g.userId = ?
+       AND g.status NOT IN ('archived', 'abandoned')
+       AND (
+         (DATE(m.target_date) BETWEEN ? AND ?)
+         OR (DATE(m.completed_date) BETWEEN ? AND ?)
+       )
+     ORDER BY m.target_date ASC`,
+    [userId, startDate, endDate, startDate, endDate]
+  );
+  return rows.map(row => ({
+    ...row,
+    completed: row.completed === 1,
+  }));
+}
+
+/**
+ * Get upcoming goals (incomplete with target_date in range)
+ */
+export function getUpcomingGoals(
+  userId: string,
+  startDate: string,
+  endDate: string
+): CalendarGoal[] {
+  const rows = query<{
+    id: number;
+    slug: string;
+    title: string;
+    status: string;
+    target_date: string | null;
+    completed_date: string | null;
+    priority: string;
+  }>(
+    `SELECT id, slug, title, status, target_date, completed_date, priority FROM goals
+     WHERE userId = ?
+       AND status NOT IN ('completed', 'archived', 'abandoned')
+       AND DATE(target_date) BETWEEN ? AND ?
+     ORDER BY target_date ASC`,
+    [userId, startDate, endDate]
+  );
+  return rows;
+}
+
+/**
+ * Get upcoming milestones (incomplete with target_date in range)
+ */
+export function getUpcomingMilestones(
+  userId: string,
+  startDate: string,
+  endDate: string
+): CalendarMilestone[] {
+  const rows = query<{
+    id: number;
+    goalId: number;
+    goalSlug: string;
+    goalTitle: string;
+    title: string;
+    target_date: string | null;
+    completed: number;
+    completed_date: string | null;
+  }>(
+    `SELECT m.id, m.goalId, g.slug as goalSlug, g.title as goalTitle,
+            m.title, m.target_date, m.completed, m.completed_date
+     FROM goal_milestones m
+     JOIN goals g ON m.goalId = g.id
+     WHERE g.userId = ?
+       AND g.status NOT IN ('archived', 'abandoned')
+       AND m.completed = 0
+       AND DATE(m.target_date) BETWEEN ? AND ?
+     ORDER BY m.target_date ASC`,
+    [userId, startDate, endDate]
+  );
+  return rows.map(row => ({
+    ...row,
+    completed: false,
+  }));
+}
+
+/**
+ * Get goals completed on a specific date
+ */
+export function getGoalsCompletedOnDate(
+  userId: string,
+  date: string
+): CalendarGoal[] {
+  const rows = query<{
+    id: number;
+    slug: string;
+    title: string;
+    status: string;
+    target_date: string | null;
+    completed_date: string | null;
+    priority: string;
+  }>(
+    `SELECT id, slug, title, status, target_date, completed_date, priority FROM goals
+     WHERE userId = ?
+       AND status = 'completed'
+       AND DATE(completed_date) = ?
+     ORDER BY completed_date ASC`,
+    [userId, date]
+  );
+  return rows;
+}
+
+/**
+ * Get milestones completed on a specific date
+ */
+export function getMilestonesCompletedOnDate(
+  userId: string,
+  date: string
+): CalendarMilestone[] {
+  const rows = query<{
+    id: number;
+    goalId: number;
+    goalSlug: string;
+    goalTitle: string;
+    title: string;
+    target_date: string | null;
+    completed: number;
+    completed_date: string | null;
+  }>(
+    `SELECT m.id, m.goalId, g.slug as goalSlug, g.title as goalTitle,
+            m.title, m.target_date, m.completed, m.completed_date
+     FROM goal_milestones m
+     JOIN goals g ON m.goalId = g.id
+     WHERE g.userId = ?
+       AND m.completed = 1
+       AND DATE(m.completed_date) = ?
+     ORDER BY m.completed_date ASC`,
+    [userId, date]
+  );
+  return rows.map(row => ({
+    ...row,
+    completed: true,
+  }));
+}
+
+/**
  * Get all calendar data for a date range, grouped by day
  */
 export async function getCalendarDataForRange(
@@ -221,6 +453,8 @@ export async function getCalendarDataForRange(
   const journals = getJournalsInRange(startDate, endDate);
   const workoutActivities = getWorkoutActivitiesInRange(startDate, endDate);
   const habitCompletions = userId ? getHabitCompletionsForRange(userId, startDate, endDate) : [];
+  const goals = userId ? getGoalsInRange(userId, startDate, endDate) : [];
+  const milestones = userId ? getMilestonesInRange(userId, startDate, endDate) : [];
 
   // Create a map of date -> data
   const calendarMap = new Map<string, CalendarDayData>();
@@ -242,6 +476,10 @@ export async function getCalendarDataForRange(
       workoutActivities: [],
       githubEvents: [],
       habitCompletions: [],
+      goalsDue: [],
+      goalsCompleted: [],
+      milestonesDue: [],
+      milestonesCompleted: [],
     });
   }
 
@@ -374,6 +612,46 @@ export async function getCalendarDataForRange(
     }
   });
 
+  // Add goals (by target_date and completed_date)
+  goals.forEach((goal) => {
+    // Add to due date day
+    if (goal.target_date) {
+      const targetDateStr = goal.target_date.split("T")[0];
+      const dayData = calendarMap.get(targetDateStr);
+      if (dayData) {
+        dayData.goalsDue.push(goal);
+      }
+    }
+    // Add to completed date day
+    if (goal.completed_date && goal.status === 'completed') {
+      const completedDateStr = goal.completed_date.split("T")[0];
+      const dayData = calendarMap.get(completedDateStr);
+      if (dayData) {
+        dayData.goalsCompleted.push(goal);
+      }
+    }
+  });
+
+  // Add milestones (by target_date and completed_date)
+  milestones.forEach((milestone) => {
+    // Add to due date day
+    if (milestone.target_date) {
+      const targetDateStr = milestone.target_date.split("T")[0];
+      const dayData = calendarMap.get(targetDateStr);
+      if (dayData) {
+        dayData.milestonesDue.push(milestone);
+      }
+    }
+    // Add to completed date day
+    if (milestone.completed && milestone.completed_date) {
+      const completedDateStr = milestone.completed_date.split("T")[0];
+      const dayData = calendarMap.get(completedDateStr);
+      if (dayData) {
+        dayData.milestonesCompleted.push(milestone);
+      }
+    }
+  });
+
   return calendarMap;
 }
 
@@ -480,6 +758,18 @@ export function convertToSummary(
     },
     githubEventCount: data.githubEvents.length,
     habitCount: data.habitCompletions.length,
+    goalCounts: {
+      due: data.goalsDue.length,
+      completed: data.goalsCompleted.length,
+      firstDueTitle: data.goalsDue[0]?.title ?? null,
+      firstDueSlug: data.goalsDue[0]?.slug ?? null,
+    },
+    milestoneCounts: {
+      due: data.milestonesDue.length,
+      completed: data.milestonesCompleted.length,
+      firstDueTitle: data.milestonesDue[0]?.title ?? null,
+      firstDueGoalSlug: data.milestonesDue[0]?.goalSlug ?? null,
+    },
   };
 }
 

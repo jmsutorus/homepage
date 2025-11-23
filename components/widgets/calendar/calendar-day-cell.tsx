@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -58,8 +58,12 @@ function CalendarDayCellComponent({
   const hasHabits = (summary?.habitCount ?? 0) > 0;
   const hasActivities = (summary?.activityCount ?? 0) > 0;
   const hasWorkoutActivities = (summary?.workoutCounts.upcoming ?? 0) + (summary?.workoutCounts.completed ?? 0) > 0;
+  const hasGoalsDue = (summary?.goalCounts?.due ?? 0) > 0;
+  const hasGoalsCompleted = (summary?.goalCounts?.completed ?? 0) > 0;
+  const hasMilestonesDue = (summary?.milestoneCounts?.due ?? 0) > 0;
+  const hasMilestonesCompleted = (summary?.milestoneCounts?.completed ?? 0) > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted;
 
   // Get mood icon
   const MoodIcon = hasMood && summary?.moodRating ? MOOD_ICONS[summary.moodRating]?.icon : null;
@@ -254,6 +258,48 @@ function CalendarDayCellComponent({
               </span>
             </div>
           )}
+
+          {/* Goals Due */}
+          {hasGoalsDue && (
+            <div className="flex items-center gap-1">
+              <Target className={cn("h-3 w-3 flex-shrink-0", colors.goal?.due?.text || "text-cyan-500")} />
+              <span className={cn("truncate", colors.goal?.due?.text || "text-cyan-500")}>
+                {summary!.goalCounts.firstDueTitle}
+                {summary!.goalCounts.due > 1 && ` +${summary!.goalCounts.due - 1}`}
+              </span>
+            </div>
+          )}
+
+          {/* Goals Completed */}
+          {hasGoalsCompleted && !hasGoalsDue && (
+            <div className="flex items-center gap-1">
+              <Target className={cn("h-3 w-3 flex-shrink-0", colors.goal?.completed?.text || "text-teal-500")} />
+              <span className={cn("truncate", colors.goal?.completed?.text || "text-teal-500")}>
+                {summary!.goalCounts.completed} goal{summary!.goalCounts.completed !== 1 ? "s" : ""} done
+              </span>
+            </div>
+          )}
+
+          {/* Milestones Due */}
+          {hasMilestonesDue && (
+            <div className="flex items-center gap-1">
+              <Flag className={cn("h-3 w-3 flex-shrink-0", colors.milestone?.due?.text || "text-violet-500")} />
+              <span className={cn("truncate", colors.milestone?.due?.text || "text-violet-500")}>
+                {summary!.milestoneCounts.firstDueTitle}
+                {summary!.milestoneCounts.due > 1 && ` +${summary!.milestoneCounts.due - 1}`}
+              </span>
+            </div>
+          )}
+
+          {/* Milestones Completed */}
+          {hasMilestonesCompleted && !hasMilestonesDue && (
+            <div className="flex items-center gap-1">
+              <Flag className={cn("h-3 w-3 flex-shrink-0", colors.milestone?.completed?.text || "text-fuchsia-500")} />
+              <span className={cn("truncate", colors.milestone?.completed?.text || "text-fuchsia-500")}>
+                {summary!.milestoneCounts.completed} milestone{summary!.milestoneCounts.completed !== 1 ? "s" : ""} done
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
@@ -299,6 +345,18 @@ function CalendarDayCellComponent({
           )}
           {hasHabits && (
             <div className={cn("w-2 h-2 rounded-full", colors.habit?.bg || "bg-purple-500")} title="Habits Completed" />
+          )}
+          {hasGoalsDue && (
+            <div className={cn("w-2 h-2 rounded-full", colors.goal?.due?.bg || "bg-cyan-500")} title="Goals Due" />
+          )}
+          {hasGoalsCompleted && (
+            <div className={cn("w-2 h-2 rounded-full", colors.goal?.completed?.bg || "bg-teal-500")} title="Goals Completed" />
+          )}
+          {hasMilestonesDue && (
+            <div className={cn("w-2 h-2 rounded-full", colors.milestone?.due?.bg || "bg-violet-500")} title="Milestones Due" />
+          )}
+          {hasMilestonesCompleted && (
+            <div className={cn("w-2 h-2 rounded-full", colors.milestone?.completed?.bg || "bg-fuchsia-500")} title="Milestones Completed" />
           )}
         </div>
       )}

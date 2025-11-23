@@ -45,7 +45,7 @@ function getDefaultCalendarColors(): Omit<CalendarColor, "userId" | "id" | "crea
 
 /**
  * Get all calendar colors for a user
- * Falls back to system defaults if user has no custom colors
+ * Merges user's custom colors with system defaults (for any missing categories)
  */
 export function getCalendarColors(userId: string): CalendarColor[] {
   // Try to get user's custom colors
@@ -54,20 +54,41 @@ export function getCalendarColors(userId: string): CalendarColor[] {
     [userId]
   );
 
-  // If user has custom colors, return them
-  if (userColors.length > 0) {
-    return userColors;
+  // Get all system defaults
+  const defaults = getDefaultCalendarColors();
+
+  // If user has no custom colors, return all defaults
+  if (userColors.length === 0) {
+    return defaults.map(d => ({
+      ...d,
+      userId,
+      id: 0, // Placeholder ID
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
   }
 
-  // Otherwise return system defaults
-  const defaults = getDefaultCalendarColors();
-  return defaults.map(d => ({
-    ...d,
-    userId,
-    id: 0, // Placeholder ID
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }));
+  // Merge: use user's colors where they exist, defaults for missing categories
+  const userColorMap = new Map(userColors.map(c => [c.category, c]));
+  const mergedColors: CalendarColor[] = [];
+
+  for (const defaultColor of defaults) {
+    const userColor = userColorMap.get(defaultColor.category);
+    if (userColor) {
+      mergedColors.push(userColor);
+    } else {
+      // Add missing default color
+      mergedColors.push({
+        ...defaultColor,
+        userId,
+        id: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+    }
+  }
+
+  return mergedColors;
 }
 
 /**

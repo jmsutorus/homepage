@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { CalendarDayData } from "@/lib/db/calendar";
+import type { CalendarDayData, CalendarGoal, CalendarMilestone } from "@/lib/db/calendar";
 import type { Event } from "@/lib/db/events";
 import type { MediaContent } from "@/lib/db/media";
 import type { ParkContent } from "@/lib/db/parks";
@@ -15,6 +15,7 @@ import { DailyMedia } from "@/components/widgets/daily/daily-media";
 import { DailyParks } from "@/components/widgets/daily/daily-parks";
 import { DailyJournals } from "@/components/widgets/daily/daily-journals";
 import { DailyTasks } from "@/components/widgets/daily/daily-tasks";
+import { DailyGoals } from "@/components/widgets/daily/daily-goals";
 import { toggleTaskCompleteAction } from "@/lib/actions/tasks";
 import { useTransition } from "react";
 
@@ -26,6 +27,11 @@ interface DailyActivitiesProps {
   unlinkedStravaActivities: any[];
   upcomingWorkoutActivities: any[];
   completedWorkoutActivities: any[];
+  upcomingGoals: CalendarGoal[];
+  upcomingMilestones: CalendarMilestone[];
+  completedGoals: CalendarGoal[];
+  completedMilestones: CalendarMilestone[];
+  colors?: any;
 }
 
 export function DailyActivities({
@@ -36,6 +42,11 @@ export function DailyActivities({
   unlinkedStravaActivities,
   upcomingWorkoutActivities,
   completedWorkoutActivities,
+  upcomingGoals,
+  upcomingMilestones,
+  completedGoals,
+  completedMilestones,
+  colors,
 }: DailyActivitiesProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -100,11 +111,25 @@ export function DailyActivities({
       {/* Tasks Section */}
       {dailyData.tasks.length > 0 && (
         <section className="rounded-lg border bg-card p-6">
-          <DailyTasks 
+          <DailyTasks
             overdue={overdueTasks}
             upcoming={upcomingTasks}
             completed={completedTasks}
             onToggleComplete={handleToggleTaskComplete}
+          />
+        </section>
+      )}
+
+      {/* Goals & Milestones Section */}
+      {(upcomingGoals.length > 0 || upcomingMilestones.length > 0 ||
+        completedGoals.length > 0 || completedMilestones.length > 0) && (
+        <section className="rounded-lg border bg-card p-6">
+          <DailyGoals
+            upcomingGoals={upcomingGoals}
+            upcomingMilestones={upcomingMilestones}
+            completedGoals={completedGoals}
+            completedMilestones={completedMilestones}
+            colors={colors}
           />
         </section>
       )}

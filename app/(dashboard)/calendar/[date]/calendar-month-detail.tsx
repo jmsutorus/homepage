@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateSafe } from "@/lib/utils";
-import type { CalendarDayData } from "@/lib/db/calendar";
+import type { CalendarDayData, CalendarGoal } from "@/lib/db/calendar";
 import type { MediaContent } from "@/lib/db/media";
 import type { DBStravaActivity } from "@/lib/db/strava";
 import type { Event } from "@/lib/db/events";
@@ -25,6 +25,7 @@ import {
   Clock,
   TrendingUp,
   ExternalLink,
+  Target,
 } from "lucide-react";
 
 interface CalendarMonthDetailProps {
@@ -47,12 +48,13 @@ export function CalendarMonthDetail({
 }: CalendarMonthDetailProps) {
   const router = useRouter();
 
-  // Extract all media, activities, events, parks, and journals from the calendar data
+  // Extract all media, activities, events, parks, journals, and goals from the calendar data
   const allMedia: MediaContent[] = [];
   const allActivities: DBStravaActivity[] = [];
   const allEvents: Event[] = [];
   const allParks: ParkContent[] = [];
   const allJournals: JournalContent[] = [];
+  const allGoalsCompleted: CalendarGoal[] = [];
 
   calendarData.forEach((dayData) => {
     allMedia.push(...dayData.media);
@@ -60,7 +62,13 @@ export function CalendarMonthDetail({
     allEvents.push(...dayData.events);
     allParks.push(...dayData.parks);
     allJournals.push(...dayData.journals);
+    allGoalsCompleted.push(...dayData.goalsCompleted);
   });
+
+  // Deduplicate goals (same goal might appear in multiple days if completed date spans)
+  const uniqueGoalsCompleted = Array.from(
+    new Map(allGoalsCompleted.map((goal) => [goal.id, goal])).values()
+  );
 
   // Group media by type
   const mediaByType: Record<string, MediaContent[]> = {
@@ -97,13 +105,18 @@ export function CalendarMonthDetail({
     router.push(`/journals/${slug}`);
   };
 
+  const handleGoalClick = (slug: string) => {
+    router.push(`/goals/${slug}`);
+  };
+
   const hasMedia = allMedia.length > 0;
   const hasActivities = allActivities.length > 0;
   const hasEvents = uniqueEvents.length > 0;
   const hasParks = allParks.length > 0;
   const hasJournals = allJournals.length > 0;
+  const hasGoalsCompleted = uniqueGoalsCompleted.length > 0;
 
-  if (!hasMedia && !hasActivities && !hasEvents && !hasParks && !hasJournals) {
+  if (!hasMedia && !hasActivities && !hasEvents && !hasParks && !hasJournals && !hasGoalsCompleted) {
     return (
       <Card>
         <CardContent className="py-12">
@@ -282,6 +295,43 @@ export function CalendarMonthDetail({
                         <span>{formatDateSafe(journal.daily_date)}</span>
                       ) : (
                         <span>{formatDateSafe(journal.created_at)}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Goals Accomplished */}
+      {hasGoalsCompleted && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Goals Accomplished ({uniqueGoalsCompleted.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {uniqueGoalsCompleted.map((goal) => (
+                <div
+                  key={goal.id}
+                  className="p-3 rounded-lg border bg-card cursor-pointer hover:bg-accent/50 transition-colors"
+                  onClick={() => handleGoalClick(goal.slug)}
+                >
+                  <div className="space-y-1">
+                    <p className="font-medium text-teal-700 dark:text-teal-400">
+                      {goal.title}
+                    </p>
+                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {goal.priority} priority
+                      </Badge>
+                      {goal.completed_date && (
+                        <span>Completed {formatDateSafe(goal.completed_date)}</span>
                       )}
                     </div>
                   </div>

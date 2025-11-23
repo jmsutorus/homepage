@@ -51,4 +51,24 @@ export const CalendarColors = {
     bg: "bg-violet-600",
     text: "text-violet-600",
   },
+  goal: {
+    due: {
+      bg: "bg-cyan-500",
+      text: "text-cyan-500",
+    },
+    completed: {
+      bg: "bg-teal-500",
+      text: "text-teal-500",
+    },
+  },
+  milestone: {
+    due: {
+      bg: "bg-violet-500",
+      text: "text-violet-500",
+    },
+    completed: {
+      bg: "bg-fuchsia-500",
+      text: "text-fuchsia-500",
+    },
+  },
 };

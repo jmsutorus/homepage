@@ -39,6 +39,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   "task.upcoming": "Task - Upcoming",
   "task.completed": "Task - Completed",
   "github": "GitHub Events",
+  "habit": "Habits",
+  "goal.due": "Goal - Due",
+  "goal.completed": "Goal - Completed",
+  "milestone.due": "Milestone - Due",
+  "milestone.completed": "Milestone - Completed",
 };
 
 export function CalendarColorsManager() {

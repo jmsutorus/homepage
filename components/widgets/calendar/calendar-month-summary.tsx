@@ -15,6 +15,7 @@ import {
   CheckSquare,
   Smile,
   ExternalLink,
+  Target,
 } from "lucide-react";
 
 interface MonthSummaryProps {
@@ -53,6 +54,7 @@ export function CalendarMonthSummary({
   let totalGithubEvents = 0;
   let totalHabits = 0;
   let totalTasksCompleted = 0;
+  let totalGoalsCompleted = 0;
   let moodSum = 0;
   let moodCount = 0;
 
@@ -68,6 +70,7 @@ export function CalendarMonthSummary({
     totalGithubEvents += daySummary.githubEventCount;
     totalHabits += daySummary.habitCount;
     totalTasksCompleted += daySummary.taskCounts.completed;
+    totalGoalsCompleted += daySummary.goalCounts?.completed ?? 0;
 
     // Rough event deduplication based on title
     if (daySummary.eventFirstTitle && !seenEventTitles.has(daySummary.eventFirstTitle)) {
@@ -87,7 +90,8 @@ export function CalendarMonthSummary({
 
   const hasAnyData = totalMedia > 0 || totalActivities > 0 || totalEvents > 0 ||
     totalParks > 0 || totalJournals > 0 || totalWorkouts > 0 ||
-    totalGithubEvents > 0 || totalHabits > 0 || totalTasksCompleted > 0 || moodCount > 0;
+    totalGithubEvents > 0 || totalHabits > 0 || totalTasksCompleted > 0 ||
+    totalGoalsCompleted > 0 || moodCount > 0;
 
   if (!hasAnyData) {
     return null;
@@ -235,6 +239,21 @@ export function CalendarMonthSummary({
                   <div>
                     <p className="text-2xl font-bold">{totalTasksCompleted}</p>
                     <p className="text-sm text-muted-foreground">Tasks Done</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Goals Completed */}
+            {totalGoalsCompleted > 0 && (
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-teal-500/10">
+                    <Target className="h-5 w-5 text-teal-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{totalGoalsCompleted}</p>
+                    <p className="text-sm text-muted-foreground">Goals Done</p>
                   </div>
                 </div>
               </div>

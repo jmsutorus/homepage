@@ -14,6 +14,7 @@ import { getGithubActivity } from "@/lib/github";
 import { queryOne } from "@/lib/db";
 import { DailyActivities } from "@/components/widgets/daily/daily-activities";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { getCalendarColorsObject } from "@/lib/db/calendar-colors";
 
 interface DailyPageProps {
   params: Promise<{
@@ -69,8 +70,8 @@ export default async function DailyPage({ params }: DailyPageProps) {
   const startDateStr = weekBefore.toISOString().split("T")[0];
   const endDateStr = weekAfter.toISOString().split("T")[0];
 
-  // Import getTasksInRange to get all relevant tasks including overdue from past week
-  const { getTasksInRange } = await import("@/lib/db/calendar");
+  // Import functions to get all relevant tasks and goals
+  const { getTasksInRange, getUpcomingGoals, getUpcomingMilestones, getGoalsCompletedOnDate, getMilestonesCompletedOnDate } = await import("@/lib/db/calendar");
   console.log(session?.user?.id);
   const allRelevantTasks = getTasksInRange(startDateStr, endDateStr, session?.user?.id);
 
@@ -100,6 +101,15 @@ export default async function DailyPage({ params }: DailyPageProps) {
     const taskDueDate = t.due_date.split("T")[0];
     return taskDueDate >= date;
   }) ?? [];
+
+  // Goals and milestones data
+  const upcomingGoals = session?.user?.id ? getUpcomingGoals(session.user.id, date, endDateStr) : [];
+  const upcomingMilestones = session?.user?.id ? getUpcomingMilestones(session.user.id, date, endDateStr) : [];
+  const completedGoals = session?.user?.id ? getGoalsCompletedOnDate(session.user.id, date) : [];
+  const completedMilestones = session?.user?.id ? getMilestonesCompletedOnDate(session.user.id, date) : [];
+
+  // Calendar colors
+  const colors = session?.user?.id ? getCalendarColorsObject(session.user.id) : {};
 
   // Workout activities
   const upcomingWorkoutActivities = dailyData?.workoutActivities.filter((w) => !w.completed) ?? [];
@@ -177,7 +187,7 @@ export default async function DailyPage({ params }: DailyPageProps) {
             )}
           </section>
 
-          <DailyActivities 
+          <DailyActivities
             dailyData={dailyData}
             overdueTasks={overdueTasks}
             upcomingTasks={upcomingTasks}
@@ -185,6 +195,11 @@ export default async function DailyPage({ params }: DailyPageProps) {
             unlinkedStravaActivities={unlinkedStravaActivities}
             upcomingWorkoutActivities={upcomingWorkoutActivities}
             completedWorkoutActivities={completedWorkoutActivities}
+            upcomingGoals={upcomingGoals}
+            upcomingMilestones={upcomingMilestones}
+            completedGoals={completedGoals}
+            completedMilestones={completedMilestones}
+            colors={colors}
           />
         </div>
 
@@ -268,6 +283,22 @@ export default async function DailyPage({ params }: DailyPageProps) {
                     <span>Strava</span>
                     <span className="font-medium">
                       {dailyData.activities.length}
+                    </span>
+                  </div>
+                  }
+                  { (completedGoals.length > 0 || completedMilestones.length > 0) &&
+                  <div className="flex justify-between">
+                    <span>Goals/Milestones Done</span>
+                    <span className="font-medium">
+                      {completedGoals.length + completedMilestones.length}
+                    </span>
+                  </div>
+                  }
+                  { (upcomingGoals.length > 0 || upcomingMilestones.length > 0) &&
+                  <div className="flex justify-between">
+                    <span>Upcoming Goals</span>
+                    <span className="font-medium">
+                      {upcomingGoals.length + upcomingMilestones.length}
                     </span>
                   </div>
                   }
