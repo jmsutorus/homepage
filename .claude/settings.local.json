@@ -14,7 +14,8 @@
       "Bash(docker cp:*)",
       "Bash(python3:*)",
       "mcp__context7__resolve-library-id",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": [],
     "ask": []

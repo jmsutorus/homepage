@@ -322,3 +322,171 @@ export function renameTaskCategory(id: number, newName: string): boolean {
 
   return result.changes > 0;
 }
+
+// ==================== Task Velocity ====================
+
+export type VelocityPeriod = "day" | "week" | "month";
+
+export interface TaskVelocityDataPoint {
+  label: string;
+  startDate: string;
+  endDate: string;
+  planned: number;
+  completed: number;
+  completionRate: number;
+}
+
+export interface TaskVelocityStats {
+  avgCompleted: number;
+  avgPlanned: number;
+  totalCompleted: number;
+  totalPlanned: number;
+  trend: number; // percentage change comparing recent vs earlier period
+  bestPeriod: string;
+  bestPeriodCount: number;
+}
+
+export interface TaskVelocityData {
+  dataPoints: TaskVelocityDataPoint[];
+  stats: TaskVelocityStats;
+  period: VelocityPeriod;
+}
+
+/**
+ * Get task velocity data for charting
+ * Shows tasks completed and planned (created with due date) over time
+ */
+export function getTaskVelocityData(
+  period: VelocityPeriod = "week",
+  numPeriods: number = 12
+): TaskVelocityData {
+  const now = new Date();
+  const dataPoints: TaskVelocityDataPoint[] = [];
+
+  // Calculate date ranges for each period
+  for (let i = numPeriods - 1; i >= 0; i--) {
+    const { startDate, endDate, label } = getPeriodRange(now, period, i);
+
+    // Count tasks completed in this period
+    const completedCount = query<{ count: number }>(
+      `SELECT COUNT(*) as count FROM tasks
+       WHERE completed_date IS NOT NULL
+       AND completed_date >= ?
+       AND completed_date <= ?`,
+      [startDate, endDate]
+    )[0]?.count || 0;
+
+    // Count tasks created with due dates in this period (planned work)
+    const plannedCount = query<{ count: number }>(
+      `SELECT COUNT(*) as count FROM tasks
+       WHERE due_date IS NOT NULL
+       AND due_date >= ?
+       AND due_date <= ?`,
+      [startDate, endDate]
+    )[0]?.count || 0;
+
+    const completionRate = plannedCount > 0
+      ? Math.round((completedCount / plannedCount) * 100)
+      : completedCount > 0 ? 100 : 0;
+
+    dataPoints.push({
+      label,
+      startDate,
+      endDate,
+      planned: plannedCount,
+      completed: completedCount,
+      completionRate,
+    });
+  }
+
+  // Calculate stats
+  const totalCompleted = dataPoints.reduce((sum, d) => sum + d.completed, 0);
+  const totalPlanned = dataPoints.reduce((sum, d) => sum + d.planned, 0);
+  const avgCompleted = Math.round(totalCompleted / numPeriods * 10) / 10;
+  const avgPlanned = Math.round(totalPlanned / numPeriods * 10) / 10;
+
+  // Find best period
+  const bestPeriodData = dataPoints.reduce((best, current) =>
+    current.completed > best.completed ? current : best
+  , dataPoints[0]);
+
+  // Calculate trend (compare second half to first half)
+  const midpoint = Math.floor(numPeriods / 2);
+  const firstHalf = dataPoints.slice(0, midpoint);
+  const secondHalf = dataPoints.slice(midpoint);
+  const firstHalfAvg = firstHalf.reduce((sum, d) => sum + d.completed, 0) / firstHalf.length || 0;
+  const secondHalfAvg = secondHalf.reduce((sum, d) => sum + d.completed, 0) / secondHalf.length || 0;
+  const trend = firstHalfAvg > 0
+    ? Math.round(((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100)
+    : secondHalfAvg > 0 ? 100 : 0;
+
+  return {
+    dataPoints,
+    stats: {
+      avgCompleted,
+      avgPlanned,
+      totalCompleted,
+      totalPlanned,
+      trend,
+      bestPeriod: bestPeriodData?.label || "",
+      bestPeriodCount: bestPeriodData?.completed || 0,
+    },
+    period,
+  };
+}
+
+/**
+ * Helper to get date range and label for a period
+ */
+function getPeriodRange(
+  now: Date,
+  period: VelocityPeriod,
+  periodsAgo: number
+): { startDate: string; endDate: string; label: string } {
+  const start = new Date(now);
+  const end = new Date(now);
+
+  if (period === "day") {
+    start.setDate(now.getDate() - periodsAgo);
+    end.setDate(now.getDate() - periodsAgo);
+    const label = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return {
+      startDate: formatDate(start),
+      endDate: formatDate(end),
+      label,
+    };
+  }
+
+  if (period === "week") {
+    // Go to the start of the current week (Sunday) then go back periodsAgo weeks
+    const dayOfWeek = now.getDay();
+    start.setDate(now.getDate() - dayOfWeek - (periodsAgo * 7));
+    end.setDate(start.getDate() + 6);
+    const weekLabel = `W${getWeekNumber(start)}`;
+    return {
+      startDate: formatDate(start),
+      endDate: formatDate(end),
+      label: weekLabel,
+    };
+  }
+
+  // month
+  start.setMonth(now.getMonth() - periodsAgo, 1);
+  end.setMonth(start.getMonth() + 1, 0); // Last day of month
+  const label = start.toLocaleDateString("en-US", { month: "short" });
+  return {
+    startDate: formatDate(start),
+    endDate: formatDate(end),
+    label,
+  };
+}
+
+function formatDate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+function getWeekNumber(date: Date): number {
+  const startOfYear = new Date(date.getFullYear(), 0, 1);
+  const pastDays = (date.getTime() - startOfYear.getTime()) / 86400000;
+  return Math.ceil((pastDays + startOfYear.getDay() + 1) / 7);
+}

@@ -1,9 +1,19 @@
-import { MoodHeatmap } from "@/components/widgets/mood/mood-heatmap";
+import { MoodDashboard } from "@/components/widgets/mood/mood-dashboard";
+import { getMoodEntriesForYear } from "@/lib/db/mood";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default function MoodPage() {
+export default async function MoodPage() {
+  const session = await auth();
+
+  if (!session) {
+    redirect("/");
+  }
+
   const currentYear = new Date().getFullYear();
+  const moodData = await getMoodEntriesForYear(currentYear, session.user.id);
 
   return (
     <div className="space-y-6">
@@ -14,7 +24,7 @@ export default function MoodPage() {
         </p>
       </div>
 
-      <MoodHeatmap year={currentYear} />
+      <MoodDashboard initialMoodData={moodData} year={currentYear} />
     </div>
   );
 }

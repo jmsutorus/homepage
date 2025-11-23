@@ -365,3 +365,104 @@ export function getHabitStats(habit: Habit, userId: string): HabitStats {
     };
   }
 }
+
+export interface HabitCompletionChartData {
+  habitId: number;
+  habitTitle: string;
+  weeklyData: {
+    week: string;
+    weekLabel: string;
+    completions: number;
+    target: number;
+    rate: number;
+  }[];
+  stats: HabitStats;
+}
+
+/**
+ * Get habit completion data for charts (last 12 weeks)
+ */
+export function getHabitCompletionsForChart(userId: string): HabitCompletionChartData[] {
+  try {
+    const habits = getHabits(userId);
+    const today = new Date();
+
+    // Calculate the start of 12 weeks ago
+    const weeksToShow = 12;
+    const startDate = startOfWeek(new Date(today.getTime() - (weeksToShow - 1) * 7 * 24 * 60 * 60 * 1000), { weekStartsOn: 0 });
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = today.toISOString().split('T')[0];
+
+    return habits.map(habit => {
+      const completions = getHabitCompletionsForRange(userId, startDateStr, endDateStr)
+        .filter(c => c.habit_id === habit.id);
+
+      // Group completions by week
+      const weeklyMap: Map<string, number> = new Map();
+
+      // Initialize all weeks
+      for (let i = 0; i < weeksToShow; i++) {
+        const weekStart = new Date(startDate.getTime() + i * 7 * 24 * 60 * 60 * 1000);
+        const weekKey = weekStart.toISOString().split('T')[0];
+        weeklyMap.set(weekKey, 0);
+      }
+
+      // Count completions per week
+      completions.forEach(completion => {
+        const completionDate = parseISO(completion.date);
+        const weekStart = startOfWeek(completionDate, { weekStartsOn: 0 });
+        const weekKey = weekStart.toISOString().split('T')[0];
+        if (weeklyMap.has(weekKey)) {
+          weeklyMap.set(weekKey, (weeklyMap.get(weekKey) || 0) + 1);
+        }
+      });
+
+      // Calculate weekly target based on frequency
+      let weeklyTarget = 7; // Default for daily
+      switch (habit.frequency) {
+        case 'daily':
+          weeklyTarget = 7;
+          break;
+        case 'every_other_day':
+          weeklyTarget = 3;
+          break;
+        case 'three_times_a_week':
+          weeklyTarget = 3;
+          break;
+        case 'once_a_week':
+        case 'every_week':
+          weeklyTarget = 1;
+          break;
+        case 'monthly':
+          weeklyTarget = 0.25; // Roughly 1 per 4 weeks
+          break;
+        default:
+          weeklyTarget = 7;
+      }
+
+      // Convert map to array with labels
+      const weeklyData = Array.from(weeklyMap.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([week, count], index) => {
+          const weekDate = parseISO(week);
+          return {
+            week,
+            weekLabel: `W${index + 1}`,
+            completions: count,
+            target: Math.round(weeklyTarget),
+            rate: weeklyTarget > 0 ? Math.min(100, Math.round((count / weeklyTarget) * 100)) : 100,
+          };
+        });
+
+      return {
+        habitId: habit.id,
+        habitTitle: habit.title,
+        weeklyData,
+        stats: getHabitStats(habit, userId),
+      };
+    });
+  } catch (error) {
+    console.error("Error getting habit completions for chart:", error);
+    return [];
+  }
+}

@@ -420,14 +420,14 @@
 
 ### Priority: MEDIUM
 
-#### 45. **Mood Trends Over Time**
+#### 45. **Mood Trends Over Time** - Implemented
 - **Current**: Heatmap exists
 - **Addition**: Line graph showing mood average over time
 - **Granularity**: Daily, weekly, monthly views
 - **Annotations**: Mark significant events/journals
 - **Benefits**: Pattern recognition, self-awareness
 
-#### 46. **Habit Completion Rate Charts**
+#### 46. **Habit Completion Rate Charts** - Implemented
 - **Visual**: Bar chart or line graph per habit
 - **Metrics**:
   - Completion percentage
@@ -436,13 +436,18 @@
   - Weekly/monthly trends
 - **Benefits**: Performance tracking, identify slipping habits
 
-#### 47. **Task Velocity Chart**
+#### 47. **Task Velocity Chart** - Implemented
 - **Metric**: Tasks completed per day/week/month
-- **Visual**: Line or bar chart
-- **Compare**: Planned vs completed
+- **Visual**: Composed bar + line chart
+- **Compare**: Planned (due) vs completed tasks
 - **Benefits**: Productivity insights
+- **Features**:
+  - Selectable time period (daily, weekly, monthly)
+  - Stats summary (avg completed, total, best period, trend)
+  - Average reference line
+  - Completion rate insights
 
-#### 48. **Media Consumption Timeline**
+#### 48. **Media Consumption Timeline** - Implemented
 - **Visual**: Horizontal timeline showing media completed
 - **Color coding**: By type or rating
 - **Zoom**: Year/month/week views
@@ -455,7 +460,7 @@
 - **Tooltip**: Show breakdown on hover
 - **Benefits**: Overview of active vs inactive periods
 
-#### 50. **Goal Progress Visualizations**
+#### 50. **Goal Progress Visualizations** - Implemented
 - **Use cases**: Reading goals, exercise goals, journaling goals
 - **Visuals**:
   - Circular progress rings (like Apple Watch)

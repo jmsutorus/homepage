@@ -10,8 +10,10 @@ import {
   getHabitCompletions,
   toggleHabitCompletion,
   getHabitStats,
+  getHabitCompletionsForChart,
   type Habit,
-  type HabitStats
+  type HabitStats,
+  type HabitCompletionChartData
 } from "@/lib/db/habits";
 import { revalidatePath } from "next/cache";
 
@@ -105,9 +107,15 @@ export async function getHabitCompletionsAction(date: string) {
 export async function toggleHabitCompletionAction(habitId: number, date: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
-  
+
   const completed = toggleHabitCompletion(habitId, session.user.id, date);
   revalidatePath("/daily/[date]", "page");
   revalidatePath("/"); // Revalidate calendar
   return completed;
+}
+
+export async function getHabitCompletionsForChartAction(): Promise<HabitCompletionChartData[]> {
+  const session = await auth();
+  if (!session?.user?.id) return [];
+  return getHabitCompletionsForChart(session.user.id);
 }

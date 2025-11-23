@@ -1,11 +1,15 @@
-import { getHabitsWithStatsAction } from "@/lib/actions/habits";
+import { getHabitsWithStatsAction, getHabitCompletionsForChartAction } from "@/lib/actions/habits";
 import { HabitsList } from "@/components/widgets/habits/habits-list";
 import { CreateHabitForm } from "@/components/widgets/habits/create-habit-form";
+import { HabitCompletionChart } from "@/components/widgets/habits/habit-completion-chart";
 
 export const dynamic = "force-dynamic";
 
 export default async function HabitsPage() {
-  const habits = await getHabitsWithStatsAction();
+  const [habits, chartData] = await Promise.all([
+    getHabitsWithStatsAction(),
+    getHabitCompletionsForChartAction(),
+  ]);
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
@@ -19,7 +23,10 @@ export default async function HabitsPage() {
         <CreateHabitForm />
       </div>
 
-      <HabitsList habits={habits} />
+      <div className="space-y-8">
+        <HabitCompletionChart data={chartData} />
+        <HabitsList habits={habits} />
+      </div>
     </div>
   );
 }

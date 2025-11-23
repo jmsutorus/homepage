@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import type { Task } from "@/lib/db/tasks";
+import { useState, useEffect, useCallback } from "react";
+import type { Task, TaskVelocityData, VelocityPeriod } from "@/lib/db/tasks";
 import { TaskForm } from "@/components/widgets/tasks/task-form";
 import { TaskList } from "@/components/widgets/tasks/task-list";
 import { CategoryManager } from "@/components/widgets/tasks/category-manager";
+import { TaskVelocityChart } from "@/components/widgets/tasks/task-velocity-chart";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -14,12 +15,10 @@ export function TasksPageClient() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<FilterType>("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [velocityData, setVelocityData] = useState<TaskVelocityData | null>(null);
+  const [velocityPeriod, setVelocityPeriod] = useState<VelocityPeriod>("week");
 
-  useEffect(() => {
-    fetchTasks();
-  }, [filter]);
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       setIsLoading(true);
       let url = "/api/tasks";
@@ -40,6 +39,35 @@ export function TasksPageClient() {
     } finally {
       setIsLoading(false);
     }
+  }, [filter]);
+
+  const fetchVelocityData = useCallback(async (period: VelocityPeriod) => {
+    try {
+      const response = await fetch(`/api/tasks/velocity?period=${period}`);
+      if (response.ok) {
+        const data = await response.json();
+        setVelocityData(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch velocity data:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
+  useEffect(() => {
+    fetchVelocityData(velocityPeriod);
+  }, [velocityPeriod, fetchVelocityData]);
+
+  const handlePeriodChange = (period: VelocityPeriod) => {
+    setVelocityPeriod(period);
+  };
+
+  const handleTasksChanged = () => {
+    fetchTasks();
+    fetchVelocityData(velocityPeriod);
   };
 
   const stats = {
@@ -64,9 +92,17 @@ export function TasksPageClient() {
           <CardDescription>Create a task with optional due date and priority</CardDescription>
         </CardHeader>
         <CardContent>
-          <TaskForm onTaskAdded={fetchTasks} />
+          <TaskForm onTaskAdded={handleTasksChanged} />
         </CardContent>
       </Card>
+
+      {/* Task Velocity Chart */}
+      {velocityData && (
+        <TaskVelocityChart
+          data={velocityData}
+          onPeriodChange={handlePeriodChange}
+        />
+      )}
 
       {/* Category Manager */}
       <Card>
@@ -75,7 +111,7 @@ export function TasksPageClient() {
           <CardDescription>Add, edit, or remove task categories</CardDescription>
         </CardHeader>
         <CardContent>
-          <CategoryManager onCategoriesChanged={fetchTasks} />
+          <CategoryManager onCategoriesChanged={handleTasksChanged} />
         </CardContent>
       </Card>
 
@@ -103,7 +139,7 @@ export function TasksPageClient() {
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
           ) : (
-            <TaskList tasks={tasks} onTasksChanged={fetchTasks} />
+            <TaskList tasks={tasks} onTasksChanged={handleTasksChanged} />
           )}
         </CardContent>
       </Card>

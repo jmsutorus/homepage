@@ -462,3 +462,239 @@ export function deleteTag(name: string): number {
 
   return updatedCount;
 }
+
+// ============================================
+// Media Timeline Data Types and Functions
+// ============================================
+
+export type TimelinePeriod = "week" | "month" | "year";
+
+export interface MediaTimelineItem {
+  id: number;
+  title: string;
+  type: "movie" | "tv" | "book" | "game";
+  rating: number | null;
+  completed: string;
+  poster: string | null;
+}
+
+export interface MediaTimelineDataPoint {
+  label: string;
+  startDate: string;
+  endDate: string;
+  count: number;
+  movies: number;
+  tv: number;
+  books: number;
+  games: number;
+  items: MediaTimelineItem[];
+  avgRating: number | null;
+}
+
+export interface MediaTimelineStats {
+  totalCompleted: number;
+  avgPerPeriod: number;
+  mostActiveMonth: string;
+  mostActiveMonthCount: number;
+  avgRating: number;
+  topType: string;
+  trend: number; // percentage change comparing recent vs earlier periods
+}
+
+export interface MediaTimelineData {
+  dataPoints: MediaTimelineDataPoint[];
+  stats: MediaTimelineStats;
+  period: TimelinePeriod;
+}
+
+/**
+ * Get media timeline data for charting
+ * Shows media completed over time with breakdown by type
+ */
+export function getMediaTimelineData(
+  period: TimelinePeriod = "month",
+  numPeriods: number = 12
+): MediaTimelineData {
+  const now = new Date();
+  const dataPoints: MediaTimelineDataPoint[] = [];
+
+  // Get all completed media with valid completion dates
+  const completedMedia = getAllMedia().filter(
+    (m) => m.status === "completed" && m.completed
+  );
+
+  // Calculate date ranges for each period
+  for (let i = numPeriods - 1; i >= 0; i--) {
+    const { startDate, endDate, label } = getTimelinePeriodRange(now, period, i);
+
+    // Filter media completed in this period
+    const periodMedia = completedMedia.filter((m) => {
+      const completedDate = m.completed!;
+      return completedDate >= startDate && completedDate <= endDate;
+    });
+
+    // Count by type
+    const movies = periodMedia.filter((m) => m.type === "movie").length;
+    const tv = periodMedia.filter((m) => m.type === "tv").length;
+    const books = periodMedia.filter((m) => m.type === "book").length;
+    const games = periodMedia.filter((m) => m.type === "game").length;
+
+    // Calculate average rating for the period
+    const ratedMedia = periodMedia.filter((m) => m.rating !== null);
+    const avgRating =
+      ratedMedia.length > 0
+        ? Math.round(
+            (ratedMedia.reduce((sum, m) => sum + (m.rating || 0), 0) /
+              ratedMedia.length) *
+              10
+          ) / 10
+        : null;
+
+    // Create timeline items for hover details
+    const items: MediaTimelineItem[] = periodMedia
+      .sort((a, b) => (b.completed || "").localeCompare(a.completed || ""))
+      .slice(0, 10) // Limit to 10 most recent for tooltip
+      .map((m) => ({
+        id: m.id,
+        title: m.title,
+        type: m.type,
+        rating: m.rating,
+        completed: m.completed!,
+        poster: m.poster,
+      }));
+
+    dataPoints.push({
+      label,
+      startDate,
+      endDate,
+      count: periodMedia.length,
+      movies,
+      tv,
+      books,
+      games,
+      items,
+      avgRating,
+    });
+  }
+
+  // Calculate stats
+  const totalCompleted = dataPoints.reduce((sum, d) => sum + d.count, 0);
+  const avgPerPeriod = Math.round((totalCompleted / numPeriods) * 10) / 10;
+
+  // Find most active period
+  const mostActivePeriod = dataPoints.reduce(
+    (best, current) => (current.count > best.count ? current : best),
+    dataPoints[0]
+  );
+
+  // Calculate overall average rating
+  const allRatedMedia = completedMedia.filter((m) => m.rating !== null);
+  const overallAvgRating =
+    allRatedMedia.length > 0
+      ? Math.round(
+          (allRatedMedia.reduce((sum, m) => sum + (m.rating || 0), 0) /
+            allRatedMedia.length) *
+            10
+        ) / 10
+      : 0;
+
+  // Find top type
+  const typeCounts = {
+    movie: completedMedia.filter((m) => m.type === "movie").length,
+    tv: completedMedia.filter((m) => m.type === "tv").length,
+    book: completedMedia.filter((m) => m.type === "book").length,
+    game: completedMedia.filter((m) => m.type === "game").length,
+  };
+  const topType = Object.entries(typeCounts).reduce((a, b) =>
+    b[1] > a[1] ? b : a
+  )[0];
+
+  // Calculate trend (compare second half to first half)
+  const midpoint = Math.floor(numPeriods / 2);
+  const firstHalf = dataPoints.slice(0, midpoint);
+  const secondHalf = dataPoints.slice(midpoint);
+  const firstHalfAvg =
+    firstHalf.reduce((sum, d) => sum + d.count, 0) / firstHalf.length || 0;
+  const secondHalfAvg =
+    secondHalf.reduce((sum, d) => sum + d.count, 0) / secondHalf.length || 0;
+  const trend =
+    firstHalfAvg > 0
+      ? Math.round(((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100)
+      : secondHalfAvg > 0
+        ? 100
+        : 0;
+
+  return {
+    dataPoints,
+    stats: {
+      totalCompleted,
+      avgPerPeriod,
+      mostActiveMonth: mostActivePeriod?.label || "",
+      mostActiveMonthCount: mostActivePeriod?.count || 0,
+      avgRating: overallAvgRating,
+      topType: topType as string,
+      trend,
+    },
+    period,
+  };
+}
+
+/**
+ * Helper to get date range and label for a timeline period
+ */
+function getTimelinePeriodRange(
+  now: Date,
+  period: TimelinePeriod,
+  periodsAgo: number
+): { startDate: string; endDate: string; label: string } {
+  const start = new Date(now);
+  const end = new Date(now);
+
+  if (period === "week") {
+    // Go to the start of the current week (Sunday) then go back periodsAgo weeks
+    const dayOfWeek = now.getDay();
+    start.setDate(now.getDate() - dayOfWeek - periodsAgo * 7);
+    end.setDate(start.getDate() + 6);
+    const weekNum = getWeekNumber(start);
+    return {
+      startDate: formatTimelineDate(start),
+      endDate: formatTimelineDate(end),
+      label: `W${weekNum}`,
+    };
+  }
+
+  if (period === "month") {
+    start.setMonth(now.getMonth() - periodsAgo, 1);
+    end.setMonth(start.getMonth() + 1, 0); // Last day of month
+    const label = start.toLocaleDateString("en-US", { month: "short" });
+    return {
+      startDate: formatTimelineDate(start),
+      endDate: formatTimelineDate(end),
+      label,
+    };
+  }
+
+  // year
+  start.setFullYear(now.getFullYear() - periodsAgo, 0, 1);
+  end.setFullYear(start.getFullYear(), 11, 31);
+  const label = start.getFullYear().toString();
+  return {
+    startDate: formatTimelineDate(start),
+    endDate: formatTimelineDate(end),
+    label,
+  };
+}
+
+function formatTimelineDate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+function getWeekNumber(date: Date): number {
+  const d = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  );
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}

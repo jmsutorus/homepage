@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { MediaItem } from "@/lib/media";
 import { MediaGrid } from "./media-grid";
+import { MediaConsumptionTimeline } from "./media-consumption-timeline";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,11 +18,13 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, ChevronDown, ChevronRight, X } from "lucide-react";
+import { Search, Plus, ChevronDown, ChevronRight, X, BarChart3 } from "lucide-react";
 import Link from "next/link";
+import type { MediaTimelineData } from "@/lib/db/media";
 
 interface MediaPageClientProps {
   allMedia: MediaItem[];
+  timelineData?: MediaTimelineData;
 }
 
 type SortOption =
@@ -34,12 +37,13 @@ type SortOption =
   | "started-desc"
   | "started-asc";
 
-export function MediaPageClient({ allMedia }: MediaPageClientProps) {
+export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showPlanned, setShowPlanned] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(true);
   const [activeGenres, setActiveGenres] = useState<string[]>([]);
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>("completed-desc");
@@ -550,6 +554,31 @@ export function MediaPageClient({ allMedia }: MediaPageClientProps) {
             >
               Clear All
             </Button>
+          )}
+        </div>
+      )}
+
+      {/* Media Consumption Timeline */}
+      {timelineData && (
+        <div className="space-y-4">
+          <button
+            onClick={() => setShowTimeline(!showTimeline)}
+            className="cursor-pointer flex items-center gap-2 w-full text-left group"
+          >
+            {showTimeline ? (
+              <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            )}
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-xl font-semibold group-hover:text-foreground/80 transition-colors">
+                Consumption Timeline
+              </h2>
+            </div>
+          </button>
+          {showTimeline && (
+            <MediaConsumptionTimeline initialData={timelineData} />
           )}
         </div>
       )}

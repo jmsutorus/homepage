@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import HeatMap from "@uiw/react-heat-map";
 import { MoodEntryModal } from "./mood-entry-modal";
 import { MoodEntry } from "@/lib/db/mood";
@@ -10,37 +10,17 @@ import { Plus } from "lucide-react";
 
 interface MoodHeatmapProps {
   year?: number;
+  data: MoodEntry[];
+  onMoodChange: () => void;
 }
 
-export function MoodHeatmap({ year = new Date().getFullYear() }: MoodHeatmapProps) {
-  const [moodData, setMoodData] = useState<MoodEntry[]>([]);
+export function MoodHeatmap({ year = new Date().getFullYear(), data, onMoodChange }: MoodHeatmapProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<MoodEntry | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Fetch mood data for the year
-  useEffect(() => {
-    fetchMoodData();
-  }, [year]);
-
-  const fetchMoodData = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`/api/mood?year=${year}`);
-      if (response.ok) {
-        const data = await response.json();
-        setMoodData(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch mood data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Convert mood entries to heatmap format
-  const heatmapData = moodData.map((entry) => ({
+  const heatmapData = data.map((entry) => ({
     date: entry.date,
     count: entry.rating,
     content: entry.note || "",
@@ -48,7 +28,7 @@ export function MoodHeatmap({ year = new Date().getFullYear() }: MoodHeatmapProp
 
   // Handle cell click
   const handleCellClick = (date: string) => {
-    const existing = moodData.find((entry) => entry.date === date);
+    const existing = data.find((entry) => entry.date === date);
     console.log("Clicked date:", date, "Existing entry:", existing);
     setSelectedDate(date);
     setSelectedMood(existing || null);
@@ -67,8 +47,7 @@ export function MoodHeatmap({ year = new Date().getFullYear() }: MoodHeatmapProp
       });
 
       if (response.ok) {
-        // Refresh data
-        await fetchMoodData();
+        onMoodChange();
       }
     } catch (error) {
       console.error("Failed to save mood:", error);
@@ -86,7 +65,7 @@ export function MoodHeatmap({ year = new Date().getFullYear() }: MoodHeatmapProp
   };
 
   const todayString = getTodayString();
-  const hasTodaysMood = moodData.some((entry) => entry.date === todayString);
+  const hasTodaysMood = data.some((entry) => entry.date === todayString);
 
   // Handle quick add for today
   const handleQuickAddToday = () => {
@@ -104,22 +83,6 @@ export function MoodHeatmap({ year = new Date().getFullYear() }: MoodHeatmapProp
     4: "hsl(84 81% 44%)", // Lime - Good
     5: "hsl(142 71% 45%)", // Green - Great
   };
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Mood Tracker</CardTitle>
-          <CardDescription>Year in Pixels - {year}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <p className="text-muted-foreground">Loading mood data...</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <>
