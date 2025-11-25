@@ -512,7 +512,7 @@ export async function getCalendarDataForRange(
 
   // Add tasks (by due_date or completion date)
   tasks.forEach((task) => {
-    if (task.due_date) {
+    if (task.due_date && task.due_date.trim() !== "") {
       // Extract date portion (YYYY-MM-DD) from due_date
       const dueDateStr = task.due_date.split("T")[0];
       const dayData = calendarMap.get(dueDateStr);
@@ -521,7 +521,7 @@ export async function getCalendarDataForRange(
       }
     }
     // Also add completed tasks to the day they were completed
-    if (task.completed && task.completed_date) {
+    if (task.completed && task.completed_date && task.completed_date.trim() !== "") {
       // Extract date portion (YYYY-MM-DD) from completed_date
       const completedDateStr = task.completed_date.split("T")[0];
       const dayData = calendarMap.get(completedDateStr);

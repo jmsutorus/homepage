@@ -171,7 +171,7 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
                           {task.category}
                         </Badge>
                       )}
-                      {task.due_date && (
+                      {task.due_date && task.due_date.trim() !== "" && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
                           <span>
@@ -202,7 +202,7 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
                   <ArrowRight className="mr-2 h-4 w-4" />
                   Tomorrow
                 </ContextMenuItem>
-                <ContextMenuItem onClick={() => handleReschedule(task.id, addDays(task.due_date || startOfToday(), 8))}>
+                <ContextMenuItem onClick={() => handleReschedule(task.id, addDays(task.due_date && task.due_date.trim() !== "" ? new Date(task.due_date.replaceAll("-", "/")) : startOfToday(), 8))}>
                   <Calendar className="mr-2 h-4 w-4" />
                   Next Week
                 </ContextMenuItem>

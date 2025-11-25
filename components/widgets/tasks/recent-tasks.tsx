@@ -96,7 +96,7 @@ export function RecentTasks() {
   };
 
   const getDueDateStatus = (dueDate: string | null) => {
-    if (!dueDate) return null;
+    if (!dueDate || dueDate.trim() === "") return null;
 
     const date = new Date(dueDate);
     if (isPast(date) && !isToday(date)) {

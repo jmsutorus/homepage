@@ -85,9 +85,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
+    // Merge the callbacks from auth.config.ts
+    ...authConfig.callbacks,
     async signIn({ user }) {
       if (!user.email) return false;
-      
+
       try {
         const { queryOne } = await import("@/lib/db");
         const allowed = queryOne("SELECT 1 FROM allowed_users WHERE email = ?", [user.email]);
