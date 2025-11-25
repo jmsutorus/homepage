@@ -37,6 +37,14 @@ export function SQLiteAdapter(dbPath: string): Adapter {
         // Don't fail user creation if color population fails
       }
 
+      // Add default role
+      try {
+        const roleStmt = db.prepare("INSERT INTO user_roles (userId, role) VALUES (?, 'user')");
+        roleStmt.run(id);
+      } catch (error) {
+        console.error("Failed to create user role:", error);
+      }
+
       return {
         id,
         email: user.email,
@@ -47,7 +55,12 @@ export function SQLiteAdapter(dbPath: string): Adapter {
     },
 
     async getUser(id) {
-      const stmt = db.prepare("SELECT * FROM user WHERE id = ?");
+      const stmt = db.prepare(`
+        SELECT u.*, ur.role 
+        FROM user u 
+        LEFT JOIN user_roles ur ON u.id = ur.userId 
+        WHERE u.id = ?
+      `);
       const user = stmt.get(id) as any;
 
       if (!user) return null;
@@ -58,11 +71,17 @@ export function SQLiteAdapter(dbPath: string): Adapter {
         emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
         name: user.name,
         image: user.image,
-      } as AdapterUser;
+        role: user.role || 'user',
+      } as AdapterUser & { role: string };
     },
 
     async getUserByEmail(email) {
-      const stmt = db.prepare("SELECT * FROM user WHERE email = ?");
+      const stmt = db.prepare(`
+        SELECT u.*, ur.role 
+        FROM user u 
+        LEFT JOIN user_roles ur ON u.id = ur.userId 
+        WHERE u.email = ?
+      `);
       const user = stmt.get(email) as any;
 
       if (!user) return null;
@@ -73,13 +92,16 @@ export function SQLiteAdapter(dbPath: string): Adapter {
         emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
         name: user.name,
         image: user.image,
-      } as AdapterUser;
+        role: user.role || 'user',
+      } as AdapterUser & { role: string };
     },
 
     async getUserByAccount({ providerAccountId, provider }) {
       const stmt = db.prepare(`
-        SELECT u.* FROM user u
+        SELECT u.*, ur.role 
+        FROM user u
         JOIN account a ON u.id = a.userId
+        LEFT JOIN user_roles ur ON u.id = ur.userId
         WHERE a.accountId = ? AND a.providerId = ?
       `);
       const user = stmt.get(providerAccountId, provider) as any;
@@ -92,7 +114,8 @@ export function SQLiteAdapter(dbPath: string): Adapter {
         emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
         name: user.name,
         image: user.image,
-      } as AdapterUser;
+        role: user.role || 'user',
+      } as AdapterUser & { role: string };
     },
 
     async updateUser(user) {
@@ -185,8 +208,10 @@ export function SQLiteAdapter(dbPath: string): Adapter {
 
     async getSessionAndUser(sessionToken) {
       const stmt = db.prepare(`
-        SELECT s.*, u.* FROM session s
+        SELECT s.*, u.*, ur.role 
+        FROM session s
         JOIN user u ON s.userId = u.id
+        LEFT JOIN user_roles ur ON u.id = ur.userId
         WHERE s.token = ?
       `);
       const result = stmt.get(sessionToken) as any;
@@ -199,12 +224,13 @@ export function SQLiteAdapter(dbPath: string): Adapter {
         expires: new Date(result.expiresAt),
       };
 
-      const user: AdapterUser = {
+      const user: AdapterUser & { role: string } = {
         id: result.userId,
         email: result.email,
         emailVerified: result.emailVerified ? new Date(result.emailVerified) : null,
         name: result.name,
         image: result.image,
+        role: result.role || 'user',
       };
 
       return { session, user };

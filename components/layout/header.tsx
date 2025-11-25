@@ -6,7 +6,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
-import { Settings, Search, ChevronDown, User } from "lucide-react";
+import { Settings, Search, ChevronDown, User, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -153,13 +153,21 @@ export function Header() {
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings" className="w-full cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </Link>
-                  </DropdownMenuItem>
+                  <DropdownMenuContent align="end">
+                    {(user as any).role === 'admin' && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="w-full cursor-pointer">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="w-full cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}

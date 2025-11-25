@@ -28,6 +28,29 @@ CREATE TABLE IF NOT EXISTS session (
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
 );
 
+-- User Roles Table
+-- Stores user roles for RBAC (per user)
+CREATE TABLE IF NOT EXISTS user_roles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  role TEXT DEFAULT 'user' CHECK(role IN ('user', 'admin')),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId)
+);
+
+-- Indexes for user_roles
+CREATE INDEX IF NOT EXISTS idx_user_roles_userId ON user_roles(userId);
+CREATE INDEX IF NOT EXISTS idx_user_roles_role ON user_roles(role);
+
+-- Trigger to update updated_at timestamp on user_roles
+CREATE TRIGGER IF NOT EXISTS update_user_roles_timestamp
+AFTER UPDATE ON user_roles
+BEGIN
+  UPDATE user_roles SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
 -- Account Table (for OAuth providers like Strava and Google)
 CREATE TABLE IF NOT EXISTS account (
   id TEXT PRIMARY KEY,

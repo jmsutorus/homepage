@@ -39,3 +39,16 @@ export async function getUser() {
   const session = await auth();
   return session?.user || null;
 }
+
+/**
+ * Require admin role - throws error/redirects if not admin
+ */
+export async function requireAdmin() {
+  const session = await requireAuth();
+
+  if (session.user.role !== "admin") {
+    redirect("/");
+  }
+
+  return session;
+}
