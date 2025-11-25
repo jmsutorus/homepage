@@ -48,7 +48,7 @@ export interface MediaContentInput {
 /**
  * Create a new media content entry
  */
-export function createMedia(data: MediaContentInput): MediaContent {
+export function createMedia(data: MediaContentInput, userId: string): MediaContent {
   const genresJson = data.genres ? JSON.stringify(data.genres) : null;
   const tagsJson = data.tags ? JSON.stringify(data.tags) : null;
   const creatorJson = data.creator ? JSON.stringify(data.creator) : null;
@@ -56,8 +56,8 @@ export function createMedia(data: MediaContentInput): MediaContent {
   const result = execute(
     `INSERT INTO media_content (
       slug, title, type, status, rating, started, completed, released,
-      genres, poster, tags, description, length, creator, featured, published, content
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      genres, poster, tags, description, length, creator, featured, published, content, userId
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.slug,
       data.title,
@@ -76,6 +76,7 @@ export function createMedia(data: MediaContentInput): MediaContent {
       data.featured ? 1 : 0,
       data.published !== false ? 1 : 0, // Default to true/1
       data.content,
+      userId,
     ]
   );
 
@@ -98,9 +99,15 @@ export function getMediaById(id: number): MediaContent | undefined {
 }
 
 /**
- * Get media entry by slug
+ * Get media entry by slug (optionally filtered by userId)
  */
-export function getMediaBySlug(slug: string): MediaContent | undefined {
+export function getMediaBySlug(slug: string, userId?: string): MediaContent | undefined {
+  if (userId) {
+    return queryOne<MediaContent>(
+      "SELECT * FROM media_content WHERE slug = ? AND userId = ?",
+      [slug, userId]
+    );
+  }
   return queryOne<MediaContent>(
     "SELECT * FROM media_content WHERE slug = ?",
     [slug]
@@ -108,20 +115,33 @@ export function getMediaBySlug(slug: string): MediaContent | undefined {
 }
 
 /**
- * Get all media entries
+ * Get all media entries (optionally filtered by userId)
  */
-export function getAllMedia(): MediaContent[] {
+export function getAllMedia(userId?: string): MediaContent[] {
+  if (userId) {
+    return query<MediaContent>(
+      "SELECT * FROM media_content WHERE userId = ? ORDER BY created_at DESC",
+      [userId]
+    );
+  }
   return query<MediaContent>(
     "SELECT * FROM media_content ORDER BY created_at DESC"
   );
 }
 
 /**
- * Get media entries by type
+ * Get media entries by type (optionally filtered by userId)
  */
 export function getMediaByType(
-  type: "movie" | "tv" | "book" | "game"
+  type: "movie" | "tv" | "book" | "game",
+  userId?: string
 ): MediaContent[] {
+  if (userId) {
+    return query<MediaContent>(
+      "SELECT * FROM media_content WHERE type = ? AND userId = ? ORDER BY created_at DESC",
+      [type, userId]
+    );
+  }
   return query<MediaContent>(
     "SELECT * FROM media_content WHERE type = ? ORDER BY created_at DESC",
     [type]
@@ -129,11 +149,18 @@ export function getMediaByType(
 }
 
 /**
- * Get media entries by status
+ * Get media entries by status (optionally filtered by userId)
  */
 export function getMediaByStatus(
-  status: "in-progress" | "completed" | "planned"
+  status: "in-progress" | "completed" | "planned",
+  userId?: string
 ): MediaContent[] {
+  if (userId) {
+    return query<MediaContent>(
+      "SELECT * FROM media_content WHERE status = ? AND userId = ? ORDER BY created_at DESC",
+      [status, userId]
+    );
+  }
   return query<MediaContent>(
     "SELECT * FROM media_content WHERE status = ? ORDER BY created_at DESC",
     [status]
@@ -141,12 +168,21 @@ export function getMediaByStatus(
 }
 
 /**
- * Get media entries by type and status
+ * Get media entries by type and status (optionally filtered by userId)
  */
 export function getMediaByTypeAndStatus(
   type: "movie" | "tv" | "book" | "game",
-  status: "in-progress" | "completed" | "planned"
+  status: "in-progress" | "completed" | "planned",
+  userId?: string
 ): MediaContent[] {
+  if (userId) {
+    return query<MediaContent>(
+      `SELECT * FROM media_content
+       WHERE type = ? AND status = ? AND userId = ?
+       ORDER BY created_at DESC`,
+      [type, status, userId]
+    );
+  }
   return query<MediaContent>(
     `SELECT * FROM media_content
      WHERE type = ? AND status = ?

@@ -28,8 +28,6 @@ export default async function DashboardPage({
 }) {
   // Require authentication
   const userId = await getUserId();
-  console.log("userId");
-  console.log(userId);
 
   // Get recently completed media sorted by completion date (most recent first)
   const recentMedia = getRecentlyCompletedMedia(4);

@@ -69,16 +69,27 @@ function dbToParkContent(row: DBPark): ParkContent {
 }
 
 /**
- * Get all parks
+ * Get all parks (optionally filtered by userId)
  */
-export function getAllParks(): ParkContent[] {
+export function getAllParks(userId?: string): ParkContent[] {
   try {
-    const stmt = db.prepare(`
-      SELECT * FROM parks
-      ORDER BY visited DESC, created_at DESC
-    `);
-    const rows = stmt.all() as DBPark[];
-    return rows.map(dbToParkContent);
+    let stmt;
+    if (userId) {
+      stmt = db.prepare(`
+        SELECT * FROM parks
+        WHERE userId = ?
+        ORDER BY visited DESC, created_at DESC
+      `);
+      const rows = stmt.all(userId) as DBPark[];
+      return rows.map(dbToParkContent);
+    } else {
+      stmt = db.prepare(`
+        SELECT * FROM parks
+        ORDER BY visited DESC, created_at DESC
+      `);
+      const rows = stmt.all() as DBPark[];
+      return rows.map(dbToParkContent);
+    }
   } catch (error) {
     console.error("Error getting all parks:", error);
     return [];
@@ -104,12 +115,19 @@ export function getPublishedParks(): ParkContent[] {
 }
 
 /**
- * Get park by slug
+ * Get park by slug (optionally filtered by userId)
  */
-export function getParkBySlug(slug: string): ParkContent | null {
+export function getParkBySlug(slug: string, userId?: string): ParkContent | null {
   try {
-    const stmt = db.prepare("SELECT * FROM parks WHERE slug = ?");
-    const row = stmt.get(slug) as DBPark | undefined;
+    let stmt;
+    let row;
+    if (userId) {
+      stmt = db.prepare("SELECT * FROM parks WHERE slug = ? AND userId = ?");
+      row = stmt.get(slug, userId) as DBPark | undefined;
+    } else {
+      stmt = db.prepare("SELECT * FROM parks WHERE slug = ?");
+      row = stmt.get(slug) as DBPark | undefined;
+    }
     return row ? dbToParkContent(row) : null;
   } catch (error) {
     console.error("Error getting park by slug:", error);

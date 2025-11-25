@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAllParks, createPark, getParkBySlug } from "@/lib/db/parks";
 import { PARK_CATEGORIES, ParkCategoryValue } from "@/lib/db/enums/park-enums";
+import { getUserId } from "@/lib/auth/server";
 
 // Helper function to sanitize slug
 function sanitizeSlug(title: string): string {
@@ -17,11 +18,12 @@ function sanitizeSlug(title: string): string {
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const category = searchParams.get("category");
     const state = searchParams.get("state");
 
-    let parks = getAllParks();
+    let parks = getAllParks(userId);
 
     // Apply filters
     if (category) {
@@ -47,6 +49,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const body = await request.json();
     const { frontmatter, content } = body;
 
@@ -69,8 +72,8 @@ export async function POST(request: NextRequest) {
     // Generate slug from title
     const slug = sanitizeSlug(frontmatter.title);
 
-    // Check if park with this slug already exists
-    const existing = getParkBySlug(slug);
+    // Check if park with this slug already exists for this user
+    const existing = getParkBySlug(slug, userId);
     if (existing) {
       return NextResponse.json(
         { error: "A park entry with this title already exists" },
@@ -91,6 +94,7 @@ export async function POST(request: NextRequest) {
       featured: frontmatter.featured,
       published: frontmatter.published,
       content: content || "",
+      userId,
     };
 
     const park = createPark(parkData);

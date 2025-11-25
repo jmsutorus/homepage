@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAllMedia, createMedia, getMediaBySlug } from "@/lib/db/media";
 import type { MediaContentInput } from "@/lib/db/media";
+import { getUserId } from "@/lib/auth/server";
 
 // Helper function to sanitize slug
 function sanitizeSlug(title: string): string {
@@ -28,6 +29,7 @@ function getDirectoryName(type: "movie" | "tv" | "book" | "game"): string {
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get("type") as "movie" | "tv" | "book" | null;
     const status = searchParams.get("status") as
@@ -36,7 +38,7 @@ export async function GET(request: NextRequest) {
       | "planned"
       | null;
 
-    let media = getAllMedia();
+    let media = getAllMedia(userId);
 
     // Apply filters
     if (type) {
@@ -62,6 +64,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const body = await request.json();
     const { frontmatter, content } = body;
 
@@ -85,8 +88,8 @@ export async function POST(request: NextRequest) {
     // Generate slug from title
     const slug = sanitizeSlug(frontmatter.title);
 
-    // Check if media with this slug already exists
-    const existing = getMediaBySlug(slug);
+    // Check if media with this slug already exists for this user
+    const existing = getMediaBySlug(slug, userId);
     if (existing) {
       return NextResponse.json(
         { error: "A media entry with this title already exists" },
@@ -113,7 +116,7 @@ export async function POST(request: NextRequest) {
       content: content || "",
     };
 
-    const media = createMedia(mediaInput);
+    const media = createMedia(mediaInput, userId);
     const dirName = getDirectoryName(frontmatter.type);
 
     // Revalidate paths

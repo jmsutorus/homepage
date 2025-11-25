@@ -130,7 +130,7 @@ async function migrateMediaFiles() {
         genres: frontmatter.genres,
         creator: creator.length > 0 ? creator : undefined,
         content: content.trim(),
-      });
+      }, 'ae5a18d1-ec1c-4e48-baaf-52edec61989e'); // Default userId for migration
 
       console.log(`✅ Migrated: ${slug} (${type})`);
       successCount++;
