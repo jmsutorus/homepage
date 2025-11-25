@@ -16,7 +16,7 @@ import { auth } from "@/auth";
 import { getGithubActivity } from "@/lib/github";
 import { queryOne } from "@/lib/db";
 import { getCalendarColorsForUser } from "@/lib/actions/calendar-colors";
-
+import { getFeatureFlag } from "@/lib/flags";
 import { ActionBanner } from "@/components/widgets/action-banner";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +41,10 @@ export default async function DashboardPage({
   // Fetch GitHub activity if user is authenticated and has linked account
   const session = await auth();
   let githubEvents: any[] = [];
+
+  const isPlexEnabled = await getFeatureFlag("Plex", false);
+  const isSteamEnabled = await getFeatureFlag("Steam", false);
+  const isHomeAssistantEnabled = await getFeatureFlag("HomeAssistant", false);
 
   if (session?.user?.id) {
     // Get GitHub token from account table
@@ -113,14 +117,17 @@ export default async function DashboardPage({
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight">Gaming & Services</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {/* Steam Widget */}
-          <SteamStatus />
+          {isSteamEnabled && (
+            <SteamStatus />
+          )}
 
-          {/* Plex Widget */}
-          <PlexStatus />
+          {isPlexEnabled && (
+            <PlexStatus />
+          )}
 
-          {/* Home Assistant Widget */}
-          <HomeAssistantWidget />
+          {isHomeAssistantEnabled && (
+            <HomeAssistantWidget />
+          )}
         </div>
       </section>
     </div>

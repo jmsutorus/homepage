@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { getRemoteConfig } from "firebase-admin/remote-config";
 
 let app: App;
 
@@ -19,5 +20,6 @@ if (getApps().length === 0) {
 
 // Get Firebase Admin Auth instance
 export const adminAuth = getAuth(app);
+export const remoteConfig = getRemoteConfig(app);
 
 export default app;
