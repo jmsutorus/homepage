@@ -8,6 +8,7 @@ export interface EventNotification {
 
 export interface Event {
   id: number;
+  userId: string;
   title: string;
   description: string | null;
   location: string | null;
@@ -69,14 +70,15 @@ function transformEvent(row: any): Event {
 }
 
 /**
- * Create a new event
+ * Create a new event for a specific user
  */
-export function createEvent(input: CreateEventInput): Event {
+export function createEvent(input: CreateEventInput, userId: string): Event {
   const result = execute(
     `INSERT INTO events (
-      title, description, location, date, start_time, end_time, all_day, end_date, notifications
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      userId, title, description, location, date, start_time, end_time, all_day, end_date, notifications
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
+      userId,
       input.title,
       input.description || null,
       input.location || null,
@@ -89,7 +91,7 @@ export function createEvent(input: CreateEventInput): Event {
     ]
   );
 
-  const event = getEvent(Number(result.lastInsertRowid));
+  const event = getEvent(Number(result.lastInsertRowid), userId);
   if (!event) {
     throw new Error("Failed to create event");
   }
@@ -98,53 +100,63 @@ export function createEvent(input: CreateEventInput): Event {
 }
 
 /**
- * Get event by ID
+ * Get event by ID for a specific user
  */
-export function getEvent(id: number): Event | undefined {
-  const row = queryOne<any>("SELECT * FROM events WHERE id = ?", [id]);
+export function getEvent(id: number, userId: string): Event | undefined {
+  const row = queryOne<any>("SELECT * FROM events WHERE id = ? AND userId = ?", [id, userId]);
   return row ? transformEvent(row) : undefined;
 }
 
 /**
- * Get all events
+ * Get all events for a specific user
  */
-export function getAllEvents(): Event[] {
-  const rows = query<any>("SELECT * FROM events ORDER BY date ASC, start_time ASC");
+export function getAllEvents(userId: string): Event[] {
+  const rows = query<any>("SELECT * FROM events WHERE userId = ? ORDER BY date ASC, start_time ASC", [userId]);
   return rows.map(transformEvent);
 }
 
 /**
- * Get events for a specific date (including multi-day events that span this date)
+ * Get events for a specific date for a specific user (including multi-day events that span this date)
  */
-export function getEventsForDate(date: string): Event[] {
+export function getEventsForDate(date: string, userId: string): Event[] {
   const rows = query<any>(
     `SELECT * FROM events
-     WHERE date = ?
-        OR (end_date IS NOT NULL AND date <= ? AND end_date >= ?)
+     WHERE userId = ? AND (
+       date = ?
+       OR (end_date IS NOT NULL AND date <= ? AND end_date >= ?)
+     )
      ORDER BY all_day DESC, start_time ASC`,
-    [date, date, date]
+    [userId, date, date, date]
   );
   return rows.map(transformEvent);
 }
 
 /**
- * Get events in a date range (including multi-day events that overlap)
+ * Get events in a date range for a specific user (including multi-day events that overlap)
  */
-export function getEventsInRange(startDate: string, endDate: string): Event[] {
+export function getEventsInRange(startDate: string, endDate: string, userId: string): Event[] {
   const rows = query<any>(
     `SELECT * FROM events
-     WHERE (date BETWEEN ? AND ?)
-        OR (end_date IS NOT NULL AND date <= ? AND end_date >= ?)
+     WHERE userId = ? AND (
+       (date BETWEEN ? AND ?)
+       OR (end_date IS NOT NULL AND date <= ? AND end_date >= ?)
+     )
      ORDER BY date ASC, all_day DESC, start_time ASC`,
-    [startDate, endDate, endDate, startDate]
+    [userId, startDate, endDate, endDate, startDate]
   );
   return rows.map(transformEvent);
 }
 
 /**
- * Update event
+ * Update event (with ownership verification)
  */
-export function updateEvent(id: number, updates: UpdateEventInput): boolean {
+export function updateEvent(id: number, userId: string, updates: UpdateEventInput): boolean {
+  // Verify ownership
+  const existing = getEvent(id, userId);
+  if (!existing) {
+    return false;
+  }
+
   const fields: string[] = [];
   const params: unknown[] = [];
 
@@ -197,36 +209,42 @@ export function updateEvent(id: number, updates: UpdateEventInput): boolean {
     return false;
   }
 
-  params.push(id);
-  const sql = `UPDATE events SET ${fields.join(", ")} WHERE id = ?`;
+  params.push(id, userId);
+  const sql = `UPDATE events SET ${fields.join(", ")} WHERE id = ? AND userId = ?`;
   const result = execute(sql, params);
 
   return result.changes > 0;
 }
 
 /**
- * Delete event
+ * Delete event (with ownership verification)
  */
-export function deleteEvent(id: number): boolean {
-  const result = execute("DELETE FROM events WHERE id = ?", [id]);
+export function deleteEvent(id: number, userId: string): boolean {
+  // Verify ownership
+  const existing = getEvent(id, userId);
+  if (!existing) {
+    return false;
+  }
+
+  const result = execute("DELETE FROM events WHERE id = ? AND userId = ?", [id, userId]);
   return result.changes > 0;
 }
 
 /**
- * Get upcoming events (from today onwards)
+ * Get upcoming events for a specific user (from today onwards)
  */
-export function getUpcomingEvents(limit?: number): Event[] {
+export function getUpcomingEvents(userId: string, limit?: number): Event[] {
   const today = new Date().toISOString().split("T")[0];
   const sql = limit
     ? `SELECT * FROM events
-       WHERE date >= ? OR (end_date IS NOT NULL AND end_date >= ?)
+       WHERE userId = ? AND (date >= ? OR (end_date IS NOT NULL AND end_date >= ?))
        ORDER BY date ASC, all_day DESC, start_time ASC
        LIMIT ?`
     : `SELECT * FROM events
-       WHERE date >= ? OR (end_date IS NOT NULL AND end_date >= ?)
+       WHERE userId = ? AND (date >= ? OR (end_date IS NOT NULL AND end_date >= ?))
        ORDER BY date ASC, all_day DESC, start_time ASC`;
 
-  const params = limit ? [today, today, limit] : [today, today];
+  const params = limit ? [userId, today, today, limit] : [userId, today, today];
   const rows = query<any>(sql, params);
   return rows.map(transformEvent);
 }

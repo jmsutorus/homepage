@@ -108,13 +108,15 @@ export interface CalendarDaySummary {
  */
 export function getActivitiesInRange(
   startDate: string,
-  endDate: string
+  endDate: string,
+  userId: string
 ): DBStravaActivity[] {
   return query<DBStravaActivity>(
     `SELECT * FROM strava_activities
      WHERE DATE(start_date_local) BETWEEN ? AND ?
+     AND userId = ?
      ORDER BY start_date_local ASC`,
-    [startDate, endDate]
+    [startDate, endDate, userId]
   );
 }
 
@@ -123,13 +125,15 @@ export function getActivitiesInRange(
  */
 export function getMediaCompletedInRange(
   startDate: string,
-  endDate: string
+  endDate: string,
+  userId: string
 ): MediaContent[] {
   return query<MediaContent>(
     `SELECT * FROM media_content
      WHERE completed BETWEEN ? AND ?
+     AND userId = ?
      ORDER BY completed ASC`,
-    [startDate, endDate]
+    [startDate, endDate, userId]
   );
 }
 
@@ -140,27 +144,23 @@ export function getMediaCompletedInRange(
 export function getTasksInRange(
   startDate: string,
   endDate: string,
-  userId?: string
+  userId: string
 ): Task[] {
-  let sql = `SELECT DISTINCT * FROM tasks
+  const sql = `SELECT DISTINCT * FROM tasks
      WHERE (
        (due_date BETWEEN ? AND ?)
        OR (completed = 1 AND completed_date BETWEEN ? AND ?)
        OR (completed = 0 AND due_date BETWEEN ? AND ?)
-     )`;
+     )
+     AND userId = ?
+     ORDER BY due_date ASC NULLS LAST`;
 
   const params: any[] = [
     startDate, endDate,           // Tasks due in range
     startDate, endDate,           // Completed tasks in range
-    startDate, endDate            // Incomplete tasks in range
+    startDate, endDate,           // Incomplete tasks in range
+    userId
   ];
-
-  if (userId) {
-    sql += ` AND userId = ?`;
-    params.push(userId);
-  }
-
-  sql += ` ORDER BY due_date ASC NULLS LAST`;
 
   const result = query<Task>(sql, params);
 
@@ -172,11 +172,12 @@ export function getTasksInRange(
  */
 export function getEventsInRange(
   startDate: string,
-  endDate: string
+  endDate: string,
+  userId: string
 ): Event[] {
   // Import from events module
   const { getEventsInRange: getEvents } = require("./events");
-  return getEvents(startDate, endDate);
+  return getEvents(startDate, endDate, userId);
 }
 
 /**
@@ -184,13 +185,15 @@ export function getEventsInRange(
  */
 export function getParksVisitedInRange(
   startDate: string,
-  endDate: string
+  endDate: string,
+  userId: string
 ): ParkContent[] {
   return query<ParkContent>(
     `SELECT * FROM parks
      WHERE visited BETWEEN ? AND ?
+     AND userId = ?
      ORDER BY visited ASC`,
-    [startDate, endDate]
+    [startDate, endDate, userId]
   );
 }
 
@@ -201,19 +204,21 @@ export function getParksVisitedInRange(
  */
 export function getJournalsInRange(
   startDate: string,
-  endDate: string
+  endDate: string,
+  userId: string
 ): JournalContent[] {
   // Need to parse tags from JSON and convert featured/published from number to boolean
   const rawJournals = query<any>(
     `SELECT * FROM journals
-     WHERE (journal_type = 'daily' AND daily_date BETWEEN ? AND ?)
-        OR (journal_type = 'general' AND DATE(created_at) BETWEEN ? AND ?)
+     WHERE ((journal_type = 'daily' AND daily_date BETWEEN ? AND ?)
+        OR (journal_type = 'general' AND DATE(created_at) BETWEEN ? AND ?))
+     AND userId = ?
      ORDER BY
        CASE
          WHEN journal_type = 'daily' THEN daily_date
          ELSE DATE(created_at)
        END ASC`,
-    [startDate, endDate, startDate, endDate]
+    [startDate, endDate, startDate, endDate, userId]
   );
 
   return rawJournals.map((journal: any) => ({
@@ -229,13 +234,15 @@ export function getJournalsInRange(
  */
 export function getWorkoutActivitiesInRange(
   startDate: string,
-  endDate: string
+  endDate: string,
+  userId: string
 ): WorkoutActivity[] {
   return query<WorkoutActivity>(
     `SELECT * FROM workout_activities
      WHERE date BETWEEN ? AND ?
+     AND userId = ?
      ORDER BY date ASC, time ASC`,
-    [startDate, endDate]
+    [startDate, endDate, userId]
   );
 }
 
@@ -439,22 +446,27 @@ export async function getCalendarDataForRange(
   const session = await auth();
   const userId = session?.user?.id;
 
+  if (!userId) {
+    // Return empty map if no user is logged in
+    return new Map<string, CalendarDayData>();
+  }
+
   // Get all data
   const moods = query<MoodEntry>(
-    `SELECT * FROM mood_entries WHERE date BETWEEN ? AND ?`,
-    [startDate, endDate]
+    `SELECT * FROM mood_entries WHERE date BETWEEN ? AND ? AND userId = ?`,
+    [startDate, endDate, userId]
   );
 
-  const activities = getActivitiesInRange(startDate, endDate);
-  const media = getMediaCompletedInRange(startDate, endDate);
+  const activities = getActivitiesInRange(startDate, endDate, userId);
+  const media = getMediaCompletedInRange(startDate, endDate, userId);
   const tasks = getTasksInRange(startDate, endDate, userId);
-  const events = getEventsInRange(startDate, endDate);
-  const parks = getParksVisitedInRange(startDate, endDate);
-  const journals = getJournalsInRange(startDate, endDate);
-  const workoutActivities = getWorkoutActivitiesInRange(startDate, endDate);
-  const habitCompletions = userId ? getHabitCompletionsForRange(userId, startDate, endDate) : [];
-  const goals = userId ? getGoalsInRange(userId, startDate, endDate) : [];
-  const milestones = userId ? getMilestonesInRange(userId, startDate, endDate) : [];
+  const events = getEventsInRange(startDate, endDate, userId);
+  const parks = getParksVisitedInRange(startDate, endDate, userId);
+  const journals = getJournalsInRange(startDate, endDate, userId);
+  const workoutActivities = getWorkoutActivitiesInRange(startDate, endDate, userId);
+  const habitCompletions = getHabitCompletionsForRange(userId, startDate, endDate);
+  const goals = getGoalsInRange(userId, startDate, endDate);
+  const milestones = getMilestonesInRange(userId, startDate, endDate);
 
   // Create a map of date -> data
   const calendarMap = new Map<string, CalendarDayData>();

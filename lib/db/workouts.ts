@@ -53,9 +53,9 @@ export function createWorkoutPlan(plan: Omit<WorkoutPlan, "id" | "created_at" | 
   return result.lastInsertRowid as number;
 }
 
-export function getWorkoutPlan(id: number): WorkoutPlan | undefined {
+export function getWorkoutPlan(id: number, userId: string): WorkoutPlan | undefined {
   const db = getDatabase();
-  return db.prepare("SELECT * FROM workout_plans WHERE id = ?").get(id) as WorkoutPlan | undefined;
+  return db.prepare("SELECT * FROM workout_plans WHERE id = ? AND user_id = ?").get(id, userId) as WorkoutPlan | undefined;
 }
 
 export function getAllWorkoutPlans(userId: string): WorkoutPlan[] {
@@ -74,24 +74,43 @@ export function getWorkoutPlansByType(userId: string, type: string): WorkoutPlan
 
 export function updateWorkoutPlan(
   id: number,
+  userId: string,
   updates: Partial<Omit<WorkoutPlan, "id" | "user_id" | "created_at" | "updated_at">>
-): void {
+): boolean {
   const db = getDatabase();
+
+  // Verify ownership
+  const existing = getWorkoutPlan(id, userId);
+  if (!existing) {
+    return false;
+  }
+
   const fields = Object.keys(updates)
     .map((key) => `${key} = ?`)
     .join(", ");
 
   if (fields) {
-    db.prepare(`UPDATE workout_plans SET ${fields} WHERE id = ?`).run(
+    db.prepare(`UPDATE workout_plans SET ${fields} WHERE id = ? AND user_id = ?`).run(
       ...Object.values(updates),
-      id
+      id,
+      userId
     );
   }
+
+  return true;
 }
 
-export function deleteWorkoutPlan(id: number): void {
+export function deleteWorkoutPlan(id: number, userId: string): boolean {
   const db = getDatabase();
-  db.prepare("DELETE FROM workout_plans WHERE id = ?").run(id);
+
+  // Verify ownership
+  const existing = getWorkoutPlan(id, userId);
+  if (!existing) {
+    return false;
+  }
+
+  const result = db.prepare("DELETE FROM workout_plans WHERE id = ? AND user_id = ?").run(id, userId);
+  return result.changes > 0;
 }
 
 // Scheduled Workout CRUD Operations
@@ -121,18 +140,18 @@ export function createScheduledWorkout(
   return result.lastInsertRowid as number;
 }
 
-export function getScheduledWorkout(id: number): ScheduledWorkout | undefined {
+export function getScheduledWorkout(id: number, userId: string): ScheduledWorkout | undefined {
   const db = getDatabase();
-  return db.prepare("SELECT * FROM scheduled_workouts WHERE id = ?").get(id) as
+  return db.prepare("SELECT * FROM scheduled_workouts WHERE id = ? AND user_id = ?").get(id, userId) as
     | ScheduledWorkout
     | undefined;
 }
 
-export function getScheduledWorkoutByCalendarEventId(eventId: string): ScheduledWorkout | undefined {
+export function getScheduledWorkoutByCalendarEventId(eventId: string, userId: string): ScheduledWorkout | undefined {
   const db = getDatabase();
   return db
-    .prepare("SELECT * FROM scheduled_workouts WHERE calendar_event_id = ?")
-    .get(eventId) as ScheduledWorkout | undefined;
+    .prepare("SELECT * FROM scheduled_workouts WHERE calendar_event_id = ? AND user_id = ?")
+    .get(eventId, userId) as ScheduledWorkout | undefined;
 }
 
 export function getScheduledWorkouts(userId: string, startDate?: string, endDate?: string): ScheduledWorkout[] {
@@ -186,35 +205,63 @@ export function getCompletedWorkouts(userId: string, limit: number = 10): Schedu
 
 export function updateScheduledWorkout(
   id: number,
+  userId: string,
   updates: Partial<Omit<ScheduledWorkout, "id" | "user_id" | "created_at" | "updated_at">>
-): void {
+): boolean {
   const db = getDatabase();
+
+  // Verify ownership
+  const existing = getScheduledWorkout(id, userId);
+  if (!existing) {
+    return false;
+  }
+
   const fields = Object.keys(updates)
     .map((key) => `${key} = ?`)
     .join(", ");
 
   if (fields) {
-    db.prepare(`UPDATE scheduled_workouts SET ${fields} WHERE id = ?`).run(
+    db.prepare(`UPDATE scheduled_workouts SET ${fields} WHERE id = ? AND user_id = ?`).run(
       ...Object.values(updates),
-      id
+      id,
+      userId
     );
   }
+
+  return true;
 }
 
-export function markWorkoutCompleted(id: number, stravaActivityId?: number): void {
+export function markWorkoutCompleted(id: number, userId: string, stravaActivityId?: number): boolean {
   const db = getDatabase();
+
+  // Verify ownership
+  const existing = getScheduledWorkout(id, userId);
+  if (!existing) {
+    return false;
+  }
+
   const now = new Date().toISOString();
 
   db.prepare(
     `UPDATE scheduled_workouts
      SET completed = 1, completed_at = ?, strava_activity_id = ?
-     WHERE id = ?`
-  ).run(now, stravaActivityId || null, id);
+     WHERE id = ? AND user_id = ?`
+  ).run(now, stravaActivityId || null, id, userId);
+
+  return true;
 }
 
-export function deleteScheduledWorkout(id: number): void {
+export function deleteScheduledWorkout(id: number, userId: string): boolean {
   const db = getDatabase();
-  db.prepare("DELETE FROM scheduled_workouts WHERE id = ?").run(id);
+
+  // Verify ownership
+  const existing = getScheduledWorkout(id, userId);
+  if (!existing) {
+    return false;
+  }
+
+  const result = db.prepare("DELETE FROM scheduled_workouts WHERE id = ? AND user_id = ?").run(id, userId);
+  return result.changes > 0;
 }
 
 // Analytics and Statistics

@@ -12,6 +12,7 @@ export interface Exercise {
 
 export interface WorkoutActivity {
   id: number;
+  userId: string;
   date: string; // YYYY-MM-DD
   time: string; // HH:MM
   length: number; // Total duration in minutes
@@ -39,14 +40,15 @@ export interface CreateWorkoutActivity {
 
 // CRUD Operations
 
-export function createWorkoutActivity(activity: CreateWorkoutActivity): number {
+export function createWorkoutActivity(activity: CreateWorkoutActivity, userId: string): number {
   const db = getDatabase();
   const result = db
     .prepare(
-      `INSERT INTO workout_activities (date, time, length, difficulty, type, exercises, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO workout_activities (userId, date, time, length, difficulty, type, exercises, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
+      userId,
       activity.date,
       activity.time,
       activity.length,
@@ -59,74 +61,81 @@ export function createWorkoutActivity(activity: CreateWorkoutActivity): number {
   return result.lastInsertRowid as number;
 }
 
-export function getWorkoutActivity(id: number): WorkoutActivity | undefined {
+export function getWorkoutActivity(id: number, userId: string): WorkoutActivity | undefined {
   const db = getDatabase();
-  return db.prepare("SELECT * FROM workout_activities WHERE id = ?").get(id) as
+  return db.prepare("SELECT * FROM workout_activities WHERE id = ? AND userId = ?").get(id, userId) as
     | WorkoutActivity
     | undefined;
 }
 
-export function getAllWorkoutActivities(): WorkoutActivity[] {
+export function getAllWorkoutActivities(userId: string): WorkoutActivity[] {
   const db = getDatabase();
   return db
-    .prepare("SELECT * FROM workout_activities ORDER BY date DESC, time DESC")
-    .all() as WorkoutActivity[];
+    .prepare("SELECT * FROM workout_activities WHERE userId = ? ORDER BY date DESC, time DESC")
+    .all(userId) as WorkoutActivity[];
 }
 
-export function getWorkoutActivitiesByDateRange(startDate: string, endDate: string): WorkoutActivity[] {
+export function getWorkoutActivitiesByDateRange(startDate: string, endDate: string, userId: string): WorkoutActivity[] {
   const db = getDatabase();
   return db
     .prepare(
       `SELECT * FROM workout_activities
-       WHERE date >= ? AND date <= ?
+       WHERE userId = ? AND date >= ? AND date <= ?
        ORDER BY date ASC, time ASC`
     )
-    .all(startDate, endDate) as WorkoutActivity[];
+    .all(userId, startDate, endDate) as WorkoutActivity[];
 }
 
-export function getWorkoutActivitiesByType(type: string): WorkoutActivity[] {
+export function getWorkoutActivitiesByType(type: string, userId: string): WorkoutActivity[] {
   const db = getDatabase();
   return db
     .prepare(
       `SELECT * FROM workout_activities
-       WHERE type = ?
+       WHERE userId = ? AND type = ?
        ORDER BY date DESC, time DESC`
     )
-    .all(type) as WorkoutActivity[];
+    .all(userId, type) as WorkoutActivity[];
 }
 
-export function getUpcomingWorkoutActivities(limit: number = 10): WorkoutActivity[] {
+export function getUpcomingWorkoutActivities(userId: string, limit: number = 10): WorkoutActivity[] {
   const db = getDatabase();
   const today = new Date().toISOString().split("T")[0];
 
   return db
     .prepare(
       `SELECT * FROM workout_activities
-       WHERE date >= ? AND completed = 0
+       WHERE userId = ? AND date >= ? AND completed = 0
        ORDER BY date ASC, time ASC
        LIMIT ?`
     )
-    .all(today, limit) as WorkoutActivity[];
+    .all(userId, today, limit) as WorkoutActivity[];
 }
 
-export function getCompletedWorkoutActivities(limit: number = 10): WorkoutActivity[] {
+export function getCompletedWorkoutActivities(userId: string, limit: number = 10): WorkoutActivity[] {
   const db = getDatabase();
 
   return db
     .prepare(
       `SELECT * FROM workout_activities
-       WHERE completed = 1
+       WHERE userId = ? AND completed = 1
        ORDER BY completed_at DESC
        LIMIT ?`
     )
-    .all(limit) as WorkoutActivity[];
+    .all(userId, limit) as WorkoutActivity[];
 }
 
 export function updateWorkoutActivity(
   id: number,
-  updates: Partial<Omit<WorkoutActivity, "id" | "created_at" | "updated_at">>
-): void {
+  userId: string,
+  updates: Partial<Omit<WorkoutActivity, "id" | "userId" | "created_at" | "updated_at">>
+): boolean {
   const db = getDatabase();
+
+  // Verify ownership
+  const existing = getWorkoutActivity(id, userId);
+  if (!existing) {
+    return false;
+  }
 
   // If exercises is an array, convert to JSON string
   if (updates.exercises && typeof updates.exercises !== 'string') {
@@ -138,31 +147,52 @@ export function updateWorkoutActivity(
     .join(", ");
 
   if (fields) {
-    db.prepare(`UPDATE workout_activities SET ${fields} WHERE id = ?`).run(
+    db.prepare(`UPDATE workout_activities SET ${fields} WHERE id = ? AND userId = ?`).run(
       ...Object.values(updates),
-      id
+      id,
+      userId
     );
   }
+
+  return true;
 }
 
 export function markWorkoutActivityCompleted(
   id: number,
+  userId: string,
   stravaActivityId?: number | null,
   completionNotes?: string | null
-): void {
+): boolean {
   const db = getDatabase();
+
+  // Verify ownership
+  const existing = getWorkoutActivity(id, userId);
+  if (!existing) {
+    return false;
+  }
+
   const now = new Date().toISOString();
 
   db.prepare(
     `UPDATE workout_activities
      SET completed = 1, completed_at = ?, strava_activity_id = ?, completion_notes = ?
-     WHERE id = ?`
-  ).run(now, stravaActivityId || null, completionNotes || null, id);
+     WHERE id = ? AND userId = ?`
+  ).run(now, stravaActivityId || null, completionNotes || null, id, userId);
+
+  return true;
 }
 
-export function deleteWorkoutActivity(id: number): void {
+export function deleteWorkoutActivity(id: number, userId: string): boolean {
   const db = getDatabase();
-  db.prepare("DELETE FROM workout_activities WHERE id = ?").run(id);
+
+  // Verify ownership
+  const existing = getWorkoutActivity(id, userId);
+  if (!existing) {
+    return false;
+  }
+
+  const result = db.prepare("DELETE FROM workout_activities WHERE id = ? AND userId = ?").run(id, userId);
+  return result.changes > 0;
 }
 
 // Analytics and Statistics
@@ -184,14 +214,14 @@ export interface WorkoutActivityStats {
   }[];
 }
 
-export function getWorkoutActivityStats(startDate?: string, endDate?: string): WorkoutActivityStats {
+export function getWorkoutActivityStats(userId: string, startDate?: string, endDate?: string): WorkoutActivityStats {
   const db = getDatabase();
 
-  let dateFilter = "";
-  const params: any[] = [];
+  let whereClause = " WHERE userId = ?";
+  const params: any[] = [userId];
 
   if (startDate && endDate) {
-    dateFilter = " WHERE date >= ? AND date <= ?";
+    whereClause += " AND date >= ? AND date <= ?";
     params.push(startDate, endDate);
   }
 
@@ -203,7 +233,7 @@ export function getWorkoutActivityStats(startDate?: string, endDate?: string): W
         SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed_activities,
         SUM(length) as total_duration,
         AVG(length) as avg_duration
-      FROM workout_activities${dateFilter}`
+      FROM workout_activities${whereClause}`
     )
     .get(...params) as any;
 
@@ -214,7 +244,7 @@ export function getWorkoutActivityStats(startDate?: string, endDate?: string): W
         type,
         COUNT(*) as count,
         SUM(length) as total_duration
-      FROM workout_activities${dateFilter}
+      FROM workout_activities${whereClause}
       GROUP BY type
       ORDER BY count DESC`
     )
@@ -226,7 +256,7 @@ export function getWorkoutActivityStats(startDate?: string, endDate?: string): W
       `SELECT
         difficulty,
         COUNT(*) as count
-      FROM workout_activities${dateFilter}
+      FROM workout_activities${whereClause}
       GROUP BY difficulty
       ORDER BY
         CASE difficulty

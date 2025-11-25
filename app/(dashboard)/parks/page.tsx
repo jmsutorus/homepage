@@ -5,9 +5,13 @@ import { ParkCard } from "@/components/widgets/parks/park-card";
 export const dynamic = "force-dynamic";
 import { getPublishedParks } from "@/lib/db/parks";
 import { Plus } from "lucide-react";
+import { getUserId } from "@/lib/auth/server";
 
-export default function ParksPage() {
-  const parks = getPublishedParks();
+export default async function ParksPage() {
+  // Require authentication
+  const userId = await getUserId();
+
+  const parks = getPublishedParks(userId);
 
   // Group parks by category
   const parksByCategory = parks.reduce((acc, park) => {

@@ -54,10 +54,10 @@ export function createTask(
 }
 
 /**
- * Get task by ID
+ * Get task by ID for a specific user
  */
-export function getTask(id: number): Task | undefined {
-  return queryOne<Task>("SELECT * FROM tasks WHERE id = ?", [id]);
+export function getTask(id: number, userId: string): Task | undefined {
+  return queryOne<Task>("SELECT * FROM tasks WHERE id = ? AND userId = ?", [id, userId]);
 }
 
 /**
@@ -117,17 +117,18 @@ export function getCompletedTasks(): Task[] {
 }
 
 /**
- * Get tasks due today or overdue
+ * Get tasks due today or overdue for a specific user
  */
-export function getUpcomingTasks(): Task[] {
+export function getUpcomingTasks(userId: string): Task[] {
   const today = new Date().toISOString().split("T")[0];
   return query<Task>(
     `SELECT * FROM tasks
-     WHERE completed = 0
+     WHERE userId = ?
+     AND completed = 0
      AND due_date IS NOT NULL
      AND due_date <= ?
      ORDER BY due_date ASC`,
-    [today]
+    [userId, today]
   );
 }
 
@@ -200,10 +201,10 @@ export function updateTask(
 }
 
 /**
- * Toggle task completion status
+ * Toggle task completion status with ownership verification
  */
-export function toggleTaskComplete(id: number): boolean {
-  const task = getTask(id);
+export function toggleTaskComplete(id: number, userId: string): boolean {
+  const task = getTask(id, userId);
   if (!task) {
     return false;
   }
@@ -212,32 +213,38 @@ export function toggleTaskComplete(id: number): boolean {
 }
 
 /**
- * Delete task
+ * Delete task with ownership verification
  */
-export function deleteTask(id: number): boolean {
-  const result = execute("DELETE FROM tasks WHERE id = ?", [id]);
+export function deleteTask(id: number, userId: string): boolean {
+  // Verify ownership
+  const existing = getTask(id, userId);
+  if (!existing) {
+    return false;
+  }
+
+  const result = execute("DELETE FROM tasks WHERE id = ? AND userId = ?", [id, userId]);
   return result.changes > 0;
 }
 
 /**
- * Delete all completed tasks
+ * Delete all completed tasks for a specific user
  */
-export function deleteCompletedTasks(): number {
-  const result = execute("DELETE FROM tasks WHERE completed = 1");
+export function deleteCompletedTasks(userId: string): number {
+  const result = execute("DELETE FROM tasks WHERE completed = 1 AND userId = ?", [userId]);
   return result.changes;
 }
 
 /**
- * Get task statistics
+ * Get task statistics for a specific user
  */
-export function getTaskStatistics(): {
+export function getTaskStatistics(userId: string): {
   total: number;
   completed: number;
   active: number;
   overdue: number;
   byPriority: Record<TaskPriority, number>;
 } {
-  const tasks = getAllTasks();
+  const tasks = getAllTasks({}, userId);
   const today = new Date().toISOString().split("T")[0];
 
   const stats = {
@@ -365,10 +372,11 @@ export interface TaskVelocityData {
 }
 
 /**
- * Get task velocity data for charting
+ * Get task velocity data for charting for a specific user
  * Shows tasks completed and planned (created with due date) over time
  */
 export function getTaskVelocityData(
+  userId: string,
   period: VelocityPeriod = "week",
   numPeriods: number = 12
 ): TaskVelocityData {
@@ -382,19 +390,21 @@ export function getTaskVelocityData(
     // Count tasks completed in this period
     const completedCount = query<{ count: number }>(
       `SELECT COUNT(*) as count FROM tasks
-       WHERE completed_date IS NOT NULL
+       WHERE userId = ?
+       AND completed_date IS NOT NULL
        AND completed_date >= ?
        AND completed_date <= ?`,
-      [startDate, endDate]
+      [userId, startDate, endDate]
     )[0]?.count || 0;
 
     // Count tasks created with due dates in this period (planned work)
     const plannedCount = query<{ count: number }>(
       `SELECT COUNT(*) as count FROM tasks
-       WHERE due_date IS NOT NULL
+       WHERE userId = ?
+       AND due_date IS NOT NULL
        AND due_date >= ?
        AND due_date <= ?`,
-      [startDate, endDate]
+      [userId, startDate, endDate]
     )[0]?.count || 0;
 
     const completionRate = plannedCount > 0

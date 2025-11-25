@@ -2,18 +2,19 @@ import { execute, queryOne } from "./index";
 
 export interface CacheEntry {
   key: string;
+  userId: string;
   value: string;
   expires_at: string;
   created_at: string;
 }
 
 /**
- * Get cached value if not expired
+ * Get cached value if not expired for a specific user
  */
-export function getCachedValue<T>(key: string): T | null {
+export function getCachedValue<T>(key: string, userId: string): T | null {
   const entry = queryOne<CacheEntry>(
-    "SELECT * FROM api_cache WHERE key = ? AND expires_at > datetime('now')",
-    [key]
+    "SELECT * FROM api_cache WHERE key = ? AND userId = ? AND expires_at > datetime('now')",
+    [key, userId]
   );
 
   if (!entry) {
@@ -29,71 +30,75 @@ export function getCachedValue<T>(key: string): T | null {
 }
 
 /**
- * Set cached value with TTL (in seconds)
+ * Set cached value with TTL (in seconds) for a specific user
  */
-export function setCachedValue(key: string, value: unknown, ttlSeconds: number): void {
+export function setCachedValue(key: string, value: unknown, userId: string, ttlSeconds: number): void {
   const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString();
   const jsonValue = JSON.stringify(value);
 
   execute(
-    `INSERT INTO api_cache (key, value, expires_at)
-     VALUES (?, ?, ?)
+    `INSERT INTO api_cache (key, value, userId, expires_at)
+     VALUES (?, ?, ?, ?)
      ON CONFLICT(key) DO UPDATE SET
        value = excluded.value,
+       userId = excluded.userId,
        expires_at = excluded.expires_at,
        created_at = CURRENT_TIMESTAMP`,
-    [key, jsonValue, expiresAt]
+    [key, jsonValue, userId, expiresAt]
   );
 }
 
 /**
- * Invalidate specific cache key
+ * Invalidate specific cache key for a specific user
  */
-export function invalidateCache(key: string): boolean {
-  const result = execute("DELETE FROM api_cache WHERE key = ?", [key]);
+export function invalidateCache(key: string, userId: string): boolean {
+  const result = execute("DELETE FROM api_cache WHERE key = ? AND userId = ?", [key, userId]);
   return result.changes > 0;
 }
 
 /**
- * Invalidate cache keys matching a pattern
+ * Invalidate cache keys matching a pattern for a specific user
  */
-export function invalidateCachePattern(pattern: string): number {
-  const result = execute("DELETE FROM api_cache WHERE key LIKE ?", [pattern]);
+export function invalidateCachePattern(pattern: string, userId: string): number {
+  const result = execute("DELETE FROM api_cache WHERE key LIKE ? AND userId = ?", [pattern, userId]);
   return result.changes;
 }
 
 /**
- * Clear all expired cache entries
+ * Clear all expired cache entries for a specific user
  */
-export function clearExpiredCache(): number {
+export function clearExpiredCache(userId: string): number {
   const result = execute(
-    "DELETE FROM api_cache WHERE expires_at <= datetime('now')"
+    "DELETE FROM api_cache WHERE userId = ? AND expires_at <= datetime('now')",
+    [userId]
   );
   return result.changes;
 }
 
 /**
- * Clear all cache entries
+ * Clear all cache entries for a specific user
  */
-export function clearAllCache(): number {
-  const result = execute("DELETE FROM api_cache");
+export function clearAllCache(userId: string): number {
+  const result = execute("DELETE FROM api_cache WHERE userId = ?", [userId]);
   return result.changes;
 }
 
 /**
- * Get cache statistics
+ * Get cache statistics for a specific user
  */
-export function getCacheStatistics(): {
+export function getCacheStatistics(userId: string): {
   total: number;
   expired: number;
   active: number;
 } {
   const total = queryOne<{ count: number }>(
-    "SELECT COUNT(*) as count FROM api_cache"
+    "SELECT COUNT(*) as count FROM api_cache WHERE userId = ?",
+    [userId]
   );
 
   const expired = queryOne<{ count: number }>(
-    "SELECT COUNT(*) as count FROM api_cache WHERE expires_at <= datetime('now')"
+    "SELECT COUNT(*) as count FROM api_cache WHERE userId = ? AND expires_at <= datetime('now')",
+    [userId]
   );
 
   return {
@@ -104,15 +109,16 @@ export function getCacheStatistics(): {
 }
 
 /**
- * Helper function to get or set cache
+ * Helper function to get or set cache for a specific user
  */
 export async function getOrSetCache<T>(
   key: string,
+  userId: string,
   ttlSeconds: number,
   fetchFn: () => Promise<T>
 ): Promise<T> {
   // Try to get from cache first
-  const cached = getCachedValue<T>(key);
+  const cached = getCachedValue<T>(key, userId);
   if (cached !== null) {
     return cached;
   }
@@ -121,7 +127,7 @@ export async function getOrSetCache<T>(
   const data = await fetchFn();
 
   // Store in cache
-  setCachedValue(key, data, ttlSeconds);
+  setCachedValue(key, data, userId, ttlSeconds);
 
   return data;
 }

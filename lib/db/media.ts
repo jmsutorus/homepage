@@ -99,106 +99,77 @@ export function getMediaById(id: number): MediaContent | undefined {
 }
 
 /**
- * Get media entry by slug (optionally filtered by userId)
+ * Get media entry by slug for a specific user
  */
-export function getMediaBySlug(slug: string, userId?: string): MediaContent | undefined {
-  if (userId) {
-    return queryOne<MediaContent>(
-      "SELECT * FROM media_content WHERE slug = ? AND userId = ?",
-      [slug, userId]
-    );
-  }
+export function getMediaBySlug(slug: string, userId: string): MediaContent | undefined {
   return queryOne<MediaContent>(
-    "SELECT * FROM media_content WHERE slug = ?",
-    [slug]
+    "SELECT * FROM media_content WHERE slug = ? AND userId = ?",
+    [slug, userId]
   );
 }
 
 /**
- * Get all media entries (optionally filtered by userId)
+ * Get all media entries for a specific user
  */
-export function getAllMedia(userId?: string): MediaContent[] {
-  if (userId) {
-    return query<MediaContent>(
-      "SELECT * FROM media_content WHERE userId = ? ORDER BY created_at DESC",
-      [userId]
-    );
-  }
+export function getAllMedia(userId: string): MediaContent[] {
   return query<MediaContent>(
-    "SELECT * FROM media_content ORDER BY created_at DESC"
+    "SELECT * FROM media_content WHERE userId = ? ORDER BY created_at DESC",
+    [userId]
   );
 }
 
 /**
- * Get media entries by type (optionally filtered by userId)
+ * Get media entries by type for a specific user
  */
 export function getMediaByType(
   type: "movie" | "tv" | "book" | "game",
-  userId?: string
+  userId: string
 ): MediaContent[] {
-  if (userId) {
-    return query<MediaContent>(
-      "SELECT * FROM media_content WHERE type = ? AND userId = ? ORDER BY created_at DESC",
-      [type, userId]
-    );
-  }
   return query<MediaContent>(
-    "SELECT * FROM media_content WHERE type = ? ORDER BY created_at DESC",
-    [type]
+    "SELECT * FROM media_content WHERE type = ? AND userId = ? ORDER BY created_at DESC",
+    [type, userId]
   );
 }
 
 /**
- * Get media entries by status (optionally filtered by userId)
+ * Get media entries by status for a specific user
  */
 export function getMediaByStatus(
   status: "in-progress" | "completed" | "planned",
-  userId?: string
+  userId: string
 ): MediaContent[] {
-  if (userId) {
-    return query<MediaContent>(
-      "SELECT * FROM media_content WHERE status = ? AND userId = ? ORDER BY created_at DESC",
-      [status, userId]
-    );
-  }
   return query<MediaContent>(
-    "SELECT * FROM media_content WHERE status = ? ORDER BY created_at DESC",
-    [status]
+    "SELECT * FROM media_content WHERE status = ? AND userId = ? ORDER BY created_at DESC",
+    [status, userId]
   );
 }
 
 /**
- * Get media entries by type and status (optionally filtered by userId)
+ * Get media entries by type and status for a specific user
  */
 export function getMediaByTypeAndStatus(
   type: "movie" | "tv" | "book" | "game",
   status: "in-progress" | "completed" | "planned",
-  userId?: string
+  userId: string
 ): MediaContent[] {
-  if (userId) {
-    return query<MediaContent>(
-      `SELECT * FROM media_content
-       WHERE type = ? AND status = ? AND userId = ?
-       ORDER BY created_at DESC`,
-      [type, status, userId]
-    );
-  }
   return query<MediaContent>(
     `SELECT * FROM media_content
-     WHERE type = ? AND status = ?
+     WHERE type = ? AND status = ? AND userId = ?
      ORDER BY created_at DESC`,
-    [type, status]
+    [type, status, userId]
   );
 }
 
 /**
- * Update media entry
+ * Update media entry with ownership verification
  */
 export function updateMedia(
   slug: string,
+  userId: string,
   data: Partial<MediaContentInput>
 ): boolean {
-  const existing = getMediaBySlug(slug);
+  // Verify ownership
+  const existing = getMediaBySlug(slug, userId);
   if (!existing) {
     return false;
   }
@@ -280,25 +251,17 @@ export function updateMedia(
     return false;
   }
 
-  params.push(slug);
+  params.push(slug, userId);
 
   const result = execute(
-    `UPDATE media_content SET ${updates.join(", ")} WHERE slug = ?`,
+    `UPDATE media_content SET ${updates.join(", ")} WHERE slug = ? AND userId = ?`,
     params
   );
 
   if (result.changes > 0) {
     // Check for achievements if status changed to completed
     if (data.status === 'completed') {
-      // We need userId. MediaContent has userId but updateMedia doesn't take it.
-      // However, checkAchievement needs userId.
-      // The current updateMedia function doesn't seem to enforce userId ownership check explicitly 
-      // (it assumes slug is unique enough or caller handles auth).
-      // Let's fetch the media to get userId.
-      const updatedMedia = getMediaBySlug(slug);
-      if (updatedMedia) {
-        checkAchievement(updatedMedia.userId, 'media').catch(console.error);
-      }
+      checkAchievement(userId, 'media').catch(console.error);
     }
   }
 
@@ -306,23 +269,29 @@ export function updateMedia(
 }
 
 /**
- * Delete media entry
+ * Delete media entry with ownership verification
  */
-export function deleteMedia(slug: string): boolean {
-  const result = execute("DELETE FROM media_content WHERE slug = ?", [slug]);
+export function deleteMedia(slug: string, userId: string): boolean {
+  // Verify ownership
+  const existing = getMediaBySlug(slug, userId);
+  if (!existing) {
+    return false;
+  }
+
+  const result = execute("DELETE FROM media_content WHERE slug = ? AND userId = ?", [slug, userId]);
   return result.changes > 0;
 }
 
 /**
- * Get media statistics
+ * Get media statistics for a specific user
  */
-export function getMediaStatistics(): {
+export function getMediaStatistics(userId: string): {
   total: number;
   byType: Record<string, number>;
   byStatus: Record<string, number>;
   averageRating: number;
 } {
-  const entries = getAllMedia();
+  const entries = getAllMedia(userId);
   const total = entries.length;
 
   const byType: Record<string, number> = { movie: 0, tv: 0, book: 0, game: 0 };
@@ -405,10 +374,10 @@ export function getMediaWithGenres(media: MediaContent): MediaContent & {
 }
 
 /**
- * Get all unique genres across all media
+ * Get all unique genres across all media for a specific user
  */
-export function getAllUniqueGenres(): string[] {
-  const allMedia = getAllMedia();
+export function getAllUniqueGenres(userId: string): string[] {
+  const allMedia = getAllMedia(userId);
   const genreSet = new Set<string>();
 
   allMedia.forEach((media) => {
@@ -420,10 +389,10 @@ export function getAllUniqueGenres(): string[] {
 }
 
 /**
- * Get all unique tags across all media
+ * Get all unique tags across all media for a specific user
  */
-export function getAllUniqueTags(): string[] {
-  const allMedia = getAllMedia();
+export function getAllUniqueTags(userId: string): string[] {
+  const allMedia = getAllMedia(userId);
   const tagSet = new Set<string>();
 
   allMedia.forEach((media) => {
@@ -435,10 +404,10 @@ export function getAllUniqueTags(): string[] {
 }
 
 /**
- * Rename a genre across all media entries
+ * Rename a genre across all media entries for a specific user
  */
-export function renameGenre(oldName: string, newName: string): number {
-  const allMedia = getAllMedia();
+export function renameGenre(oldName: string, newName: string, userId: string): number {
+  const allMedia = getAllMedia(userId);
   let updatedCount = 0;
 
   allMedia.forEach((media) => {
@@ -447,7 +416,7 @@ export function renameGenre(oldName: string, newName: string): number {
 
     if (index !== -1) {
       genres[index] = newName;
-      updateMedia(media.slug, { genres });
+      updateMedia(media.slug, userId, { genres });
       updatedCount++;
     }
   });
@@ -456,10 +425,10 @@ export function renameGenre(oldName: string, newName: string): number {
 }
 
 /**
- * Rename a tag across all media entries
+ * Rename a tag across all media entries for a specific user
  */
-export function renameTag(oldName: string, newName: string): number {
-  const allMedia = getAllMedia();
+export function renameTag(oldName: string, newName: string, userId: string): number {
+  const allMedia = getAllMedia(userId);
   let updatedCount = 0;
 
   allMedia.forEach((media) => {
@@ -468,7 +437,7 @@ export function renameTag(oldName: string, newName: string): number {
 
     if (index !== -1) {
       tags[index] = newName;
-      updateMedia(media.slug, { tags });
+      updateMedia(media.slug, userId, { tags });
       updatedCount++;
     }
   });
@@ -477,10 +446,10 @@ export function renameTag(oldName: string, newName: string): number {
 }
 
 /**
- * Delete a genre from all media entries
+ * Delete a genre from all media entries for a specific user
  */
-export function deleteGenre(name: string): number {
-  const allMedia = getAllMedia();
+export function deleteGenre(name: string, userId: string): number {
+  const allMedia = getAllMedia(userId);
   let updatedCount = 0;
 
   allMedia.forEach((media) => {
@@ -488,7 +457,7 @@ export function deleteGenre(name: string): number {
     const filtered = genres.filter((g) => g !== name);
 
     if (filtered.length !== genres.length) {
-      updateMedia(media.slug, { genres: filtered });
+      updateMedia(media.slug, userId, { genres: filtered });
       updatedCount++;
     }
   });
@@ -497,10 +466,10 @@ export function deleteGenre(name: string): number {
 }
 
 /**
- * Delete a tag from all media entries
+ * Delete a tag from all media entries for a specific user
  */
-export function deleteTag(name: string): number {
-  const allMedia = getAllMedia();
+export function deleteTag(name: string, userId: string): number {
+  const allMedia = getAllMedia(userId);
   let updatedCount = 0;
 
   allMedia.forEach((media) => {
@@ -508,7 +477,7 @@ export function deleteTag(name: string): number {
     const filtered = tags.filter((t) => t !== name);
 
     if (filtered.length !== tags.length) {
-      updateMedia(media.slug, { tags: filtered });
+      updateMedia(media.slug, userId, { tags: filtered });
       updatedCount++;
     }
   });
@@ -561,10 +530,11 @@ export interface MediaTimelineData {
 }
 
 /**
- * Get media timeline data for charting
+ * Get media timeline data for charting for a specific user
  * Shows media completed over time with breakdown by type
  */
 export function getMediaTimelineData(
+  userId: string,
   period: TimelinePeriod = "month",
   numPeriods: number = 12
 ): MediaTimelineData {
@@ -572,7 +542,7 @@ export function getMediaTimelineData(
   const dataPoints: MediaTimelineDataPoint[] = [];
 
   // Get all completed media with valid completion dates
-  const completedMedia = getAllMedia().filter(
+  const completedMedia = getAllMedia(userId).filter(
     (m) => m.status === "completed" && m.completed
   );
 

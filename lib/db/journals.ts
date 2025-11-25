@@ -117,15 +117,16 @@ function dbToJournalLink(row: DBJournalLink): JournalLink {
 }
 
 /**
- * Get all journals
+ * Get all journals for a specific user
  */
-export function getAllJournals(): JournalContent[] {
+export function getAllJournals(userId: string): JournalContent[] {
   try {
     const stmt = db.prepare(`
       SELECT * FROM journals
+      WHERE userId = ?
       ORDER BY created_at DESC
     `);
-    const rows = stmt.all() as DBJournal[];
+    const rows = stmt.all(userId) as DBJournal[];
     return rows.map(dbToJournalContent);
   } catch (error) {
     console.error("Error getting all journals:", error);
@@ -134,12 +135,12 @@ export function getAllJournals(): JournalContent[] {
 }
 
 /**
- * Get total count of journals
+ * Get total count of journals for a specific user
  */
-export function getJournalCount(): number {
+export function getJournalCount(userId: string): number {
   try {
-    const stmt = db.prepare("SELECT COUNT(*) as count FROM journals");
-    const result = stmt.get() as { count: number };
+    const stmt = db.prepare("SELECT COUNT(*) as count FROM journals WHERE userId = ?");
+    const result = stmt.get(userId) as { count: number };
     return result.count;
   } catch (error) {
     console.error("Error getting journal count:", error);
@@ -148,16 +149,16 @@ export function getJournalCount(): number {
 }
 
 /**
- * Get published journals only
+ * Get published journals for a specific user
  */
-export function getPublishedJournals(): JournalContent[] {
+export function getPublishedJournals(userId: string): JournalContent[] {
   try {
     const stmt = db.prepare(`
       SELECT * FROM journals
-      WHERE published = 1
+      WHERE userId = ? AND published = 1
       ORDER BY created_at DESC
     `);
-    const rows = stmt.all() as DBJournal[];
+    const rows = stmt.all(userId) as DBJournal[];
     return rows.map(dbToJournalContent);
   } catch (error) {
     console.error("Error getting published journals:", error);
@@ -166,12 +167,12 @@ export function getPublishedJournals(): JournalContent[] {
 }
 
 /**
- * Get journal by slug
+ * Get journal by slug for a specific user
  */
-export function getJournalBySlug(slug: string): JournalContent | null {
+export function getJournalBySlug(slug: string, userId: string): JournalContent | null {
   try {
-    const stmt = db.prepare("SELECT * FROM journals WHERE slug = ?");
-    const row = stmt.get(slug) as DBJournal | undefined;
+    const stmt = db.prepare("SELECT * FROM journals WHERE slug = ? AND userId = ?");
+    const row = stmt.get(slug, userId) as DBJournal | undefined;
     return row ? dbToJournalContent(row) : null;
   } catch (error) {
     console.error("Error getting journal by slug:", error);
@@ -180,12 +181,12 @@ export function getJournalBySlug(slug: string): JournalContent | null {
 }
 
 /**
- * Get journal by ID
+ * Get journal by ID for a specific user
  */
-export function getJournalById(id: number): JournalContent | null {
+export function getJournalById(id: number, userId: string): JournalContent | null {
   try {
-    const stmt = db.prepare("SELECT * FROM journals WHERE id = ?");
-    const row = stmt.get(id) as DBJournal | undefined;
+    const stmt = db.prepare("SELECT * FROM journals WHERE id = ? AND userId = ?");
+    const row = stmt.get(id, userId) as DBJournal | undefined;
     return row ? dbToJournalContent(row) : null;
   } catch (error) {
     console.error("Error getting journal by ID:", error);
@@ -194,16 +195,16 @@ export function getJournalById(id: number): JournalContent | null {
 }
 
 /**
- * Get featured journals
+ * Get featured journals for a specific user
  */
-export function getFeaturedJournals(): JournalContent[] {
+export function getFeaturedJournals(userId: string): JournalContent[] {
   try {
     const stmt = db.prepare(`
       SELECT * FROM journals
-      WHERE featured = 1 AND published = 1
+      WHERE userId = ? AND featured = 1 AND published = 1
       ORDER BY created_at DESC
     `);
-    const rows = stmt.all() as DBJournal[];
+    const rows = stmt.all(userId) as DBJournal[];
     return rows.map(dbToJournalContent);
   } catch (error) {
     console.error("Error getting featured journals:", error);
@@ -291,10 +292,11 @@ export function createJournal(data: {
 }
 
 /**
- * Update a journal
+ * Update a journal with ownership verification
  */
 export function updateJournal(
   slug: string,
+  userId: string,
   data: {
     newSlug?: string;
     title?: string;
@@ -308,8 +310,8 @@ export function updateJournal(
   }
 ): JournalContent {
   try {
-    // Get existing journal to check type
-    const existing = getJournalBySlug(slug);
+    // Get existing journal to check type and verify ownership
+    const existing = getJournalBySlug(slug, userId);
     if (!existing) {
       throw new Error("Journal not found");
     }
@@ -365,11 +367,11 @@ export function updateJournal(
       throw new Error("No fields to update");
     }
 
-    values.push(slug);
+    values.push(slug, userId);
     const stmt = db.prepare(`
       UPDATE journals
       SET ${updates.join(", ")}
-      WHERE slug = ?
+      WHERE slug = ? AND userId = ?
     `);
 
     stmt.run(...values);
@@ -382,7 +384,7 @@ export function updateJournal(
       updatedSlug = data.newSlug;
     }
 
-    const journal = getJournalBySlug(updatedSlug);
+    const journal = getJournalBySlug(updatedSlug, userId);
     if (!journal) {
       throw new Error("Failed to update journal");
     }
@@ -395,14 +397,14 @@ export function updateJournal(
 }
 
 /**
- * Get daily journal by date
+ * Get daily journal by date for a specific user
  */
-export function getDailyJournalByDate(date: string): JournalContent | null {
+export function getDailyJournalByDate(date: string, userId: string): JournalContent | null {
   try {
     const stmt = db.prepare(
-      "SELECT * FROM journals WHERE journal_type = 'daily' AND daily_date = ?"
+      "SELECT * FROM journals WHERE journal_type = 'daily' AND daily_date = ? AND userId = ?"
     );
-    const row = stmt.get(date) as DBJournal | undefined;
+    const row = stmt.get(date, userId) as DBJournal | undefined;
     return row ? dbToJournalContent(row) : null;
   } catch (error) {
     console.error("Error getting daily journal by date:", error);
@@ -411,12 +413,18 @@ export function getDailyJournalByDate(date: string): JournalContent | null {
 }
 
 /**
- * Delete a journal (also deletes associated links via CASCADE)
+ * Delete a journal with ownership verification (also deletes associated links via CASCADE)
  */
-export function deleteJournal(slug: string): boolean {
+export function deleteJournal(slug: string, userId: string): boolean {
   try {
-    const stmt = db.prepare("DELETE FROM journals WHERE slug = ?");
-    const result = stmt.run(slug);
+    // Verify ownership
+    const existing = getJournalBySlug(slug, userId);
+    if (!existing) {
+      return false;
+    }
+
+    const stmt = db.prepare("DELETE FROM journals WHERE slug = ? AND userId = ?");
+    const result = stmt.run(slug, userId);
     return result.changes > 0;
   } catch (error) {
     console.error("Error deleting journal:", error);

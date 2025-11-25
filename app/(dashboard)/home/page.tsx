@@ -114,6 +114,7 @@ export default async function DashboardPage({
       )}
 
       {/* Gaming & Services */}
+      {isSteamEnabled || isPlexEnabled || isHomeAssistantEnabled && (
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight">Gaming & Services</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -130,6 +131,7 @@ export default async function DashboardPage({
           )}
         </div>
       </section>
+      )}
     </div>
   );
 }

@@ -69,27 +69,17 @@ function dbToParkContent(row: DBPark): ParkContent {
 }
 
 /**
- * Get all parks (optionally filtered by userId)
+ * Get all parks for a specific user
  */
-export function getAllParks(userId?: string): ParkContent[] {
+export function getAllParks(userId: string): ParkContent[] {
   try {
-    let stmt;
-    if (userId) {
-      stmt = db.prepare(`
-        SELECT * FROM parks
-        WHERE userId = ?
-        ORDER BY visited DESC, created_at DESC
-      `);
-      const rows = stmt.all(userId) as DBPark[];
-      return rows.map(dbToParkContent);
-    } else {
-      stmt = db.prepare(`
-        SELECT * FROM parks
-        ORDER BY visited DESC, created_at DESC
-      `);
-      const rows = stmt.all() as DBPark[];
-      return rows.map(dbToParkContent);
-    }
+    const stmt = db.prepare(`
+      SELECT * FROM parks
+      WHERE userId = ?
+      ORDER BY visited DESC, created_at DESC
+    `);
+    const rows = stmt.all(userId) as DBPark[];
+    return rows.map(dbToParkContent);
   } catch (error) {
     console.error("Error getting all parks:", error);
     return [];
@@ -99,14 +89,14 @@ export function getAllParks(userId?: string): ParkContent[] {
 /**
  * Get published parks only
  */
-export function getPublishedParks(): ParkContent[] {
+export function getPublishedParks(userId: string): ParkContent[] {
   try {
     const stmt = db.prepare(`
       SELECT * FROM parks
-      WHERE published = 1
+      WHERE published = 1 AND userId = ?
       ORDER BY visited DESC, created_at DESC
     `);
-    const rows = stmt.all() as DBPark[];
+    const rows = stmt.all(userId) as DBPark[];
     return rows.map(dbToParkContent);
   } catch (error) {
     console.error("Error getting published parks:", error);
@@ -115,19 +105,12 @@ export function getPublishedParks(): ParkContent[] {
 }
 
 /**
- * Get park by slug (optionally filtered by userId)
+ * Get park by slug for a specific user
  */
-export function getParkBySlug(slug: string, userId?: string): ParkContent | null {
+export function getParkBySlug(slug: string, userId: string): ParkContent | null {
   try {
-    let stmt;
-    let row;
-    if (userId) {
-      stmt = db.prepare("SELECT * FROM parks WHERE slug = ? AND userId = ?");
-      row = stmt.get(slug, userId) as DBPark | undefined;
-    } else {
-      stmt = db.prepare("SELECT * FROM parks WHERE slug = ?");
-      row = stmt.get(slug) as DBPark | undefined;
-    }
+    const stmt = db.prepare("SELECT * FROM parks WHERE slug = ? AND userId = ?");
+    const row = stmt.get(slug, userId) as DBPark | undefined;
     return row ? dbToParkContent(row) : null;
   } catch (error) {
     console.error("Error getting park by slug:", error);
@@ -138,11 +121,11 @@ export function getParkBySlug(slug: string, userId?: string): ParkContent | null
 /**
  * Get parks by category
  */
-export function getParksByCategory(category: ParkCategoryValue): ParkContent[] {
+export function getParksByCategory(category: ParkCategoryValue, userId: string): ParkContent[] {
   try {
     const stmt = db.prepare(`
       SELECT * FROM parks
-      WHERE category = ? AND published = 1
+      WHERE category = ? AND published = 1 AND userId = ?
       ORDER BY visited DESC, created_at DESC
     `);
     const rows = stmt.all(category) as DBPark[];
@@ -156,11 +139,11 @@ export function getParksByCategory(category: ParkCategoryValue): ParkContent[] {
 /**
  * Get parks by state
  */
-export function getParksByState(state: string): ParkContent[] {
+export function getParksByState(state: string, userId: string): ParkContent[] {
   try {
     const stmt = db.prepare(`
       SELECT * FROM parks
-      WHERE state = ? AND published = 1
+      WHERE state = ? AND published = 1 AND userId = ?
       ORDER BY visited DESC, created_at DESC
     `);
     const rows = stmt.all(state) as DBPark[];
@@ -231,7 +214,7 @@ export function createPark(data: {
       data.userId
     );
 
-    const park = getParkBySlug(data.slug);
+    const park = getParkBySlug(data.slug, data.userId);
     if (!park) {
       throw new Error("Failed to create park");
     }
@@ -247,10 +230,11 @@ export function createPark(data: {
 }
 
 /**
- * Update a park
+ * Update a park with ownership verification
  */
 export function updatePark(
   slug: string,
+  userId: string,
   data: {
     newSlug?: string;
     title?: string;
@@ -267,6 +251,12 @@ export function updatePark(
   }
 ): ParkContent {
   try {
+    // Verify ownership
+    const existing = getParkBySlug(slug, userId);
+    if (!existing) {
+      throw new Error("Park not found or access denied");
+    }
+
     const updates: string[] = [];
     const values: any[] = [];
 
@@ -323,17 +313,17 @@ export function updatePark(
       throw new Error("No fields to update");
     }
 
-    values.push(slug);
+    values.push(slug, userId);
     const stmt = db.prepare(`
       UPDATE parks
       SET ${updates.join(", ")}
-      WHERE slug = ?
+      WHERE slug = ? AND userId = ?
     `);
 
     stmt.run(...values);
 
     const updatedSlug = data.newSlug || slug;
-    const park = getParkBySlug(updatedSlug);
+    const park = getParkBySlug(updatedSlug, userId);
     if (!park) {
       throw new Error("Failed to update park");
     }
@@ -346,12 +336,18 @@ export function updatePark(
 }
 
 /**
- * Delete a park
+ * Delete a park with ownership verification
  */
-export function deletePark(slug: string): boolean {
+export function deletePark(slug: string, userId: string): boolean {
   try {
-    const stmt = db.prepare("DELETE FROM parks WHERE slug = ?");
-    const result = stmt.run(slug);
+    // Verify ownership
+    const existing = getParkBySlug(slug, userId);
+    if (!existing) {
+      return false;
+    }
+
+    const stmt = db.prepare("DELETE FROM parks WHERE slug = ? AND userId = ?");
+    const result = stmt.run(slug, userId);
     return result.changes > 0;
   } catch (error) {
     console.error("Error deleting park:", error);
