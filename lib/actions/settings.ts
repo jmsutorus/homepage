@@ -6,6 +6,7 @@ import { query } from "@/lib/db";
 export interface ConnectedAccount {
   providerId: string;
   createdAt: number;
+  accessTokenExpiresAt?: number;
 }
 
 /**
@@ -20,7 +21,7 @@ export async function getConnectedAccounts(): Promise<ConnectedAccount[]> {
 
   try {
     const accounts = query<ConnectedAccount>(
-      "SELECT providerId, createdAt FROM account WHERE userId = ?",
+      "SELECT providerId, createdAt, accessTokenExpiresAt FROM account WHERE userId = ?",
       [session.user.id]
     );
 

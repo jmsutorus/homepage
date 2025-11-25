@@ -1,8 +1,8 @@
 "use server";
 
 import { auth } from "@/auth";
-import { queryOne } from "@/lib/db";
 import { syncStravaData } from "@/lib/services/strava-sync";
+import { getValidStravaToken } from "@/lib/auth/strava-token";
 import { revalidatePath } from "next/cache";
 
 export interface SyncState {
@@ -19,21 +19,20 @@ export async function syncStravaActivities(): Promise<SyncState> {
       return { success: false, message: "Not authenticated" };
     }
 
-    // Get Strava access token from account table
-    const account = queryOne<{ accessToken: string; refreshToken: string }>(
-      "SELECT accessToken, refreshToken FROM account WHERE userId = ? AND providerId = 'strava'",
-      [session.user.id]
-    );
-
-    if (!account?.accessToken) {
-      return { success: false, message: "Strava account not connected" };
+    // Get valid Strava access token (refreshes if needed)
+    let accessToken: string;
+    try {
+      accessToken = await getValidStravaToken(session.user.id);
+    } catch (error) {
+      console.error("Token retrieval error:", error);
+      return { 
+        success: false, 
+        message: "Failed to authenticate with Strava. Please reconnect your account in Settings." 
+      };
     }
 
     // Perform sync
-    // Note: In a production app, we should handle token refresh here if needed,
-    // but NextAuth usually handles this if configured correctly or we might need a manual refresh flow.
-    // For now, we assume the token is valid or NextAuth keeps it fresh.
-    const result = await syncStravaData(account.accessToken);
+    const result = await syncStravaData(accessToken);
 
     if (!result.success) {
       return { success: false, message: result.error || "Failed to sync" };

@@ -16,9 +16,15 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
     (account) => account.providerId === "github"
   );
 
-  const isStravaConnected = connectedAccounts.some(
+  const stravaAccount = connectedAccounts.find(
     (account) => account.providerId === "strava"
   );
+  const isStravaConnected = !!stravaAccount;
+  
+  // Check if token is expired (with 5 minute buffer)
+  const isStravaExpired = stravaAccount?.accessTokenExpiresAt 
+    ? stravaAccount.accessTokenExpiresAt < (Date.now() / 1000) + 300
+    : false;
 
   const handleConnectGithub = () => {
     signIn("github");
@@ -78,9 +84,16 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
           </div>
           <div>
             {isStravaConnected ? (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
-                Connected
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
+                  Connected
+                </Badge>
+                {isStravaExpired && (
+                  <Button variant="ghost" size="sm" onClick={handleConnectStrava} className="text-xs h-7 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                    Reconnect (Expired)
+                  </Button>
+                )}
+              </div>
             ) : (
               <Button variant="outline" size="sm" onClick={handleConnectStrava}>
                 Connect

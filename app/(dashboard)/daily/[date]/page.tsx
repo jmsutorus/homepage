@@ -2,7 +2,7 @@ import { getDailyJournalByDate } from "@/lib/db/journals";
 import { getHabitsAction, getHabitCompletionsAction } from "@/lib/actions/habits";
 import { formatDateLongSafe } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { DailyHabits } from "@/components/widgets/habits/daily-habits";
 import { DailyJournalPreview } from "@/components/widgets/journal/daily-journal-preview";
@@ -24,6 +24,17 @@ interface DailyPageProps {
 
 export default async function DailyPage({ params }: DailyPageProps) {
   const { date } = await params;
+  
+  const dateObj = new Date(date);
+  
+  const prevDateObj = new Date(dateObj);
+  prevDateObj.setDate(prevDateObj.getDate() - 1);
+  const prevDate = prevDateObj.toISOString().split("T")[0];
+  
+  const nextDateObj = new Date(dateObj);
+  nextDateObj.setDate(nextDateObj.getDate() + 1);
+  const nextDate = nextDateObj.toISOString().split("T")[0];
+
   const journal = getDailyJournalByDate(date);
   const allHabits = await getHabitsAction();
 
@@ -137,14 +148,28 @@ export default async function DailyPage({ params }: DailyPageProps) {
             { label: formatDateLongSafe(date, "en-US") },
           ]}
         />
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {formatDateLongSafe(date, "en-US")}
-          </h1>
-          <p className="text-muted-foreground flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            Daily Dashboard
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {formatDateLongSafe(date, "en-US")}
+            </h1>
+            <p className="text-muted-foreground flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Daily Dashboard
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" asChild>
+              <Link href={`/daily/${prevDate}`}>
+                <ChevronLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button variant="outline" size="icon" asChild>
+              <Link href={`/daily/${nextDate}`}>
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 

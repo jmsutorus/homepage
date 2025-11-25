@@ -732,6 +732,200 @@ CREATE TABLE IF NOT EXISTS user_achievements (
 
 -- Indexes for user_achievements
 CREATE INDEX IF NOT EXISTS idx_user_achievements_userId ON user_achievements(userId);
+-- Indexes for habit_completions
+CREATE INDEX IF NOT EXISTS idx_habit_completions_habit_id ON habit_completions(habit_id);
+CREATE INDEX IF NOT EXISTS idx_habit_completions_userId ON habit_completions(userId);
+CREATE INDEX IF NOT EXISTS idx_habit_completions_date ON habit_completions(date);
+CREATE INDEX IF NOT EXISTS idx_habit_completions_user_date ON habit_completions(userId, date);
+
+-- Steam Yearly Stats Table
+-- Stores cached steam achievement counts per game per year (per user)
+CREATE TABLE IF NOT EXISTS steam_yearly_stats (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  year INTEGER NOT NULL,
+  gameId INTEGER NOT NULL,
+  gameName TEXT NOT NULL,
+  achievements_count INTEGER DEFAULT 0,
+  total_playtime INTEGER DEFAULT 0, -- Snapshot of total playtime at sync
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, year, gameId)
+);
+
+-- Indexes for steam_yearly_stats
+CREATE INDEX IF NOT EXISTS idx_steam_yearly_stats_userId ON steam_yearly_stats(userId);
+CREATE INDEX IF NOT EXISTS idx_steam_yearly_stats_year ON steam_yearly_stats(year);
+
+-- Saved Searches Table
+-- Stores user's saved search configurations (per user)
+CREATE TABLE IF NOT EXISTS saved_searches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  query TEXT,
+  filters TEXT, -- JSON object of filters
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for saved_searches
+CREATE INDEX IF NOT EXISTS idx_saved_searches_userId ON saved_searches(userId);
+
+-- Trigger to update updated_at timestamp on saved_searches
+CREATE TRIGGER IF NOT EXISTS update_saved_searches_timestamp
+AFTER UPDATE ON saved_searches
+BEGIN
+  UPDATE saved_searches SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Goals Table
+-- Stores user-defined goals with markdown content, tags, and progress tracking (per user)
+CREATE TABLE IF NOT EXISTS goals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  slug TEXT NOT NULL, -- URL-friendly identifier (e.g., 'learn-spanish')
+  title TEXT NOT NULL,
+  description TEXT, -- Short summary
+  content TEXT, -- Markdown notes
+  status TEXT CHECK(status IN ('not_started', 'in_progress', 'on_hold', 'completed', 'archived', 'abandoned')) DEFAULT 'not_started',
+  target_date TEXT, -- ISO date string (YYYY-MM-DD) - deadline
+  completed_date TEXT, -- ISO date string (YYYY-MM-DD) - when finished
+  tags TEXT, -- JSON array of tag strings
+  priority TEXT CHECK(priority IN ('low', 'medium', 'high')) DEFAULT 'medium',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, slug)
+);
+
+-- Indexes for goals
+CREATE INDEX IF NOT EXISTS idx_goals_userId ON goals(userId);
+CREATE INDEX IF NOT EXISTS idx_goals_slug ON goals(slug);
+CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(status);
+CREATE INDEX IF NOT EXISTS idx_goals_target_date ON goals(target_date);
+CREATE INDEX IF NOT EXISTS idx_goals_priority ON goals(priority);
+
+-- Trigger to update updated_at timestamp on goals
+CREATE TRIGGER IF NOT EXISTS update_goals_timestamp
+AFTER UPDATE ON goals
+BEGIN
+  UPDATE goals SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Goal Milestones Table
+-- Stores milestones (sub-goals) within a goal
+CREATE TABLE IF NOT EXISTS goal_milestones (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  goalId INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  target_date TEXT, -- ISO date string (YYYY-MM-DD), should be <= parent goal target_date
+  completed INTEGER DEFAULT 0,
+  completed_date TEXT, -- ISO date string (YYYY-MM-DD)
+  order_index INTEGER DEFAULT 0, -- Display order
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (goalId) REFERENCES goals(id) ON DELETE CASCADE
+);
+
+-- Indexes for goal_milestones
+CREATE INDEX IF NOT EXISTS idx_goal_milestones_goalId ON goal_milestones(goalId);
+CREATE INDEX IF NOT EXISTS idx_goal_milestones_completed ON goal_milestones(completed);
+CREATE INDEX IF NOT EXISTS idx_goal_milestones_target_date ON goal_milestones(target_date);
+CREATE INDEX IF NOT EXISTS idx_goal_milestones_order ON goal_milestones(goalId, order_index);
+
+-- Trigger to update updated_at timestamp on goal_milestones
+CREATE TRIGGER IF NOT EXISTS update_goal_milestones_timestamp
+AFTER UPDATE ON goal_milestones
+BEGIN
+  UPDATE goal_milestones SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Goal Checklist Items Table
+-- Stores checklist items for goals and milestones
+CREATE TABLE IF NOT EXISTS goal_checklist_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  goalId INTEGER, -- For goal-level checklists (NULL if milestone checklist)
+  milestoneId INTEGER, -- For milestone-level checklists (NULL if goal checklist)
+  text TEXT NOT NULL,
+  completed INTEGER DEFAULT 0,
+  order_index INTEGER DEFAULT 0, -- Display order
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (goalId) REFERENCES goals(id) ON DELETE CASCADE,
+  FOREIGN KEY (milestoneId) REFERENCES goal_milestones(id) ON DELETE CASCADE,
+  CHECK (goalId IS NOT NULL OR milestoneId IS NOT NULL)
+);
+
+-- Indexes for goal_checklist_items
+CREATE INDEX IF NOT EXISTS idx_goal_checklist_items_goalId ON goal_checklist_items(goalId);
+CREATE INDEX IF NOT EXISTS idx_goal_checklist_items_milestoneId ON goal_checklist_items(milestoneId);
+CREATE INDEX IF NOT EXISTS idx_goal_checklist_items_order ON goal_checklist_items(goalId, milestoneId, order_index);
+
+-- Trigger to update updated_at timestamp on goal_checklist_items
+CREATE TRIGGER IF NOT EXISTS update_goal_checklist_items_timestamp
+AFTER UPDATE ON goal_checklist_items
+BEGIN
+  UPDATE goal_checklist_items SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Goal Links Table
+-- Links goals to other entities (habits, tasks, journals) to track related items
+CREATE TABLE IF NOT EXISTS goal_links (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  goalId INTEGER NOT NULL,
+  linked_type TEXT NOT NULL, -- Type of linked object: 'habit', 'task', 'journal'
+  linked_id INTEGER NOT NULL, -- ID of the linked object in its respective table
+  linked_slug TEXT, -- Slug of linked object (for journals)
+  note TEXT, -- Optional note about why this is linked
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (goalId) REFERENCES goals(id) ON DELETE CASCADE
+);
+
+-- Indexes for goal_links
+CREATE INDEX IF NOT EXISTS idx_goal_links_userId ON goal_links(userId);
+CREATE INDEX IF NOT EXISTS idx_goal_links_goalId ON goal_links(goalId);
+CREATE INDEX IF NOT EXISTS idx_goal_links_linked_type ON goal_links(linked_type);
+CREATE INDEX IF NOT EXISTS idx_goal_links_linked_id ON goal_links(linked_id);
+CREATE INDEX IF NOT EXISTS idx_goal_links_type_id ON goal_links(linked_type, linked_id);
+
+-- Achievements Table
+-- Defines available achievements in the system
+CREATE TABLE IF NOT EXISTS achievements (
+  id TEXT PRIMARY KEY, -- String ID like 'early-bird', 'bookworm-1'
+  slug TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  icon TEXT NOT NULL, -- Lucide icon name
+  category TEXT NOT NULL, -- 'mood', 'media', 'habits', 'tasks', 'parks', 'journal', 'general'
+  points INTEGER DEFAULT 10,
+  target_value INTEGER DEFAULT 1, -- Value needed to unlock (e.g., 10 books)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User Achievements Table
+-- Tracks user progress and unlocked achievements
+CREATE TABLE IF NOT EXISTS user_achievements (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  achievementId TEXT NOT NULL,
+  unlocked BOOLEAN DEFAULT 0,
+  unlocked_at TIMESTAMP,
+  progress INTEGER DEFAULT 0, -- Current progress value
+  notified INTEGER DEFAULT 0, -- 0 = not notified, 1 = notified
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (achievementId) REFERENCES achievements(id) ON DELETE CASCADE,
+  UNIQUE(userId, achievementId)
+);
+
+-- Indexes for user_achievements
+CREATE INDEX IF NOT EXISTS idx_user_achievements_userId ON user_achievements(userId);
 CREATE INDEX IF NOT EXISTS idx_user_achievements_achievementId ON user_achievements(achievementId);
 CREATE INDEX IF NOT EXISTS idx_user_achievements_unlocked ON user_achievements(unlocked);
 
@@ -741,3 +935,13 @@ AFTER UPDATE ON user_achievements
 BEGIN
   UPDATE user_achievements SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+-- Allowed Users Table
+-- Restricts login access to specific users during beta period
+CREATE TABLE IF NOT EXISTS allowed_users (
+  email TEXT PRIMARY KEY,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Seed the initial allowed user
+INSERT OR IGNORE INTO allowed_users (email) VALUES ('jmsutorus@gmail.com');
