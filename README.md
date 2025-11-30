@@ -109,3 +109,28 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the r
 - `npm run lint`: Lints the codebase using ESLint.
 - `npm run db:seed`: Initializes the database schema and seeds it with initial data.
 - `npm run db:reset`: Deletes the existing database file and re-seeds it.
+
+## 🔄 CI/CD & Automation
+
+This project uses GitHub Actions for continuous integration and automated releases:
+
+### Continuous Integration (CI)
+The CI workflow (`.github/workflows/ci.yml`) automatically runs on every push and pull request to the `main` or `master` branches:
+- **Linting**: Validates code style and quality using ESLint
+- **Testing**: Runs the full test suite to ensure code reliability
+
+### Automated Releases
+The release workflow (`.github/workflows/release.yml`) uses [semantic-release](https://github.com/semantic-release/semantic-release) to automate version management and package publishing:
+- Automatically determines version bumps based on commit messages
+- Generates release notes from commit history
+- Creates GitHub releases automatically
+- Follows [Conventional Commits](https://www.conventionalcommits.org/) specification
+
+**Commit Message Format:**
+- `feat:` - New features (triggers minor version bump)
+- `fix:` - Bug fixes (triggers patch version bump)
+- `BREAKING CHANGE:` - Breaking changes (triggers major version bump)
+- `chore:`, `docs:`, `style:`, `refactor:`, `test:` - No version bump
+
+### Code Ownership
+The `.github/CODEOWNERS` file defines code ownership for the repository, ensuring that @jmsutorus is automatically requested for review on all pull requests.
