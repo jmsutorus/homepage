@@ -52,10 +52,10 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   const calendarColors = await getCalendarColorsForUser();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Calendar</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           View your daily activities, moods, media, parks, journals, and tasks
         </p>
       </div>

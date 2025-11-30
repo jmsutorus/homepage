@@ -200,16 +200,16 @@ export function CalendarView({ year, month, summaryData, colors }: CalendarViewP
     <div className="space-y-4">
       {/* Header with month navigation */}
       <Card className="p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold">
             {MONTH_NAMES[month - 1]} {year}
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="default"
               size="sm"
               onClick={() => handleOpenEventModal()}
-              className="cursor-pointer"
+              className="cursor-pointer flex-1 sm:flex-none min-w-[100px]"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Event
@@ -222,22 +222,26 @@ export function CalendarView({ year, month, summaryData, colors }: CalendarViewP
             >
               Today
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handlePrevMonth}
-              className="cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleNextMonth}
-              className="cursor-pointer"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handlePrevMonth}
+                className="cursor-pointer h-9 w-9"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only">Previous month</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleNextMonth}
+                className="cursor-pointer h-9 w-9"
+              >
+                <ChevronRight className="h-4 w-4" />
+                <span className="sr-only">Next month</span>
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
@@ -249,7 +253,7 @@ export function CalendarView({ year, month, summaryData, colors }: CalendarViewP
           {DAYS_OF_WEEK.map((day) => (
             <div
               key={day}
-              className="text-center font-semibold text-sm py-2 text-muted-foreground"
+              className="text-center font-semibold text-xs sm:text-sm py-2 text-muted-foreground"
             >
               {day}
             </div>
@@ -258,7 +262,7 @@ export function CalendarView({ year, month, summaryData, colors }: CalendarViewP
           {/* Day cells */}
           {days.map((day, index) => {
             if (day === null) {
-              return <div key={`empty-${index}`} className="min-h-[120px]" />;
+              return <div key={`empty-${index}`} className="min-h-[50px] sm:min-h-[100px] md:min-h-[120px]" />;
             }
 
             const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;

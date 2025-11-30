@@ -332,15 +332,15 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Media Library</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Media Library</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Track movies, TV shows, books, and video games you&apos;re watching/reading/playing
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/media/new">
             <Plus className="h-4 w-4 mr-2" />
             Create New
@@ -349,56 +349,57 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
       </div>
 
       {/* Filters and Search */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full sm:w-auto">
-          <TabsList>
-            <TabsTrigger value="all">All ({stats.all})</TabsTrigger>
-            <TabsTrigger value="movie">Movies ({stats.movie})</TabsTrigger>
-            <TabsTrigger value="tv">TV ({stats.tv})</TabsTrigger>
-            <TabsTrigger value="book">Books ({stats.book})</TabsTrigger>
-            <TabsTrigger value="game">Games ({stats.game})</TabsTrigger>
+      <div className="flex flex-col gap-4">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
+          <TabsList className="w-full grid grid-cols-5 h-auto">
+            <TabsTrigger value="all" className="text-xs sm:text-sm">All ({stats.all})</TabsTrigger>
+            <TabsTrigger value="movie" className="text-xs sm:text-sm">Movies ({stats.movie})</TabsTrigger>
+            <TabsTrigger value="tv" className="text-xs sm:text-sm">TV ({stats.tv})</TabsTrigger>
+            <TabsTrigger value="book" className="text-xs sm:text-sm">Books ({stats.book})</TabsTrigger>
+            <TabsTrigger value="game" className="text-xs sm:text-sm">Games ({stats.game})</TabsTrigger>
           </TabsList>
         </Tabs>
 
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search media..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="relative sm:col-span-2">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search media..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
 
-        <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Sort by..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="completed-desc">Completed (Newest)</SelectItem>
-            <SelectItem value="completed-asc">Completed (Oldest)</SelectItem>
-            <SelectItem value="started-desc">Started (Newest)</SelectItem>
-            <SelectItem value="started-asc">Started (Oldest)</SelectItem>
-            <SelectItem value="title-asc">Title (A-Z)</SelectItem>
-            <SelectItem value="title-desc">Title (Z-A)</SelectItem>
-            <SelectItem value="rating-desc">Rating (High to Low)</SelectItem>
-            <SelectItem value="rating-asc">Rating (Low to High)</SelectItem>
-          </SelectContent>
-        </Select>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="completed-desc">Completed (Newest)</SelectItem>
+              <SelectItem value="completed-asc">Completed (Oldest)</SelectItem>
+              <SelectItem value="started-desc">Started (Newest)</SelectItem>
+              <SelectItem value="started-asc">Started (Oldest)</SelectItem>
+              <SelectItem value="title-asc">Title (A-Z)</SelectItem>
+              <SelectItem value="title-desc">Title (Z-A)</SelectItem>
+              <SelectItem value="rating-desc">Rating (High to Low)</SelectItem>
+              <SelectItem value="rating-asc">Rating (Low to High)</SelectItem>
+            </SelectContent>
+          </Select>
 
-        {/* Genre Filter */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full sm:w-[180px] justify-between">
-              <span className="truncate">
-                {activeGenres.length > 0
-                  ? `${activeGenres.length} Genre${activeGenres.length > 1 ? "s" : ""}`
-                  : "Filter by Genre"}
-              </span>
-              <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
-            </Button>
-          </PopoverTrigger>
+          {/* Genre Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-between">
+                <span className="truncate">
+                  {activeGenres.length > 0
+                    ? `${activeGenres.length} Genre${activeGenres.length > 1 ? "s" : ""}`
+                    : "Filter by Genre"}
+                </span>
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
+              </Button>
+            </PopoverTrigger>
           <PopoverContent className="w-[200px] p-0" align="start">
             <div className="p-2">
               <Input
@@ -449,18 +450,18 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
           </PopoverContent>
         </Popover>
 
-        {/* Tag Filter */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full sm:w-[180px] justify-between">
-              <span className="truncate">
-                {activeTags.length > 0
-                  ? `${activeTags.length} Tag${activeTags.length > 1 ? "s" : ""}`
-                  : "Filter by Tag"}
-              </span>
-              <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
-            </Button>
-          </PopoverTrigger>
+          {/* Tag Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-between">
+                <span className="truncate">
+                  {activeTags.length > 0
+                    ? `${activeTags.length} Tag${activeTags.length > 1 ? "s" : ""}`
+                    : "Filter by Tag"}
+                </span>
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
+              </Button>
+            </PopoverTrigger>
           <PopoverContent className="w-[200px] p-0" align="start">
             <div className="p-2">
               <Input
@@ -509,7 +510,8 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
               </div>
             )}
           </PopoverContent>
-        </Popover>
+          </Popover>
+        </div>
       </div>
 
       {/* Active Filters */}
@@ -587,7 +589,7 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
       {filteredInProgress.length > 0 && (
         <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">In Progress</h2>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">In Progress</h2>
             <p className="text-sm text-muted-foreground">
               Currently watching, reading, or playing ({filteredInProgress.length})
             </p>
@@ -612,7 +614,7 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
               <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
             )}
             <div className="flex-1">
-              <h2 className="text-2xl font-bold tracking-tight group-hover:text-foreground/80 transition-colors">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight group-hover:text-foreground/80 transition-colors">
                 Planned
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -633,7 +635,7 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
       {filteredMedia.length > 0 && (
         <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Completed</h2>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Completed</h2>
             <p className="text-sm text-muted-foreground">
               Finished watching, reading, or playing ({filteredMedia.length})
             </p>

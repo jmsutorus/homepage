@@ -139,42 +139,44 @@ export default async function DailyPage({ params }: DailyPageProps) {
   ) ?? [];
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
+    <div className="container mx-auto py-6 sm:py-8 px-4 max-w-4xl">
       {/* Header */}
-      <div className="mb-8 space-y-4">
+      <div className="mb-6 sm:mb-8 space-y-4">
         <PageBreadcrumb
           items={[
             { label: "Calendar", href: "/calendar" },
             { label: formatDateLongSafe(date, "en-US") },
           ]}
         />
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               {formatDateLongSafe(date, "en-US")}
             </h1>
-            <p className="text-muted-foreground flex items-center gap-2">
+            <p className="text-muted-foreground flex items-center gap-2 text-sm">
               <Calendar className="h-4 w-4" />
               Daily Dashboard
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" asChild>
+            <Button variant="outline" size="icon" asChild className="h-10 w-10">
               <Link href={`/daily/${prevDate}`}>
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-5 w-5" />
+                <span className="sr-only">Previous day</span>
               </Link>
             </Button>
-            <Button variant="outline" size="icon" asChild>
+            <Button variant="outline" size="icon" asChild className="h-10 w-10">
               <Link href={`/daily/${nextDate}`}>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-5 w-5" />
+                <span className="sr-only">Next day</span>
               </Link>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
-        <div className="space-y-8">
+      <div className="grid gap-6 md:gap-8 md:grid-cols-[2fr_1fr]">
+        <div className="space-y-6 md:space-y-8">
           {/* Habits Section */}
           <section>
             <div className="flex items-center justify-between mb-4">
@@ -228,7 +230,7 @@ export default async function DailyPage({ params }: DailyPageProps) {
           />
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8">
           {/* Mood Section */}
           <section>
             <h2 className="text-xl font-semibold mb-4">Mood</h2>

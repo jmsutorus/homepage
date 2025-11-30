@@ -85,17 +85,17 @@ function CalendarDayCellComponent({
     <Card
       onClick={() => router.push(`/daily/${date}`)}
       className={cn(
-        "min-h-[120px] p-2 flex flex-col hover:shadow-md transition-all cursor-pointer",
+        "min-h-[50px] sm:min-h-[100px] md:min-h-[120px] p-2 flex flex-col hover:shadow-md transition-all cursor-pointer",
         isToday && "ring-2 ring-primary",
         isSelected && "ring-2 ring-blue-500 shadow-lg"
       )}
     >
-      {/* Day number */}
-      <div className="flex items-center justify-between mb-1">
+      {/* Day number and mood/journal button */}
+      <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-1 sm:gap-0 sm:mb-1">
         <span
           className={cn(
-            "text-sm font-semibold",
-            isToday && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center"
+            "text-xs sm:text-sm font-semibold",
+            isToday && "bg-primary text-primary-foreground rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-[10px] sm:text-xs"
           )}
         >
           {day}
@@ -110,18 +110,18 @@ function CalendarDayCellComponent({
               e.stopPropagation();
               router.push(`/journals/new?type=daily&date=${date}`);
             }}
-            className="cursor-pointer h-4 w-4 rounded-full bg-muted hover:bg-primary/20 flex items-center justify-center transition-colors"
+            className="cursor-pointer h-5 w-5 sm:h-4 sm:w-4 rounded-full bg-muted hover:bg-primary/20 flex items-center justify-center transition-colors"
             title="Add daily journal for this day"
             aria-label={`Add daily journal for ${date}`}
           >
-            <Plus className="h-3 w-3 text-muted-foreground" />
+            <Plus className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-muted-foreground" />
           </button>
         ) : null}
       </div>
 
-      {/* Content */}
+      {/* Content - Hidden on mobile, shown on sm and above */}
       {hasAnyData ? (
-        <div className="flex-1 space-y-1 text-xs overflow-hidden">
+        <div className="hidden sm:flex sm:flex-1 sm:flex-col sm:space-y-1 text-xs overflow-hidden">
           {/* Strava Activities (not linked to workouts) */}
           {hasActivities && (
             <div className="flex items-center gap-1">
@@ -307,9 +307,9 @@ function CalendarDayCellComponent({
         </div>
       )}
 
-      {/* Indicators at bottom */}
+      {/* Indicators at bottom - Hidden on mobile, shown on sm and above */}
       {hasAnyData && (
-        <div className="flex gap-1 mt-1">
+        <div className="hidden sm:flex gap-1 mt-1">
           {hasActivities && (
             <div className={cn("w-2 h-2 rounded-full", colors.activity?.bg)} title="Activities" />
           )}

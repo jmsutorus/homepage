@@ -88,7 +88,7 @@ export default async function DashboardPage({
       </section>
 
       {/* Calendar & Recent Tasks */}
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-4 lg:grid-cols-2">
         <MiniCalendar year={currentYear} month={currentMonth} calendarData={calendarData} colors={calendarColors} />
         <RecentTasks />
       </section>
@@ -117,7 +117,7 @@ export default async function DashboardPage({
       {isSteamEnabled || isPlexEnabled || isHomeAssistantEnabled && (
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight">Gaming & Services</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {isSteamEnabled && (
             <SteamStatus />
           )}

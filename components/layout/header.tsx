@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
+import { MobileNav } from "./mobile-nav";
 import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
@@ -28,10 +29,13 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 max-w-screen-2xl items-center px-4 md:px-6">
-        <div className="mr-4 flex">
-          <Link href="/home" className="mr-6 flex items-center space-x-2">
+        <div className="mr-4 flex items-center gap-2">
+          <MobileNav />
+          <Link href="/home" className="flex items-center space-x-2">
             <span className="font-bold text-xl">Homepage</span>
           </Link>
+        </div>
+        <div className="flex-1">
           <nav className="hidden md:flex items-center gap-6 text-sm">
             <Link
               href="/calendar"
@@ -118,7 +122,7 @@ export function Header() {
             </DropdownMenu>
           </nav>
         </div>
-        <div className="flex flex-1 items-center justify-end space-x-2">
+        <div className="flex items-center justify-end space-x-2">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <Button
               variant="outline"

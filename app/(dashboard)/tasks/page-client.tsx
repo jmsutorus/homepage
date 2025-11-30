@@ -79,8 +79,8 @@ export function TasksPageClient() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tasks</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           Manage your todo list with priorities and due dates
         </p>
       </div>
@@ -118,19 +118,19 @@ export function TasksPageClient() {
       {/* Task List */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <CardTitle>Your Tasks</CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 {stats.total} total • {stats.active} active • {stats.completed} completed
               </CardDescription>
             </div>
 
             <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
-              <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="completed">Completed</TabsTrigger>
+              <TabsList className="w-full sm:w-auto">
+                <TabsTrigger value="all" className="flex-1 sm:flex-none">All</TabsTrigger>
+                <TabsTrigger value="active" className="flex-1 sm:flex-none">Active</TabsTrigger>
+                <TabsTrigger value="completed" className="flex-1 sm:flex-none">Completed</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
