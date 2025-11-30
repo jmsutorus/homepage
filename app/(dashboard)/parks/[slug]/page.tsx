@@ -36,40 +36,40 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
   );
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
+    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-4xl">
       {/* Breadcrumb Navigation */}
       <PageBreadcrumb
         items={[
           { label: "Parks", href: "/parks" },
           { label: park.title },
         ]}
-        className="mb-6"
+        className="mb-4 sm:mb-6"
       />
 
       {/* Header with poster */}
       {park.poster && (
-        <div className="mb-8 rounded-lg overflow-hidden">
+        <div className="mb-6 sm:mb-8 rounded-lg overflow-hidden">
           <img
             src={park.poster}
             alt={park.title}
-            className="w-full h-auto max-h-96 object-cover"
+            className="w-full h-auto max-h-64 sm:max-h-96 object-cover"
             referrerPolicy="no-referrer"
           />
         </div>
       )}
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Title and Edit Button */}
-        <div className="flex items-start justify-between">
-          <h1 className="text-4xl font-bold">{park.title}</h1>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{park.title}</h1>
+          <div className="flex gap-2 flex-wrap">
             {park.content && (
               <ExportButton
                 content={park.content}
                 filename={park.slug}
               />
             )}
-            <Button variant="outline" size="sm" asChild className="cursor-pointer">
+            <Button variant="outline" size="sm" asChild className="cursor-pointer flex-1 sm:flex-none">
               <Link href={`/parks/${slug}/edit`}>
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit

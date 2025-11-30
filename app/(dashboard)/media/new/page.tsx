@@ -9,10 +9,10 @@ export default function NewMediaPage({
   searchParams: Promise<{ type?: string }>;
 }) {
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Create New Media Entry</h1>
-        <p className="text-muted-foreground">
+    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-5xl">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Create New Media Entry</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           Add a new movie, TV show, or book to your media library.
         </p>
       </div>

@@ -50,9 +50,9 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
   const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 px-4">
       {/* Breadcrumb Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <PageBreadcrumb
           items={[
             { label: "Media", href: "/media" },
@@ -60,14 +60,14 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
             { label: frontmatter.title.replace(/-/g, ' ') },
           ]}
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {content && (
             <ExportButton
               content={content}
               filename={slug}
             />
           )}
-          <Button variant="outline" asChild>
+          <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none">
             <Link href={`/media/${type}/${slug}/edit`}>
               <Pencil className="mr-2 h-4 w-4" />
               Edit
@@ -78,10 +78,10 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
       </div>
 
       {/* Header */}
-      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-4 sm:gap-6">
         {/* Poster Image */}
         {frontmatter.poster && (
-          <div className="w-full md:w-[300px] rounded-lg overflow-hidden bg-muted">
+          <div className="w-full max-w-[200px] mx-auto md:max-w-none md:mx-0 md:w-[300px] rounded-lg overflow-hidden bg-muted">
             <img
               src={frontmatter.poster}
               alt={frontmatter.title}
@@ -91,8 +91,8 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
         )}
 
         {/* Metadata */}
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">{frontmatter.title.replace(/-/g, ' ')}</h1>
+        <div className="space-y-3 sm:space-y-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">{frontmatter.title.replace(/-/g, ' ')}</h1>
 
           <div className="flex items-center gap-3 flex-wrap">
             {/* Type Badge */}

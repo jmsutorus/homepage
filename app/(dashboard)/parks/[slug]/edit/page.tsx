@@ -32,8 +32,8 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl">
-      <div className="mb-8 space-y-4">
+    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-5xl">
+      <div className="mb-6 sm:mb-8 space-y-4">
         <PageBreadcrumb
           items={[
             { label: "Parks", href: "/parks" },
@@ -42,8 +42,8 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
           ]}
         />
         <div>
-          <h1 className="text-3xl font-bold mb-2">Edit Park</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Edit Park</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Update the information for {park.title}
           </p>
         </div>

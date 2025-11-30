@@ -806,19 +806,20 @@ export function MediaEditor({
   };
 
   return (
-    <form onSubmit={handleSave} className="space-y-6">
+    <form onSubmit={handleSave} className="space-y-4 sm:space-y-6">
       {/* Save and Cancel Buttons */}
       {!isBatchMode && (
-        <div className="flex gap-4 justify-end">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-end">
           <Button
             type="button"
             variant="outline"
             onClick={() => router.back()}
             disabled={isSaving}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isSaving || !frontmatter.title}>
+          <Button type="submit" disabled={isSaving || !frontmatter.title} className="w-full sm:w-auto">
             {isSaving ? 'Saving...' : mode === 'create' ? 'Create' : 'Save Changes'}
           </Button>
         </div>
@@ -841,9 +842,9 @@ export function MediaEditor({
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h3 className="text-lg font-semibold">Quick Import</h3>
-                <div className="flex gap-2 flex-wrap">
+                <div className="grid grid-cols-2 sm:flex gap-2">
                   <Button
                     type="button"
                     variant="default"
@@ -852,7 +853,7 @@ export function MediaEditor({
                     className="cursor-pointer"
                   >
                     <Film className="h-4 w-4 mr-2" />
-                    Search IMDB
+                    <span className="hidden sm:inline">Search </span>IMDB
                   </Button>
                   <Button
                     type="button"
@@ -862,13 +863,14 @@ export function MediaEditor({
                     className="cursor-pointer"
                   >
                     <BookOpen className="h-4 w-4 mr-2" />
-                    Search Books
+                    <span className="hidden sm:inline">Search </span>Books
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
+                    className="col-span-2 sm:col-span-1"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Upload File
@@ -1032,9 +1034,9 @@ export function MediaEditor({
       {/* Only show edit form when not in batch mode */}
       {!isBatchMode && (
         <Tabs defaultValue="edit" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="edit" className="cursor-pointer">Edit</TabsTrigger>
-            <TabsTrigger value="preview" className="cursor-pointer">Preview</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 h-auto">
+            <TabsTrigger value="edit" className="cursor-pointer text-sm sm:text-base">Edit</TabsTrigger>
+            <TabsTrigger value="preview" className="cursor-pointer text-sm sm:text-base">Preview</TabsTrigger>
           </TabsList>
 
         <TabsContent value="edit" className="space-y-6">
@@ -1302,67 +1304,78 @@ export function MediaEditor({
           {/* Markdown Editor Section */}
           <Card>
             <CardContent className="pt-6 space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h3 className="text-lg font-semibold">Content</h3>
-                <div className="flex gap-2 flex-wrap items-center">
+                <div className="flex gap-1 sm:gap-2 flex-wrap items-center">
                   <TemplatePicker type="media" onSelect={handleTemplateSelect} />
-                  <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('# ')}
-                  >
-                    H1
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('## ')}
-                  >
-                    H2
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('**', '**')}
-                  >
-                    Bold
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('*', '*')}
-                  >
-                    Italic
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('- ')}
-                  >
-                    List
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('[', '](url)')}
-                  >
-                    Link
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('```\n', '\n```')}
-                  >
-                    Code
-                  </Button>
+                  <div className="h-6 w-px bg-border mx-1 hidden lg:block" />
+                  <div className="flex gap-1 sm:gap-2 flex-wrap">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => insertMarkdown('# ')}
+                      className="text-xs sm:text-sm px-2 sm:px-3"
+                    >
+                      H1
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => insertMarkdown('## ')}
+                      className="text-xs sm:text-sm px-2 sm:px-3"
+                    >
+                      H2
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => insertMarkdown('**', '**')}
+                      className="text-xs sm:text-sm px-2 sm:px-3"
+                    >
+                      <span className="hidden sm:inline">Bold</span>
+                      <span className="sm:hidden">B</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => insertMarkdown('*', '*')}
+                      className="text-xs sm:text-sm px-2 sm:px-3"
+                    >
+                      <span className="hidden sm:inline">Italic</span>
+                      <span className="sm:hidden">I</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => insertMarkdown('- ')}
+                      className="text-xs sm:text-sm px-2 sm:px-3"
+                    >
+                      List
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => insertMarkdown('[', '](url)')}
+                      className="text-xs sm:text-sm px-2 sm:px-3"
+                    >
+                      Link
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => insertMarkdown('```\n', '\n```')}
+                      className="text-xs sm:text-sm px-2 sm:px-3"
+                    >
+                      Code
+                    </Button>
+                  </div>
                 </div>
               </div>
 

@@ -331,18 +331,18 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
   }, [goal]);
 
   return (
-    <div className="container mx-auto py-6 px-4 max-w-4xl">
+    <div className="container mx-auto py-4 sm:py-6 px-4 max-w-4xl">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div className="flex items-start gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4 sm:mb-6">
+        <div className="flex items-start gap-2 sm:gap-4">
           <Link href="/goals">
             <Button variant="ghost" size="icon" className="cursor-pointer mt-1">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold">{goal.title}</h1>
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+              <h1 className="text-xl sm:text-2xl font-bold">{goal.title}</h1>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
@@ -377,16 +377,16 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Link href={`/goals/${goal.slug}/edit`}>
-            <Button variant="outline" className="cursor-pointer">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Link href={`/goals/${goal.slug}/edit`} className="flex-1 sm:flex-none">
+            <Button variant="outline" className="cursor-pointer w-full">
               <Edit className="h-4 w-4 mr-2" />
               Edit
             </Button>
           </Link>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" className="cursor-pointer text-destructive hover:text-destructive">
+              <Button variant="outline" className="cursor-pointer text-destructive hover:text-destructive" size="icon">
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>

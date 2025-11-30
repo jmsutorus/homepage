@@ -49,28 +49,28 @@ export default async function JournalDetailPage({ params }: JournalDetailPagePro
   );
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
+    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-4xl">
       {/* Breadcrumb Navigation */}
       <PageBreadcrumb
         items={[
           { label: "Journals", href: "/journals" },
           { label: journal.title },
         ]}
-        className="mb-6"
+        className="mb-4 sm:mb-6"
       />
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Title and Edit Button */}
-        <div className="flex items-start justify-between">
-          <h1 className="text-4xl font-bold">{journal.title}</h1>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{journal.title}</h1>
+          <div className="flex gap-2 flex-wrap">
             {journal.content && (
               <ExportButton
                 content={journal.content}
                 filename={journal.slug}
               />
             )}
-            <Button variant="outline" size="sm" asChild className="cursor-pointer">
+            <Button variant="outline" size="sm" asChild className="cursor-pointer flex-1 sm:flex-none">
               <Link href={`/journals/${slug}/edit`}>
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit

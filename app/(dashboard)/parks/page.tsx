@@ -23,16 +23,16 @@ export default async function ParksPage() {
   }, {} as Record<string, typeof parks>);
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl">
+    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-7xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Parks</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Parks</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Explore and track your visits to National Parks, State Parks, and more
           </p>
         </div>
-        <Button asChild className="cursor-pointer">
+        <Button asChild className="cursor-pointer w-full sm:w-auto">
           <Link href="/parks/new">
             <Plus className="h-4 w-4 mr-2" />
             Add Park
@@ -41,26 +41,26 @@ export default async function ParksPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4 mb-8">
-        <div className="p-4 rounded-lg border bg-card">
-          <p className="text-sm text-muted-foreground">Total Visits</p>
-          <p className="text-2xl font-bold">{parks.length}</p>
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4 mb-6 sm:mb-8">
+        <div className="p-3 sm:p-4 rounded-lg border bg-card">
+          <p className="text-xs sm:text-sm text-muted-foreground">Total Visits</p>
+          <p className="text-xl sm:text-2xl font-bold">{parks.length}</p>
         </div>
-        <div className="p-4 rounded-lg border bg-card">
-          <p className="text-sm text-muted-foreground">National Parks</p>
-          <p className="text-2xl font-bold">
+        <div className="p-3 sm:p-4 rounded-lg border bg-card">
+          <p className="text-xs sm:text-sm text-muted-foreground">National Parks</p>
+          <p className="text-xl sm:text-2xl font-bold">
             {parks.filter(p => p.category === 'National Park').length}
           </p>
         </div>
-        <div className="p-4 rounded-lg border bg-card">
-          <p className="text-sm text-muted-foreground">State Parks</p>
-          <p className="text-2xl font-bold">
+        <div className="p-3 sm:p-4 rounded-lg border bg-card">
+          <p className="text-xs sm:text-sm text-muted-foreground">State Parks</p>
+          <p className="text-xl sm:text-2xl font-bold">
             {parks.filter(p => p.category === 'State Park').length}
           </p>
         </div>
-        <div className="p-4 rounded-lg border bg-card">
-          <p className="text-sm text-muted-foreground">Average Rating</p>
-          <p className="text-2xl font-bold">
+        <div className="p-3 sm:p-4 rounded-lg border bg-card">
+          <p className="text-xs sm:text-sm text-muted-foreground">Average Rating</p>
+          <p className="text-xl sm:text-2xl font-bold">
             {parks.filter(p => p.rating !== null).length > 0
               ? (parks.reduce((sum, p) => sum + (p.rating || 0), 0) /
                  parks.filter(p => p.rating !== null).length).toFixed(1)
@@ -81,11 +81,11 @@ export default async function ParksPage() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {Object.entries(parksByCategory).map(([category, categoryParks]) => (
             <div key={category}>
-              <h2 className="text-2xl font-semibold mb-4">{category}s</h2>
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">{category}s</h2>
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {categoryParks.map((park) => (
                   <ParkCard key={park.id} park={park} />
                 ))}
