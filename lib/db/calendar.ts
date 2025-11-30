@@ -3,14 +3,13 @@ import type { MoodEntry } from "./mood";
 import type { DBStravaActivity } from "./strava";
 import type { MediaContent } from "./media";
 import type { Task } from "./tasks";
-import type { Event } from "./events";
+import { type Event, getEventsInRange as getEvents } from "./events";
 import type { ParkContent } from "./parks";
 import type { JournalContent } from "./journals";
 import type { WorkoutActivity } from "./workout-activities";
 import type { GithubEvent } from "@/lib/github";
 import type { HabitCompletion } from "./habits";
 import { getHabitCompletionsForRange } from "./habits";
-import type { Goal, GoalMilestone } from "./goals";
 import { auth } from "@/auth";
 
 // Goal-related calendar types
@@ -155,7 +154,7 @@ export function getTasksInRange(
      AND userId = ?
      ORDER BY due_date ASC NULLS LAST`;
 
-  const params: any[] = [
+  const params: (string | number)[] = [
     startDate, endDate,           // Tasks due in range
     startDate, endDate,           // Completed tasks in range
     startDate, endDate,           // Incomplete tasks in range
@@ -176,7 +175,6 @@ export function getEventsInRange(
   userId: string
 ): Event[] {
   // Import from events module
-  const { getEventsInRange: getEvents } = require("./events");
   return getEvents(startDate, endDate, userId);
 }
 
@@ -207,8 +205,24 @@ export function getJournalsInRange(
   endDate: string,
   userId: string
 ): JournalContent[] {
+  interface RawJournal {
+    id: number;
+    userId: string;
+    slug: string;
+    title: string;
+    content: string;
+    journal_type: "daily" | "general";
+    daily_date: string | null;
+    created_at: string;
+    updated_at: string;
+    tags: string | null;
+    featured: number;
+    published: number;
+    mood: number | null;
+  }
+
   // Need to parse tags from JSON and convert featured/published from number to boolean
-  const rawJournals = query<any>(
+  const rawJournals = query<RawJournal>(
     `SELECT * FROM journals
      WHERE ((journal_type = 'daily' AND daily_date BETWEEN ? AND ?)
         OR (journal_type = 'general' AND DATE(created_at) BETWEEN ? AND ?))
@@ -221,7 +235,7 @@ export function getJournalsInRange(
     [startDate, endDate, startDate, endDate, userId]
   );
 
-  return rawJournals.map((journal: any) => ({
+  return rawJournals.map((journal) => ({
     ...journal,
     tags: journal.tags ? JSON.parse(journal.tags) : [],
     featured: journal.featured === 1,

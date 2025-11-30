@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,9 +24,15 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
   const isStravaConnected = !!stravaAccount;
   
   // Check if token is expired (with 5 minute buffer)
-  const isStravaExpired = stravaAccount?.accessTokenExpiresAt 
-    ? stravaAccount.accessTokenExpiresAt < (Date.now() / 1000) + 300
-    : false;
+  const [isStravaExpired, setIsStravaExpired] = useState(false);
+
+   
+  useEffect(() => {
+    if (stravaAccount?.accessTokenExpiresAt) {
+      // eslint-disable-next-line
+      setIsStravaExpired(stravaAccount.accessTokenExpiresAt < (Date.now() / 1000) + 300);
+    }
+  }, [stravaAccount]);
 
   const handleConnectGithub = () => {
     signIn("github");

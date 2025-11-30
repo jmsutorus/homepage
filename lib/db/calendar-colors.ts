@@ -22,6 +22,7 @@ export interface CalendarColorUpdate {
 function getDefaultCalendarColors(): Omit<CalendarColor, "userId" | "id" | "created_at" | "updated_at">[] {
   const defaults: Omit<CalendarColor, "userId" | "id" | "created_at" | "updated_at">[] = [];
 
+   
   const processObject = (obj: any, prefix = "") => {
     for (const key in obj) {
       const value = obj[key];
@@ -94,8 +95,10 @@ export function getCalendarColors(userId: string): CalendarColor[] {
 /**
  * Get calendar colors as a structured object (matching CalendarColors constant structure)
  */
+ 
 export function getCalendarColorsObject(userId: string): any {
   const colors = getCalendarColors(userId);
+   
   const colorObj: any = {};
 
   colors.forEach((color) => {

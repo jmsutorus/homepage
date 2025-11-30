@@ -49,8 +49,10 @@ export function AnimatedProgress({
 
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
+   
   useEffect(() => {
     if (isInView && !hasAnimated) {
+      // eslint-disable-next-line
       setHasAnimated(true);
     }
   }, [isInView, hasAnimated]);
@@ -149,8 +151,10 @@ export function AnimatedProgressRing({
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
+   
   useEffect(() => {
     if (isInView && !hasAnimated) {
+      // eslint-disable-next-line
       setHasAnimated(true);
     }
   }, [isInView, hasAnimated]);

@@ -85,7 +85,7 @@ export function BookSearchModal({
         <DialogHeader>
           <DialogTitle>Search Google Books</DialogTitle>
           <DialogDescription>
-            Enter a book title, author name, or ISBN (e.g., "1984", "George Orwell", or "9780451524935")
+            Enter a book title, author name, or ISBN (e.g., &quot;1984&quot;, &quot;George Orwell&quot;, or &quot;9780451524935&quot;)
           </DialogDescription>
         </DialogHeader>
 

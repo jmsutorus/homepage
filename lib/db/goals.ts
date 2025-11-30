@@ -217,7 +217,7 @@ export function getGoals(userId: string, options?: {
 }): Goal[] {
   try {
     let sql = "SELECT * FROM goals WHERE userId = ?";
-    const params: any[] = [userId];
+    const params: (string | number | null)[] = [userId];
 
     if (options?.status) {
       if (Array.isArray(options.status)) {
@@ -368,7 +368,7 @@ export function updateGoal(id: number, userId: string, data: {
 }): Goal {
   try {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
     if (data.title !== undefined) {
       updates.push("title = ?");
@@ -539,7 +539,7 @@ export function updateMilestone(id: number, data: {
 }): GoalMilestone {
   try {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
     if (data.title !== undefined) {
       updates.push("title = ?");
@@ -739,7 +739,7 @@ export function updateChecklistItem(id: number, data: {
 }): GoalChecklistItem {
   try {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
     if (data.text !== undefined) {
       updates.push("text = ?");

@@ -76,7 +76,7 @@ export function CreateHabitForm() {
               Habit Created!
             </h3>
             <p className="text-muted-foreground text-center animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
-              You're on your way to building a better you.
+              You&apos;re on your way to building a better you.
             </p>
           </div>
         ) : (

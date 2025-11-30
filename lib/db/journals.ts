@@ -263,7 +263,7 @@ export function createJournal(data: {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(
+    stmt.run(
       slug,
       title,
       journalType,
@@ -276,7 +276,7 @@ export function createJournal(data: {
       data.userId
     );
 
-    const journal = getJournalBySlug(slug);
+    const journal = getJournalBySlug(slug, data.userId);
     if (!journal) {
       throw new Error("Failed to create journal");
     }
@@ -317,7 +317,7 @@ export function updateJournal(
     }
 
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
     // For daily journals, regenerate title if date changes
     if (existing.journal_type === "daily" && data.daily_date && data.daily_date !== existing.daily_date) {

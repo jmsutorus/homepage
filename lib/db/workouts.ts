@@ -287,14 +287,19 @@ export function getWorkoutStats(userId: string, startDate?: string, endDate?: st
     WHERE user_id = ?
   `;
 
-  const params: any[] = [userId];
+  const params: (string | number)[] = [userId];
 
   if (startDate && endDate) {
     query += ` AND scheduled_date >= ? AND scheduled_date <= ?`;
     params.push(startDate, endDate);
   }
 
-  const result = db.prepare(query).get(...params) as any;
+  const result = db.prepare(query).get(...params) as {
+    total_workouts: number;
+    completed_workouts: number;
+    total_duration: number;
+    avg_duration: number;
+  };
 
   return {
     total_workouts: result.total_workouts || 0,

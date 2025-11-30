@@ -32,7 +32,7 @@ import { HabitCompletionChartData } from "@/lib/db/habits";
 import { Flame, Trophy, TrendingUp, Target } from "lucide-react";
 
 // Custom Tooltip component (defined outside to avoid creating during render)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function ChartTooltip({ active, payload }: any) {
   if (active && payload && payload.length) {
     const dataPoint = payload[0].payload;

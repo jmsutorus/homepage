@@ -82,62 +82,6 @@ export function MoodTrendsChart({ data, year }: MoodTrendsChartProps) {
     return sum / data.length;
   }, [data]);
 
-  // Custom Tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const dataPoint = payload[0].payload;
-      return (
-        <div className="rounded-lg border bg-background p-2 shadow-sm">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex flex-col">
-              <span className="text-[0.70rem] uppercase text-muted-foreground">
-                Date
-              </span>
-              <span className="font-bold text-muted-foreground">
-                {dataPoint.formattedDate}
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[0.70rem] uppercase text-muted-foreground">
-                Mood
-              </span>
-              <span className="font-bold text-muted-foreground">
-                {dataPoint.rating}/5
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[0.70rem] uppercase text-muted-foreground">
-                7-Day Avg
-              </span>
-              <span className="font-bold text-muted-foreground">
-                {dataPoint.movingAvg.toFixed(1)}
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[0.70rem] uppercase text-muted-foreground">
-                Trend
-              </span>
-              <span className="font-bold text-muted-foreground">
-                {dataPoint.trend.toFixed(1)}
-              </span>
-            </div>
-          </div>
-          {dataPoint.note && (
-            <div className="mt-2 border-t pt-2">
-              <span className="text-[0.70rem] uppercase text-muted-foreground">
-                Note
-              </span>
-              <p className="text-xs text-muted-foreground max-w-[200px] truncate">
-                {dataPoint.note}
-              </p>
-            </div>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
-
   if (data.length === 0) {
     return (
       <Card>
@@ -231,3 +175,59 @@ export function MoodTrendsChart({ data, year }: MoodTrendsChartProps) {
     </Card>
   );
 }
+
+// Custom Tooltip
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const dataPoint = payload[0].payload;
+    return (
+      <div className="rounded-lg border bg-background p-2 shadow-sm">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col">
+            <span className="text-[0.70rem] uppercase text-muted-foreground">
+              Date
+            </span>
+            <span className="font-bold text-muted-foreground">
+              {dataPoint.formattedDate}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[0.70rem] uppercase text-muted-foreground">
+              Mood
+            </span>
+            <span className="font-bold text-muted-foreground">
+              {dataPoint.rating}/5
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[0.70rem] uppercase text-muted-foreground">
+              7-Day Avg
+            </span>
+            <span className="font-bold text-muted-foreground">
+              {dataPoint.movingAvg.toFixed(1)}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[0.70rem] uppercase text-muted-foreground">
+              Trend
+            </span>
+            <span className="font-bold text-muted-foreground">
+              {dataPoint.trend.toFixed(1)}
+            </span>
+          </div>
+        </div>
+        {dataPoint.note && (
+          <div className="mt-2 border-t pt-2">
+            <span className="text-[0.70rem] uppercase text-muted-foreground">
+              Note
+            </span>
+            <p className="text-xs text-muted-foreground max-w-[200px] truncate">
+              {dataPoint.note}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+  return null;
+};

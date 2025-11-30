@@ -1,11 +1,8 @@
-import { getDatabase, query, queryOne, execute } from "@/lib/db";
+import { query, queryOne, execute } from "@/lib/db";
 import {
   parseISO,
   startOfWeek,
-  startOfMonth,
   differenceInCalendarDays,
-  differenceInCalendarWeeks,
-  differenceInCalendarMonths,
 } from "date-fns";
 import { checkAchievement } from "../achievements";
 
@@ -107,7 +104,7 @@ export function updateHabit(id: number, userId: string, data: {
 }): Habit {
   try {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number)[] = [];
 
     if (data.title !== undefined) {
       updates.push("title = ?");
@@ -246,7 +243,7 @@ export interface HabitStats {
  */
 export function getHabitStats(habit: Habit, userId: string): HabitStats {
   try {
-    const { frequency = 'daily', target = 1, created_at } = habit;
+    const { frequency = 'daily', created_at } = habit;
     
     // Calculate days existed
     const createdAtDateStr = created_at.split('T')[0].split(' ')[0];
@@ -447,7 +444,6 @@ export function getHabitCompletionsForChart(userId: string): HabitCompletionChar
       const weeklyData = Array.from(weeklyMap.entries())
         .sort((a, b) => a[0].localeCompare(b[0]))
         .map(([week, count], index) => {
-          const weekDate = parseISO(week);
           return {
             week,
             weekLabel: `W${index + 1}`,

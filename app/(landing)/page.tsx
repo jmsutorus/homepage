@@ -63,7 +63,7 @@ export default function LandingPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Keep track of what you're watching on Plex and see your media server status.
+                Keep track of what you&apos;re watching on Plex and see your media server status.
               </p>
             </CardContent>
           </Card>

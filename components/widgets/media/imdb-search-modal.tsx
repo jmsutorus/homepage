@@ -85,7 +85,7 @@ export function IMDBSearchModal({
         <DialogHeader>
           <DialogTitle>Search IMDB</DialogTitle>
           <DialogDescription>
-            Enter a movie/TV show name or IMDB ID (e.g., "Inception" or "tt1375666")
+            Enter a movie/TV show name or IMDB ID (e.g., &quot;Inception&quot; or &quot;tt1375666&quot;)
           </DialogDescription>
         </DialogHeader>
 
@@ -127,7 +127,7 @@ export function IMDBSearchModal({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Tip: For best results, use the exact IMDB ID (starts with "tt")
+              Tip: For best results, use the exact IMDB ID (starts with &quot;tt&quot;)
             </p>
           </div>
         </div>

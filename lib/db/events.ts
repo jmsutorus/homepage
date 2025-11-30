@@ -61,7 +61,23 @@ function deserializeNotifications(notificationsJson: string): EventNotification[
 }
 
 // Transform DB row to Event object
-function transformEvent(row: any): Event {
+interface DBEvent {
+  id: number;
+  userId: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  date: string;
+  start_time: string | null;
+  end_time: string | null;
+  all_day: number;
+  end_date: string | null;
+  notifications: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+function transformEvent(row: DBEvent): Event {
   return {
     ...row,
     all_day: Boolean(row.all_day),
@@ -103,7 +119,7 @@ export function createEvent(input: CreateEventInput, userId: string): Event {
  * Get event by ID for a specific user
  */
 export function getEvent(id: number, userId: string): Event | undefined {
-  const row = queryOne<any>("SELECT * FROM events WHERE id = ? AND userId = ?", [id, userId]);
+  const row = queryOne<DBEvent>("SELECT * FROM events WHERE id = ? AND userId = ?", [id, userId]);
   return row ? transformEvent(row) : undefined;
 }
 
@@ -111,7 +127,7 @@ export function getEvent(id: number, userId: string): Event | undefined {
  * Get all events for a specific user
  */
 export function getAllEvents(userId: string): Event[] {
-  const rows = query<any>("SELECT * FROM events WHERE userId = ? ORDER BY date ASC, start_time ASC", [userId]);
+  const rows = query<DBEvent>("SELECT * FROM events WHERE userId = ? ORDER BY date ASC, start_time ASC", [userId]);
   return rows.map(transformEvent);
 }
 
@@ -119,7 +135,7 @@ export function getAllEvents(userId: string): Event[] {
  * Get events for a specific date for a specific user (including multi-day events that span this date)
  */
 export function getEventsForDate(date: string, userId: string): Event[] {
-  const rows = query<any>(
+  const rows = query<DBEvent>(
     `SELECT * FROM events
      WHERE userId = ? AND (
        date = ?
@@ -135,7 +151,7 @@ export function getEventsForDate(date: string, userId: string): Event[] {
  * Get events in a date range for a specific user (including multi-day events that overlap)
  */
 export function getEventsInRange(startDate: string, endDate: string, userId: string): Event[] {
-  const rows = query<any>(
+  const rows = query<DBEvent>(
     `SELECT * FROM events
      WHERE userId = ? AND (
        (date BETWEEN ? AND ?)
@@ -245,6 +261,6 @@ export function getUpcomingEvents(userId: string, limit?: number): Event[] {
        ORDER BY date ASC, all_day DESC, start_time ASC`;
 
   const params = limit ? [userId, today, today, limit] : [userId, today, today];
-  const rows = query<any>(sql, params);
+  const rows = query<DBEvent>(sql, params);
   return rows.map(transformEvent);
 }

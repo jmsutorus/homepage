@@ -51,6 +51,7 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
   const [tagSearch, setTagSearch] = useState("");
 
   // Read genres and tags from URL parameters
+   
   useEffect(() => {
     const genre = searchParams.get("genre");
     const tag = searchParams.get("tag");
@@ -59,6 +60,7 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
 
     // Handle single genre/tag for backwards compatibility
     if (genre && !genres) {
+      // eslint-disable-next-line
       setActiveGenres([genre]);
     } else if (genres) {
       setActiveGenres(genres.split(","));

@@ -108,7 +108,7 @@ export function EventEditDialog({
         <DialogHeader>
           <DialogTitle>Edit Event</DialogTitle>
           <DialogDescription>
-            Make changes to your event. Click save when you're done.
+            Make changes to your event. Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
 

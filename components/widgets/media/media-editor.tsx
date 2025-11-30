@@ -906,13 +906,13 @@ export function MediaEditor({
                   Drag and drop a markdown file here
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  or click "Upload File" above to browse
+                  or click &quot;Upload File&quot; above to browse
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
                   Supports .md files with frontmatter. Select multiple files for batch import.
                 </p>
                 <p className="text-xs text-muted-foreground mt-2 font-medium">
-                  💡 Tip: Use "Search IMDB" for movies/TV or "Search Books" for instant metadata!
+                  💡 Tip: Use &quot;Search IMDB&quot; for movies/TV or &quot;Search Books&quot; for instant metadata!
                 </p>
               </div>
             </div>

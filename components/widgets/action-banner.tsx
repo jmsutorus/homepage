@@ -19,7 +19,7 @@ export async function ActionBanner() {
   // Fetch data in parallel
   const [moodEntry, dailyJournal, habits, habitCompletions] = await Promise.all([
     getMoodEntry(today, userId),
-    getDailyJournalByDate(today),
+    getDailyJournalByDate(today, userId),
     getHabits(userId),
     getHabitCompletions(userId, today)
   ]);
@@ -63,7 +63,7 @@ export async function ActionBanner() {
           <div className="space-y-1 text-center sm:text-left">
             <h3 className="text-xl font-bold flex items-center justify-center sm:justify-start gap-2">
               <CheckCircle2 className="h-5 w-5" />
-              Don't forget your habits!
+              Don&apos;t forget your habits!
             </h3>
             <p className="text-emerald-100">
               You have active habits to complete today. Keep your streak alive!

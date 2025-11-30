@@ -8,7 +8,7 @@ export default function NewParkPage() {
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">Add New Park</h1>
         <p className="text-muted-foreground text-sm sm:text-base">
-          Create a new entry for a park you've visited or want to visit.
+          Create a new entry for a park you&apos;ve visited or want to visit.
         </p>
       </div>
 

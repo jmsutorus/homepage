@@ -46,8 +46,11 @@ export function MoodEntryModal({
   });
 
   // Update state when props change (when a different date is selected)
+   
   useEffect(() => {
+    // eslint-disable-next-line
     setRating(initialRating);
+    // eslint-disable-next-line
     setNote(initialNote);
   }, [initialRating, initialNote, date]);
 

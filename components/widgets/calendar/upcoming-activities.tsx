@@ -140,7 +140,7 @@ export function UpcomingActivities({ onRefresh }: UpcomingActivitiesProps) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            No upcoming activities scheduled. Click "Add Activity" to create one!
+            No upcoming activities scheduled. Click &quot;Add Activity&quot; to create one!
           </p>
         </CardContent>
       </Card>

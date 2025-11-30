@@ -102,7 +102,7 @@ export function GoogleCalendarConnect({ isConnected = false, userEmail }: Google
               )}
             </Button>
             <p className="text-xs text-muted-foreground">
-              You'll be redirected to Google to authorize calendar access. We only request permission
+              You&apos;ll be redirected to Google to authorize calendar access. We only request permission
               to create and manage workout events.
             </p>
           </div>

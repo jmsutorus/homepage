@@ -63,6 +63,7 @@ export function TaskCompletionAnimation({
   // Check for reduced motion preference
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // eslint-disable-next-line
     setPrefersReducedMotion(mediaQuery.matches);
 
     const handleChange = (e: MediaQueryListEvent) => {
@@ -74,10 +75,12 @@ export function TaskCompletionAnimation({
   }, []);
 
   // Start animation sequence when shouldAnimate becomes true
+   
   useEffect(() => {
     if (shouldAnimate && animationState === "idle") {
       if (prefersReducedMotion) {
         // Skip animation, go straight to completion
+        // eslint-disable-next-line
         setAnimationState("completed");
         setTimeout(() => onAnimationComplete?.(), 100);
       } else {

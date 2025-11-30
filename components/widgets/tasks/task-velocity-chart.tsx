@@ -44,7 +44,7 @@ import {
 } from "lucide-react";
 
 // Custom Tooltip component
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function ChartTooltip({ active, payload }: any) {
   if (active && payload && payload.length) {
     const dataPoint = payload[0].payload as TaskVelocityDataPoint;

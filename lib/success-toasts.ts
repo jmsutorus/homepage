@@ -137,7 +137,7 @@ export function showCreationError(
   const { message, duration = 4000 } = options;
 
   const defaultErrorMessage = `Failed to create ${entity}`;
-  let errorMessage = message || defaultErrorMessage;
+  const errorMessage = message || defaultErrorMessage;
 
   // Include error details if available
   let description: string | undefined;

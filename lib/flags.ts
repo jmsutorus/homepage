@@ -9,7 +9,7 @@ export async function getFeatureFlag(key: string, defaultValue: boolean = false)
       return defaultValue;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const value = (parameter.defaultValue as any).value;
     return value === "true";
   } catch (error) {
@@ -27,7 +27,7 @@ export async function getFeatureFlagString(key: string, defaultValue: string = "
       return defaultValue;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     return (parameter.defaultValue as any).value || defaultValue;
   } catch (error) {
     console.error(`Error fetching feature flag ${key}:`, error);

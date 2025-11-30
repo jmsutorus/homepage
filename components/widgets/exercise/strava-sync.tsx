@@ -133,7 +133,7 @@ export function StravaSync({ athleteId, lastSync }: StravaSyncProps) {
                   Strava API Settings
                 </a>
               </li>
-              <li>Create an application (if you haven't already)</li>
+              <li>Create an application (if you haven&apos;t already)</li>
               <li>
                 Use this URL (replace YOUR_CLIENT_ID):{" "}
                 <code className="text-xs bg-muted px-1 py-0.5 rounded">

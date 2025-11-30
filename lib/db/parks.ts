@@ -198,7 +198,7 @@ export function createPark(data: {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(
+    stmt.run(
       data.slug,
       data.title,
       data.category,
@@ -258,7 +258,7 @@ export function updatePark(
     }
 
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
     if (data.newSlug !== undefined) {
       updates.push("slug = ?");

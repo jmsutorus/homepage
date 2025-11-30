@@ -20,7 +20,7 @@ export function createMoodEntry(
   note: string | undefined,
   userId: string
 ): MoodEntry {
-  const result = execute(
+  execute(
     `INSERT INTO mood_entries (userId, date, rating, note)
      VALUES (?, ?, ?, ?)
      ON CONFLICT(userId, date) DO UPDATE SET

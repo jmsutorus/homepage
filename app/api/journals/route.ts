@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     let slug = "";
-    let journalData: any = {
+    const journalData: any = {
       journal_type: journalType,
       content: content || "",
       tags: frontmatter.tags,

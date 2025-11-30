@@ -218,7 +218,7 @@ export function getWorkoutActivityStats(userId: string, startDate?: string, endD
   const db = getDatabase();
 
   let whereClause = " WHERE userId = ?";
-  const params: any[] = [userId];
+  const params: (string | number)[] = [userId];
 
   if (startDate && endDate) {
     whereClause += " AND date >= ? AND date <= ?";
@@ -235,7 +235,12 @@ export function getWorkoutActivityStats(userId: string, startDate?: string, endD
         AVG(length) as avg_duration
       FROM workout_activities${whereClause}`
     )
-    .get(...params) as any;
+    .get(...params) as {
+      total_activities: number;
+      completed_activities: number;
+      total_duration: number;
+      avg_duration: number;
+    };
 
   // By type
   const byType = db
@@ -248,7 +253,7 @@ export function getWorkoutActivityStats(userId: string, startDate?: string, endD
       GROUP BY type
       ORDER BY count DESC`
     )
-    .all(...params) as any[];
+    .all(...params) as { type: string; count: number; total_duration: number }[];
 
   // By difficulty
   const byDifficulty = db
@@ -266,7 +271,7 @@ export function getWorkoutActivityStats(userId: string, startDate?: string, endD
           WHEN 'very hard' THEN 4
         END`
     )
-    .all(...params) as any[];
+    .all(...params) as { difficulty: string; count: number }[];
 
   return {
     total_activities: overall.total_activities || 0,
