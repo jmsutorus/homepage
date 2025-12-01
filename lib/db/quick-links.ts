@@ -28,16 +28,16 @@ export interface QuickLinkCategoryWithLinks extends QuickLinkCategory {
 /**
  * Get all categories with their links for a user
  */
-export function getUserQuickLinks(userId: string): QuickLinkCategoryWithLinks[] {
-  const categories = query<QuickLinkCategory>(
+export async function getUserQuickLinks(userId: string): Promise<QuickLinkCategoryWithLinks[]> {
+  const categories = await query<QuickLinkCategory>(
     `SELECT * FROM quick_link_categories
      WHERE userId = ?
-     ORDER BY order_index ASC`,
+     ORDER by order_index ASC`,
     [userId]
   );
 
-  return categories.map((category) => {
-    const links = query<QuickLink>(
+  return Promise.all(categories.map(async (category) => {
+    const links = await query<QuickLink>(
       `SELECT * FROM quick_links
        WHERE category_id = ? AND userId = ?
        ORDER BY order_index ASC`,
@@ -48,20 +48,20 @@ export function getUserQuickLinks(userId: string): QuickLinkCategoryWithLinks[] 
       ...category,
       links,
     };
-  });
+  }));
 }
 
 /**
  * Create a new category
  */
-export function createCategory(
+export async function createCategory(
   userId: string,
   name: string,
   orderIndex?: number
 ): QuickLinkCategory {
   // If no order specified, add to end
   if (orderIndex === undefined) {
-    const maxOrder = queryOne<{ max_order: number }>(
+    const maxOrder = await queryOne<{ max_order: number }>(
       "SELECT COALESCE(MAX(order_index), -1) as max_order FROM quick_link_categories WHERE userId = ?",
       [userId]
     );
@@ -84,8 +84,8 @@ export function createCategory(
 /**
  * Get category by ID
  */
-export function getCategoryById(id: number, userId: string): QuickLinkCategory | undefined {
-  return queryOne<QuickLinkCategory>(
+export async function getCategoryById(id: number, userId: string): Promise<QuickLinkCategory | undefined> {
+  return await queryOne<QuickLinkCategory>(
     "SELECT * FROM quick_link_categories WHERE id = ? AND userId = ?",
     [id, userId]
   );
@@ -94,7 +94,7 @@ export function getCategoryById(id: number, userId: string): QuickLinkCategory |
 /**
  * Update category
  */
-export function updateCategory(
+export async function updateCategory(
   id: number,
   userId: string,
   updates: Partial<Pick<QuickLinkCategory, "name" | "order_index">>
@@ -126,7 +126,7 @@ export function updateCategory(
 /**
  * Delete category and all its links
  */
-export function deleteCategory(id: number, userId: string): boolean {
+export async function deleteCategory(id: number, userId: string): Promise<boolean> {
   const result = execute(
     "DELETE FROM quick_link_categories WHERE id = ? AND userId = ?",
     [id, userId]
@@ -137,7 +137,7 @@ export function deleteCategory(id: number, userId: string): boolean {
 /**
  * Reorder categories
  */
-export function reorderCategories(userId: string, categoryIds: number[]): void {
+export async function reorderCategories(userId: string, categoryIds: number[]): Promise<void> {
   const db = getDatabase();
   const transaction = db.transaction(() => {
     categoryIds.forEach((categoryId, index) => {
@@ -154,7 +154,7 @@ export function reorderCategories(userId: string, categoryIds: number[]): void {
 /**
  * Create a new link
  */
-export function createLink(
+export async function createLink(
   userId: string,
   categoryId: number,
   title: string,
@@ -164,7 +164,7 @@ export function createLink(
 ): QuickLink {
   // If no order specified, add to end of category
   if (orderIndex === undefined) {
-    const maxOrder = queryOne<{ max_order: number }>(
+    const maxOrder = await queryOne<{ max_order: number }>(
       "SELECT COALESCE(MAX(order_index), -1) as max_order FROM quick_links WHERE category_id = ? AND userId = ?",
       [categoryId, userId]
     );
@@ -187,8 +187,8 @@ export function createLink(
 /**
  * Get link by ID
  */
-export function getLinkById(id: number, userId: string): QuickLink | undefined {
-  return queryOne<QuickLink>(
+export async function getLinkById(id: number, userId: string): Promise<QuickLink | undefined> {
+  return await queryOne<QuickLink>(
     "SELECT * FROM quick_links WHERE id = ? AND userId = ?",
     [id, userId]
   );
@@ -197,11 +197,11 @@ export function getLinkById(id: number, userId: string): QuickLink | undefined {
 /**
  * Update link
  */
-export function updateLink(
+export async function updateLink(
   id: number,
   userId: string,
   updates: Partial<Pick<QuickLink, "title" | "url" | "icon" | "order_index" | "category_id">>
-): boolean {
+): Promise<boolean> {
   const fields: string[] = [];
   const params: unknown[] = [];
 
@@ -244,7 +244,7 @@ export function updateLink(
 /**
  * Delete link
  */
-export function deleteLink(id: number, userId: string): boolean {
+export async function deleteLink(id: number, userId: string): Promise<boolean> {
   const result = execute(
     "DELETE FROM quick_links WHERE id = ? AND userId = ?",
     [id, userId]
@@ -255,7 +255,7 @@ export function deleteLink(id: number, userId: string): boolean {
 /**
  * Reorder links within a category
  */
-export function reorderLinks(userId: string, categoryId: number, linkIds: number[]): void {
+export async function reorderLinks(userId: string, categoryId: number, linkIds: number[]): Promise<void> {
   const db = getDatabase();
   const transaction = db.transaction(() => {
     linkIds.forEach((linkId, index) => {
@@ -272,7 +272,7 @@ export function reorderLinks(userId: string, categoryId: number, linkIds: number
 /**
  * Initialize default quick links for a new user
  */
-export function initializeDefaultQuickLinks(userId: string): void {
+export async function initializeDefaultQuickLinks(userId: string): Promise<void> {
   const db = getDatabase();
   const transaction = db.transaction(() => {
     // Create Development category

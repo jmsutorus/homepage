@@ -37,21 +37,21 @@ export async function getTagsWithFrequency(): Promise<TagFrequency[]> {
 
   try {
     // 1. Journals
-    const journals = query<{ tags: string | null }>(
+    const journals = await query<{ tags: string | null }>(
       "SELECT tags FROM journals WHERE userId = ?",
       [userId]
     );
     processTags(journals);
 
     // 2. Media
-    const media = query<{ tags: string | null }>(
+    const media = await query<{ tags: string | null }>(
       "SELECT tags FROM media_content WHERE userId = ?",
       [userId]
     );
     processTags(media);
 
     // 3. Parks
-    const parks = query<{ tags: string | null }>(
+    const parks = await query<{ tags: string | null }>(
       "SELECT tags FROM parks WHERE userId = ?",
       [userId]
     );

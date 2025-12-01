@@ -10,7 +10,7 @@ import {
  */
 export async function GET() {
   try {
-    const categories = getAllTaskCategories();
+    const categories = await getAllTaskCategories();
     return NextResponse.json(categories);
   } catch (error) {
     console.error("Error fetching task categories:", error);
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const category = createTaskCategory(name.trim());
+    const category = await createTaskCategory(name.trim());
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
     console.error("Error creating task category:", error);

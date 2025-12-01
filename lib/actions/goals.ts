@@ -52,7 +52,7 @@ export async function getGoalsAction(options?: {
 }) {
   const session = await auth();
   if (!session?.user?.id) return [];
-  return getGoals(session.user.id, options);
+  return await getGoals(session.user.id, options);
 }
 
 export async function getGoalsWithProgressAction(options?: {
@@ -62,25 +62,25 @@ export async function getGoalsWithProgressAction(options?: {
 }) {
   const session = await auth();
   if (!session?.user?.id) return [];
-  return getGoalsWithProgress(session.user.id, options);
+  return await getGoalsWithProgress(session.user.id, options);
 }
 
 export async function getGoalByIdAction(id: number) {
   const session = await auth();
   if (!session?.user?.id) return null;
-  return getGoalById(id, session.user.id);
+  return await getGoalById(id, session.user.id);
 }
 
 export async function getGoalBySlugAction(slug: string) {
   const session = await auth();
   if (!session?.user?.id) return null;
-  return getGoalBySlug(slug, session.user.id);
+  return await getGoalBySlug(slug, session.user.id);
 }
 
 export async function getGoalWithDetailsAction(slug: string): Promise<GoalWithDetails | null> {
   const session = await auth();
   if (!session?.user?.id) return null;
-  return getGoalWithDetails(slug, session.user.id);
+  return await getGoalWithDetails(slug, session.user.id);
 }
 
 export async function createGoalAction(data: {
@@ -95,7 +95,7 @@ export async function createGoalAction(data: {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const goal = createGoal(session.user.id, data);
+  const goal = await createGoal(session.user.id, data);
   revalidatePath("/goals");
   return goal;
 }
@@ -113,7 +113,7 @@ export async function updateGoalAction(id: number, data: {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const goal = updateGoal(id, session.user.id, data);
+  const goal = await updateGoal(id, session.user.id, data);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return goal;
@@ -123,7 +123,7 @@ export async function deleteGoalAction(id: number): Promise<boolean> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const success = deleteGoal(id, session.user.id);
+  const success = await deleteGoal(id, session.user.id);
   revalidatePath("/goals");
   return success;
 }
@@ -131,7 +131,7 @@ export async function deleteGoalAction(id: number): Promise<boolean> {
 export async function getAllGoalTagsAction(): Promise<string[]> {
   const session = await auth();
   if (!session?.user?.id) return [];
-  return getAllGoalTags(session.user.id);
+  return await getAllGoalTags(session.user.id);
 }
 
 // ============================================================================
@@ -143,10 +143,10 @@ export async function getMilestonesAction(goalId: number): Promise<GoalMilestone
   if (!session?.user?.id) return [];
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) return [];
 
-  return getMilestonesByGoalId(goalId);
+  return await getMilestonesByGoalId(goalId);
 }
 
 export async function createMilestoneAction(goalId: number, data: {
@@ -158,10 +158,10 @@ export async function createMilestoneAction(goalId: number, data: {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const milestone = createMilestone(goalId, data);
+  const milestone = await createMilestone(goalId, data);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return milestone;
@@ -177,10 +177,10 @@ export async function updateMilestoneAction(id: number, goalId: number, data: {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const milestone = updateMilestone(id, data);
+  const milestone = await updateMilestone(id, data);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return milestone;
@@ -191,13 +191,13 @@ export async function toggleMilestoneAction(id: number, goalId: number): Promise
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const current = getMilestoneById(id);
+  const current = await getMilestoneById(id);
   if (!current) throw new Error("Milestone not found");
 
-  const milestone = updateMilestone(id, { completed: !current.completed });
+  const milestone = await updateMilestone(id, { completed: !current.completed });
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return milestone;
@@ -208,10 +208,10 @@ export async function deleteMilestoneAction(id: number, goalId: number): Promise
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const success = deleteMilestone(id);
+  const success = await deleteMilestone(id);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return success;
@@ -222,10 +222,10 @@ export async function reorderMilestonesAction(goalId: number, milestoneIds: numb
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const success = reorderMilestones(goalId, milestoneIds);
+  const success = await reorderMilestones(goalId, milestoneIds);
   revalidatePath(`/goals/${goal.slug}`);
   return success;
 }
@@ -239,10 +239,10 @@ export async function getGoalChecklistAction(goalId: number): Promise<GoalCheckl
   if (!session?.user?.id) return [];
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) return [];
 
-  return getChecklistByGoalId(goalId);
+  return await getChecklistByGoalId(goalId);
 }
 
 export async function getMilestoneChecklistAction(milestoneId: number, goalId: number): Promise<GoalChecklistItem[]> {
@@ -250,10 +250,10 @@ export async function getMilestoneChecklistAction(milestoneId: number, goalId: n
   if (!session?.user?.id) return [];
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) return [];
 
-  return getChecklistByMilestoneId(milestoneId);
+  return await getChecklistByMilestoneId(milestoneId);
 }
 
 export async function createGoalChecklistItemAction(goalId: number, data: {
@@ -263,10 +263,10 @@ export async function createGoalChecklistItemAction(goalId: number, data: {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const item = createGoalChecklistItem(goalId, data);
+  const item = await createGoalChecklistItem(goalId, data);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return item;
@@ -279,10 +279,10 @@ export async function createMilestoneChecklistItemAction(milestoneId: number, go
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const item = createMilestoneChecklistItem(milestoneId, data);
+  const item = await createMilestoneChecklistItem(milestoneId, data);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return item;
@@ -296,10 +296,10 @@ export async function updateChecklistItemAction(id: number, goalId: number, data
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const item = updateChecklistItem(id, data);
+  const item = await updateChecklistItem(id, data);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return item;
@@ -310,10 +310,10 @@ export async function toggleChecklistItemAction(id: number, goalId: number): Pro
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const item = toggleChecklistItem(id);
+  const item = await toggleChecklistItem(id);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return item;
@@ -324,10 +324,10 @@ export async function deleteChecklistItemAction(id: number, goalId: number): Pro
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const success = deleteChecklistItem(id);
+  const success = await deleteChecklistItem(id);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return success;
@@ -338,10 +338,10 @@ export async function reorderGoalChecklistAction(goalId: number, itemIds: number
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const success = reorderGoalChecklist(goalId, itemIds);
+  const success = await reorderGoalChecklist(goalId, itemIds);
   revalidatePath(`/goals/${goal.slug}`);
   return success;
 }
@@ -351,10 +351,10 @@ export async function reorderMilestoneChecklistAction(milestoneId: number, goalI
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const success = reorderMilestoneChecklist(milestoneId, itemIds);
+  const success = await reorderMilestoneChecklist(milestoneId, itemIds);
   revalidatePath(`/goals/${goal.slug}`);
   return success;
 }
@@ -368,10 +368,10 @@ export async function getGoalLinksAction(goalId: number): Promise<GoalLink[]> {
   if (!session?.user?.id) return [];
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) return [];
 
-  return getGoalLinks(goalId);
+  return await getGoalLinks(goalId);
 }
 
 export async function addGoalLinkAction(
@@ -385,10 +385,10 @@ export async function addGoalLinkAction(
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const link = addGoalLink(session.user.id, goalId, linkedType, linkedId, linkedSlug, note);
+  const link = await addGoalLink(session.user.id, goalId, linkedType, linkedId, linkedSlug, note);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return link;
@@ -399,10 +399,10 @@ export async function removeGoalLinkAction(linkId: number, goalId: number): Prom
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const success = removeGoalLink(linkId);
+  const success = await removeGoalLink(linkId);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return success;
@@ -421,10 +421,10 @@ export async function replaceGoalLinksAction(
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Verify user owns the goal
-  const goal = getGoalById(goalId, session.user.id);
+  const goal = await getGoalById(goalId, session.user.id);
   if (!goal) throw new Error("Goal not found");
 
-  const newLinks = replaceGoalLinks(session.user.id, goalId, links);
+  const newLinks = await replaceGoalLinks(session.user.id, goalId, links);
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return newLinks;

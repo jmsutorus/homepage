@@ -11,6 +11,7 @@ import { ExportButton } from "@/components/widgets/shared/export-button";
 import { getRelatedMedia } from "@/lib/actions/related-content";
 import { RelatedMedia } from "@/components/widgets/shared/related-content";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { getUserId } from "@/lib/auth/server";
 
 interface MediaDetailPageProps {
   params: Promise<{
@@ -23,7 +24,8 @@ export const dynamic = "force-dynamic";
 
 export default async function MediaDetailPage({ params }: MediaDetailPageProps) {
   const { type, slug } = await params;
-  const media = getMediaBySlug(`media/${type}`, slug);
+  const userId = await getUserId();
+  const media = await getMediaBySlug(`media/${type}`, slug, userId);
 
   if (!media) {
     notFound();

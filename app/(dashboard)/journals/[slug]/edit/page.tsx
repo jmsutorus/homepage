@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getJournalBySlug, getLinksForJournal, getMoodForDate } from "@/lib/db/journals";
 import { JournalEditor } from "@/components/widgets/journal/journal-editor";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { getUserId } from "@/lib/auth/server";
 
 interface EditJournalPageProps {
   params: Promise<{
@@ -11,19 +12,20 @@ interface EditJournalPageProps {
 
 export default async function EditJournalPage({ params }: EditJournalPageProps) {
   const { slug } = await params;
-  const journal = getJournalBySlug(slug);
+  const userId = await getUserId();
+  const journal = await getJournalBySlug(slug, userId);
 
   if (!journal) {
     notFound();
   }
 
   // Get linked items
-  const links = getLinksForJournal(journal.id);
+  const links = await getLinksForJournal(journal.id);
 
   // For daily journals, get mood from mood_entries
   let mood = journal.mood;
   if (journal.journal_type === "daily" && journal.daily_date) {
-    const moodRating = getMoodForDate(journal.daily_date);
+    const moodRating = await getMoodForDate(journal.daily_date);
     if (moodRating !== null) {
       mood = moodRating;
     }

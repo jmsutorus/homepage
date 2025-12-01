@@ -14,7 +14,7 @@ export interface MoodEntry {
 /**
  * Create a new mood entry
  */
-export function createMoodEntry(
+export async function createMoodEntry(
   date: string,
   rating: number,
   note: string | undefined,
@@ -44,8 +44,8 @@ export function createMoodEntry(
 /**
  * Get mood entry for a specific date
  */
-export function getMoodEntry(date: string, userId: string): MoodEntry | undefined {
-  return queryOne<MoodEntry>(
+export async function getMoodEntry(date: string, userId: string): Promise<MoodEntry | undefined> {
+  return await queryOne<MoodEntry>(
     "SELECT * FROM mood_entries WHERE date = ? AND userId = ?",
     [date, userId]
   );
@@ -54,12 +54,12 @@ export function getMoodEntry(date: string, userId: string): MoodEntry | undefine
 /**
  * Get mood entries in a date range
  */
-export function getMoodEntriesInRange(
+export async function getMoodEntriesInRange(
   startDate: string,
   endDate: string,
   userId: string
 ): MoodEntry[] {
-  return query<MoodEntry>(
+  return await query<MoodEntry>(
     "SELECT * FROM mood_entries WHERE userId = ? AND date BETWEEN ? AND ? ORDER BY date ASC",
     [userId, startDate, endDate]
   );
@@ -68,8 +68,8 @@ export function getMoodEntriesInRange(
 /**
  * Get all mood entries
  */
-export function getAllMoodEntries(userId: string): MoodEntry[] {
-  return query<MoodEntry>(
+export async function getAllMoodEntries(userId: string): Promise<MoodEntry[]> {
+  return await query<MoodEntry>(
     "SELECT * FROM mood_entries WHERE userId = ? ORDER BY date DESC",
     [userId]
   );
@@ -78,7 +78,7 @@ export function getAllMoodEntries(userId: string): MoodEntry[] {
 /**
  * Get mood entries for current year
  */
-export function getMoodEntriesForYear(year: number, userId: string): MoodEntry[] {
+export async function getMoodEntriesForYear(year: number, userId: string): Promise<MoodEntry[]> {
   const startDate = `${year}-01-01`;
   const endDate = `${year}-12-31`;
   return getMoodEntriesInRange(startDate, endDate, userId);
@@ -87,7 +87,7 @@ export function getMoodEntriesForYear(year: number, userId: string): MoodEntry[]
 /**
  * Update mood entry
  */
-export function updateMoodEntry(
+export async function updateMoodEntry(
   date: string,
   rating: number,
   note: string | undefined,
@@ -104,7 +104,7 @@ export function updateMoodEntry(
 /**
  * Delete mood entry
  */
-export function deleteMoodEntry(date: string, userId: string): boolean {
+export async function deleteMoodEntry(date: string, userId: string): Promise<boolean> {
   const result = execute("DELETE FROM mood_entries WHERE date = ? AND userId = ?", [date, userId]);
   return result.changes > 0;
 }
@@ -112,7 +112,7 @@ export function deleteMoodEntry(date: string, userId: string): boolean {
 /**
  * Get mood statistics
  */
-export function getMoodStatistics(userId: string): {
+export async function getMoodStatistics(userId: string): {
   total: number;
   average: number;
   byRating: Record<number, number>;

@@ -17,8 +17,8 @@ interface AccountTokens {
 /**
  * Get the current Strava tokens for a user from the database
  */
-export function getStravaTokens(userId: string): AccountTokens | null {
-  const account = queryOne<AccountTokens>(
+export async function getStravaTokens(userId: string): Promise<AccountTokens | null> {
+  const account = await queryOne<AccountTokens>(
     "SELECT accessToken, refreshToken, accessTokenExpiresAt FROM account WHERE userId = ? AND providerId = 'strava'",
     [userId]
   );
@@ -33,10 +33,10 @@ export function getStravaTokens(userId: string): AccountTokens | null {
 /**
  * Update Strava tokens in the database
  */
-export function updateStravaTokens(userId: string, tokens: TokenResponse): void {
-  execute(
-    `UPDATE account 
-     SET accessToken = ?, refreshToken = ?, accessTokenExpiresAt = ?, updatedAt = ? 
+export async function updateStravaTokens(userId: string, tokens: TokenResponse): Promise<void> {
+  await execute(
+    `UPDATE account
+     SET accessToken = ?, refreshToken = ?, accessTokenExpiresAt = ?, updatedAt = ?
      WHERE userId = ? AND providerId = 'strava'`,
     [
       tokens.access_token,
@@ -84,7 +84,7 @@ export async function refreshStravaToken(refreshToken: string): Promise<TokenRes
  * Get a valid Strava access token, refreshing it if necessary
  */
 export async function getValidStravaToken(userId: string): Promise<string> {
-  const tokens = getStravaTokens(userId);
+  const tokens = await getStravaTokens(userId);
 
   if (!tokens) {
     throw new Error("Strava account not connected");
@@ -101,7 +101,7 @@ export async function getValidStravaToken(userId: string): Promise<string> {
   try {
     console.log("Refreshing Strava token for user", userId);
     const newTokens = await refreshStravaToken(tokens.refreshToken);
-    updateStravaTokens(userId, newTokens);
+    await updateStravaTokens(userId, newTokens);
     return newTokens.access_token;
   } catch (error) {
     console.error("Error refreshing Strava token:", error);

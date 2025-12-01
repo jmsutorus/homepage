@@ -15,13 +15,13 @@ import { getUserId } from "@/lib/auth/server";
  */
 export async function GET() {
   try {
-    const userId = await getUserId();
-    const quickLinks = getUserQuickLinks(userId);
+    const userId = await await getUserId();
+    const quickLinks = await getUserQuickLinks(userId);
 
     // If no quick links exist, initialize defaults
     if (quickLinks.length === 0) {
       initializeDefaultQuickLinks(userId);
-      return NextResponse.json(getUserQuickLinks(userId));
+      return NextResponse.json(await getUserQuickLinks(userId));
     }
 
     return NextResponse.json(quickLinks);
@@ -41,7 +41,7 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const userId = await await getUserId();
     const body = await request.json();
     const { categoryId, title, url, icon } = body;
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const link = createLink(userId, categoryId, title, url, icon);
+    const link = await createLink(userId, categoryId, title, url, icon);
     return NextResponse.json(link, { status: 201 });
   } catch (error) {
     console.error("Error creating link:", error);
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const userId = await await getUserId();
     const body = await request.json();
     const { id, ...updates } = body;
 
@@ -82,7 +82,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const success = updateLink(id, userId, {
+    const success = await updateLink(id, userId, {
       title: updates.title,
       url: updates.url,
       icon: updates.icon,
@@ -113,7 +113,7 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const userId = await await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get("id");
 
@@ -124,7 +124,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const success = deleteLink(parseInt(id, 10), userId);
+    const success = await deleteLink(parseInt(id, 10), userId);
 
     if (!success) {
       return NextResponse.json(

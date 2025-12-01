@@ -90,7 +90,7 @@ async function migrateMediaFiles() {
   for (const { filePath, slug, type } of mediaFiles) {
     try {
       // Check if already exists in database
-      const existing = getMediaBySlug(slug);
+      const existing = await getMediaBySlug(slug, 'ae5a18d1-ec1c-4e48-baaf-52edec61989e');
       if (existing) {
         console.log(`⏭️  Skipping ${slug} (already exists in database)`);
         skipCount++;
@@ -118,7 +118,7 @@ async function migrateMediaFiles() {
       }
 
       // Create database entry
-      createMedia({
+      await createMedia({
         slug,
         title: frontmatter.title,
         type: frontmatter.type || type,

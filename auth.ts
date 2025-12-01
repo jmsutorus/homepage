@@ -3,36 +3,6 @@ import Credentials from "next-auth/providers/credentials";
 import authConfig from "./auth.config";
 import { SQLiteAdapter } from "./lib/auth/adapter";
 import { adminAuth } from "./lib/firebase/admin";
-import path from "path";
-
-/**
- * Get the database path, handling both file: URLs and plain paths
- */
-function getDatabasePath(): string {
-  const dbUrl = process.env.DATABASE_URL;
-
-  if (!dbUrl) {
-    // Default to absolute path
-    return path.join(process.cwd(), "data", "homepage.db");
-  }
-
-  // Remove 'file:' prefix if present
-  if (dbUrl.startsWith("file:")) {
-    const dbPath = dbUrl.replace("file:", "");
-    // If it's a relative path, make it absolute
-    if (dbPath.startsWith("./")) {
-      return path.join(process.cwd(), dbPath.slice(2));
-    }
-    return dbPath;
-  }
-
-  // If it's a relative path, make it absolute
-  if (dbUrl.startsWith("./")) {
-    return path.join(process.cwd(), dbUrl.slice(2));
-  }
-
-  return dbUrl;
-}
 
 /**
  * Full Auth.js configuration with database adapter
@@ -43,7 +13,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
 
   // Add the database adapter (only works in Node.js runtime)
-  adapter: SQLiteAdapter(getDatabasePath()),
+  adapter: SQLiteAdapter(),
 
   // Add providers that require Node.js runtime
   providers: [

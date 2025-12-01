@@ -7,7 +7,8 @@ export const env = createEnv({
    */
   server: {
     // Database
-    DATABASE_URL: z.string().default("file:./data/homepage.db"),
+    DATABASE_URL: z.string().optional(),
+    DATABASE_AUTH_TOKEN: z.string().optional(),
 
     // Node Environment
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -106,6 +107,7 @@ export const env = createEnv({
   runtimeEnv: {
     // Database
     DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_AUTH_TOKEN: process.env.DATABASE_AUTH_TOKEN,
 
     // Node
     NODE_ENV: process.env.NODE_ENV,

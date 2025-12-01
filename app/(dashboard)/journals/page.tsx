@@ -5,9 +5,11 @@ import { JournalCard } from "@/components/widgets/journal/journal-card";
 export const dynamic = "force-dynamic";
 import { getPublishedJournals } from "@/lib/db/journals";
 import { Plus } from "lucide-react";
+import { getUserId } from "@/lib/auth/server";
 
-export default function JournalsPage() {
-  const journals = getPublishedJournals();
+export default async function JournalsPage() {
+  const userId = await getUserId();
+  const journals = await getPublishedJournals(userId);
 
   // Calculate stats
   const journalsWithMood = journals.filter(j => j.mood !== null);

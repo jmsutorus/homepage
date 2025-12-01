@@ -1,9 +1,5 @@
-import Database from "better-sqlite3";
-import path from "path";
+import { getDatabase } from "./index";
 import { checkAchievement } from "../achievements";
-
-const dbPath = path.join(process.cwd(), "data", "homepage.db");
-const db = new Database(dbPath);
 
 export interface DBJournal {
   id: number;
@@ -58,7 +54,7 @@ export interface JournalLink {
 /**
  * Convert database row to JournalContent object
  */
-function dbToJournalContent(row: DBJournal): JournalContent {
+async function dbToJournalContent(row: DBJournal): Promise<JournalContent> {
   return {
     id: row.id,
     userId: row.userId,
@@ -79,7 +75,7 @@ function dbToJournalContent(row: DBJournal): JournalContent {
 /**
  * Format date to human-readable title (e.g., "March 11, 1996")
  */
-function formatDateToTitle(dateString: string): string {
+async function formatDateToTitle(dateString: string): Promise<string> {
   const date = new Date(dateString + 'T00:00:00'); // Add time to avoid timezone issues
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -91,11 +87,15 @@ function formatDateToTitle(dateString: string): string {
 /**
  * Get mood entry for a specific date
  */
-export function getMoodForDate(date: string): number | null {
+export async function getMoodForDate(date: string): Promise<number | null> {
   try {
-    const stmt = db.prepare("SELECT rating FROM mood_entries WHERE date = ?");
-    const result = stmt.get(date) as { rating: number } | undefined;
-    return result ? result.rating : null;
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT rating FROM mood_entries WHERE date = ?",
+      args: [date]
+    });
+    const row = result.rows[0] as { rating: number } | undefined;
+    return row ? row.rating : null;
   } catch (error) {
     console.error("Error getting mood for date:", error);
     return null;
@@ -105,7 +105,7 @@ export function getMoodForDate(date: string): number | null {
 /**
  * Convert database row to JournalLink object
  */
-function dbToJournalLink(row: DBJournalLink): JournalLink {
+async function dbToJournalLink(row: DBJournalLink): Promise<JournalLink> {
   return {
     id: row.id,
     journal_id: row.journal_id,
@@ -119,15 +119,19 @@ function dbToJournalLink(row: DBJournalLink): JournalLink {
 /**
  * Get all journals for a specific user
  */
-export function getAllJournals(userId: string): JournalContent[] {
+export async function getAllJournals(userId: string): Promise<JournalContent[]> {
   try {
-    const stmt = db.prepare(`
-      SELECT * FROM journals
-      WHERE userId = ?
-      ORDER BY created_at DESC
-    `);
-    const rows = stmt.all(userId) as DBJournal[];
-    return rows.map(dbToJournalContent);
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT * FROM journals
+            WHERE userId = ?
+            ORDER BY created_at DESC`,
+      args: [userId]
+    });
+    console.log("getAllJournals", userId);
+    console.log(result);
+    const rows = result.rows as DBJournal[];
+    return Promise.all(rows.map(dbToJournalContent));
   } catch (error) {
     console.error("Error getting all journals:", error);
     return [];
@@ -137,11 +141,15 @@ export function getAllJournals(userId: string): JournalContent[] {
 /**
  * Get total count of journals for a specific user
  */
-export function getJournalCount(userId: string): number {
+export async function getJournalCount(userId: string): Promise<number> {
   try {
-    const stmt = db.prepare("SELECT COUNT(*) as count FROM journals WHERE userId = ?");
-    const result = stmt.get(userId) as { count: number };
-    return result.count;
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT COUNT(*) as count FROM journals WHERE userId = ?",
+      args: [userId]
+    });
+    const row = result.rows[0] as { count: number };
+    return row.count;
   } catch (error) {
     console.error("Error getting journal count:", error);
     return 0;
@@ -151,15 +159,17 @@ export function getJournalCount(userId: string): number {
 /**
  * Get published journals for a specific user
  */
-export function getPublishedJournals(userId: string): JournalContent[] {
+export async function getPublishedJournals(userId: string): Promise<JournalContent[]> {
   try {
-    const stmt = db.prepare(`
-      SELECT * FROM journals
-      WHERE userId = ? AND published = 1
-      ORDER BY created_at DESC
-    `);
-    const rows = stmt.all(userId) as DBJournal[];
-    return rows.map(dbToJournalContent);
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT * FROM journals
+            WHERE userId = ? AND published = 1
+            ORDER BY created_at DESC`,
+      args: [userId]
+    });
+    const rows = result.rows as DBJournal[];
+    return Promise.all(rows.map(dbToJournalContent));
   } catch (error) {
     console.error("Error getting published journals:", error);
     return [];
@@ -169,11 +179,15 @@ export function getPublishedJournals(userId: string): JournalContent[] {
 /**
  * Get journal by slug for a specific user
  */
-export function getJournalBySlug(slug: string, userId: string): JournalContent | null {
+export async function getJournalBySlug(slug: string, userId: string): Promise<JournalContent | null> {
   try {
-    const stmt = db.prepare("SELECT * FROM journals WHERE slug = ? AND userId = ?");
-    const row = stmt.get(slug, userId) as DBJournal | undefined;
-    return row ? dbToJournalContent(row) : null;
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT * FROM journals WHERE slug = ? AND userId = ?",
+      args: [slug, userId]
+    });
+    const row = result.rows[0] as DBJournal | undefined;
+    return row ? await dbToJournalContent(row) : null;
   } catch (error) {
     console.error("Error getting journal by slug:", error);
     return null;
@@ -183,11 +197,15 @@ export function getJournalBySlug(slug: string, userId: string): JournalContent |
 /**
  * Get journal by ID for a specific user
  */
-export function getJournalById(id: number, userId: string): JournalContent | null {
+export async function getJournalById(id: number, userId: string): Promise<JournalContent | null> {
   try {
-    const stmt = db.prepare("SELECT * FROM journals WHERE id = ? AND userId = ?");
-    const row = stmt.get(id, userId) as DBJournal | undefined;
-    return row ? dbToJournalContent(row) : null;
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT * FROM journals WHERE id = ? AND userId = ?",
+      args: [id, userId]
+    });
+    const row = result.rows[0] as DBJournal | undefined;
+    return row ? await dbToJournalContent(row) : null;
   } catch (error) {
     console.error("Error getting journal by ID:", error);
     return null;
@@ -197,15 +215,17 @@ export function getJournalById(id: number, userId: string): JournalContent | nul
 /**
  * Get featured journals for a specific user
  */
-export function getFeaturedJournals(userId: string): JournalContent[] {
+export async function getFeaturedJournals(userId: string): Promise<JournalContent[]> {
   try {
-    const stmt = db.prepare(`
-      SELECT * FROM journals
-      WHERE userId = ? AND featured = 1 AND published = 1
-      ORDER BY created_at DESC
-    `);
-    const rows = stmt.all(userId) as DBJournal[];
-    return rows.map(dbToJournalContent);
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT * FROM journals
+            WHERE userId = ? AND featured = 1 AND published = 1
+            ORDER BY created_at DESC`,
+      args: [userId]
+    });
+    const rows = result.rows as DBJournal[];
+    return Promise.all(rows.map(dbToJournalContent));
   } catch (error) {
     console.error("Error getting featured journals:", error);
     return [];
@@ -215,7 +235,7 @@ export function getFeaturedJournals(userId: string): JournalContent[] {
 /**
  * Create a new journal
  */
-export function createJournal(data: {
+export async function createJournal(data: {
   slug?: string;
   title?: string;
   journal_type?: "daily" | "general";
@@ -226,8 +246,9 @@ export function createJournal(data: {
   published?: boolean;
   content: string;
   userId: string;
-}): JournalContent {
+}): Promise<JournalContent> {
   try {
+    const db = getDatabase();
     const journalType = data.journal_type || "general";
     let title = data.title || "";
     let slug = data.slug || "";
@@ -237,14 +258,15 @@ export function createJournal(data: {
       if (!data.daily_date) {
         throw new Error("daily_date is required for daily journals");
       }
-      title = formatDateToTitle(data.daily_date);
+      title = await formatDateToTitle(data.daily_date);
       slug = `daily-${data.daily_date}`;
 
       // Check if daily journal already exists for this date
-      const existing = db.prepare(
-        "SELECT id FROM journals WHERE journal_type = 'daily' AND daily_date = ?"
-      ).get(data.daily_date);
-      if (existing) {
+      const existingResult = await db.execute({
+        sql: "SELECT id FROM journals WHERE journal_type = 'daily' AND daily_date = ?",
+        args: [data.daily_date]
+      });
+      if (existingResult.rows[0]) {
         throw new Error(`A daily journal already exists for ${data.daily_date}`);
       }
     } else {
@@ -257,26 +279,25 @@ export function createJournal(data: {
       }
     }
 
-    const stmt = db.prepare(`
-      INSERT INTO journals (
-        slug, title, journal_type, daily_date, mood, tags, featured, published, content, userId
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    await db.execute({
+      sql: `INSERT INTO journals (
+              slug, title, journal_type, daily_date, mood, tags, featured, published, content, userId
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        slug,
+        title,
+        journalType,
+        data.daily_date || null,
+        data.mood !== undefined ? data.mood : null,
+        data.tags ? JSON.stringify(data.tags) : null,
+        data.featured ? 1 : 0,
+        data.published !== false ? 1 : 0,
+        data.content,
+        data.userId
+      ]
+    });
 
-    stmt.run(
-      slug,
-      title,
-      journalType,
-      data.daily_date || null,
-      data.mood !== undefined ? data.mood : null,
-      data.tags ? JSON.stringify(data.tags) : null,
-      data.featured ? 1 : 0,
-      data.published !== false ? 1 : 0,
-      data.content,
-      data.userId
-    );
-
-    const journal = getJournalBySlug(slug, data.userId);
+    const journal = await getJournalBySlug(slug, data.userId);
     if (!journal) {
       throw new Error("Failed to create journal");
     }
@@ -294,7 +315,7 @@ export function createJournal(data: {
 /**
  * Update a journal with ownership verification
  */
-export function updateJournal(
+export async function updateJournal(
   slug: string,
   userId: string,
   data: {
@@ -308,10 +329,12 @@ export function updateJournal(
     published?: boolean;
     content?: string;
   }
-): JournalContent {
+): Promise<JournalContent> {
   try {
+    const db = getDatabase();
+
     // Get existing journal to check type and verify ownership
-    const existing = getJournalBySlug(slug, userId);
+    const existing = await getJournalBySlug(slug, userId);
     if (!existing) {
       throw new Error("Journal not found");
     }
@@ -324,7 +347,7 @@ export function updateJournal(
       updates.push("daily_date = ?");
       values.push(data.daily_date);
       updates.push("title = ?");
-      values.push(formatDateToTitle(data.daily_date));
+      values.push(await formatDateToTitle(data.daily_date));
       updates.push("slug = ?");
       const newSlug = `daily-${data.daily_date}`;
       values.push(newSlug);
@@ -368,13 +391,13 @@ export function updateJournal(
     }
 
     values.push(slug, userId);
-    const stmt = db.prepare(`
-      UPDATE journals
-      SET ${updates.join(", ")}
-      WHERE slug = ? AND userId = ?
-    `);
 
-    stmt.run(...values);
+    await db.execute({
+      sql: `UPDATE journals
+            SET ${updates.join(", ")}
+            WHERE slug = ? AND userId = ?`,
+      args: values
+    });
 
     // Determine final slug
     let updatedSlug = slug;
@@ -384,7 +407,7 @@ export function updateJournal(
       updatedSlug = data.newSlug;
     }
 
-    const journal = getJournalBySlug(updatedSlug, userId);
+    const journal = await getJournalBySlug(updatedSlug, userId);
     if (!journal) {
       throw new Error("Failed to update journal");
     }
@@ -399,13 +422,15 @@ export function updateJournal(
 /**
  * Get daily journal by date for a specific user
  */
-export function getDailyJournalByDate(date: string, userId: string): JournalContent | null {
+export async function getDailyJournalByDate(date: string, userId: string): Promise<JournalContent | null> {
   try {
-    const stmt = db.prepare(
-      "SELECT * FROM journals WHERE journal_type = 'daily' AND daily_date = ? AND userId = ?"
-    );
-    const row = stmt.get(date, userId) as DBJournal | undefined;
-    return row ? dbToJournalContent(row) : null;
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT * FROM journals WHERE journal_type = 'daily' AND daily_date = ? AND userId = ?",
+      args: [date, userId]
+    });
+    const row = result.rows[0] as DBJournal | undefined;
+    return row ? await dbToJournalContent(row) : null;
   } catch (error) {
     console.error("Error getting daily journal by date:", error);
     return null;
@@ -415,17 +440,21 @@ export function getDailyJournalByDate(date: string, userId: string): JournalCont
 /**
  * Delete a journal with ownership verification (also deletes associated links via CASCADE)
  */
-export function deleteJournal(slug: string, userId: string): boolean {
+export async function deleteJournal(slug: string, userId: string): Promise<boolean> {
   try {
+    const db = getDatabase();
+
     // Verify ownership
-    const existing = getJournalBySlug(slug, userId);
+    const existing = await getJournalBySlug(slug, userId);
     if (!existing) {
       return false;
     }
 
-    const stmt = db.prepare("DELETE FROM journals WHERE slug = ? AND userId = ?");
-    const result = stmt.run(slug, userId);
-    return result.changes > 0;
+    const result = await db.execute({
+      sql: "DELETE FROM journals WHERE slug = ? AND userId = ?",
+      args: [slug, userId]
+    });
+    return (result.rowsAffected ?? 0) > 0;
   } catch (error) {
     console.error("Error deleting journal:", error);
     return false;
@@ -435,11 +464,15 @@ export function deleteJournal(slug: string, userId: string): boolean {
 /**
  * Check if a slug exists
  */
-export function journalSlugExists(slug: string): boolean {
+export async function journalSlugExists(slug: string): Promise<boolean> {
   try {
-    const stmt = db.prepare("SELECT COUNT(*) as count FROM journals WHERE slug = ?");
-    const result = stmt.get(slug) as { count: number };
-    return result.count > 0;
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT COUNT(*) as count FROM journals WHERE slug = ?",
+      args: [slug]
+    });
+    const row = result.rows[0] as { count: number };
+    return row.count > 0;
   } catch (error) {
     console.error("Error checking journal slug:", error);
     return false;
@@ -451,25 +484,28 @@ export function journalSlugExists(slug: string): boolean {
 /**
  * Add a link from a journal to another object
  */
-export function addJournalLink(
+export async function addJournalLink(
   journalId: number,
   linkedType: "media" | "park" | "journal" | "activity",
   linkedId: number,
   linkedSlug?: string
-): JournalLink {
+): Promise<JournalLink> {
   try {
-    const stmt = db.prepare(`
-      INSERT INTO journal_links (journal_id, linked_type, linked_id, linked_slug)
-      VALUES (?, ?, ?, ?)
-    `);
+    const db = getDatabase();
 
-    const result = stmt.run(journalId, linkedType, linkedId, linkedSlug || null);
+    const insertResult = await db.execute({
+      sql: `INSERT INTO journal_links (journal_id, linked_type, linked_id, linked_slug)
+            VALUES (?, ?, ?, ?)`,
+      args: [journalId, linkedType, linkedId, linkedSlug || null]
+    });
 
-    const link = db
-      .prepare("SELECT * FROM journal_links WHERE id = ?")
-      .get(result.lastInsertRowid) as DBJournalLink;
+    const linkResult = await db.execute({
+      sql: "SELECT * FROM journal_links WHERE id = ?",
+      args: [insertResult.lastInsertRowid]
+    });
 
-    return dbToJournalLink(link);
+    const link = linkResult.rows[0] as DBJournalLink;
+    return await dbToJournalLink(link);
   } catch (error) {
     console.error("Error adding journal link:", error);
     throw error;
@@ -479,11 +515,14 @@ export function addJournalLink(
 /**
  * Remove a specific link
  */
-export function removeJournalLink(linkId: number): boolean {
+export async function removeJournalLink(linkId: number): Promise<boolean> {
   try {
-    const stmt = db.prepare("DELETE FROM journal_links WHERE id = ?");
-    const result = stmt.run(linkId);
-    return result.changes > 0;
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "DELETE FROM journal_links WHERE id = ?",
+      args: [linkId]
+    });
+    return (result.rowsAffected ?? 0) > 0;
   } catch (error) {
     console.error("Error removing journal link:", error);
     return false;
@@ -493,18 +532,19 @@ export function removeJournalLink(linkId: number): boolean {
 /**
  * Remove a link by journal ID and linked object
  */
-export function removeJournalLinkByObject(
+export async function removeJournalLinkByObject(
   journalId: number,
   linkedType: "media" | "park" | "journal" | "activity",
   linkedId: number
-): boolean {
+): Promise<boolean> {
   try {
-    const stmt = db.prepare(`
-      DELETE FROM journal_links
-      WHERE journal_id = ? AND linked_type = ? AND linked_id = ?
-    `);
-    const result = stmt.run(journalId, linkedType, linkedId);
-    return result.changes > 0;
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `DELETE FROM journal_links
+            WHERE journal_id = ? AND linked_type = ? AND linked_id = ?`,
+      args: [journalId, linkedType, linkedId]
+    });
+    return (result.rowsAffected ?? 0) > 0;
   } catch (error) {
     console.error("Error removing journal link by object:", error);
     return false;
@@ -514,15 +554,17 @@ export function removeJournalLinkByObject(
 /**
  * Get all links for a specific journal
  */
-export function getLinksForJournal(journalId: number): JournalLink[] {
+export async function getLinksForJournal(journalId: number): Promise<JournalLink[]> {
   try {
-    const stmt = db.prepare(`
-      SELECT * FROM journal_links
-      WHERE journal_id = ?
-      ORDER BY created_at ASC
-    `);
-    const rows = stmt.all(journalId) as DBJournalLink[];
-    return rows.map(dbToJournalLink);
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT * FROM journal_links
+            WHERE journal_id = ?
+            ORDER BY created_at ASC`,
+      args: [journalId]
+    });
+    const rows = result.rows as DBJournalLink[];
+    return Promise.all(rows.map(dbToJournalLink));
   } catch (error) {
     console.error("Error getting links for journal:", error);
     return [];
@@ -532,19 +574,21 @@ export function getLinksForJournal(journalId: number): JournalLink[] {
 /**
  * Get all journals that link to a specific object
  */
-export function getJournalsLinkingTo(
+export async function getJournalsLinkingTo(
   linkedType: "media" | "park" | "journal" | "activity",
   linkedId: number
-): JournalContent[] {
+): Promise<JournalContent[]> {
   try {
-    const stmt = db.prepare(`
-      SELECT j.* FROM journals j
-      INNER JOIN journal_links jl ON j.id = jl.journal_id
-      WHERE jl.linked_type = ? AND jl.linked_id = ?
-      ORDER BY j.created_at DESC
-    `);
-    const rows = stmt.all(linkedType, linkedId) as DBJournal[];
-    return rows.map(dbToJournalContent);
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT j.* FROM journals j
+            INNER JOIN journal_links jl ON j.id = jl.journal_id
+            WHERE jl.linked_type = ? AND jl.linked_id = ?
+            ORDER BY j.created_at DESC`,
+      args: [linkedType, linkedId]
+    });
+    const rows = result.rows as DBJournal[];
+    return Promise.all(rows.map(dbToJournalContent));
   } catch (error) {
     console.error("Error getting journals linking to object:", error);
     return [];
@@ -554,22 +598,27 @@ export function getJournalsLinkingTo(
 /**
  * Replace all links for a journal (useful for bulk updates)
  */
-export function replaceJournalLinks(
+export async function replaceJournalLinks(
   journalId: number,
   links: Array<{
     linkedType: "media" | "park" | "journal" | "activity";
     linkedId: number;
     linkedSlug?: string;
   }>
-): JournalLink[] {
+): Promise<JournalLink[]> {
   try {
+    const db = getDatabase();
+
     // Delete all existing links for this journal
-    db.prepare("DELETE FROM journal_links WHERE journal_id = ?").run(journalId);
+    await db.execute({
+      sql: "DELETE FROM journal_links WHERE journal_id = ?",
+      args: [journalId]
+    });
 
     // Add new links
     const newLinks: JournalLink[] = [];
     for (const link of links) {
-      const newLink = addJournalLink(
+      const newLink = await addJournalLink(
         journalId,
         link.linkedType,
         link.linkedId,

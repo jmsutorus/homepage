@@ -30,7 +30,7 @@ export default async function DashboardPage({
   const userId = await getUserId();
 
   // Get recently completed media sorted by completion date (most recent first)
-  const recentMedia = getRecentlyCompletedMedia(4);
+  const recentMedia = await getRecentlyCompletedMedia(userId, 4);
 
   // Get calendar data for current month
   const params = await searchParams;
@@ -48,7 +48,7 @@ export default async function DashboardPage({
 
   if (session?.user?.id) {
     // Get GitHub token from account table
-    const account = queryOne<{ accessToken: string }>(
+    const account = await queryOne<{ accessToken: string }>(
       "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
       [session.user.id]
     );

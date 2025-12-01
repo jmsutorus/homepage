@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAllUniqueTags } from "@/lib/db/media";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * GET /api/media/tags
@@ -7,7 +8,8 @@ import { getAllUniqueTags } from "@/lib/db/media";
  */
 export async function GET() {
   try {
-    const tags = getAllUniqueTags();
+    const userId = await getUserId();
+    const tags = await getAllUniqueTags(userId);
     return NextResponse.json({ tags });
   } catch (error) {
     console.error("Error fetching tags:", error);

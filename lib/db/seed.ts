@@ -5,25 +5,29 @@ import { getDatabase } from "./index";
 /**
  * Seed the database with sample data
  */
-export function seedDatabase() {
+export async function seedDatabase() {
   console.log("🌱 Seeding database with sample data...");
 
   // Get the first user to associate data with
   const db = getDatabase();
-  const user = db.prepare("SELECT id FROM user LIMIT 1").get() as { id: string } | undefined;
-  
+  const result = await db.execute({
+    sql: "SELECT id FROM user LIMIT 1",
+    args: []
+  });
+  const user = result.rows[0] as { id: string } | undefined;
+
   if (!user) {
     console.log("⚠️ No user found. Skipping seed data that requires a user.");
     return;
   }
-  
+
   const userId = user.id;
 
   // Seed mood entries for the past 30 days
-  seedMoodEntries(userId);
+  await seedMoodEntries(userId);
 
   // Seed sample tasks
-  seedTasks(userId);
+  await seedTasks(userId);
 
   console.log("✅ Database seeding complete!");
 }
@@ -31,7 +35,7 @@ export function seedDatabase() {
 /**
  * Seed mood entries for the past 30 days
  */
-function seedMoodEntries(userId: string) {
+async function seedMoodEntries(userId: string) {
   console.log("  - Seeding mood entries...");
 
   const today = new Date();
@@ -68,13 +72,13 @@ function seedMoodEntries(userId: string) {
     { offset: 29, rating: 3, note: null },
   ];
 
-  moods.forEach(({ offset, rating, note }) => {
+  for (const { offset, rating, note } of moods) {
     const date = new Date(today);
     date.setDate(date.getDate() - offset);
     const dateString = date.toISOString().split("T")[0];
 
-    createMoodEntry(dateString, rating, note || undefined, userId);
-  });
+    await createMoodEntry(dateString, rating, note || undefined, userId);
+  }
 
   console.log(`    ✓ Created ${moods.length} mood entries`);
 }
@@ -82,7 +86,7 @@ function seedMoodEntries(userId: string) {
 /**
  * Seed sample tasks
  */
-function seedTasks(userId: string) {
+async function seedTasks(userId: string) {
   console.log("  - Seeding tasks...");
 
   const tasks = [
@@ -105,7 +109,7 @@ function seedTasks(userId: string) {
   const nextWeek = new Date(today);
   nextWeek.setDate(nextWeek.getDate() + 7);
 
-  tasks.forEach((task, index) => {
+  for (const [index, task] of tasks.entries()) {
     let dueDate: string | undefined;
 
     // Add due dates to first 3 incomplete tasks
@@ -119,8 +123,8 @@ function seedTasks(userId: string) {
       }
     }
 
-    createTask(task.title, dueDate, task.priority, undefined, userId);
-  });
+    await createTask(task.title, dueDate, task.priority, undefined, userId);
+  }
 
   console.log(`    ✓ Created ${tasks.length} tasks`);
 }
@@ -129,16 +133,18 @@ function seedTasks(userId: string) {
  * Run seed if this file is executed directly
  */
 if (require.main === module) {
-  try {
-    // Initialize database first
-    getDatabase();
+  (async () => {
+    try {
+      // Initialize database first
+      getDatabase();
 
-    // Seed data
-    seedDatabase();
+      // Seed data
+      await seedDatabase();
 
-    process.exit(0);
-  } catch (error) {
-    console.error("❌ Error seeding database:", error);
-    process.exit(1);
-  }
+      process.exit(0);
+    } catch (error) {
+      console.error("❌ Error seeding database:", error);
+      process.exit(1);
+    }
+  })();
 }

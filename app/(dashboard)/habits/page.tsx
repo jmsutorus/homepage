@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 
 export default async function HabitsPage() {
   const [habits, chartData] = await Promise.all([
-    getHabitsWithStatsAction(),
-    getHabitCompletionsForChartAction(),
+    await getHabitsWithStatsAction(),
+    await getHabitCompletionsForChartAction(),
   ]);
 
   return (

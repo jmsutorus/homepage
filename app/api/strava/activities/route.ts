@@ -5,7 +5,7 @@ import {
   isSyncNeeded,
 } from "@/lib/services/strava-sync";
 import { getActivityStats, getYTDStats } from "@/lib/db/strava";
-import { getDatabase } from "@/lib/db";
+import { query, queryOne } from "@/lib/db";
 import { auth } from "@/auth";
 import { cookies } from "next/headers";
 
@@ -29,10 +29,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user ID from session
-    const db = (auth as any).options.database;
-    const session = db
-      .prepare("SELECT userId FROM session WHERE token = ? AND expiresAt > ?")
-      .get(sessionToken, Date.now()) as { userId: string } | undefined;
+    const session = await queryOne<{ userId: string }>(
+      "SELECT userId FROM session WHERE token = ? AND expiresAt > ?",
+      [sessionToken, Date.now()]
+    );
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -48,13 +48,13 @@ export async function GET(request: NextRequest) {
 
     // If specific IDs are requested, fetch those activities directly
     if (idsParam) {
-      const db = getDatabase();
       const ids = idsParam.split(",").map((id) => parseInt(id.trim(), 10));
       const placeholders = ids.map(() => "?").join(",");
 
-      const activities = db
-        .prepare(`SELECT * FROM strava_activities WHERE id IN (${placeholders}) AND userId = ?`)
-        .all(...ids, userId);
+      const activities = await query(
+        `SELECT * FROM strava_activities WHERE id IN (${placeholders}) AND userId = ?`,
+        [...ids, userId]
+      );
 
       return NextResponse.json({ activities });
     }
@@ -66,10 +66,10 @@ export async function GET(request: NextRequest) {
       athleteId = parseInt(athleteIdParam, 10);
 
       // Verify the athlete belongs to this user
-      const db = getDatabase();
-      const athlete = db
-        .prepare("SELECT id FROM strava_athlete WHERE id = ? AND userId = ?")
-        .get(athleteId, userId) as { id: number } | undefined;
+      const athlete = await queryOne<{ id: number }>(
+        "SELECT id FROM strava_athlete WHERE id = ? AND userId = ?",
+        [athleteId, userId]
+      );
 
       if (!athlete) {
         return NextResponse.json(
@@ -79,10 +79,10 @@ export async function GET(request: NextRequest) {
       }
     } else {
       // Get the most recently synced athlete for this user from the database
-      const db = getDatabase();
-      const athlete = db
-        .prepare("SELECT id FROM strava_athlete WHERE userId = ? ORDER BY last_sync DESC LIMIT 1")
-        .get(userId) as { id: number } | undefined;
+      const athlete = await queryOne<{ id: number }>(
+        "SELECT id FROM strava_athlete WHERE userId = ? ORDER BY last_sync DESC LIMIT 1",
+        [userId]
+      );
 
       if (!athlete) {
         // No athlete data found - return empty response

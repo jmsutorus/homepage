@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getParkBySlug } from "@/lib/db/parks";
 import { ParkEditor } from "@/components/widgets/parks/park-editor";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { getUserId } from "@/lib/auth/server";
 
 interface EditParkPageProps {
   params: Promise<{
@@ -11,7 +12,8 @@ interface EditParkPageProps {
 
 export default async function EditParkPage({ params }: EditParkPageProps) {
   const { slug } = await params;
-  const park = getParkBySlug(slug);
+  const userId = await getUserId();
+  const park = await getParkBySlug(slug, userId);
 
   if (!park) {
     notFound();

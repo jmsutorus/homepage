@@ -8,6 +8,7 @@ import {
   markWorkoutActivityCompleted,
   type CreateWorkoutActivity,
 } from "@/lib/db/workout-activities";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * GET /api/activities
@@ -15,15 +16,16 @@ import {
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get("start_date");
     const endDate = searchParams.get("end_date");
 
     let activities;
     if (startDate && endDate) {
-      activities = getWorkoutActivitiesByDateRange(startDate, endDate);
+      activities = await getWorkoutActivitiesByDateRange(startDate, endDate, userId);
     } else {
-      activities = getAllWorkoutActivities();
+      activities = await getAllWorkoutActivities(userId);
     }
 
     return NextResponse.json({ activities });
@@ -42,6 +44,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const body = await request.json();
     const { date, time, length, difficulty, type, exercises, notes } = body;
 
@@ -71,7 +74,7 @@ export async function POST(request: NextRequest) {
       notes,
     };
 
-    const activityId = createWorkoutActivity(activity);
+    const activityId = await createWorkoutActivity(activity, userId);
 
     return NextResponse.json({ success: true, id: activityId });
   } catch (error) {
@@ -89,6 +92,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const body = await request.json();
     const { id, ...updates } = body;
 
@@ -98,7 +102,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update workout activity
-    updateWorkoutActivity(id, updates);
+    await updateWorkoutActivity(id, userId, updates);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -125,7 +129,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Mark workout activity as completed
-    markWorkoutActivityCompleted(id, strava_activity_id, completion_notes);
+    await markWorkoutActivityCompleted(id, strava_activity_id, completion_notes);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -143,6 +147,7 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
@@ -152,7 +157,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete workout activity
-    deleteWorkoutActivity(parseInt(id));
+    await deleteWorkoutActivity(parseInt(id), userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -33,19 +33,19 @@ export interface TaskCategory {
 /**
  * Create a new task
  */
-export function createTask(
+export async function createTask(
   title: string,
   dueDate?: string,
   priority: TaskPriority = "medium",
   category?: string,
   userId?: string
-): Task {
-  const result = execute(
+): Promise<Task> {
+  const result = await execute(
     "INSERT INTO tasks (title, due_date, priority, category, userId) VALUES (?, ?, ?, ?, ?)",
     [title, dueDate || null, priority, category || null, userId || null]
   );
 
-  const task = getTask(Number(result.lastInsertRowid));
+  const task = await queryOne<Task>("SELECT * FROM tasks WHERE id = ?", [result.lastInsertRowid]);
   if (!task) {
     throw new Error("Failed to create task");
   }
@@ -56,14 +56,14 @@ export function createTask(
 /**
  * Get task by ID for a specific user
  */
-export function getTask(id: number, userId: string): Task | undefined {
-  return queryOne<Task>("SELECT * FROM tasks WHERE id = ? AND userId = ?", [id, userId]);
+export async function getTask(id: number, userId: string): Promise<Task | undefined> {
+  return await queryOne<Task>("SELECT * FROM tasks WHERE id = ? AND userId = ?", [id, userId]);
 }
 
 /**
  * Get all tasks with optional filtering
  */
-export function getAllTasks(filter?: TaskFilter, userId?: string): Task[] {
+export async function getAllTasks(filter?: TaskFilter, userId?: string): Promise<Task[]> {
   let sql = "SELECT * FROM tasks WHERE 1=1";
   const params: unknown[] = [];
 
@@ -99,29 +99,29 @@ export function getAllTasks(filter?: TaskFilter, userId?: string): Task[] {
 
   sql += " ORDER BY completed ASC, due_date ASC NULLS LAST, priority DESC, created_at DESC";
 
-  return query<Task>(sql, params);
+  return await query<Task>(sql, params);
 }
 
 /**
  * Get active (incomplete) tasks
  */
-export function getActiveTasks(): Task[] {
+export async function getActiveTasks(): Promise<Task[]> {
   return getAllTasks({ completed: false });
 }
 
 /**
  * Get completed tasks
  */
-export function getCompletedTasks(): Task[] {
+export async function getCompletedTasks(): Promise<Task[]> {
   return getAllTasks({ completed: true });
 }
 
 /**
  * Get tasks due today or overdue for a specific user
  */
-export function getUpcomingTasks(userId: string): Task[] {
+export async function getUpcomingTasks(userId: string): Promise<Task[]> {
   const today = new Date().toISOString().split("T")[0];
-  return query<Task>(
+  return await query<Task>(
     `SELECT * FROM tasks
      WHERE userId = ?
      AND completed = 0
@@ -135,10 +135,10 @@ export function getUpcomingTasks(userId: string): Task[] {
 /**
  * Update task
  */
-export function updateTask(
+export async function updateTask(
   id: number,
   updates: Partial<Pick<Task, "title" | "completed" | "due_date" | "priority" | "category">>
-): boolean {
+): Promise<boolean> {
   const fields: string[] = [];
   const params: unknown[] = [];
 
@@ -184,13 +184,13 @@ export function updateTask(
 
   params.push(id);
   const sql = `UPDATE tasks SET ${fields.join(", ")} WHERE id = ?`;
-  const result = execute(sql, params);
+  const result = await execute(sql, params);
 
   if (result.changes > 0) {
     // Check for achievements if completed status changed to true
     if (updates.completed === true) {
       // Need userId. Fetch task to get it.
-      const task = getTask(id);
+      const task = await queryOne<Task>("SELECT * FROM tasks WHERE id = ?", [id]);
       if (task && task.userId) {
         checkAchievement(task.userId, 'tasks').catch(console.error);
       }
@@ -203,8 +203,8 @@ export function updateTask(
 /**
  * Toggle task completion status with ownership verification
  */
-export function toggleTaskComplete(id: number, userId: string): boolean {
-  const task = getTask(id, userId);
+export async function toggleTaskComplete(id: number, userId: string): Promise<boolean> {
+  const task = await getTask(id, userId);
   if (!task) {
     return false;
   }
@@ -215,36 +215,36 @@ export function toggleTaskComplete(id: number, userId: string): boolean {
 /**
  * Delete task with ownership verification
  */
-export function deleteTask(id: number, userId: string): boolean {
+export async function deleteTask(id: number, userId: string): Promise<boolean> {
   // Verify ownership
   const existing = getTask(id, userId);
   if (!existing) {
     return false;
   }
 
-  const result = execute("DELETE FROM tasks WHERE id = ? AND userId = ?", [id, userId]);
+  const result = await execute("DELETE FROM tasks WHERE id = ? AND userId = ?", [id, userId]);
   return result.changes > 0;
 }
 
 /**
  * Delete all completed tasks for a specific user
  */
-export function deleteCompletedTasks(userId: string): number {
-  const result = execute("DELETE FROM tasks WHERE completed = 1 AND userId = ?", [userId]);
+export async function deleteCompletedTasks(userId: string): Promise<number> {
+  const result = await execute("DELETE FROM tasks WHERE completed = 1 AND userId = ?", [userId]);
   return result.changes;
 }
 
 /**
  * Get task statistics for a specific user
  */
-export function getTaskStatistics(userId: string): {
+export async function getTaskStatistics(userId: string): Promise<{
   total: number;
   completed: number;
   active: number;
   overdue: number;
   byPriority: Record<TaskPriority, number>;
-} {
-  const tasks = getAllTasks({}, userId);
+}> {
+  const tasks = await getAllTasks({}, userId);
   const today = new Date().toISOString().split("T")[0];
 
   const stats = {
@@ -269,8 +269,8 @@ export function getTaskStatistics(userId: string): {
 /**
  * Get all task categories for the current user
  */
-export function getAllTaskCategories(): TaskCategory[] {
-  return query<TaskCategory>(
+export async function getAllTaskCategories(): Promise<TaskCategory[]> {
+  return await query<TaskCategory>(
     "SELECT * FROM task_categories ORDER BY name ASC"
   );
 }
@@ -278,16 +278,16 @@ export function getAllTaskCategories(): TaskCategory[] {
 /**
  * Create a new task category
  */
-export function createTaskCategory(name: string): TaskCategory {
-  const result = execute(
+export async function createTaskCategory(name: string): Promise<TaskCategory> {
+  const result = await execute(
     "INSERT INTO task_categories (name) VALUES (?)",
     [name]
   );
 
-  const category = query<TaskCategory>(
+  const category = (await query<TaskCategory>(
     "SELECT * FROM task_categories WHERE id = ?",
     [result.lastInsertRowid]
-  )[0];
+  ))[0];
 
   if (!category) {
     throw new Error("Failed to create category");
@@ -300,19 +300,19 @@ export function createTaskCategory(name: string): TaskCategory {
  * Delete a task category
  * This will set category to NULL for all tasks using this category
  */
-export function deleteTaskCategory(id: number): boolean {
+export async function deleteTaskCategory(id: number): Promise<boolean> {
   // First, clear the category from all tasks using it
-  const category = query<TaskCategory>(
+  const category = (await query<TaskCategory>(
     "SELECT * FROM task_categories WHERE id = ?",
     [id]
-  )[0];
+  ))[0];
 
   if (category) {
-    execute("UPDATE tasks SET category = NULL WHERE category = ?", [category.name]);
+    await execute("UPDATE tasks SET category = NULL WHERE category = ?", [category.name]);
   }
 
   // Then delete the category
-  const result = execute("DELETE FROM task_categories WHERE id = ?", [id]);
+  const result = await execute("DELETE FROM task_categories WHERE id = ?", [id]);
   return result.changes > 0;
 }
 
@@ -320,21 +320,21 @@ export function deleteTaskCategory(id: number): boolean {
  * Rename a task category
  * This will update all tasks using the old category name to the new name
  */
-export function renameTaskCategory(id: number, newName: string): boolean {
-  const category = query<TaskCategory>(
+export async function renameTaskCategory(id: number, newName: string): Promise<boolean> {
+  const category = (await query<TaskCategory>(
     "SELECT * FROM task_categories WHERE id = ?",
     [id]
-  )[0];
+  ))[0];
 
   if (!category) {
     return false;
   }
 
   // Update all tasks using this category
-  execute("UPDATE tasks SET category = ? WHERE category = ?", [newName, category.name]);
+  await execute("UPDATE tasks SET category = ? WHERE category = ?", [newName, category.name]);
 
   // Update the category name
-  const result = execute(
+  const result = await execute(
     "UPDATE task_categories SET name = ? WHERE id = ?",
     [newName, id]
   );
@@ -375,11 +375,11 @@ export interface TaskVelocityData {
  * Get task velocity data for charting for a specific user
  * Shows tasks completed and planned (created with due date) over time
  */
-export function getTaskVelocityData(
+export async function getTaskVelocityData(
   userId: string,
   period: VelocityPeriod = "week",
   numPeriods: number = 12
-): TaskVelocityData {
+): Promise<TaskVelocityData> {
   const now = new Date();
   const dataPoints: TaskVelocityDataPoint[] = [];
 
@@ -388,24 +388,24 @@ export function getTaskVelocityData(
     const { startDate, endDate, label } = getPeriodRange(now, period, i);
 
     // Count tasks completed in this period
-    const completedCount = query<{ count: number }>(
+    const completedCount = (await query<{ count: number }>(
       `SELECT COUNT(*) as count FROM tasks
        WHERE userId = ?
        AND completed_date IS NOT NULL
        AND completed_date >= ?
        AND completed_date <= ?`,
       [userId, startDate, endDate]
-    )[0]?.count || 0;
+    ))[0]?.count || 0;
 
     // Count tasks created with due dates in this period (planned work)
-    const plannedCount = query<{ count: number }>(
+    const plannedCount = (await query<{ count: number }>(
       `SELECT COUNT(*) as count FROM tasks
        WHERE userId = ?
        AND due_date IS NOT NULL
        AND due_date >= ?
        AND due_date <= ?`,
       [userId, startDate, endDate]
-    )[0]?.count || 0;
+    ))[0]?.count || 0;
 
     const completionRate = plannedCount > 0
       ? Math.round((completedCount / plannedCount) * 100)

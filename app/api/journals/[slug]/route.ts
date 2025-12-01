@@ -8,6 +8,7 @@ import {
   replaceJournalLinks,
   getMoodForDate,
 } from "@/lib/db/journals";
+import { getUserId } from "@/lib/auth/server";
 
 // GET - Read existing journal entry for editing
 export async function GET(
@@ -16,8 +17,9 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
+    const userId = await getUserId();
 
-    const journal = getJournalBySlug(slug);
+    const journal = await getJournalBySlug(slug, userId);
 
     if (!journal) {
       return NextResponse.json(
@@ -27,12 +29,12 @@ export async function GET(
     }
 
     // Get associated links
-    const links = getLinksForJournal(journal.id);
+    const links = await getLinksForJournal(journal.id);
 
     // For daily journals, get mood from mood_entries
     let mood = journal.mood;
     if (journal.journal_type === "daily" && journal.daily_date) {
-      const moodRating = getMoodForDate(journal.daily_date);
+      const moodRating = await getMoodForDate(journal.daily_date);
       if (moodRating !== null) {
         mood = moodRating;
       }
@@ -69,11 +71,12 @@ export async function PATCH(
 ) {
   try {
     const { slug } = await params;
+    const userId = await getUserId();
     const body = await request.json();
     const { frontmatter, content, links } = body;
 
     // Check if journal exists
-    const existing = getJournalBySlug(slug);
+    const existing = await getJournalBySlug(slug, userId);
     if (!existing) {
       return NextResponse.json(
         { error: "Journal not found" },
@@ -109,7 +112,7 @@ export async function PATCH(
       updateData.mood = frontmatter.mood !== undefined ? frontmatter.mood : undefined;
     }
 
-    const updatedJournal = updateJournal(slug, updateData);
+    const updatedJournal = await updateJournal(slug, updateData);
 
     if (!updatedJournal) {
       return NextResponse.json(
@@ -122,7 +125,7 @@ export async function PATCH(
     if (links !== undefined) {
       try {
         if (Array.isArray(links)) {
-          replaceJournalLinks(updatedJournal.id, links);
+          await replaceJournalLinks(updatedJournal.id, links);
         }
       } catch (linkError) {
         console.error("Error updating journal links:", linkError);
@@ -158,9 +161,10 @@ export async function DELETE(
 ) {
   try {
     const { slug } = await params;
+    const userId = await getUserId();
 
     // Check if journal exists
-    const existing = getJournalBySlug(slug);
+    const existing = await getJournalBySlug(slug, userId);
     if (!existing) {
       return NextResponse.json(
         { error: "Journal not found" },
@@ -168,7 +172,7 @@ export async function DELETE(
       );
     }
 
-    const success = deleteJournal(slug);
+    const success = await deleteJournal(slug);
 
     if (!success) {
       return NextResponse.json(

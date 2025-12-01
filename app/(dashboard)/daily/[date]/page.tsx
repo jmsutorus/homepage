@@ -24,18 +24,22 @@ interface DailyPageProps {
 
 export default async function DailyPage({ params }: DailyPageProps) {
   const { date } = await params;
-  
+
   const dateObj = new Date(date);
-  
+
   const prevDateObj = new Date(dateObj);
   prevDateObj.setDate(prevDateObj.getDate() - 1);
   const prevDate = prevDateObj.toISOString().split("T")[0];
-  
+
   const nextDateObj = new Date(dateObj);
   nextDateObj.setDate(nextDateObj.getDate() + 1);
   const nextDate = nextDateObj.toISOString().split("T")[0];
 
-  const journal = getDailyJournalByDate(date);
+  // Fetch GitHub activity if user is authenticated and has linked account
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  const journal = userId ? await getDailyJournalByDate(date, userId) : null;
   const allHabits = await getHabitsAction();
 
   // Filter habits to only show those created on or before the page date
@@ -46,17 +50,15 @@ export default async function DailyPage({ params }: DailyPageProps) {
   });
 
   const completions = await getHabitCompletionsAction(date);
-  const mood = getMoodForDate(date);
+  const mood = await getMoodForDate(date);
 
-  // Fetch GitHub activity if user is authenticated and has linked account
-  const session = await auth();
   let githubEvents: any[] = [];
 
-  if (session?.user?.id) {
+  if (userId) {
     // Get GitHub token from account table
-    const account = queryOne<{ accessToken: string; accountId: string }>(
+    const account = await queryOne<{ accessToken: string; accountId: string }>(
       "SELECT accessToken, accountId FROM account WHERE userId = ? AND providerId = 'github'",
-      [session.user.id]
+      [userId]
     );
 
     if (account?.accessToken) {
@@ -83,8 +85,8 @@ export default async function DailyPage({ params }: DailyPageProps) {
 
   // Import functions to get all relevant tasks and goals
   const { getTasksInRange, getUpcomingGoals, getUpcomingMilestones, getGoalsCompletedOnDate, getMilestonesCompletedOnDate } = await import("@/lib/db/calendar");
-  console.log(session?.user?.id);
-  const allRelevantTasks = getTasksInRange(startDateStr, endDateStr, session?.user?.id);
+  console.log(userId);
+  const allRelevantTasks = userId ? await getTasksInRange(startDateStr, endDateStr, userId) : [];
 
   // Debug: Log the date range and tasks found
   console.log(`[Daily Page] Viewing date: ${date}`);
@@ -114,13 +116,13 @@ export default async function DailyPage({ params }: DailyPageProps) {
   }) ?? [];
 
   // Goals and milestones data
-  const upcomingGoals = session?.user?.id ? getUpcomingGoals(session.user.id, date, endDateStr) : [];
-  const upcomingMilestones = session?.user?.id ? getUpcomingMilestones(session.user.id, date, endDateStr) : [];
-  const completedGoals = session?.user?.id ? getGoalsCompletedOnDate(session.user.id, date) : [];
-  const completedMilestones = session?.user?.id ? getMilestonesCompletedOnDate(session.user.id, date) : [];
+  const upcomingGoals = userId ? await getUpcomingGoals(userId, date, endDateStr) : [];
+  const upcomingMilestones = userId ? await getUpcomingMilestones(userId, date, endDateStr) : [];
+  const completedGoals = userId ? await getGoalsCompletedOnDate(userId, date) : [];
+  const completedMilestones = userId ? await getMilestonesCompletedOnDate(userId, date) : [];
 
   // Calendar colors
-  const colors = session?.user?.id ? getCalendarColorsObject(session.user.id) : {};
+  const colors = userId ? await getCalendarColorsObject(userId) : {};
 
   // Workout activities
   const upcomingWorkoutActivities = dailyData?.workoutActivities.filter((w) => !w.completed) ?? [];

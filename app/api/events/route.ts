@@ -11,6 +11,7 @@ import {
   type CreateEventInput,
   type UpdateEventInput,
 } from "@/lib/db/events";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * GET /api/events
@@ -23,6 +24,7 @@ import {
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get("id");
     const date = searchParams.get("date");
@@ -33,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     // Get specific event by ID
     if (id) {
-      const event = getEvent(parseInt(id, 10));
+      const event = await getEvent(parseInt(id, 10), userId);
       if (!event) {
         return NextResponse.json({ error: "Event not found" }, { status: 404 });
       }
@@ -42,25 +44,25 @@ export async function GET(request: NextRequest) {
 
     // Get events for specific date
     if (date) {
-      const events = getEventsForDate(date);
+      const events = await getEventsForDate(date, userId);
       return NextResponse.json(events);
     }
 
     // Get events in date range
     if (startDate && endDate) {
-      const events = getEventsInRange(startDate, endDate);
+      const events = await getEventsInRange(startDate, endDate, userId);
       return NextResponse.json(events);
     }
 
     // Get upcoming events
     if (upcoming === "true") {
       const limitNum = limit ? parseInt(limit, 10) : undefined;
-      const events = getUpcomingEvents(limitNum);
+      const events = await getUpcomingEvents(userId, limitNum);
       return NextResponse.json(events);
     }
 
     // Get all events
-    const events = getAllEvents();
+    const events = await getAllEvents(userId);
     return NextResponse.json(events);
   } catch (error) {
     console.error("Error fetching events:", error);
@@ -77,6 +79,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const body = await request.json();
 
     // Validate required fields
@@ -131,7 +134,7 @@ export async function POST(request: NextRequest) {
       notifications: body.notifications || [],
     };
 
-    const event = createEvent(input);
+    const event = await createEvent(userId, input);
     return NextResponse.json(event, { status: 201 });
   } catch (error) {
     console.error("Error creating event:", error);
@@ -149,12 +152,13 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get("id");
 
     if (!id) {
       return NextResponse.json(
-        { error: "Missing required query parameter: id" },
+        { error: "Missing required await query parameter: id" },
         { status: 400 }
       );
     }
@@ -173,7 +177,7 @@ export async function PATCH(request: NextRequest) {
     if (body.end_date !== undefined) updates.end_date = body.end_date;
     if (body.notifications !== undefined) updates.notifications = body.notifications;
 
-    const success = updateEvent(parseInt(id, 10), updates);
+    const success = await updateEvent(parseInt(id, 10), userId, updates);
 
     if (!success) {
       return NextResponse.json(
@@ -182,7 +186,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const event = getEvent(parseInt(id, 10));
+    const event = await getEvent(parseInt(id, 10), userId);
     return NextResponse.json(event);
   } catch (error) {
     console.error("Error updating event:", error);
@@ -199,17 +203,18 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get("id");
 
     if (!id) {
       return NextResponse.json(
-        { error: "Missing required query parameter: id" },
+        { error: "Missing required await query parameter: id" },
         { status: 400 }
       );
     }
 
-    const success = deleteEvent(parseInt(id, 10));
+    const success = await deleteEvent(parseInt(id, 10), userId);
 
     if (!success) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });

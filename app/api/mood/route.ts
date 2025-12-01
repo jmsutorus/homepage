@@ -18,7 +18,7 @@ import { getUserId } from "@/lib/auth/server";
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const userId = await await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const date = searchParams.get("date");
     const year = searchParams.get("year");
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     // Get specific date
     if (date) {
-      const entry = getMoodEntry(date, userId);
+      const entry = await getMoodEntry(date, userId);
       if (!entry) {
         return NextResponse.json({ error: "Mood entry not found" }, { status: 404 });
       }
@@ -36,18 +36,18 @@ export async function GET(request: NextRequest) {
 
     // Get year
     if (year) {
-      const entries = getMoodEntriesForYear(parseInt(year, 10), userId);
+      const entries = await getMoodEntriesForYear(parseInt(year, 10), userId);
       return NextResponse.json(entries);
     }
 
     // Get date range
     if (startDate && endDate) {
-      const entries = getMoodEntriesInRange(startDate, endDate, userId);
+      const entries = await getMoodEntriesInRange(startDate, endDate, userId);
       return NextResponse.json(entries);
     }
 
     // Get all
-    const entries = getAllMoodEntries(userId);
+    const entries = await getAllMoodEntries(userId);
     return NextResponse.json(entries);
   } catch (error) {
     console.error("Error fetching mood entries:", error);
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const userId = await await getUserId();
     const body = await request.json();
     const { date, rating, note } = body;
 
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or update mood entry
-    const entry = createMoodEntry(date, rating, note, userId);
+    const entry = await createMoodEntry(date, rating, note, userId);
 
     return NextResponse.json(entry, { status: 200 });
   } catch (error) {

@@ -42,7 +42,7 @@ interface RelatedPark {
 /**
  * Calculate match score between two arrays (e.g., tags, genres)
  */
-function calculateArrayMatchScore(arr1: string[], arr2: string[]): number {
+async function calculateArrayMatchScore(arr1: string[], arr2: string[]): Promise<number> {
   if (arr1.length === 0 || arr2.length === 0) return 0;
   const set1 = new Set(arr1);
   const matches = arr2.filter(item => set1.has(item)).length;
@@ -52,7 +52,7 @@ function calculateArrayMatchScore(arr1: string[], arr2: string[]): number {
 /**
  * Parse JSON array safely
  */
-function parseJsonArray(json: string | null): string[] {
+async function parseJsonArray(json: string | null): Promise<string[]> {
   if (!json) return [];
   try {
     const parsed = JSON.parse(json);
@@ -75,7 +75,7 @@ export async function getRelatedMedia(
 
   try {
     // Get all media except the current one
-    const allMedia = query<{
+    const allMedia = await query<{
       id: number;
       slug: string;
       title: string;
@@ -94,18 +94,18 @@ export async function getRelatedMedia(
     );
 
     // Calculate match scores
-    const mediaWithScores: RelatedMedia[] = allMedia.map((media) => {
-      const mediaGenres = parseJsonArray(media.genres);
-      const mediaTags = parseJsonArray(media.tags);
+    const mediaWithScores: RelatedMedia[] = await Promise.all(allMedia.map(async (media) => {
+      const mediaGenres = await parseJsonArray(media.genres);
+      const mediaTags = await parseJsonArray(media.tags);
 
-      const genreScore = calculateArrayMatchScore(currentGenres, mediaGenres) * 2; // Weight genres higher
-      const tagScore = calculateArrayMatchScore(currentTags, mediaTags);
+      const genreScore = await calculateArrayMatchScore(currentGenres, mediaGenres) * 2; // Weight genres higher
+      const tagScore = await calculateArrayMatchScore(currentTags, mediaTags);
 
       return {
         ...media,
         matchScore: genreScore + tagScore,
       };
-    });
+    }));
 
     // Filter items with at least 1 match and sort by score
     const relatedMedia = mediaWithScores
@@ -133,7 +133,7 @@ export async function getRelatedJournals(
 
   try {
     // Get all journals except the current one
-    const allJournals = query<{
+    const allJournals = await query<{
       id: number;
       slug: string;
       title: string;
@@ -151,9 +151,9 @@ export async function getRelatedJournals(
     );
 
     // Calculate match scores
-    const journalsWithScores: RelatedJournal[] = allJournals.map((journal) => {
-      const journalTags = parseJsonArray(journal.tags);
-      const tagScore = calculateArrayMatchScore(currentTags, journalTags);
+    const journalsWithScores: RelatedJournal[] = await Promise.all(allJournals.map(async (journal) => {
+      const journalTags = await parseJsonArray(journal.tags);
+      const tagScore = await calculateArrayMatchScore(currentTags, journalTags);
 
       // Add mood similarity bonus if both have mood ratings
       let moodScore = 0;
@@ -167,7 +167,7 @@ export async function getRelatedJournals(
         ...journal,
         matchScore: tagScore + moodScore,
       };
-    });
+    }));
 
     // Filter items with at least 1 match and sort by score
     const relatedJournals = journalsWithScores
@@ -195,7 +195,7 @@ export async function getRelatedParks(
 
   try {
     // Get all parks except the current one
-    const allParks = query<{
+    const allParks = await query<{
       id: number;
       slug: string;
       title: string;
@@ -212,9 +212,9 @@ export async function getRelatedParks(
     );
 
     // Calculate match scores
-    const parksWithScores: RelatedPark[] = allParks.map((park) => {
-      const parkTags = parseJsonArray(park.tags);
-      const tagScore = calculateArrayMatchScore(currentTags, parkTags);
+    const parksWithScores: RelatedPark[] = await Promise.all(allParks.map(async (park) => {
+      const parkTags = await parseJsonArray(park.tags);
+      const tagScore = await calculateArrayMatchScore(currentTags, parkTags);
 
       // Add category match bonus
       const categoryScore = currentCategory && park.category === currentCategory ? 2 : 0;
@@ -223,7 +223,7 @@ export async function getRelatedParks(
         ...park,
         matchScore: tagScore + categoryScore,
       };
-    });
+    }));
 
     // Filter items with at least 1 match and sort by score
     const relatedParks = parksWithScores

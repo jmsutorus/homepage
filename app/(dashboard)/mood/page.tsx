@@ -13,7 +13,7 @@ export default async function MoodPage() {
   }
 
   const currentYear = new Date().getFullYear();
-  const moodData = await getMoodEntriesForYear(currentYear, session.user.id);
+  const moodData = await await getMoodEntriesForYear(currentYear, session.user.id);
 
   return (
     <div className="space-y-6">

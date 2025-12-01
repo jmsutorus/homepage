@@ -16,7 +16,7 @@ export type AdminUser = {
 export async function getUsers(): Promise<AdminUser[]> {
   await requireAdmin();
 
-  const users = query<AdminUser>(`
+  const users = await query<AdminUser>(`
     SELECT u.id, u.name, u.email, u.image, u.createdAt, ur.role
     FROM user u
     LEFT JOIN user_roles ur ON u.id = ur.userId
@@ -64,7 +64,7 @@ export type AllowedUser = {
 
 export async function getAllowedUsers(): Promise<AllowedUser[]> {
   await requireAdmin();
-  return query<AllowedUser>("SELECT * FROM allowed_users ORDER BY created_at DESC");
+  return await query<AllowedUser>("SELECT * FROM allowed_users ORDER BY created_at DESC");
 }
 
 export async function addAllowedUser(email: string) {

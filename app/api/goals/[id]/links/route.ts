@@ -18,12 +18,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const goalId = parseInt(id);
 
     // Verify user owns the goal
-    const goal = getGoalById(goalId, userId);
+    const goal = await getGoalById(goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
 
-    const links = getGoalLinks(goalId);
+    const links = await getGoalLinks(goalId);
     return NextResponse.json(links);
   } catch (error) {
     console.error("Error fetching goal links:", error);
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const goalId = parseInt(id);
 
     // Verify user owns the goal
-    const goal = getGoalById(goalId, userId);
+    const goal = await getGoalById(goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const link = addGoalLink(
+    const link = await addGoalLink(
       userId,
       goalId,
       linked_type as GoalLinkType,
@@ -95,7 +95,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const goalId = parseInt(id);
 
     // Verify user owns the goal
-    const goal = getGoalById(goalId, userId);
+    const goal = await getGoalById(goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
@@ -110,7 +110,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const newLinks = replaceGoalLinks(userId, goalId, links);
+    const newLinks = await replaceGoalLinks(userId, goalId, links);
 
     revalidatePath("/goals");
     revalidatePath(`/goals/${goal.slug}`);

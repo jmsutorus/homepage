@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { deleteWorkoutActivity } from "@/lib/db/workout-activities";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * DELETE /api/activities/[id]
@@ -11,6 +12,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const userId = await getUserId();
     const activityId = parseInt(id, 10);
 
     if (isNaN(activityId)) {
@@ -20,7 +22,7 @@ export async function DELETE(
       );
     }
 
-    deleteWorkoutActivity(activityId);
+    await deleteWorkoutActivity(activityId, userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

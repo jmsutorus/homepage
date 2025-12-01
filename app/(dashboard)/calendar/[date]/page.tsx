@@ -53,7 +53,7 @@ export default async function CalendarMonthPage({ params }: CalendarMonthPagePro
   let githubEvents: GithubEvent[] = [];
 
   if (session?.user?.id) {
-    const account = queryOne<{ accessToken: string }>(
+    const account = await queryOne<{ accessToken: string }>(
       "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
       [session.user.id]
     );

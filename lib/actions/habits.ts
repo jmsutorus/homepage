@@ -24,24 +24,24 @@ export interface HabitWithStats extends Habit {
 export async function getHabitsAction() {
   const session = await auth();
   if (!session?.user?.id) return [];
-  return getHabits(session.user.id);
+  return await getHabits(session.user.id);
 }
 
 export async function getHabitsWithStatsAction(): Promise<HabitWithStats[]> {
   const session = await auth();
   if (!session?.user?.id) return [];
 
-  const habits = getAllHabits(session.user.id);
-  return habits.map(habit => ({
+  const habits = await getAllHabits(session.user.id);
+  return await Promise.all(habits.map(async (habit) => ({
     ...habit,
-    stats: getHabitStats(habit, session.user.id)
-  }));
+    stats: await getHabitStats(habit, session.user.id)
+  })));
 }
 
 export async function getAllHabitsAction() {
   const session = await auth();
   if (!session?.user?.id) return [];
-  return getAllHabits(session.user.id);
+  return await getAllHabits(session.user.id);
 }
 
 export async function createHabitAction(data: {
@@ -52,8 +52,8 @@ export async function createHabitAction(data: {
 }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
-  
-  const habit = createHabit(session.user.id, data);
+
+  const habit = await createHabit(session.user.id, data);
   revalidatePath("/habits");
   revalidatePath("/daily/[date]", "page");
   return habit;
@@ -71,7 +71,7 @@ export async function updateHabitAction(id: number, data: {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const habit = updateHabit(id, session.user.id, data);
+  const habit = await updateHabit(id, session.user.id, data);
   revalidatePath("/habits");
   revalidatePath("/daily/[date]", "page");
   return habit;
@@ -82,7 +82,7 @@ export async function completeHabitAction(id: number) {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   // Mark the habit as completed and inactive
-  const habit = updateHabit(id, session.user.id, { completed: true, active: false });
+  const habit = await updateHabit(id, session.user.id, { completed: true, active: false });
   revalidatePath("/habits");
   revalidatePath("/daily/[date]", "page");
   return habit;
@@ -91,8 +91,8 @@ export async function completeHabitAction(id: number) {
 export async function deleteHabitAction(id: number) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
-  
-  const success = deleteHabit(id, session.user.id);
+
+  const success = await deleteHabit(id, session.user.id);
   revalidatePath("/habits");
   revalidatePath("/daily/[date]", "page");
   return success;
@@ -101,14 +101,14 @@ export async function deleteHabitAction(id: number) {
 export async function getHabitCompletionsAction(date: string) {
   const session = await auth();
   if (!session?.user?.id) return [];
-  return getHabitCompletions(session.user.id, date);
+  return await getHabitCompletions(session.user.id, date);
 }
 
 export async function toggleHabitCompletionAction(habitId: number, date: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const completed = toggleHabitCompletion(habitId, session.user.id, date);
+  const completed = await toggleHabitCompletion(habitId, session.user.id, date);
   revalidatePath("/daily/[date]", "page");
   revalidatePath("/"); // Revalidate calendar
   return completed;
@@ -117,5 +117,5 @@ export async function toggleHabitCompletionAction(habitId: number, date: string)
 export async function getHabitCompletionsForChartAction(): Promise<HabitCompletionChartData[]> {
   const session = await auth();
   if (!session?.user?.id) return [];
-  return getHabitCompletionsForChart(session.user.id);
+  return await getHabitCompletionsForChart(session.user.id);
 }

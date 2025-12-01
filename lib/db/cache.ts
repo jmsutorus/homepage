@@ -11,8 +11,8 @@ export interface CacheEntry {
 /**
  * Get cached value if not expired for a specific user
  */
-export function getCachedValue<T>(key: string, userId: string): T | null {
-  const entry = queryOne<CacheEntry>(
+export async function getCachedValue<T>(key: string, userId: string): Promise<T | null> {
+  const entry = await queryOne<CacheEntry>(
     "SELECT * FROM api_cache WHERE key = ? AND userId = ? AND expires_at > datetime('now')",
     [key, userId]
   );
@@ -32,7 +32,7 @@ export function getCachedValue<T>(key: string, userId: string): T | null {
 /**
  * Set cached value with TTL (in seconds) for a specific user
  */
-export function setCachedValue(key: string, value: unknown, userId: string, ttlSeconds: number): void {
+export async function setCachedValue(key: string, value: unknown, userId: string, ttlSeconds: number): Promise<void> {
   const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString();
   const jsonValue = JSON.stringify(value);
 
@@ -51,7 +51,7 @@ export function setCachedValue(key: string, value: unknown, userId: string, ttlS
 /**
  * Invalidate specific cache key for a specific user
  */
-export function invalidateCache(key: string, userId: string): boolean {
+export async function invalidateCache(key: string, userId: string): Promise<boolean> {
   const result = execute("DELETE FROM api_cache WHERE key = ? AND userId = ?", [key, userId]);
   return result.changes > 0;
 }
@@ -59,7 +59,7 @@ export function invalidateCache(key: string, userId: string): boolean {
 /**
  * Invalidate cache keys matching a pattern for a specific user
  */
-export function invalidateCachePattern(pattern: string, userId: string): number {
+export async function invalidateCachePattern(pattern: string, userId: string): Promise<number> {
   const result = execute("DELETE FROM api_cache WHERE key LIKE ? AND userId = ?", [pattern, userId]);
   return result.changes;
 }
@@ -67,7 +67,7 @@ export function invalidateCachePattern(pattern: string, userId: string): number 
 /**
  * Clear all expired cache entries for a specific user
  */
-export function clearExpiredCache(userId: string): number {
+export async function clearExpiredCache(userId: string): Promise<number> {
   const result = execute(
     "DELETE FROM api_cache WHERE userId = ? AND expires_at <= datetime('now')",
     [userId]
@@ -78,7 +78,7 @@ export function clearExpiredCache(userId: string): number {
 /**
  * Clear all cache entries for a specific user
  */
-export function clearAllCache(userId: string): number {
+export async function clearAllCache(userId: string): Promise<number> {
   const result = execute("DELETE FROM api_cache WHERE userId = ?", [userId]);
   return result.changes;
 }
@@ -86,17 +86,17 @@ export function clearAllCache(userId: string): number {
 /**
  * Get cache statistics for a specific user
  */
-export function getCacheStatistics(userId: string): {
+export async function getCacheStatistics(userId: string): {
   total: number;
   expired: number;
   active: number;
 } {
-  const total = queryOne<{ count: number }>(
+  const total = await queryOne<{ count: number }>(
     "SELECT COUNT(*) as count FROM api_cache WHERE userId = ?",
     [userId]
   );
 
-  const expired = queryOne<{ count: number }>(
+  const expired = await queryOne<{ count: number }>(
     "SELECT COUNT(*) as count FROM api_cache WHERE userId = ? AND expires_at <= datetime('now')",
     [userId]
   );

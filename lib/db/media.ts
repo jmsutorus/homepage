@@ -48,12 +48,12 @@ export interface MediaContentInput {
 /**
  * Create a new media content entry
  */
-export function createMedia(data: MediaContentInput, userId: string): MediaContent {
+export async function createMedia(data: MediaContentInput, userId: string): Promise<MediaContent> {
   const genresJson = data.genres ? JSON.stringify(data.genres) : null;
   const tagsJson = data.tags ? JSON.stringify(data.tags) : null;
   const creatorJson = data.creator ? JSON.stringify(data.creator) : null;
 
-  const result = execute(
+  const result = await execute(
     `INSERT INTO media_content (
       slug, title, type, status, rating, started, completed, released,
       genres, poster, tags, description, length, creator, featured, published, content, userId
@@ -80,7 +80,7 @@ export function createMedia(data: MediaContentInput, userId: string): MediaConte
     ]
   );
 
-  const entry = getMediaById(Number(result.lastInsertRowid));
+  const entry = await getMediaById(Number(result.lastInsertRowid));
   if (!entry) {
     throw new Error("Failed to create media entry");
   }
@@ -91,8 +91,8 @@ export function createMedia(data: MediaContentInput, userId: string): MediaConte
 /**
  * Get media entry by ID
  */
-export function getMediaById(id: number): MediaContent | undefined {
-  return queryOne<MediaContent>(
+export async function getMediaById(id: number): Promise<MediaContent | undefined> {
+  return await queryOne<MediaContent>(
     "SELECT * FROM media_content WHERE id = ?",
     [id]
   );
@@ -101,8 +101,8 @@ export function getMediaById(id: number): MediaContent | undefined {
 /**
  * Get media entry by slug for a specific user
  */
-export function getMediaBySlug(slug: string, userId: string): MediaContent | undefined {
-  return queryOne<MediaContent>(
+export async function getMediaBySlug(slug: string, userId: string): Promise<MediaContent | undefined> {
+  return await queryOne<MediaContent>(
     "SELECT * FROM media_content WHERE slug = ? AND userId = ?",
     [slug, userId]
   );
@@ -111,8 +111,8 @@ export function getMediaBySlug(slug: string, userId: string): MediaContent | und
 /**
  * Get all media entries for a specific user
  */
-export function getAllMedia(userId: string): MediaContent[] {
-  return query<MediaContent>(
+export async function getAllMedia(userId: string): Promise<MediaContent[]> {
+  return await query<MediaContent>(
     "SELECT * FROM media_content WHERE userId = ? ORDER BY created_at DESC",
     [userId]
   );
@@ -121,11 +121,11 @@ export function getAllMedia(userId: string): MediaContent[] {
 /**
  * Get media entries by type for a specific user
  */
-export function getMediaByType(
+export async function getMediaByType(
   type: "movie" | "tv" | "book" | "game",
   userId: string
-): MediaContent[] {
-  return query<MediaContent>(
+): Promise<MediaContent[]> {
+  return await query<MediaContent>(
     "SELECT * FROM media_content WHERE type = ? AND userId = ? ORDER BY created_at DESC",
     [type, userId]
   );
@@ -134,11 +134,11 @@ export function getMediaByType(
 /**
  * Get media entries by status for a specific user
  */
-export function getMediaByStatus(
+export async function getMediaByStatus(
   status: "in-progress" | "completed" | "planned",
   userId: string
-): MediaContent[] {
-  return query<MediaContent>(
+): Promise<MediaContent[]> {
+  return await query<MediaContent>(
     "SELECT * FROM media_content WHERE status = ? AND userId = ? ORDER BY created_at DESC",
     [status, userId]
   );
@@ -147,12 +147,12 @@ export function getMediaByStatus(
 /**
  * Get media entries by type and status for a specific user
  */
-export function getMediaByTypeAndStatus(
+export async function getMediaByTypeAndStatus(
   type: "movie" | "tv" | "book" | "game",
   status: "in-progress" | "completed" | "planned",
   userId: string
-): MediaContent[] {
-  return query<MediaContent>(
+): Promise<MediaContent[]> {
+  return await query<MediaContent>(
     `SELECT * FROM media_content
      WHERE type = ? AND status = ? AND userId = ?
      ORDER BY created_at DESC`,
@@ -163,18 +163,18 @@ export function getMediaByTypeAndStatus(
 /**
  * Update media entry with ownership verification
  */
-export function updateMedia(
+export async function updateMedia(
   slug: string,
   userId: string,
   data: Partial<MediaContentInput>
-): boolean {
+): Promise<boolean> {
   // Verify ownership
-  const existing = getMediaBySlug(slug, userId);
+  const existing = await getMediaBySlug(slug, userId);
   if (!existing) {
     return false;
   }
 
-  // Build dynamic update query based on provided fields
+  // Build dynamic update await query based on provided fields
   const updates: string[] = [];
   const params: unknown[] = [];
 
@@ -253,7 +253,7 @@ export function updateMedia(
 
   params.push(slug, userId);
 
-  const result = execute(
+  const result = await execute(
     `UPDATE media_content SET ${updates.join(", ")} WHERE slug = ? AND userId = ?`,
     params
   );
@@ -271,27 +271,27 @@ export function updateMedia(
 /**
  * Delete media entry with ownership verification
  */
-export function deleteMedia(slug: string, userId: string): boolean {
+export async function deleteMedia(slug: string, userId: string): Promise<boolean> {
   // Verify ownership
-  const existing = getMediaBySlug(slug, userId);
+  const existing = await getMediaBySlug(slug, userId);
   if (!existing) {
     return false;
   }
 
-  const result = execute("DELETE FROM media_content WHERE slug = ? AND userId = ?", [slug, userId]);
+  const result = await execute("DELETE FROM media_content WHERE slug = ? AND userId = ?", [slug, userId]);
   return result.changes > 0;
 }
 
 /**
  * Get media statistics for a specific user
  */
-export function getMediaStatistics(userId: string): {
+export async function getMediaStatistics(userId: string): Promise<{
   total: number;
   byType: Record<string, number>;
   byStatus: Record<string, number>;
   averageRating: number;
-} {
-  const entries = getAllMedia(userId);
+}> {
+  const entries = await getAllMedia(userId);
   const total = entries.length;
 
   const byType: Record<string, number> = { movie: 0, tv: 0, book: 0, game: 0 };
@@ -364,9 +364,7 @@ export function parseCreator(creatorJson: string | null): string[] {
 /**
  * Get media with parsed genres (helper function)
  */
-export function getMediaWithGenres(media: MediaContent): MediaContent & {
-  genresParsed: string[];
-} {
+export function getMediaWithGenres(media: MediaContent): MediaContent & { genresParsed: string[] } {
   return {
     ...media,
     genresParsed: parseGenres(media.genres),
@@ -376,8 +374,8 @@ export function getMediaWithGenres(media: MediaContent): MediaContent & {
 /**
  * Get all unique genres across all media for a specific user
  */
-export function getAllUniqueGenres(userId: string): string[] {
-  const allMedia = getAllMedia(userId);
+export async function getAllUniqueGenres(userId: string): Promise<string[]> {
+  const allMedia = await getAllMedia(userId);
   const genreSet = new Set<string>();
 
   allMedia.forEach((media) => {
@@ -391,8 +389,8 @@ export function getAllUniqueGenres(userId: string): string[] {
 /**
  * Get all unique tags across all media for a specific user
  */
-export function getAllUniqueTags(userId: string): string[] {
-  const allMedia = getAllMedia(userId);
+export async function getAllUniqueTags(userId: string): Promise<string[]> {
+  const allMedia = await getAllMedia(userId);
   const tagSet = new Set<string>();
 
   allMedia.forEach((media) => {
@@ -406,20 +404,20 @@ export function getAllUniqueTags(userId: string): string[] {
 /**
  * Rename a genre across all media entries for a specific user
  */
-export function renameGenre(oldName: string, newName: string, userId: string): number {
-  const allMedia = getAllMedia(userId);
+export async function renameGenre(oldName: string, newName: string, userId: string): Promise<number> {
+  const allMedia = await getAllMedia(userId);
   let updatedCount = 0;
 
-  allMedia.forEach((media) => {
+  for (const media of allMedia) {
     const genres = parseGenres(media.genres);
     const index = genres.indexOf(oldName);
 
     if (index !== -1) {
       genres[index] = newName;
-      updateMedia(media.slug, userId, { genres });
+      await updateMedia(media.slug, userId, { genres });
       updatedCount++;
     }
-  });
+  }
 
   return updatedCount;
 }
@@ -427,20 +425,20 @@ export function renameGenre(oldName: string, newName: string, userId: string): n
 /**
  * Rename a tag across all media entries for a specific user
  */
-export function renameTag(oldName: string, newName: string, userId: string): number {
-  const allMedia = getAllMedia(userId);
+export async function renameTag(oldName: string, newName: string, userId: string): Promise<number> {
+  const allMedia = await getAllMedia(userId);
   let updatedCount = 0;
 
-  allMedia.forEach((media) => {
+  for (const media of allMedia) {
     const tags = parseTags(media.tags);
     const index = tags.indexOf(oldName);
 
     if (index !== -1) {
       tags[index] = newName;
-      updateMedia(media.slug, userId, { tags });
+      await updateMedia(media.slug, userId, { tags });
       updatedCount++;
     }
-  });
+  }
 
   return updatedCount;
 }
@@ -448,19 +446,19 @@ export function renameTag(oldName: string, newName: string, userId: string): num
 /**
  * Delete a genre from all media entries for a specific user
  */
-export function deleteGenre(name: string, userId: string): number {
-  const allMedia = getAllMedia(userId);
+export async function deleteGenre(name: string, userId: string): Promise<number> {
+  const allMedia = await getAllMedia(userId);
   let updatedCount = 0;
 
-  allMedia.forEach((media) => {
+  for (const media of allMedia) {
     const genres = parseGenres(media.genres);
     const filtered = genres.filter((g) => g !== name);
 
     if (filtered.length !== genres.length) {
-      updateMedia(media.slug, userId, { genres: filtered });
+      await updateMedia(media.slug, userId, { genres: filtered });
       updatedCount++;
     }
-  });
+  }
 
   return updatedCount;
 }
@@ -468,19 +466,19 @@ export function deleteGenre(name: string, userId: string): number {
 /**
  * Delete a tag from all media entries for a specific user
  */
-export function deleteTag(name: string, userId: string): number {
-  const allMedia = getAllMedia(userId);
+export async function deleteTag(name: string, userId: string): Promise<number> {
+  const allMedia = await getAllMedia(userId);
   let updatedCount = 0;
 
-  allMedia.forEach((media) => {
+  for (const media of allMedia) {
     const tags = parseTags(media.tags);
     const filtered = tags.filter((t) => t !== name);
 
     if (filtered.length !== tags.length) {
-      updateMedia(media.slug, userId, { tags: filtered });
+      await updateMedia(media.slug, userId, { tags: filtered });
       updatedCount++;
     }
-  });
+  }
 
   return updatedCount;
 }
@@ -533,16 +531,17 @@ export interface MediaTimelineData {
  * Get media timeline data for charting for a specific user
  * Shows media completed over time with breakdown by type
  */
-export function getMediaTimelineData(
+export async function getMediaTimelineData(
   userId: string,
   period: TimelinePeriod = "month",
   numPeriods: number = 12
-): MediaTimelineData {
+): Promise<MediaTimelineData> {
   const now = new Date();
   const dataPoints: MediaTimelineDataPoint[] = [];
 
   // Get all completed media with valid completion dates
-  const completedMedia = getAllMedia(userId).filter(
+  const allMedia = await getAllMedia(userId);
+  const completedMedia = allMedia.filter(
     (m) => m.status === "completed" && m.completed
   );
 
