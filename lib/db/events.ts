@@ -47,12 +47,12 @@ export interface UpdateEventInput {
 }
 
 // Helper to serialize notifications to JSON string
-async function serializeNotifications(notifications?: EventNotification[]): Promise<string> {
+function serializeNotifications(notifications?: EventNotification[]): string {
   return JSON.stringify(notifications || []);
 }
 
 // Helper to deserialize notifications from JSON string
-async function deserializeNotifications(notificationsJson: string): Promise<EventNotification[]> {
+function deserializeNotifications(notificationsJson: string): EventNotification[] {
   try {
     return JSON.parse(notificationsJson);
   } catch {
@@ -77,7 +77,7 @@ interface DBEvent {
   updated_at: string;
 }
 
-async function transformEvent(row: DBEvent): Promise<Event> {
+function transformEvent(row: DBEvent): Event {
   return {
     ...row,
     all_day: Boolean(row.all_day),
@@ -89,7 +89,7 @@ async function transformEvent(row: DBEvent): Promise<Event> {
  * Create a new event for a specific user
  */
 export async function createEvent(input: CreateEventInput, userId: string): Promise<Event> {
-  const result = execute(
+  const result = await execute(
     `INSERT INTO events (
       userId, title, description, location, date, start_time, end_time, all_day, end_date, notifications
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -107,7 +107,7 @@ export async function createEvent(input: CreateEventInput, userId: string): Prom
     ]
   );
 
-  const event = getEvent(Number(result.lastInsertRowid), userId);
+  const event = await getEvent(Number(result.lastInsertRowid), userId);
   if (!event) {
     throw new Error("Failed to create event");
   }
@@ -168,7 +168,7 @@ export async function getEventsInRange(startDate: string, endDate: string, userI
  */
 export async function updateEvent(id: number, userId: string, updates: UpdateEventInput): Promise<boolean> {
   // Verify ownership
-  const existing = getEvent(id, userId);
+  const existing = await getEvent(id, userId);
   if (!existing) {
     return false;
   }
@@ -227,7 +227,7 @@ export async function updateEvent(id: number, userId: string, updates: UpdateEve
 
   params.push(id, userId);
   const sql = `UPDATE events SET ${fields.join(", ")} WHERE id = ? AND userId = ?`;
-  const result = execute(sql, params);
+  const result = await execute(sql, params);
 
   return result.changes > 0;
 }
@@ -237,12 +237,12 @@ export async function updateEvent(id: number, userId: string, updates: UpdateEve
  */
 export async function deleteEvent(id: number, userId: string): Promise<boolean> {
   // Verify ownership
-  const existing = getEvent(id, userId);
+  const existing = await getEvent(id, userId);
   if (!existing) {
     return false;
   }
 
-  const result = execute("DELETE FROM events WHERE id = ? AND userId = ?", [id, userId]);
+  const result = await execute("DELETE FROM events WHERE id = ? AND userId = ?", [id, userId]);
   return result.changes > 0;
 }
 

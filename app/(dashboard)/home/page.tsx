@@ -66,7 +66,8 @@ export default async function DashboardPage({
     }
   }
 
-  const calendarData = await getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
+  const calendarDataMap = await getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
+  const calendarData = Object.fromEntries(calendarDataMap);
   const calendarColors = await getCalendarColorsForUser();
 
   return (

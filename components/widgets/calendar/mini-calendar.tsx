@@ -11,7 +11,7 @@ import Link from "next/link";
 interface MiniCalendarProps {
   year: number;
   month: number;
-  calendarData: Map<string, CalendarDayData>;
+  calendarData: Record<string, CalendarDayData>;
   colors: any;
 }
 
@@ -124,7 +124,7 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
             }
 
             const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-            const dayData = calendarData.get(dateStr);
+            const dayData = calendarData[dateStr];
             const isToday = dateStr === todayStr;
 
             // Get mood icon

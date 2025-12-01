@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
       notifications: body.notifications || [],
     };
 
-    const event = await createEvent(userId, input);
+    const event = await createEvent(input, userId);
     return NextResponse.json(event, { status: 201 });
   } catch (error) {
     console.error("Error creating event:", error);

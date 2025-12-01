@@ -72,7 +72,8 @@ export default async function CalendarMonthPage({ params }: CalendarMonthPagePro
   }
 
   // Fetch full calendar data for the month
-  const calendarData = await getCalendarDataForMonth(year, month, githubEvents);
+  const calendarDataMap = await getCalendarDataForMonth(year, month, githubEvents);
+  const calendarData = Object.fromEntries(calendarDataMap);
 
   // Calculate previous and next month for navigation
   const prevMonth = month === 1 ? 12 : month - 1;

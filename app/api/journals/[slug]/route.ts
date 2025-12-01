@@ -112,7 +112,7 @@ export async function PATCH(
       updateData.mood = frontmatter.mood !== undefined ? frontmatter.mood : undefined;
     }
 
-    const updatedJournal = await updateJournal(slug, updateData);
+    const updatedJournal = await updateJournal(slug, userId, updateData);
 
     if (!updatedJournal) {
       return NextResponse.json(
@@ -172,7 +172,7 @@ export async function DELETE(
       );
     }
 
-    const success = await deleteJournal(slug);
+    const success = await deleteJournal(slug, userId);
 
     if (!success) {
       return NextResponse.json(
