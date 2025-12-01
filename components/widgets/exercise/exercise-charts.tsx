@@ -4,8 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  BarChart,
-  Bar,
   LineChart,
   Line,
   XAxis,
@@ -13,10 +11,9 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { formatDistance } from "@/lib/utils/strava";
-import { format, startOfWeek, endOfWeek, eachWeekOfInterval, subMonths } from "date-fns";
+import { format, endOfWeek, eachWeekOfInterval, subMonths } from "date-fns";
 
 interface Activity {
   id: number;

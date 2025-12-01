@@ -21,7 +21,7 @@ export function DailyTasks({ overdue, upcoming, completed, onToggleComplete }: D
   const [localUpcoming, setLocalUpcoming] = useState(upcoming);
   const [localCompleted, setLocalCompleted] = useState(completed);
   const totalTasks = localOverdue.length + localUpcoming.length + localCompleted.length;
-  const { animatingTasks, startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
+  const { startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
 
   // Update local state when props change
   useEffect(() => {

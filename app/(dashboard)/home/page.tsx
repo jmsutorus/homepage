@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuickLinks } from "@/components/widgets/quick-links/quick-links";
 import { getRecentlyCompletedMedia } from "@/lib/media";

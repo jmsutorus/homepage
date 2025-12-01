@@ -19,7 +19,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Trash2, Shield, User } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,7 +32,7 @@ export function UserList({ users, currentUserId }: { users: AdminUser[], current
       toast.success("Role updated", {
         description: "User role has been successfully updated.",
       });
-    } catch (error) {
+    } catch {
       toast.error("Error", {
         description: "Failed to update role.",
       });

@@ -22,7 +22,6 @@ interface TaskFormProps {
 
 export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const [rawInput, setRawInput] = useState("");
-  const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [category, setCategory] = useState<string>("");
   const [categories, setCategories] = useState<TaskCategory[]>([]);

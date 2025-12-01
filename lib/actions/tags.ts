@@ -28,7 +28,7 @@ export async function getTagsWithFrequency(): Promise<TagFrequency[]> {
               }
             });
           }
-        } catch (e) {
+        } catch {
           // Ignore parsing errors
         }
       }

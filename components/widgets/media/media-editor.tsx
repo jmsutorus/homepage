@@ -59,13 +59,6 @@ interface ImportResult {
   path?: string;
 }
 
-const GENRE_OPTIONS = [
-  'action', 'adventure', 'animation', 'comedy', 'crime', 'documentary',
-  'drama', 'fantasy', 'horror', 'mystery', 'romance', 'sci-fi', 'thriller',
-  'western', 'biography', 'history', 'music', 'sport', 'war', 'RPG', 'FPS',
-  'strategy', 'puzzle', 'platformer', 'simulation', 'racing', 'fighting'
-];
-
 export function MediaEditor({
   initialFrontmatter,
   initialContent = '',

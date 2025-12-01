@@ -44,7 +44,7 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
     const shouldSearch = (type: string) => !filters?.types || filters.types.length === 0 || filters.types.includes(type);
 
     // Helper to build tag clause
-    const buildTagClause = (tablePrefix: string = "") => {
+    const buildTagClause = () => {
       if (!filters?.tags || filters.tags.length === 0) return "";
       // For each tag, we need a LIKE clause. AND them together for "all tags" or OR for "any tag"?
       // Usually filters are AND.

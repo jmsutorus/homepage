@@ -28,18 +28,14 @@ interface TagAutocompleteProps {
 export function TagAutocomplete({ selectedTags, onTagsChange }: TagAutocompleteProps) {
   const [open, setOpen] = React.useState(false);
   const [tags, setTags] = React.useState<TagFrequency[]>([]);
-  const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
     const fetchTags = async () => {
-      setLoading(true);
       try {
         const data = await getTagsWithFrequency();
         setTags(data);
       } catch (error) {
         console.error("Failed to fetch tags", error);
-      } finally {
-        setLoading(false);
       }
     };
     fetchTags();

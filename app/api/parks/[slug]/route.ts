@@ -5,7 +5,7 @@ import {
   updatePark,
   deletePark,
 } from "@/lib/db/parks";
-import { PARK_CATEGORIES, ParkCategoryValue } from "@/lib/db/enums/park-enums";
+import { PARK_CATEGORIES } from "@/lib/db/enums/park-enums";
 
 // GET - Read existing park entry for editing
 export async function GET(

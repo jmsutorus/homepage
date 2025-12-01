@@ -3,9 +3,6 @@
 import { useRouter } from "next/navigation";
 import type { CalendarDayData, CalendarGoal, CalendarMilestone } from "@/lib/db/calendar";
 import type { Event } from "@/lib/db/events";
-import type { MediaContent } from "@/lib/db/media";
-import type { ParkContent } from "@/lib/db/parks";
-import type { JournalContent } from "@/lib/db/journals";
 import type { Task } from "@/lib/db/tasks";
 import { DailyEvents } from "@/components/widgets/daily/daily-events";
 import { DailyWorkouts } from "@/components/widgets/daily/daily-workouts";
@@ -49,7 +46,7 @@ export function DailyActivities({
   colors,
 }: DailyActivitiesProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const handleEventClick = (event: Event) => {
     // Could open an edit dialog or navigate to event detail
@@ -68,7 +65,7 @@ export function DailyActivities({
     router.push(`/journals/${slug}`);
   };
 
-  const handleToggleTaskComplete = async (taskId: number, completed: boolean) => {
+  const handleToggleTaskComplete = async (taskId: number) => {
     startTransition(async () => {
       try {
         await toggleTaskCompleteAction(taskId);

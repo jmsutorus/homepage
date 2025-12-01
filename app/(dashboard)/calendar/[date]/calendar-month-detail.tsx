@@ -43,8 +43,6 @@ const MEDIA_ICONS: Record<string, typeof Film> = {
 
 export function CalendarMonthDetail({
   calendarData,
-  year,
-  month,
 }: CalendarMonthDetailProps) {
   const router = useRouter();
 

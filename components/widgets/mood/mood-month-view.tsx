@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { MoodEntryModal } from "./mood-entry-modal";
 import { MoodEntry } from "@/lib/db/mood";
-import { Plus, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 const MOOD_COLORS = {

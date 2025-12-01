@@ -169,7 +169,7 @@ export async function listCalendarEvents(userId: string, timeMin: string, timeMa
 /**
  * Helper function to create ISO datetime string for Calendar API
  */
-export function createCalendarDateTime(date: string, time: string, timeZone: string = "UTC"): string {
+export function createCalendarDateTime(date: string, time: string): string {
   // date format: YYYY-MM-DD
   // time format: HH:MM
   return `${date}T${time}:00`;

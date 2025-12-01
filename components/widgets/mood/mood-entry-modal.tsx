@@ -50,7 +50,7 @@ export function MoodEntryModal({
   useEffect(() => {
     // eslint-disable-next-line
     setRating(initialRating);
-    // eslint-disable-next-line
+     
     setNote(initialNote);
   }, [initialRating, initialNote, date]);
 

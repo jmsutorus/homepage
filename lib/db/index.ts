@@ -43,6 +43,7 @@ export function getDatabase(): Client {
 /**
  * Initialize database with schema
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function initializeDatabase(database: Client) {
   // Read schema SQL file
   const schemaPath = join(process.cwd(), "lib", "db", "schema.sql");

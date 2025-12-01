@@ -6,7 +6,6 @@ import {
 } from "@/lib/services/strava-sync";
 import { getActivityStats, getYTDStats } from "@/lib/db/strava";
 import { query, queryOne } from "@/lib/db";
-import { auth } from "@/auth";
 import { cookies } from "next/headers";
 
 /**

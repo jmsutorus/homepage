@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { X, Filter } from "lucide-react";
 import { allStatuses, getStatusLabel } from "./goal-status-badge";
 import type { GoalStatus, GoalPriority } from "@/lib/db/goals";

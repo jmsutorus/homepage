@@ -3,34 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import type { CalendarDayData } from "@/lib/db/calendar";
 import type { Event } from "@/lib/db/events";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
-import type { GithubEvent } from "@/lib/github";
-import {
-  Smile,
-  Frown,
-  Meh,
-  Activity,
-  Film,
-  Tv,
-  Book,
-  Gamepad2,
-  CheckSquare,
-  Clock,
-  X,
-  MapPin,
-  Timer,
-  Trees,
-  BookOpen,
-  Dumbbell,
-  CheckCircle2,
-  Github
-} from "lucide-react";
-import { cn, formatDateSafe, formatDateLongSafe } from "@/lib/utils";
+import { formatDateLongSafe } from "@/lib/utils";
 import { EventEditDialog } from "./event-edit-dialog";
 import { CompleteActivityModal } from "../exercise/complete-activity-modal";
 import { DailyMood } from "../daily/daily-mood";
@@ -130,12 +106,6 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
     setCompletingActivity(null);
     // Refresh calendar data
     onDataChange?.();
-  };
-
-  // Helper to check if a workout activity is in the past
-  const isActivityInPast = (activity: WorkoutActivity) => {
-    const activityDateTime = new Date(`${activity.date}T${activity.time}`);
-    return activityDateTime < new Date();
   };
 
   // Handler for toggling task completion

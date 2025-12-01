@@ -5,7 +5,6 @@ import {
   createJournal,
   getJournalBySlug,
   replaceJournalLinks,
-  getMoodForDate,
   getJournalCount,
 } from "@/lib/db/journals";
 import { getUserId } from "@/lib/auth/server";
@@ -22,7 +21,7 @@ function sanitizeSlug(title: string): string {
  * GET /api/journals
  * Get all journal entries
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const userId = await getUserId();
     const journals = await getAllJournals(userId);

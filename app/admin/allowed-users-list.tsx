@@ -30,7 +30,7 @@ export function AllowedUsersList({ allowedUsers }: { allowedUsers: AllowedUser[]
       toast.success("User added", {
         description: `${newEmail} has been added to the allowed list.`,
       });
-    } catch (error) {
+    } catch {
       toast.error("Error", {
         description: "Failed to add user. It might already exist.",
       });
@@ -47,7 +47,7 @@ export function AllowedUsersList({ allowedUsers }: { allowedUsers: AllowedUser[]
       toast.success("User removed", {
         description: `${email} has been removed from the allowed list.`,
       });
-    } catch (error) {
+    } catch {
       toast.error("Error", {
         description: "Failed to remove user.",
       });

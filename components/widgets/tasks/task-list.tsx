@@ -34,7 +34,7 @@ const priorityColors = {
 export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [localTasks, setLocalTasks] = useState(tasks);
-  const { animatingTasks, startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
+  const { startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
   const [rescheduleTaskId, setRescheduleTaskId] = useState<number | null>(null);
 
   // Update local tasks when prop changes

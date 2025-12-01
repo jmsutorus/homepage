@@ -1,4 +1,4 @@
-import { Achievement, ACHIEVEMENTS } from "@/lib/achievements";
+import { ACHIEVEMENTS } from "@/lib/achievements";
 import { AchievementBadge } from "./achievement-badge";
 
 interface AchievementsListProps {

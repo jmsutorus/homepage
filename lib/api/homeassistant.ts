@@ -129,7 +129,7 @@ export async function checkAvailability(): Promise<boolean> {
     });
 
     return response.ok;
-  } catch (error) {
+  } catch {
     return false;
   }
 }

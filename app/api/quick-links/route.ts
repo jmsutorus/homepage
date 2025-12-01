@@ -4,7 +4,6 @@ import {
   createLink,
   updateLink,
   deleteLink,
-  reorderLinks,
   initializeDefaultQuickLinks,
 } from "@/lib/db/quick-links";
 import { getUserId } from "@/lib/auth/server";

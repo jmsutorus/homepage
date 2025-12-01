@@ -13,8 +13,6 @@ interface CalendarDayCellProps {
   summary?: CalendarDaySummary;
   isToday: boolean;
   isSelected: boolean;
-  onOpenMoodModal: (date: string) => void;
-  onDayClick: (date: string) => void;
   colors: any;
 }
 
@@ -41,8 +39,6 @@ function CalendarDayCellComponent({
   summary,
   isToday,
   isSelected,
-  onOpenMoodModal,
-  onDayClick,
   colors,
 }: CalendarDayCellProps) {
   const router = useRouter();

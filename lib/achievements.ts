@@ -1,5 +1,4 @@
 import { execute, query, queryOne } from "@/lib/db";
-import { v4 as uuidv4 } from "uuid";
 
 export async function getUserAchievements(userId: string) {
   const rows = await query<{ achievementId: string; unlocked: number; progress: number }>(

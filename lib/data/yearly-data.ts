@@ -1,13 +1,9 @@
-import { getMediaStatistics, getAllMedia } from "@/lib/db/media";
+import { getAllMedia } from "@/lib/db/media";
 import { getAllParks } from "@/lib/db/parks";
 import { getMoodEntriesForYear } from "@/lib/db/mood";
 import { getAllJournals } from "@/lib/db/journals";
-import { getWorkoutActivityStats, getWorkoutActivitiesByDateRange } from "@/lib/db/workout-activities";
 import { getGithubActivity } from "@/lib/github";
-import { getOwnedGames, getPlayerAchievements, getGameSchema } from "@/lib/api/steam";
 import { execute, query, queryOne } from "@/lib/db";
-import { env } from "@/lib/env";
-import { getRecentlyPlayedGames } from "@/lib/api/steam";
 
 export interface YearlyStats {
   year: number;
@@ -329,7 +325,7 @@ export async function syncYearlySteamData(userId: string, year: number) {
   
   // 1. Get all owned games
   // We need to import getOwnedGames from lib/api/steam.ts (I need to fix the import above)
-  const { getOwnedGames, getPlayerAchievements, getGameSchema } = await import("@/lib/api/steam");
+  const { getOwnedGames, getPlayerAchievements } = await import("@/lib/api/steam");
   
   try {
     const games = await getOwnedGames(undefined, true, true);
