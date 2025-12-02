@@ -1,3 +1,11 @@
+## [1.3.1](https://github.com/jmsutorus/homepage/compare/v1.3.0...v1.3.1) (2025-12-02)
+
+
+### Bug Fixes
+
+* **media:** resolve parameter order and display issues ([#8](https://github.com/jmsutorus/homepage/issues/8)) ([5c008ad](https://github.com/jmsutorus/homepage/commit/5c008ad83dca97bae9618fff5b3f17cdce478840))
+* resolve async/await and parameter issues ([#9](https://github.com/jmsutorus/homepage/issues/9)) ([d499fb4](https://github.com/jmsutorus/homepage/commit/d499fb4eba0eca807dbdc76464be0db6dfed4aec))
+
 # [1.3.0](https://github.com/jmsutorus/homepage/compare/v1.2.1...v1.3.0) (2025-12-02)
 
 
