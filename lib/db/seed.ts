@@ -1,6 +1,7 @@
 import { createMoodEntry } from "./mood";
 import { createTask } from "./tasks";
 import { getDatabase } from "./index";
+import { initializeAchievements } from "../achievements";
 
 /**
  * Seed the database with sample data
@@ -22,6 +23,10 @@ export async function seedDatabase() {
   }
 
   const userId = user.id;
+
+  // Initialize achievements
+  console.log("  - Initializing achievements...");
+  await initializeAchievements();
 
   // Seed mood entries for the past 30 days
   await seedMoodEntries(userId);

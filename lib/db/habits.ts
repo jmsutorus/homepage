@@ -34,10 +34,15 @@ export interface HabitCompletion {
  */
 export async function getHabits(userId: string): Promise<Habit[]> {
   try {
-    return await query<Habit>(
+    const habits = await query<Habit>(
       "SELECT * FROM habits WHERE userId = ? AND active = 1 ORDER BY order_index ASC, created_at DESC",
       [userId]
     );
+    return habits.map(habit => ({
+      ...habit,
+      created_at: (habit.created_at as unknown) instanceof Date ? (habit.created_at as unknown as Date).toISOString() : String(habit.created_at),
+      updated_at: (habit.updated_at as unknown) instanceof Date ? (habit.updated_at as unknown as Date).toISOString() : String(habit.updated_at),
+    }));
   } catch (error) {
     console.error("Error getting habits:", error);
     return [];
@@ -49,10 +54,15 @@ export async function getHabits(userId: string): Promise<Habit[]> {
  */
 export async function getAllHabits(userId: string): Promise<Habit[]> {
   try {
-    return await query<Habit>(
+    const habits = await query<Habit>(
       "SELECT * FROM habits WHERE userId = ? ORDER BY active DESC, order_index ASC, created_at DESC",
       [userId]
     );
+    return habits.map(habit => ({
+      ...habit,
+      created_at: (habit.created_at as unknown) instanceof Date ? (habit.created_at as unknown as Date).toISOString() : String(habit.created_at),
+      updated_at: (habit.updated_at as unknown) instanceof Date ? (habit.updated_at as unknown as Date).toISOString() : String(habit.updated_at),
+    }));
   } catch (error) {
     console.error("Error getting all habits:", error);
     return [];
@@ -67,17 +77,33 @@ export async function createHabit(userId: string, data: {
   description?: string;
   frequency?: string;
   target?: number;
+  createdAt?: string; // Optional client-provided timestamp in local time
 }): Promise<Habit> {
   try {
+    // Use client-provided timestamp if available, otherwise format current time as local
+    let timestamp = data.createdAt;
+    if (!timestamp) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      timestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
     const result = await execute(
-      `INSERT INTO habits (userId, title, description, frequency, target)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO habits (userId, title, description, frequency, target, active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 1, ?, ?)`,
       [
         userId,
         data.title,
         data.description || null,
         data.frequency || 'daily',
-        data.target || 1
+        data.target || 1,
+        timestamp,
+        timestamp
       ]
     );
 

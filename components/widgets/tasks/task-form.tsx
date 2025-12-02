@@ -87,7 +87,6 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
 
       if (response.ok) {
         setRawInput("");
-        setTitle("");
         setPriority("medium");
         setCategory("");
         setDueDate(new Date());
@@ -108,7 +107,6 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const handleTemplateSelect = (template: Template) => {
     if (template.title) {
       setRawInput(template.title);
-      setTitle(template.title);
     }
     if (template.priority) {
       setPriority(template.priority);
@@ -138,7 +136,6 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
               value={rawInput}
               onChange={(e) => {
                 setRawInput(e.target.value);
-                setTitle(e.target.value);
                 // Reset manual override when user types new input
                 if (!manualOverride) setManualOverride(false);
               }}

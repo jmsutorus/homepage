@@ -49,6 +49,7 @@ export async function createHabitAction(data: {
   description?: string;
   frequency?: string;
   target?: number;
+  createdAt?: string; // Optional client-provided timestamp in local time
 }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");

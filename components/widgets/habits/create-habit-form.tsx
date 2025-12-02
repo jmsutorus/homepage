@@ -41,11 +41,22 @@ export function CreateHabitForm() {
     const target = parseInt(formData.get("target") as string) || 1;
 
     try {
+      // Format current time in local timezone (YYYY-MM-DD HH:MM:SS)
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const localTimestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
       await createHabitAction({
         title,
         description,
         frequency,
         target,
+        createdAt: localTimestamp, // Pass client's local time
       });
       setShowSuccess(true);
       // Wait for animation to play before closing
