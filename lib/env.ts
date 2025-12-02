@@ -47,6 +47,10 @@ export const env = createEnv({
     // Google Books API (for book data)
     GOOGLE_BOOKS_API_KEY: z.string().optional(),
 
+    // Weather.gov API
+    WEATHER_APP_NAME: z.string().default("Homepage"),
+    WEATHER_CONTACT_EMAIL: z.string().email().optional(),
+
     // Firebase Admin
     FIREBASE_PROJECT_ID: z.string().optional(),
     FIREBASE_CLIENT_EMAIL: z.string().optional(),
@@ -69,6 +73,10 @@ export const env = createEnv({
       .string()
       .transform((val) => val === "true")
       .default("false"),
+    ENABLE_WEATHER: z
+      .string()
+      .transform((val) => val === "true")
+      .default("false"),
 
     // Cache TTL (seconds)
     CACHE_TTL_STRAVA: z
@@ -87,6 +95,10 @@ export const env = createEnv({
       .string()
       .transform((val) => parseInt(val, 10))
       .default("120"),
+    CACHE_TTL_WEATHER: z
+      .string()
+      .transform((val) => parseInt(val, 10))
+      .default("1800"),
   },
 
   /**
@@ -146,6 +158,10 @@ export const env = createEnv({
     // Google Books
     GOOGLE_BOOKS_API_KEY: process.env.GOOGLE_BOOKS_API_KEY,
 
+    // Weather
+    WEATHER_APP_NAME: process.env.WEATHER_APP_NAME,
+    WEATHER_CONTACT_EMAIL: process.env.WEATHER_CONTACT_EMAIL,
+
     // Firebase Admin
     FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
     FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
@@ -161,12 +177,14 @@ export const env = createEnv({
     ENABLE_STRAVA: process.env.ENABLE_STRAVA,
     ENABLE_HOMEASSISTANT: process.env.ENABLE_HOMEASSISTANT,
     ENABLE_PLEX: process.env.ENABLE_PLEX,
+    ENABLE_WEATHER: process.env.ENABLE_WEATHER,
 
     // Cache TTL
     CACHE_TTL_STRAVA: process.env.CACHE_TTL_STRAVA,
     CACHE_TTL_STEAM: process.env.CACHE_TTL_STEAM,
     CACHE_TTL_HA: process.env.CACHE_TTL_HA,
     CACHE_TTL_PLEX: process.env.CACHE_TTL_PLEX,
+    CACHE_TTL_WEATHER: process.env.CACHE_TTL_WEATHER,
   },
 
   /**

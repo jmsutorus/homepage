@@ -11,6 +11,7 @@ import { getConnectedAccounts } from "@/lib/actions/settings";
 import { IntegrationsCard } from "@/components/widgets/settings/integrations-card";
 import { MediaTagsGenresManager } from "@/components/widgets/settings/media-tags-genres-manager";
 import { CalendarColorsManager } from "@/components/widgets/settings/calendar-colors-manager";
+import { WeatherLocationManager } from "@/components/widgets/settings/weather-location-manager";
 import { SignOutButton } from "@/components/widgets/settings/sign-out-button";
 
 export default async function SettingsPage() {
@@ -27,6 +28,8 @@ export default async function SettingsPage() {
         </div>
 
         <CalendarColorsManager />
+
+        <WeatherLocationManager />
 
         <MediaTagsGenresManager />
 
