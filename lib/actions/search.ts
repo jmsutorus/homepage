@@ -71,13 +71,14 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
       // If tags are required, tasks should probably be empty unless we add tags to tasks.
       // For now, if tags are present, we skip tasks.
       if (!filters?.tags || filters.tags.length === 0) {
-        tasks = await query<any>(
+        const taskResults = await query<any>(
           `SELECT id, title, due_date as date FROM tasks WHERE userId = ? AND title LIKE ? ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
           [userId, searchTerm, limit]
-        ).map(t => ({ 
-          id: t.id, 
-          title: t.title, 
-          type: "task" as const, 
+        );
+        tasks = taskResults.map(t => ({
+          id: t.id,
+          title: t.title,
+          type: "task" as const,
           url: "/tasks",
           date: t.date
         }));
@@ -86,10 +87,11 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
 
     let journals: SearchResult[] = [];
     if (shouldSearch("journal")) {
-      journals = await query<any>(
+      const journalResults = await query<any>(
         `SELECT id, title, slug, daily_date as date, content FROM journals WHERE userId = ? AND (title LIKE ? OR content LIKE ?) ${buildTagClause()} ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
         [userId, searchTerm, searchTerm, limit]
-      ).map(j => ({
+      );
+      journals = journalResults.map(j => ({
         id: j.id,
         title: j.title,
         type: "journal" as const,
@@ -101,10 +103,11 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
 
     let media: SearchResult[] = [];
     if (shouldSearch("media")) {
-      media = await query<any>(
+      const mediaResults = await query<any>(
         `SELECT id, title, slug, type as mediaType, description FROM media_content WHERE userId = ? AND (title LIKE ? OR description LIKE ?) ${buildTagClause()} ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
         [userId, searchTerm, searchTerm, limit]
-      ).map(m => ({
+      );
+      media = mediaResults.map(m => ({
         id: m.id,
         title: m.title,
         type: "media" as const,
@@ -115,10 +118,11 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
 
     let parks: SearchResult[] = [];
     if (shouldSearch("park")) {
-      parks = await query<any>(
+      const parkResults = await query<any>(
         `SELECT id, title, slug, description FROM parks WHERE userId = ? AND (title LIKE ? OR description LIKE ?) ${buildTagClause()} ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
         [userId, searchTerm, searchTerm, limit]
-      ).map(p => ({
+      );
+      parks = parkResults.map(p => ({
         id: p.id,
         title: p.title,
         type: "park" as const,
@@ -131,10 +135,11 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
     if (shouldSearch("habit")) {
       // Habits don't have tags
       if (!filters?.tags || filters.tags.length === 0) {
-        habits = await query<any>(
+        const habitResults = await query<any>(
           `SELECT id, title, description FROM habits WHERE userId = ? AND (title LIKE ? OR description LIKE ?) ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
           [userId, searchTerm, searchTerm, limit]
-        ).map(h => ({
+        );
+        habits = habitResults.map(h => ({
           id: h.id,
           title: h.title,
           type: "habit" as const,
