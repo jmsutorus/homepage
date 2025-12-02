@@ -8,6 +8,7 @@ import { HomeAssistantWidget } from "@/components/widgets/home-assistant/home-as
 import { PlexStatus } from "@/components/widgets/media/plex-status";
 import { MiniCalendar } from "@/components/widgets/calendar/mini-calendar";
 import { RecentTasks } from "@/components/widgets/tasks/recent-tasks";
+import { WeatherWidget } from "@/components/widgets/weather/weather-widget";
 import { ArrowRight } from "lucide-react";
 import { getUserId } from "@/lib/auth/server";
 import { getCalendarDataForMonth } from "@/lib/db/calendar";
@@ -44,6 +45,7 @@ export default async function DashboardPage({
   const isPlexEnabled = await getFeatureFlag("Plex", false);
   const isSteamEnabled = await getFeatureFlag("Steam", false);
   const isHomeAssistantEnabled = await getFeatureFlag("HomeAssistant", false);
+  const isWeatherEnabled = await getFeatureFlag("Weather", false);
 
   if (session?.user?.id) {
     // Get GitHub token from account table
@@ -92,6 +94,13 @@ export default async function DashboardPage({
         <MiniCalendar year={currentYear} month={currentMonth} calendarData={calendarData} colors={calendarColors} />
         <RecentTasks />
       </section>
+
+      {/* Weather */}
+      {isWeatherEnabled && (
+        <section>
+          <WeatherWidget />
+        </section>
+      )}
 
       {/* Recently Completed Media */}
       {recentMedia.length > 0 && (
