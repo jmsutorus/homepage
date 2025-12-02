@@ -36,7 +36,7 @@ export async function setCachedValue(key: string, value: unknown, userId: string
   const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString();
   const jsonValue = JSON.stringify(value);
 
-  execute(
+  await execute(
     `INSERT INTO api_cache (key, value, userId, expires_at)
      VALUES (?, ?, ?, ?)
      ON CONFLICT(key) DO UPDATE SET
@@ -52,7 +52,7 @@ export async function setCachedValue(key: string, value: unknown, userId: string
  * Invalidate specific cache key for a specific user
  */
 export async function invalidateCache(key: string, userId: string): Promise<boolean> {
-  const result = execute("DELETE FROM api_cache WHERE key = ? AND userId = ?", [key, userId]);
+  const result = await execute("DELETE FROM api_cache WHERE key = ? AND userId = ?", [key, userId]);
   return result.changes > 0;
 }
 
@@ -60,7 +60,7 @@ export async function invalidateCache(key: string, userId: string): Promise<bool
  * Invalidate cache keys matching a pattern for a specific user
  */
 export async function invalidateCachePattern(pattern: string, userId: string): Promise<number> {
-  const result = execute("DELETE FROM api_cache WHERE key LIKE ? AND userId = ?", [pattern, userId]);
+  const result = await execute("DELETE FROM api_cache WHERE key LIKE ? AND userId = ?", [pattern, userId]);
   return result.changes;
 }
 
@@ -68,7 +68,7 @@ export async function invalidateCachePattern(pattern: string, userId: string): P
  * Clear all expired cache entries for a specific user
  */
 export async function clearExpiredCache(userId: string): Promise<number> {
-  const result = execute(
+  const result = await execute(
     "DELETE FROM api_cache WHERE userId = ? AND expires_at <= datetime('now')",
     [userId]
   );
@@ -79,18 +79,18 @@ export async function clearExpiredCache(userId: string): Promise<number> {
  * Clear all cache entries for a specific user
  */
 export async function clearAllCache(userId: string): Promise<number> {
-  const result = execute("DELETE FROM api_cache WHERE userId = ?", [userId]);
+  const result = await execute("DELETE FROM api_cache WHERE userId = ?", [userId]);
   return result.changes;
 }
 
 /**
  * Get cache statistics for a specific user
  */
-export async function getCacheStatistics(userId: string): {
+export async function getCacheStatistics(userId: string): Promise<{
   total: number;
   expired: number;
   active: number;
-} {
+}> {
   const total = await queryOne<{ count: number }>(
     "SELECT COUNT(*) as count FROM api_cache WHERE userId = ?",
     [userId]
@@ -118,7 +118,7 @@ export async function getOrSetCache<T>(
   fetchFn: () => Promise<T>
 ): Promise<T> {
   // Try to get from cache first
-  const cached = getCachedValue<T>(key, userId);
+  const cached = await getCachedValue<T>(key, userId);
   if (cached !== null) {
     return cached;
   }
@@ -127,7 +127,7 @@ export async function getOrSetCache<T>(
   const data = await fetchFn();
 
   // Store in cache
-  setCachedValue(key, data, userId, ttlSeconds);
+  await setCachedValue(key, data, userId, ttlSeconds);
 
   return data;
 }

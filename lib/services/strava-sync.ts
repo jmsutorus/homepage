@@ -21,10 +21,10 @@ export interface SyncResult {
 /**
  * Sync athlete profile from Strava API to database
  */
-async function syncAthlete(accessToken: string): Promise<number | null> {
+async function syncAthlete(accessToken: string, userId: string): Promise<number | null> {
   try {
     const athlete = await getAthleteFromAPI(accessToken);
-    upsertAthlete(athlete);
+    await upsertAthlete(athlete, userId);
     return athlete.id;
   } catch (error) {
     console.error("Failed to sync athlete:", error);
@@ -41,6 +41,7 @@ async function syncAthlete(accessToken: string): Promise<number | null> {
 async function syncActivities(
   accessToken: string,
   athleteId: number,
+  userId: string,
   full = false
 ): Promise<number> {
   try {
@@ -48,7 +49,7 @@ async function syncActivities(
 
     // If not a full sync, only get activities since last sync
     if (!full) {
-      const lastSync = getLastSyncTime(athleteId);
+      const lastSync = await getLastSyncTime(athleteId);
       if (lastSync) {
         // Add 1 second to avoid duplicates
         after = Math.floor(lastSync.getTime() / 1000) + 1;
@@ -64,7 +65,7 @@ async function syncActivities(
     }
 
     // Save to database
-    upsertActivities(activities, athleteId);
+    await upsertActivities(activities, athleteId, userId);
 
     return activities.length;
   } catch (error) {
@@ -78,7 +79,7 @@ async function syncActivities(
  * @param accessToken - Strava access token
  * @param full - If true, sync all activities. If false, sync only new activities since last sync
  */
-export async function syncStravaData(accessToken: string, full = false): Promise<SyncResult> {
+export async function syncStravaData(accessToken: string, userId: string, full = false): Promise<SyncResult> {
   try {
     if (!accessToken) {
       return {
@@ -90,7 +91,7 @@ export async function syncStravaData(accessToken: string, full = false): Promise
     }
 
     // Sync athlete profile
-    const athleteId = await syncAthlete(accessToken);
+    const athleteId = await syncAthlete(accessToken, userId);
 
     if (!athleteId) {
       return {
@@ -102,7 +103,7 @@ export async function syncStravaData(accessToken: string, full = false): Promise
     }
 
     // Sync activities
-    const activitiesSynced = await syncActivities(accessToken, athleteId, full);
+    const activitiesSynced = await syncActivities(accessToken, athleteId, userId, full);
 
     return {
       success: true,
@@ -141,11 +142,11 @@ export function getCachedAthlete(athleteId: number) {
  * @param athleteId - The athlete ID to check
  * @param intervalMinutes - The minimum interval between syncs in minutes (default 15)
  */
-export function isSyncNeeded(
+export async function isSyncNeeded(
   athleteId: number,
   intervalMinutes = 15
-): boolean {
-  const lastSync = getLastSyncTime(athleteId);
+): Promise<boolean> {
+  const lastSync = await getLastSyncTime(athleteId);
 
   if (!lastSync) {
     return true;

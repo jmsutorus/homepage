@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTask, updateTask, deleteTask, TaskPriority } from "@/lib/db/tasks";
+import { getUserId } from "@/lib/auth/server";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -19,7 +20,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     // Check if task exists
-    const existingTask = getTask(taskId);
+    const userId = await getUserId();
+    const existingTask = await getTask(taskId, userId);
     if (!existingTask) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
@@ -53,7 +55,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       updates.category = body.category || null;
     }
 
-    const success = updateTask(taskId, updates);
+    const success = await updateTask(taskId, updates);
 
     if (!success) {
       return NextResponse.json(
@@ -62,7 +64,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const updatedTask = getTask(taskId);
+    const updatedTask = await getTask(taskId, userId);
     return NextResponse.json(updatedTask);
   } catch (error) {
     console.error("Error updating task:", error);
@@ -85,7 +87,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid task ID" }, { status: 400 });
     }
 
-    const success = deleteTask(taskId);
+    const userId = await getUserId();
+    const success = await deleteTask(taskId, userId);
 
     if (!success) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });

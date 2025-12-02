@@ -4,7 +4,7 @@ export async function up() {
   console.log("Running migration: add_achievements_tables");
   const db = getDatabase();
 
-  db.exec(`
+  await db.execute(`
     -- Achievements Table
     CREATE TABLE IF NOT EXISTS achievements (
       id TEXT PRIMARY KEY,

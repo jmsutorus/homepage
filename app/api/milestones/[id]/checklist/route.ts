@@ -26,18 +26,18 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     // Verify milestone exists
-    const milestone = getMilestoneById(milestoneId);
+    const milestone = await getMilestoneById(milestoneId);
     if (!milestone) {
       return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
     }
 
     // Verify user owns the parent goal
-    const goal = getGoalById(milestone.goalId, userId);
+    const goal = await getGoalById(milestone.goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const checklist = getChecklistByMilestoneId(milestoneId);
+    const checklist = await getChecklistByMilestoneId(milestoneId);
     return NextResponse.json(checklist);
   } catch (error) {
     console.error("Error fetching milestone checklist:", error);
@@ -63,13 +63,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // Verify milestone exists
-    const milestone = getMilestoneById(milestoneId);
+    const milestone = await getMilestoneById(milestoneId);
     if (!milestone) {
       return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
     }
 
     // Verify user owns the parent goal
-    const goal = getGoalById(milestone.goalId, userId);
+    const goal = await getGoalById(milestone.goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // Handle reorder
     if (body.reorder && Array.isArray(body.reorder)) {
-      const success = reorderMilestoneChecklist(milestoneId, body.reorder);
+      const success = await reorderMilestoneChecklist(milestoneId, body.reorder);
       return NextResponse.json({ success });
     }
 
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const item = createMilestoneChecklistItem(milestoneId, { text: text.trim() });
+    const item = await createMilestoneChecklistItem(milestoneId, { text: text.trim() });
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
     console.error("Error creating milestone checklist item:", error);

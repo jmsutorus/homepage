@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the workout belongs to the user
-    const workout = getScheduledWorkout(id);
+    const workout = await getScheduledWorkout(id, userId);
 
     if (!workout) {
       return NextResponse.json({ error: "Workout not found" }, { status: 404 });
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark as completed
-    markWorkoutCompleted(id, strava_activity_id);
+    await markWorkoutCompleted(id, userId, strava_activity_id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

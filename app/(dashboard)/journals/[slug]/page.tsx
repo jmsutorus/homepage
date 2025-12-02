@@ -36,7 +36,7 @@ export default async function JournalDetailPage({ params }: JournalDetailPagePro
   // For daily journals, get mood from mood_entries
   let displayMood = journal.mood;
   if (journal.journal_type === "daily" && journal.daily_date) {
-    const moodRating = await getMoodForDate(journal.daily_date);
+    const moodRating = await getMoodForDate(journal.daily_date, userId);
     if (moodRating !== null) {
       displayMood = moodRating;
     }

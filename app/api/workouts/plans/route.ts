@@ -39,7 +39,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const plans = getAllWorkoutPlans(userId);
+    const plans = await getAllWorkoutPlans(userId);
 
     return NextResponse.json({ plans });
   } catch (error) {
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create workout plan
-    const planId = createWorkoutPlan({
+    const planId = await createWorkoutPlan({
       user_id: userId,
       name,
       description: description || null,
@@ -115,7 +115,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update workout plan
-    updateWorkoutPlan(id, updates);
+    await updateWorkoutPlan(id, userId, updates);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -148,7 +148,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete workout plan
-    deleteWorkoutPlan(parseInt(id));
+    await deleteWorkoutPlan(parseInt(id), userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

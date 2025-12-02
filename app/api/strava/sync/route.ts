@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncStravaData } from "@/lib/services/strava-sync";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * POST /api/strava/sync
@@ -18,7 +19,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await syncStravaData(accessToken, full);
+    const userId = await getUserId();
+    const result = await syncStravaData(accessToken, userId, full);
 
     if (!result.success) {
       return NextResponse.json(

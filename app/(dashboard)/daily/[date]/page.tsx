@@ -50,7 +50,7 @@ export default async function DailyPage({ params }: DailyPageProps) {
   });
 
   const completions = await getHabitCompletionsAction(date);
-  const mood = await getMoodForDate(date);
+  const mood = userId ? await getMoodForDate(date, userId) : null;
 
   let githubEvents: any[] = [];
 

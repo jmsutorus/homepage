@@ -14,6 +14,8 @@ interface CalendarDayCellProps {
   isToday: boolean;
   isSelected: boolean;
   colors: any;
+  onOpenMoodModal: (date: string) => void;
+  onDayClick: (date: string) => void;
 }
 
 // Mood icon mapping
@@ -40,6 +42,8 @@ function CalendarDayCellComponent({
   isToday,
   isSelected,
   colors,
+  onOpenMoodModal,
+  onDayClick,
 }: CalendarDayCellProps) {
   const router = useRouter();
 
@@ -79,7 +83,7 @@ function CalendarDayCellComponent({
 
   return (
     <Card
-      onClick={() => router.push(`/daily/${date}`)}
+      onClick={() => onDayClick(date)}
       className={cn(
         "min-h-[50px] sm:min-h-[100px] md:min-h-[120px] p-2 flex flex-col hover:shadow-md transition-all cursor-pointer",
         isToday && "ring-2 ring-primary",
@@ -104,7 +108,7 @@ function CalendarDayCellComponent({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`/journals/new?type=daily&date=${date}`);
+              onOpenMoodModal(date);
             }}
             className="cursor-pointer h-5 w-5 sm:h-4 sm:w-4 rounded-full bg-muted hover:bg-primary/20 flex items-center justify-center transition-colors"
             title="Add daily journal for this day"

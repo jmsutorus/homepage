@@ -8,21 +8,28 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { FileText } from "lucide-react";
+import { TEMPLATES, Template } from "@/lib/constants/templates";
 import type { TaskTemplate } from "@/lib/db/task-templates";
 
 interface TemplatePickerProps {
-  type: "task";
-  onSelect: (template: Partial<TaskTemplate>) => void;
+  type: "task" | "journal" | "media";
+  onSelect: (template: any) => void;
 }
 
 export function TemplatePicker({ type, onSelect }: TemplatePickerProps) {
   const [open, setOpen] = useState(false);
-  const [templates, setTemplates] = useState<TaskTemplate[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (type === "task") {
       fetchTaskTemplates();
+    } else if (type === "journal") {
+      setTemplates(TEMPLATES.journal);
+      setIsLoading(false);
+    } else if (type === "media") {
+      setTemplates(TEMPLATES.media);
+      setIsLoading(false);
     }
   }, [type]);
 
@@ -43,7 +50,7 @@ export function TemplatePicker({ type, onSelect }: TemplatePickerProps) {
 
   if (isLoading || templates.length === 0) return null;
 
-  const handleSelect = (template: TaskTemplate) => {
+  const handleSelect = (template: any) => {
     onSelect(template);
     setOpen(false);
   };

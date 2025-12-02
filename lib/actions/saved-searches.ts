@@ -32,7 +32,7 @@ export async function createSavedSearch(name: string, queryStr: string, filters:
   const userId = await getUserId();
   const filtersJson = JSON.stringify(filters);
 
-  const result = execute(
+  const result = await execute(
     "INSERT INTO saved_searches (userId, name, query, filters) VALUES (?, ?, ?, ?)",
     [userId, name, queryStr, filtersJson]
   );
@@ -48,5 +48,5 @@ export async function createSavedSearch(name: string, queryStr: string, filters:
 
 export async function deleteSavedSearch(id: number): Promise<void> {
   const userId = await getUserId();
-  execute("DELETE FROM saved_searches WHERE id = ? AND userId = ?", [id, userId]);
+  await execute("DELETE FROM saved_searches WHERE id = ? AND userId = ?", [id, userId]);
 }

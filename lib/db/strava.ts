@@ -49,15 +49,16 @@ export interface DBStravaAthlete {
 /**
  * Save or update athlete information
  */
-export async function upsertAthlete(athlete: StravaAthlete): Promise<void> {
+export async function upsertAthlete(athlete: StravaAthlete, userId: string): Promise<void> {
   const db = getDatabase();
 
   await db.execute({
     sql: `INSERT INTO strava_athlete (
-            id, username, firstname, lastname, city, state, country,
+            id, userId, username, firstname, lastname, city, state, country,
             sex, premium, profile_medium, profile, last_sync
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
           ON CONFLICT(id) DO UPDATE SET
+            userId = excluded.userId,
             username = excluded.username,
             firstname = excluded.firstname,
             lastname = excluded.lastname,
@@ -72,16 +73,17 @@ export async function upsertAthlete(athlete: StravaAthlete): Promise<void> {
             updated_at = CURRENT_TIMESTAMP`,
     args: [
       athlete.id,
-      athlete.username,
-      athlete.firstname,
-      athlete.lastname,
-      athlete.city,
-      athlete.state,
-      athlete.country,
-      athlete.sex,
+      userId,
+      athlete.username ?? null,
+      athlete.firstname ?? null,
+      athlete.lastname ?? null,
+      athlete.city ?? null,
+      athlete.state ?? null,
+      athlete.country ?? null,
+      athlete.sex ?? null,
       athlete.premium ? 1 : 0,
-      athlete.profile_medium,
-      athlete.profile
+      athlete.profile_medium ?? null,
+      athlete.profile ?? null
     ]
   });
 }
@@ -109,18 +111,19 @@ export async function getAthleteByUserId(userId: string): Promise<DBStravaAthlet
 /**
  * Save or update activity
  */
-export async function upsertActivity(activity: StravaActivity, athleteId: number): Promise<void> {
+export async function upsertActivity(activity: StravaActivity, athleteId: number, userId: string): Promise<void> {
   const db = getDatabase();
 
   await db.execute({
     sql: `INSERT INTO strava_activities (
-            id, athlete_id, name, distance, moving_time, elapsed_time,
+            id, userId, athlete_id, name, distance, moving_time, elapsed_time,
             total_elevation_gain, type, sport_type, start_date, start_date_local,
             timezone, achievement_count, kudos_count, trainer, commute,
             average_speed, max_speed, average_heartrate, max_heartrate,
             elev_high, elev_low, pr_count
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(id) DO UPDATE SET
+            userId = excluded.userId,
             name = excluded.name,
             distance = excluded.distance,
             moving_time = excluded.moving_time,
@@ -140,6 +143,7 @@ export async function upsertActivity(activity: StravaActivity, athleteId: number
             updated_at = CURRENT_TIMESTAMP`,
     args: [
       activity.id,
+      userId,
       athleteId,
       activity.name,
       activity.distance,
@@ -155,13 +159,13 @@ export async function upsertActivity(activity: StravaActivity, athleteId: number
       activity.kudos_count,
       activity.trainer ? 1 : 0,
       activity.commute ? 1 : 0,
-      activity.average_speed,
-      activity.max_speed,
-      activity.average_heartrate,
-      activity.max_heartrate,
-      activity.elev_high,
-      activity.elev_low,
-      activity.pr_count
+      activity.average_speed ?? null,
+      activity.max_speed ?? null,
+      activity.average_heartrate ?? null,
+      activity.max_heartrate ?? null,
+      activity.elev_high ?? null,
+      activity.elev_low ?? null,
+      activity.pr_count ?? 0
     ]
   });
 }
@@ -171,10 +175,11 @@ export async function upsertActivity(activity: StravaActivity, athleteId: number
  */
 export async function upsertActivities(
   activities: StravaActivity[],
-  athleteId: number
+  athleteId: number,
+  userId: string
 ): Promise<void> {
   for (const activity of activities) {
-    await upsertActivity(activity, athleteId);
+    await upsertActivity(activity, athleteId, userId);
   }
 }
 

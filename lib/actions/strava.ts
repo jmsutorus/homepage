@@ -32,7 +32,7 @@ export async function syncStravaActivities(): Promise<SyncState> {
     }
 
     // Perform sync
-    const result = await syncStravaData(accessToken);
+    const result = await syncStravaData(accessToken, session.user.id);
 
     if (!result.success) {
       return { success: false, message: result.error || "Failed to sync" };

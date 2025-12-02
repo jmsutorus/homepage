@@ -29,7 +29,7 @@ export function getDatabase(): Client {
     // }
 
     db = createClient({
-        url: env.DATABASE_URL,
+        url: env.DATABASE_URL!,
         authToken: env.DATABASE_AUTH_TOKEN,
       });
 
@@ -76,7 +76,7 @@ export function closeDatabase() {
 /**
  * Execute a query with parameters
  */
-export async function query<T>(sql: string, params: unknown[] = []): Promise<T[]> {
+export async function query<T>(sql: string, params: any[] = []): Promise<T[]> {
   const database = getDatabase();
   const result = await database.execute({
     sql,
@@ -88,7 +88,7 @@ export async function query<T>(sql: string, params: unknown[] = []): Promise<T[]
 /**
  * Execute a query that returns a single row
  */
-export async function queryOne<T>(sql: string, params: unknown[] = []): Promise<T | undefined> {
+export async function queryOne<T>(sql: string, params: any[] = []): Promise<T | undefined> {
   const database = getDatabase();
   const result = await database.execute({
     sql,
@@ -100,7 +100,7 @@ export async function queryOne<T>(sql: string, params: unknown[] = []): Promise<
 /**
  * Execute an insert/update/delete query
  */
-export async function execute(sql: string, params: unknown[] = []) {
+export async function execute(sql: string, params: any[] = []) {
   const database = getDatabase();
   const result = await database.execute({
     sql,
