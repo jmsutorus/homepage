@@ -97,6 +97,16 @@ export async function getAthlete(athleteId: number): Promise<DBStravaAthlete | u
 }
 
 /**
+ * Get athlete information by user ID
+ */
+export async function getAthleteByUserId(userId: string): Promise<DBStravaAthlete | undefined> {
+  return await queryOne<DBStravaAthlete>(
+    "SELECT * FROM strava_athlete WHERE userId = ?",
+    [userId]
+  );
+}
+
+/**
  * Save or update activity
  */
 export async function upsertActivity(activity: StravaActivity, athleteId: number): Promise<void> {

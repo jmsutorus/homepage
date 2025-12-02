@@ -2,14 +2,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { QuickLinks } from "@/components/widgets/quick-links/quick-links";
 import { getRecentlyCompletedMedia } from "@/lib/media";
-import { MediaCard } from "@/components/widgets/media/media-card";
 import { SteamStatus } from "@/components/widgets/steam/steam-status";
 import { HomeAssistantWidget } from "@/components/widgets/home-assistant/home-assistant-widget";
 import { PlexStatus } from "@/components/widgets/media/plex-status";
 import { MiniCalendar } from "@/components/widgets/calendar/mini-calendar";
 import { RecentTasks } from "@/components/widgets/tasks/recent-tasks";
 import { WeatherWidget } from "@/components/widgets/weather/weather-widget";
-import { ArrowRight } from "lucide-react";
 import { getUserId } from "@/lib/auth/server";
 import { getCalendarDataForMonth } from "@/lib/db/calendar";
 import { auth } from "@/auth";
@@ -18,6 +16,19 @@ import { queryOne } from "@/lib/db";
 import { getCalendarColorsForUser } from "@/lib/actions/calendar-colors";
 import { getFeatureFlag } from "@/lib/flags";
 import { ActionBanner } from "@/components/widgets/action-banner";
+import { getHabits, getHabitCompletions } from "@/lib/db/habits";
+import { getMoodEntry, getMoodEntriesInRange } from "@/lib/db/mood";
+import { getAllParks } from "@/lib/db/parks";
+import { getAllJournals } from "@/lib/db/journals";
+import { getUpcomingTasks } from "@/lib/db/tasks";
+import { getAthleteByUserId, getActivities } from "@/lib/db/strava";
+import { DailyHabits } from "@/components/widgets/habits/daily-habits";
+import { MoodSummary } from "@/components/widgets/mood/mood-summary";
+import { ParkSummary } from "@/components/widgets/parks/park-summary";
+import { RecentActivity } from "@/components/widgets/exercise/recent-activity";
+import { DailyJournalPreview } from "@/components/widgets/journal/daily-journal-preview";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -28,27 +39,59 @@ export default async function DashboardPage({
 }) {
   // Require authentication
   const userId = await getUserId();
+  const session = await auth();
 
-  // Get recently completed media sorted by completion date (most recent first)
-  const recentMedia = await getRecentlyCompletedMedia(userId, 4);
-
-  // Get calendar data for current month
+  // Parse date params
   const params = await searchParams;
   const now = new Date();
   const currentYear = params.year ? parseInt(params.year) : now.getFullYear();
   const currentMonth = params.month ? parseInt(params.month) : now.getMonth() + 1;
+  const todayStr = now.toISOString().split('T')[0];
 
-  // Fetch GitHub activity if user is authenticated and has linked account
-  const session = await auth();
-  let githubEvents: any[] = [];
-
+  // Feature flags
   const isPlexEnabled = await getFeatureFlag("Plex", false);
   const isSteamEnabled = await getFeatureFlag("Steam", false);
   const isHomeAssistantEnabled = await getFeatureFlag("HomeAssistant", false);
   const isWeatherEnabled = await getFeatureFlag("Weather", false);
 
+  // Fetch data in parallel
+  const [
+    habits,
+    habitCompletions,
+    todayMood,
+    recentMoods,
+    allParks,
+    latestJournal,
+    upcomingTasks,
+    recentMedia,
+    calendarColors,
+    athlete
+  ] = await Promise.all([
+    getHabits(userId),
+    getHabitCompletions(userId, todayStr),
+    getMoodEntry(todayStr, userId),
+    getMoodEntriesInRange(
+      new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      todayStr,
+      userId
+    ),
+    getAllParks(userId),
+    getAllJournals(userId).then(journals => journals[0] || null),
+    getUpcomingTasks(userId),
+    getRecentlyCompletedMedia(userId, 4),
+    getCalendarColorsForUser(),
+    getAthleteByUserId(userId)
+  ]);
+
+  // Fetch Strava activities if athlete exists
+  let recentActivities: any[] = [];
+  if (athlete) {
+    recentActivities = await getActivities(athlete.id, 5);
+  }
+
+  // Fetch GitHub activity
+  let githubEvents: any[] = [];
   if (session?.user?.id) {
-    // Get GitHub token from account table
     const account = await queryOne<{ accessToken: string }>(
       "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
       [session.user.id]
@@ -67,80 +110,158 @@ export default async function DashboardPage({
     }
   }
 
+  // Get calendar data
   const calendarDataMap = await getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
   const calendarData = Object.fromEntries(calendarDataMap);
-  const calendarColors = await getCalendarColorsForUser();
+
+  // Pick a random park or featured park
+  const featuredPark = allParks.find(p => p.featured) || 
+                       (allParks.length > 0 ? allParks[Math.floor(Math.random() * allParks.length)] : null);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <ActionBanner />
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome to your personal homepage
-        </p>
+      
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            {now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Optional: Add global action buttons here */}
+        </div>
       </div>
 
       {/* Quick Links */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold tracking-tight">Quick Links</h2>
+      <QuickLinks />
+
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        {/* Column 1: Focus (Tasks & Habits) */}
+        <div className="space-y-6">
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold tracking-tight">Focus</h2>
+            <RecentTasks />
+          </section>
+          
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold tracking-tight">Habits</h2>
+              <Button variant="ghost" size="sm" asChild className="h-6 text-xs">
+                <Link href="/habits">View All</Link>
+              </Button>
+            </div>
+            <Card>
+              <CardContent className="pt-6">
+                <DailyHabits 
+                  habits={habits} 
+                  completions={habitCompletions} 
+                  date={todayStr} 
+                />
+              </CardContent>
+            </Card>
+          </section>
         </div>
-        <QuickLinks />
-      </section>
 
-      {/* Calendar & Recent Tasks */}
-      <section className="grid gap-4 lg:grid-cols-2">
-        <MiniCalendar year={currentYear} month={currentMonth} calendarData={calendarData} colors={calendarColors} />
-        <RecentTasks />
-      </section>
+        {/* Column 2: Life (Calendar, Mood, Journal) */}
+        <div className="space-y-6">
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold tracking-tight">Schedule</h2>
+            <MiniCalendar 
+              year={currentYear} 
+              month={currentMonth} 
+              calendarData={calendarData} 
+              colors={calendarColors} 
+            />
+          </section>
 
-      {/* Weather */}
-      {isWeatherEnabled && (
-        <section>
-          <WeatherWidget />
-        </section>
-      )}
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold tracking-tight">Mind</h2>
+            <div className="grid gap-4">
+              <MoodSummary todayMood={todayMood} recentMoods={recentMoods} />
+              
+              {latestJournal && (
+                <DailyJournalPreview journal={latestJournal} />
+              )}
+              {!latestJournal && (
+                 <Card>
+                   <CardContent className="pt-6 text-center">
+                     <p className="text-sm text-muted-foreground mb-3">No journal entries yet.</p>
+                     <Button variant="outline" size="sm" asChild>
+                       <Link href="/journals">Start Journaling</Link>
+                     </Button>
+                   </CardContent>
+                 </Card>
+              )}
+            </div>
+          </section>
+        </div>
 
-      {/* Recently Completed Media */}
-      {recentMedia.length > 0 && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold tracking-tight">Recently Completed</h2>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/media">
-                View all
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-            {recentMedia.map((item) => (
-              <MediaCard key={`${item.frontmatter.type}-${item.slug}`} item={item} />
-            ))}
-          </div>
-        </section>
-      )}
+        {/* Column 3: Leisure & Health (Exercise, Media, Parks, Weather) */}
+        <div className="space-y-6">
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold tracking-tight">Activity & Leisure</h2>
+            
+            {isWeatherEnabled && (
+              <div className="mb-4">
+                <WeatherWidget />
+              </div>
+            )}
 
-      {/* Gaming & Services */}
-      {isSteamEnabled || isPlexEnabled || isHomeAssistantEnabled && (
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold tracking-tight">Gaming & Services</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {isSteamEnabled && (
-            <SteamStatus />
-          )}
+            <div className="space-y-4">
+              <RecentActivity activities={recentActivities} />
+              
+              <ParkSummary park={featuredPark} />
 
-          {isPlexEnabled && (
-            <PlexStatus />
-          )}
+              {recentMedia.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium">Recent Media</CardTitle>
+                      <Button variant="ghost" size="sm" asChild className="h-6 text-xs">
+                        <Link href="/media">View All</Link>
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-2">
+                      {recentMedia.slice(0, 2).map((item) => (
+                        <Link key={`${item.frontmatter.type}-${item.slug}`} href={`/media/${item.slug}`} className="block group">
+                          <div className="aspect-[2/3] relative rounded-md overflow-hidden bg-muted">
+                            {item.frontmatter.poster && (
+                              <Image 
+                                src={item.frontmatter.poster} 
+                                alt={item.frontmatter.title} 
+                                fill 
+                                className="object-cover transition-transform group-hover:scale-105" 
+                              />
+                            )}
+                          </div>
+                          <p className="mt-1 text-xs font-medium truncate group-hover:text-primary">{item.frontmatter.title}</p>
+                        </Link>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </section>
 
-          {isHomeAssistantEnabled && (
-            <HomeAssistantWidget />
+          {(isSteamEnabled || isPlexEnabled || isHomeAssistantEnabled) && (
+            <section className="space-y-3">
+              <h2 className="text-lg font-semibold tracking-tight">Services</h2>
+              <div className="grid gap-3">
+                {isSteamEnabled && <SteamStatus />}
+                {isPlexEnabled && <PlexStatus />}
+                {isHomeAssistantEnabled && <HomeAssistantWidget />}
+              </div>
+            </section>
           )}
         </div>
-      </section>
-      )}
+      </div>
     </div>
   );
 }

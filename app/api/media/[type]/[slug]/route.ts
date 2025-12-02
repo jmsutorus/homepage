@@ -129,7 +129,7 @@ export async function PATCH(
       content: content || "",
     };
 
-    const success = await updateMedia(slug, updateData, userId);
+    const success = await updateMedia(slug, userId, updateData);
 
     if (!success) {
       return NextResponse.json(
