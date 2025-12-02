@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/jmsutorus/homepage/compare/v1.1.0...v1.2.0) (2025-12-02)
+
+
+### Features
+
+* Homepage now pulls weather data ([ad7580e](https://github.com/jmsutorus/homepage/commit/ad7580e7de6a8a803b3077ce136cb91aa8e433d9))
+
 # [1.1.0](https://github.com/jmsutorus/homepage/compare/v1.0.0...v1.1.0) (2025-12-02)
 
 
