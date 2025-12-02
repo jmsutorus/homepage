@@ -30,13 +30,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const withDetails = request.nextUrl.searchParams.get("withDetails") === "true";
 
-    const goal = getGoalById(goalId, userId);
+    const goal = await getGoalById(goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
 
     if (withDetails) {
-      const goalWithDetails = getGoalWithDetails(goal.slug, userId);
+      const goalWithDetails = await getGoalWithDetails(goal.slug, userId);
       return NextResponse.json(goalWithDetails);
     }
 
@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid goal ID" }, { status: 400 });
     }
 
-    const existingGoal = getGoalById(goalId, userId);
+    const existingGoal = await getGoalById(goalId, userId);
     if (!existingGoal) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
@@ -106,7 +106,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       updates.priority = body.priority as GoalPriority;
     }
 
-    const updatedGoal = updateGoal(goalId, userId, updates);
+    const updatedGoal = await updateGoal(goalId, userId, updates);
     return NextResponse.json(updatedGoal);
   } catch (error) {
     console.error("Error updating goal:", error);
@@ -130,7 +130,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid goal ID" }, { status: 400 });
     }
 
-    const success = deleteGoal(goalId, userId);
+    const success = await deleteGoal(goalId, userId);
 
     if (!success) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });

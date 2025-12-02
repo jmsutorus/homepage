@@ -87,14 +87,14 @@ async function formatDateToTitle(dateString: string): Promise<string> {
 /**
  * Get mood entry for a specific date
  */
-export async function getMoodForDate(date: string): Promise<number | null> {
+export async function getMoodForDate(date: string, userId: string): Promise<number | null> {
   try {
     const db = getDatabase();
     const result = await db.execute({
-      sql: "SELECT rating FROM mood_entries WHERE date = ?",
-      args: [date]
+      sql: "SELECT rating FROM mood_entries WHERE date = ? AND userId = ?",
+      args: [date, userId]
     });
-    const row = result.rows[0] as { rating: number } | undefined;
+    const row = result.rows[0] as unknown as { rating: number } | undefined;
     return row ? row.rating : null;
   } catch (error) {
     console.error("Error getting mood for date:", error);
@@ -130,7 +130,7 @@ export async function getAllJournals(userId: string): Promise<JournalContent[]> 
     });
     console.log("getAllJournals", userId);
     console.log(result);
-    const rows = result.rows as DBJournal[];
+    const rows = result.rows as unknown as DBJournal[];
     return Promise.all(rows.map(dbToJournalContent));
   } catch (error) {
     console.error("Error getting all journals:", error);
@@ -148,7 +148,7 @@ export async function getJournalCount(userId: string): Promise<number> {
       sql: "SELECT COUNT(*) as count FROM journals WHERE userId = ?",
       args: [userId]
     });
-    const row = result.rows[0] as { count: number };
+    const row = result.rows[0] as unknown as { count: number };
     return row.count;
   } catch (error) {
     console.error("Error getting journal count:", error);
@@ -168,7 +168,7 @@ export async function getPublishedJournals(userId: string): Promise<JournalConte
             ORDER BY created_at DESC`,
       args: [userId]
     });
-    const rows = result.rows as DBJournal[];
+    const rows = result.rows as unknown as DBJournal[];
     return Promise.all(rows.map(dbToJournalContent));
   } catch (error) {
     console.error("Error getting published journals:", error);
@@ -186,7 +186,7 @@ export async function getJournalBySlug(slug: string, userId: string): Promise<Jo
       sql: "SELECT * FROM journals WHERE slug = ? AND userId = ?",
       args: [slug, userId]
     });
-    const row = result.rows[0] as DBJournal | undefined;
+    const row = result.rows[0] as unknown as DBJournal | undefined;
     return row ? await dbToJournalContent(row) : null;
   } catch (error) {
     console.error("Error getting journal by slug:", error);
@@ -204,7 +204,7 @@ export async function getJournalById(id: number, userId: string): Promise<Journa
       sql: "SELECT * FROM journals WHERE id = ? AND userId = ?",
       args: [id, userId]
     });
-    const row = result.rows[0] as DBJournal | undefined;
+    const row = result.rows[0] as unknown as DBJournal | undefined;
     return row ? await dbToJournalContent(row) : null;
   } catch (error) {
     console.error("Error getting journal by ID:", error);
@@ -224,7 +224,7 @@ export async function getFeaturedJournals(userId: string): Promise<JournalConten
             ORDER BY created_at DESC`,
       args: [userId]
     });
-    const rows = result.rows as DBJournal[];
+    const rows = result.rows as unknown as DBJournal[];
     return Promise.all(rows.map(dbToJournalContent));
   } catch (error) {
     console.error("Error getting featured journals:", error);
@@ -429,7 +429,7 @@ export async function getDailyJournalByDate(date: string, userId: string): Promi
       sql: "SELECT * FROM journals WHERE journal_type = 'daily' AND daily_date = ? AND userId = ?",
       args: [date, userId]
     });
-    const row = result.rows[0] as DBJournal | undefined;
+    const row = result.rows[0] as unknown as DBJournal | undefined;
     return row ? await dbToJournalContent(row) : null;
   } catch (error) {
     console.error("Error getting daily journal by date:", error);
@@ -471,7 +471,7 @@ export async function journalSlugExists(slug: string): Promise<boolean> {
       sql: "SELECT COUNT(*) as count FROM journals WHERE slug = ?",
       args: [slug]
     });
-    const row = result.rows[0] as { count: number };
+    const row = result.rows[0] as unknown as { count: number };
     return row.count > 0;
   } catch (error) {
     console.error("Error checking journal slug:", error);
@@ -501,10 +501,10 @@ export async function addJournalLink(
 
     const linkResult = await db.execute({
       sql: "SELECT * FROM journal_links WHERE id = ?",
-      args: [insertResult.lastInsertRowid]
+      args: [insertResult.lastInsertRowid as any]
     });
 
-    const link = linkResult.rows[0] as DBJournalLink;
+    const link = linkResult.rows[0] as unknown as DBJournalLink;
     return await dbToJournalLink(link);
   } catch (error) {
     console.error("Error adding journal link:", error);
@@ -563,7 +563,7 @@ export async function getLinksForJournal(journalId: number): Promise<JournalLink
             ORDER BY created_at ASC`,
       args: [journalId]
     });
-    const rows = result.rows as DBJournalLink[];
+    const rows = result.rows as unknown as DBJournalLink[];
     return Promise.all(rows.map(dbToJournalLink));
   } catch (error) {
     console.error("Error getting links for journal:", error);
@@ -587,7 +587,7 @@ export async function getJournalsLinkingTo(
             ORDER BY j.created_at DESC`,
       args: [linkedType, linkedId]
     });
-    const rows = result.rows as DBJournal[];
+    const rows = result.rows as unknown as DBJournal[];
     return Promise.all(rows.map(dbToJournalContent));
   } catch (error) {
     console.error("Error getting journals linking to object:", error);

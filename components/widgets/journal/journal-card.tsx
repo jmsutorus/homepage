@@ -9,13 +9,13 @@ interface JournalCardProps {
   journal: JournalContent;
 }
 
-export function JournalCard({ journal }: JournalCardProps) {
+export async function JournalCard({ journal }: JournalCardProps) {
   const href = `/journals/${journal.slug}`;
 
   // For daily journals, get mood from mood_entries
   let displayMood = journal.mood;
   if (journal.journal_type === "daily" && journal.daily_date) {
-    const moodRating = getMoodForDate(journal.daily_date);
+    const moodRating = await getMoodForDate(journal.daily_date, journal.userId);
     if (moodRating !== null) {
       displayMood = moodRating;
     }

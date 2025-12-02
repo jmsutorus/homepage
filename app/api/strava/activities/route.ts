@@ -97,11 +97,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Get cached data
-    const athlete = getCachedAthlete(athleteId);
-    const activities = getCachedActivities(athleteId, limit);
+    const athlete = await getCachedAthlete(athleteId);
+    const activities = await getCachedActivities(athleteId, limit);
 
     // Check if sync is needed
-    const needsSync = isSyncNeeded(athleteId);
+    const needsSync = await isSyncNeeded(athleteId);
 
     const response: any = {
       athlete,
@@ -112,8 +112,8 @@ export async function GET(request: NextRequest) {
 
     // Include statistics if requested
     if (includeStats) {
-      const stats = getActivityStats(athleteId);
-      const ytdStats = getYTDStats(athleteId);
+      const stats = await getActivityStats(athleteId);
+      const ytdStats = await getYTDStats(athleteId);
 
       response.stats = {
         allTime: stats,

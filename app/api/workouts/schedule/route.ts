@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Calendar event
-    const startDateTime = createCalendarDateTime(scheduled_date, scheduled_time, timezone);
+    const startDateTime = createCalendarDateTime(scheduled_date, scheduled_time);
     const endDateTime = calculateEndDateTime(startDateTime, duration);
 
     const eventId = await createCalendarEvent(userId, {
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Store in database
-    const scheduledWorkoutId = createScheduledWorkout({
+    const scheduledWorkoutId = await createScheduledWorkout({
       user_id: userId,
       workout_plan_id,
       calendar_event_id: eventId,
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get("end_date");
 
     // Get scheduled workouts
-    const workouts = getScheduledWorkouts(
+    const workouts = await getScheduledWorkouts(
       userId,
       startDate || undefined,
       endDate || undefined

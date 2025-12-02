@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMediaTimelineData, TimelinePeriod } from "@/lib/db/media";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * GET /api/media/timeline
@@ -24,7 +25,8 @@ export async function GET(request: NextRequest) {
     // Validate periods count
     const validPeriods = Math.min(Math.max(periods, 1), 52);
 
-    const timelineData = getMediaTimelineData(period, validPeriods);
+    const userId = await getUserId();
+    const timelineData = await getMediaTimelineData(userId, period, validPeriods);
     return NextResponse.json(timelineData);
   } catch (error) {
     console.error("Error fetching media timeline:", error);

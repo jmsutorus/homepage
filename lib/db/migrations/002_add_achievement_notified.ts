@@ -5,7 +5,7 @@ const db = getDatabase();
 try {
   console.log("Running migration: 002_add_achievement_notified");
 
-  db.exec(`
+  await db.execute(`
     ALTER TABLE user_achievements ADD COLUMN notified INTEGER DEFAULT 0;
   `);
 

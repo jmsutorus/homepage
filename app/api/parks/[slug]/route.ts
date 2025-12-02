@@ -6,6 +6,7 @@ import {
   deletePark,
 } from "@/lib/db/parks";
 import { PARK_CATEGORIES } from "@/lib/db/enums/park-enums";
+import { getUserId } from "@/lib/auth/server";
 
 // GET - Read existing park entry for editing
 export async function GET(
@@ -15,7 +16,8 @@ export async function GET(
   try {
     const { slug } = await params;
 
-    const park = getParkBySlug(slug);
+    const userId = await getUserId();
+    const park = await getParkBySlug(slug, userId);
 
     if (!park) {
       return NextResponse.json(
@@ -61,7 +63,8 @@ export async function PATCH(
     const { frontmatter, content } = body;
 
     // Check if park exists
-    const existing = getParkBySlug(slug);
+    const userId = await getUserId();
+    const existing = await getParkBySlug(slug, userId);
     if (!existing) {
       return NextResponse.json(
         { error: "Park not found" },
@@ -100,7 +103,7 @@ export async function PATCH(
       content: content || "",
     };
 
-    const updatedPark = updatePark(slug, updateData);
+    const updatedPark = await updatePark(slug, userId, updateData);
 
     if (!updatedPark) {
       return NextResponse.json(
@@ -136,7 +139,8 @@ export async function DELETE(
     const { slug } = await params;
 
     // Check if park exists
-    const existing = getParkBySlug(slug);
+    const userId = await getUserId();
+    const existing = await getParkBySlug(slug, userId);
     if (!existing) {
       return NextResponse.json(
         { error: "Park not found" },
@@ -144,7 +148,7 @@ export async function DELETE(
       );
     }
 
-    const success = deletePark(slug);
+    const success = await deletePark(slug, userId);
 
     if (!success) {
       return NextResponse.json(

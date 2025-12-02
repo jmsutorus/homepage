@@ -34,7 +34,7 @@ export async function GET(
     // For daily journals, get mood from mood_entries
     let mood = journal.mood;
     if (journal.journal_type === "daily" && journal.daily_date) {
-      const moodRating = await getMoodForDate(journal.daily_date);
+      const moodRating = await getMoodForDate(journal.daily_date, userId);
       if (moodRating !== null) {
         mood = moodRating;
       }
