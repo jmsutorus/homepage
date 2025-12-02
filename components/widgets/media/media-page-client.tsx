@@ -150,12 +150,12 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
   // Separate in-progress, planned, and completed media
   const { inProgressMedia, plannedMedia, completedMedia } = useMemo(() => {
     // First separate by completion status
-    // In Progress: no completed date AND status is not "planned"
+    // In Progress: status is "in-progress"
     const inProgress = allMedia.filter((item) => item.frontmatter.status === "in-progress");
     // Planned: status is "planned"
     const planned = allMedia.filter((item) => item.frontmatter.status === "planned");
-    // Completed: has completed date
-    const completed = allMedia.filter((item) => item.frontmatter.completed && item.frontmatter.status === "completed");
+    // Completed: status is "completed" (completed date is optional)
+    const completed = allMedia.filter((item) => item.frontmatter.status === "completed");
 
     // Sort in-progress by started date (most recent first)
     const sortedInProgress = [...inProgress].sort((a, b) => {

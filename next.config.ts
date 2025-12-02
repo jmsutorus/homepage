@@ -24,6 +24,12 @@ const nextConfig: NextConfig = {
         hostname: "cdn.akamai.steamstatic.com",
         pathname: "/**",
       },
+      // Amazon Media (for movie posters etc)
+      {
+        protocol: "https",
+        hostname: "m.media-amazon.com",
+        pathname: "/**",
+      },
       // Plex/Tautulli images (localhost)
       // Note: If your Tautulli is on a custom domain, add it here
       {
