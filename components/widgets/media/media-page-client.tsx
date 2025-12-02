@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { MediaItem } from "@/lib/media";
 import { MediaGrid } from "./media-grid";
 import { MediaConsumptionTimeline } from "./media-consumption-timeline";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { PageTabsList } from "@/components/ui/page-tabs-list";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, ChevronDown, ChevronRight, X, BarChart3 } from "lucide-react";
+import { Search, Plus, ChevronDown, ChevronRight, X } from "lucide-react";
 import Link from "next/link";
 import type { MediaTimelineData } from "@/lib/db/media";
 
@@ -37,13 +38,15 @@ type SortOption =
   | "started-desc"
   | "started-asc";
 
+type ViewTab = "media" | "analytics";
+
 export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [viewTab, setViewTab] = useState<ViewTab>("media");
   const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showPlanned, setShowPlanned] = useState(false);
-  const [showTimeline, setShowTimeline] = useState(true);
   const [activeGenres, setActiveGenres] = useState<string[]>([]);
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>("completed-desc");
@@ -350,8 +353,17 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
         </Button>
       </div>
 
-      {/* Filters and Search */}
-      <div className="flex flex-col gap-4">
+      <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as ViewTab)}>
+        <PageTabsList
+          tabs={[
+            { value: "media", label: "Media" },
+            { value: "analytics", label: "Analytics" },
+          ]}
+        />
+
+        <TabsContent value="media" className="space-y-4 sm:space-y-6 mt-6">
+          {/* Filters and Search */}
+          <div className="flex flex-col gap-4">
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
           <TabsList className="w-full grid grid-cols-5 h-auto">
             <TabsTrigger value="all" className="text-xs sm:text-sm">All ({stats.all})</TabsTrigger>
@@ -562,31 +574,6 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
         </div>
       )}
 
-      {/* Media Consumption Timeline */}
-      {timelineData && (
-        <div className="space-y-4">
-          <button
-            onClick={() => setShowTimeline(!showTimeline)}
-            className="cursor-pointer flex items-center gap-2 w-full text-left group"
-          >
-            {showTimeline ? (
-              <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            ) : (
-              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            )}
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-xl font-semibold group-hover:text-foreground/80 transition-colors">
-                Consumption Timeline
-              </h2>
-            </div>
-          </button>
-          {showTimeline && (
-            <MediaConsumptionTimeline initialData={timelineData} />
-          )}
-        </div>
-      )}
-
       {/* In Progress Section */}
       {filteredInProgress.length > 0 && (
         <div className="space-y-4">
@@ -661,6 +648,15 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
             : `No ${activeTab === "all" ? "media" : activeTab === "game" ? "games" : `${activeTab}s`} found`}
         </div>
       )}
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6 mt-6">
+          {/* Media Consumption Timeline */}
+          {timelineData && (
+            <MediaConsumptionTimeline initialData={timelineData} />
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -8,20 +8,42 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { FileText } from "lucide-react";
-import { TEMPLATES, Template, TemplateType } from "@/lib/constants/templates";
+import type { TaskTemplate } from "@/lib/db/task-templates";
 
 interface TemplatePickerProps {
-  type: TemplateType;
-  onSelect: (template: Template) => void;
+  type: "task";
+  onSelect: (template: Partial<TaskTemplate>) => void;
 }
 
 export function TemplatePicker({ type, onSelect }: TemplatePickerProps) {
   const [open, setOpen] = useState(false);
-  const templates = TEMPLATES[type];
+  const [templates, setTemplates] = useState<TaskTemplate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!templates || templates.length === 0) return null;
+  useEffect(() => {
+    if (type === "task") {
+      fetchTaskTemplates();
+    }
+  }, [type]);
 
-  const handleSelect = (template: Template) => {
+  const fetchTaskTemplates = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/task-templates");
+      if (response.ok) {
+        const data = await response.json();
+        setTemplates(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch task templates:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading || templates.length === 0) return null;
+
+  const handleSelect = (template: TaskTemplate) => {
     onSelect(template);
     setOpen(false);
   };
@@ -29,7 +51,7 @@ export function TemplatePicker({ type, onSelect }: TemplatePickerProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" className="gap-2">
           <FileText className="h-4 w-4" />
           Templates
         </Button>
@@ -44,12 +66,11 @@ export function TemplatePicker({ type, onSelect }: TemplatePickerProps) {
               className="w-full justify-start h-auto py-2 px-2 flex-col items-start gap-1"
               onClick={() => handleSelect(template)}
             >
-              <span className="font-medium text-sm">{template.label}</span>
-              {template.description && (
-                <span className="text-xs text-muted-foreground font-normal text-left">
-                  {template.description}
-                </span>
-              )}
+              <span className="font-medium text-sm">{template.name}</span>
+              <span className="text-xs text-muted-foreground font-normal text-left">
+                {template.title} • {template.priority}
+                {template.category && ` • ${template.category}`}
+              </span>
             </Button>
           ))}
         </div>
