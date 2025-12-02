@@ -7,6 +7,10 @@ import { StravaSync } from "@/components/widgets/exercise/strava-sync";
 import { AddActivityModal } from "@/components/widgets/exercise/add-activity-modal";
 import { UpcomingActivities } from "@/components/widgets/calendar/upcoming-activities";
 import { ActivityCalendar } from "@/components/widgets/calendar/activity-calendar";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { PageTabsList } from "@/components/ui/page-tabs-list";
+
+type ViewTab = "exercise" | "analytics";
 
 interface ExercisePageClientProps {
   athleteId?: number;
@@ -15,6 +19,7 @@ interface ExercisePageClientProps {
 
 export function ExercisePageClient({ athleteId, lastSync }: ExercisePageClientProps) {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [viewTab, setViewTab] = useState<ViewTab>("exercise");
 
   const handleActivityAdded = () => {
     setRefreshKey(prev => prev + 1);
@@ -32,20 +37,33 @@ export function ExercisePageClient({ athleteId, lastSync }: ExercisePageClientPr
         <AddActivityModal onActivityAdded={handleActivityAdded} showButton={true} />
       </div>
 
-      {/* Upcoming Activities */}
-      <UpcomingActivities onRefresh={refreshKey} />
+      <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as ViewTab)}>
+        <PageTabsList
+          tabs={[
+            { value: "exercise", label: "Exercise" },
+            { value: "analytics", label: "Analytics" },
+          ]}
+        />
 
-      {/* Activity Calendar */}
-      <ActivityCalendar onRefresh={refreshKey} />
+        <TabsContent value="exercise" className="space-y-6 mt-6">
+          {/* Upcoming Activities */}
+          <UpcomingActivities onRefresh={refreshKey} />
 
-      {/* Exercise Stats and Charts */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ExerciseStats />
-        <ExerciseCharts />
-      </div>
+          {/* Activity Calendar */}
+          <ActivityCalendar onRefresh={refreshKey} />
 
-      {/* Strava Sync Widget */}
-      <StravaSync athleteId={athleteId} lastSync={lastSync} />
+          {/* Strava Sync Widget */}
+          <StravaSync athleteId={athleteId} lastSync={lastSync} />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6 mt-6">
+          {/* Exercise Stats and Charts */}
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ExerciseStats />
+            <ExerciseCharts />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

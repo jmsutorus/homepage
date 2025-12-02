@@ -5,11 +5,14 @@ import type { Task, TaskVelocityData, VelocityPeriod } from "@/lib/db/tasks";
 import { TaskForm } from "@/components/widgets/tasks/task-form";
 import { TaskList } from "@/components/widgets/tasks/task-list";
 import { CategoryManager } from "@/components/widgets/tasks/category-manager";
+import { TaskTemplateManager } from "@/components/widgets/tasks/task-template-manager";
 import { TaskVelocityChart } from "@/components/widgets/tasks/task-velocity-chart";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { PageTabsList } from "@/components/ui/page-tabs-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 type FilterType = "all" | "active" | "completed";
+type ViewTab = "tasks" | "manage" | "analytics";
 
 export function TasksPageClient() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -17,6 +20,7 @@ export function TasksPageClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [velocityData, setVelocityData] = useState<TaskVelocityData | null>(null);
   const [velocityPeriod, setVelocityPeriod] = useState<VelocityPeriod>("week");
+  const [viewTab, setViewTab] = useState<ViewTab>("tasks");
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -85,64 +89,83 @@ export function TasksPageClient() {
         </p>
       </div>
 
-      {/* Task Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Add New Task</CardTitle>
-          <CardDescription>Create a task with optional due date and priority</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TaskForm onTaskAdded={handleTasksChanged} />
-        </CardContent>
-      </Card>
-
-      {/* Task Velocity Chart */}
-      {velocityData && (
-        <TaskVelocityChart
-          data={velocityData}
-          onPeriodChange={handlePeriodChange}
+      <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as ViewTab)}>
+        <PageTabsList
+          tabs={[
+            { value: "tasks", label: "Tasks" },
+            { value: "manage", label: "Manage" },
+            { value: "analytics", label: "Analytics" },
+          ]}
         />
-      )}
 
-      {/* Category Manager */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Manage Categories</CardTitle>
-          <CardDescription>Add, edit, or remove task categories</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CategoryManager onCategoriesChanged={handleTasksChanged} />
-        </CardContent>
-      </Card>
+        <TabsContent value="tasks" className="space-y-6 mt-6">
+          {/* Task Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Add New Task</CardTitle>
+              <CardDescription>Create a task with optional due date and priority</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TaskForm onTaskAdded={handleTasksChanged} />
+            </CardContent>
+          </Card>
 
-      {/* Task List */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <CardTitle>Your Tasks</CardTitle>
-              <CardDescription className="text-sm">
-                {stats.total} total • {stats.active} active • {stats.completed} completed
-              </CardDescription>
-            </div>
+          {/* Task List */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <CardTitle>Your Tasks</CardTitle>
+                  <CardDescription className="text-sm">
+                    {stats.total} total • {stats.active} active • {stats.completed} completed
+                  </CardDescription>
+                </div>
 
-            <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
-              <TabsList className="w-full sm:w-auto">
-                <TabsTrigger value="all" className="flex-1 sm:flex-none">All</TabsTrigger>
-                <TabsTrigger value="active" className="flex-1 sm:flex-none">Active</TabsTrigger>
-                <TabsTrigger value="completed" className="flex-1 sm:flex-none">Completed</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
-          ) : (
-            <TaskList tasks={tasks} onTasksChanged={handleTasksChanged} />
+                <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
+                  <TabsList className="w-full sm:w-auto">
+                    <TabsTrigger value="all" className="flex-1 sm:flex-none">All</TabsTrigger>
+                    <TabsTrigger value="active" className="flex-1 sm:flex-none">Active</TabsTrigger>
+                    <TabsTrigger value="completed" className="flex-1 sm:flex-none">Completed</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
+              ) : (
+                <TaskList tasks={tasks} onTasksChanged={handleTasksChanged} />
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="manage" className="space-y-6 mt-6">
+          {/* Task Templates */}
+          <TaskTemplateManager onTemplatesChanged={handleTasksChanged} />
+
+          {/* Category Manager */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Manage Categories</CardTitle>
+              <CardDescription>Add, edit, or remove task categories</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CategoryManager onCategoriesChanged={handleTasksChanged} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6 mt-6">
+          {/* Task Velocity Chart */}
+          {velocityData && (
+            <TaskVelocityChart
+              data={velocityData}
+              onPeriodChange={handlePeriodChange}
+            />
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

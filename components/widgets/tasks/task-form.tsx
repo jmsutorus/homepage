@@ -13,7 +13,7 @@ import { CalendarIcon, Plus, Sparkles } from "lucide-react";
 import { TaskPriority, TaskCategory } from "@/lib/db/tasks";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 import { TemplatePicker } from "@/components/widgets/shared/template-picker";
-import { Template } from "@/lib/constants/templates";
+import type { TaskTemplate } from "@/lib/db/task-templates";
 import { parseTaskInput, hasParseableContent } from "@/lib/utils/task-parser";
 
 interface TaskFormProps {
@@ -25,7 +25,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [category, setCategory] = useState<string>("");
   const [categories, setCategories] = useState<TaskCategory[]>([]);
-  const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [isAdding, setIsAdding] = useState(false);
   const [manualOverride, setManualOverride] = useState(false);
 
@@ -89,7 +89,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         setRawInput("");
         setPriority("medium");
         setCategory("");
-        setDueDate(new Date());
+        setDueDate(undefined);
         setManualOverride(false);
         showCreationSuccess("task");
         onTaskAdded();
@@ -104,7 +104,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
     }
   };
 
-  const handleTemplateSelect = (template: Template) => {
+  const handleTemplateSelect = (template: Partial<TaskTemplate>) => {
     if (template.title) {
       setRawInput(template.title);
     }
@@ -112,7 +112,15 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       setPriority(template.priority);
       setManualOverride(true);
     }
-    if (template.category) setCategory(template.category);
+    if (template.category) {
+      setCategory(template.category);
+    }
+    if (template.dueDate) {
+      // Template due date is stored in YYYY-MM-DD format, convert to Date object
+      const dateObj = new Date(template.dueDate + 'T00:00:00');
+      setDueDate(dateObj);
+      setManualOverride(true);
+    }
   };
 
   // Handle manual changes to priority/date

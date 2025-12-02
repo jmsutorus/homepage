@@ -21,6 +21,8 @@ export interface HabitWithStats extends Habit {
   stats: HabitStats;
 }
 
+export type { HabitCompletionChartData };
+
 export async function getHabitsAction() {
   const session = await auth();
   if (!session?.user?.id) return [];
