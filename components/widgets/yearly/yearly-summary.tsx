@@ -18,7 +18,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { syncSteamDataAction } from "@/app/actions/yearly-actions";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

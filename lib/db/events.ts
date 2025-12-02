@@ -88,8 +88,8 @@ function transformEvent(row: DBEvent): Event {
 /**
  * Create a new event for a specific user
  */
-export function createEvent(input: CreateEventInput, userId: string): Event {
-  const result = execute(
+export async function createEvent(input: CreateEventInput, userId: string): Promise<Event> {
+  const result = await execute(
     `INSERT INTO events (
       userId, title, description, location, date, start_time, end_time, all_day, end_date, notifications
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -107,7 +107,7 @@ export function createEvent(input: CreateEventInput, userId: string): Event {
     ]
   );
 
-  const event = getEvent(Number(result.lastInsertRowid), userId);
+  const event = await getEvent(Number(result.lastInsertRowid), userId);
   if (!event) {
     throw new Error("Failed to create event");
   }
@@ -118,24 +118,24 @@ export function createEvent(input: CreateEventInput, userId: string): Event {
 /**
  * Get event by ID for a specific user
  */
-export function getEvent(id: number, userId: string): Event | undefined {
-  const row = queryOne<DBEvent>("SELECT * FROM events WHERE id = ? AND userId = ?", [id, userId]);
+export async function getEvent(id: number, userId: string): Promise<Event | undefined> {
+  const row = await queryOne<DBEvent>("SELECT * FROM events WHERE id = ? AND userId = ?", [id, userId]);
   return row ? transformEvent(row) : undefined;
 }
 
 /**
  * Get all events for a specific user
  */
-export function getAllEvents(userId: string): Event[] {
-  const rows = query<DBEvent>("SELECT * FROM events WHERE userId = ? ORDER BY date ASC, start_time ASC", [userId]);
+export async function getAllEvents(userId: string): Promise<Event[]> {
+  const rows = await query<DBEvent>("SELECT * FROM events WHERE userId = ? ORDER BY date ASC, start_time ASC", [userId]);
   return rows.map(transformEvent);
 }
 
 /**
  * Get events for a specific date for a specific user (including multi-day events that span this date)
  */
-export function getEventsForDate(date: string, userId: string): Event[] {
-  const rows = query<DBEvent>(
+export async function getEventsForDate(date: string, userId: string): Promise<Event[]> {
+  const rows = await query<DBEvent>(
     `SELECT * FROM events
      WHERE userId = ? AND (
        date = ?
@@ -150,8 +150,8 @@ export function getEventsForDate(date: string, userId: string): Event[] {
 /**
  * Get events in a date range for a specific user (including multi-day events that overlap)
  */
-export function getEventsInRange(startDate: string, endDate: string, userId: string): Event[] {
-  const rows = query<DBEvent>(
+export async function getEventsInRange(startDate: string, endDate: string, userId: string): Promise<Event[]> {
+  const rows = await query<DBEvent>(
     `SELECT * FROM events
      WHERE userId = ? AND (
        (date BETWEEN ? AND ?)
@@ -166,9 +166,9 @@ export function getEventsInRange(startDate: string, endDate: string, userId: str
 /**
  * Update event (with ownership verification)
  */
-export function updateEvent(id: number, userId: string, updates: UpdateEventInput): boolean {
+export async function updateEvent(id: number, userId: string, updates: UpdateEventInput): Promise<boolean> {
   // Verify ownership
-  const existing = getEvent(id, userId);
+  const existing = await getEvent(id, userId);
   if (!existing) {
     return false;
   }
@@ -227,7 +227,7 @@ export function updateEvent(id: number, userId: string, updates: UpdateEventInpu
 
   params.push(id, userId);
   const sql = `UPDATE events SET ${fields.join(", ")} WHERE id = ? AND userId = ?`;
-  const result = execute(sql, params);
+  const result = await execute(sql, params);
 
   return result.changes > 0;
 }
@@ -235,21 +235,21 @@ export function updateEvent(id: number, userId: string, updates: UpdateEventInpu
 /**
  * Delete event (with ownership verification)
  */
-export function deleteEvent(id: number, userId: string): boolean {
+export async function deleteEvent(id: number, userId: string): Promise<boolean> {
   // Verify ownership
-  const existing = getEvent(id, userId);
+  const existing = await getEvent(id, userId);
   if (!existing) {
     return false;
   }
 
-  const result = execute("DELETE FROM events WHERE id = ? AND userId = ?", [id, userId]);
+  const result = await execute("DELETE FROM events WHERE id = ? AND userId = ?", [id, userId]);
   return result.changes > 0;
 }
 
 /**
  * Get upcoming events for a specific user (from today onwards)
  */
-export function getUpcomingEvents(userId: string, limit?: number): Event[] {
+export async function getUpcomingEvents(userId: string, limit?: number): Promise<Event[]> {
   const today = new Date().toISOString().split("T")[0];
   const sql = limit
     ? `SELECT * FROM events
@@ -261,6 +261,6 @@ export function getUpcomingEvents(userId: string, limit?: number): Event[] {
        ORDER BY date ASC, all_day DESC, start_time ASC`;
 
   const params = limit ? [userId, today, today, limit] : [userId, today, today];
-  const rows = query<DBEvent>(sql, params);
+  const rows = await query<DBEvent>(sql, params);
   return rows.map(transformEvent);
 }

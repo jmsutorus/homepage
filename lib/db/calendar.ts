@@ -105,12 +105,12 @@ export interface CalendarDaySummary {
 /**
  * Get Strava activities in a date range (by start_date_local)
  */
-export function getActivitiesInRange(
+export async function getActivitiesInRange(
   startDate: string,
   endDate: string,
   userId: string
-): DBStravaActivity[] {
-  return query<DBStravaActivity>(
+): Promise<DBStravaActivity[]> {
+  return await query<DBStravaActivity>(
     `SELECT * FROM strava_activities
      WHERE DATE(start_date_local) BETWEEN ? AND ?
      AND userId = ?
@@ -122,12 +122,12 @@ export function getActivitiesInRange(
 /**
  * Get media completed in a date range
  */
-export function getMediaCompletedInRange(
+export async function getMediaCompletedInRange(
   startDate: string,
   endDate: string,
   userId: string
-): MediaContent[] {
-  return query<MediaContent>(
+): Promise<MediaContent[]> {
+  return await query<MediaContent>(
     `SELECT * FROM media_content
      WHERE completed BETWEEN ? AND ?
      AND userId = ?
@@ -140,11 +140,11 @@ export function getMediaCompletedInRange(
  * Get tasks with due date or completion in a date range
  * Returns all tasks due in range, completed in range, or incomplete tasks in the range
  */
-export function getTasksInRange(
+export async function getTasksInRange(
   startDate: string,
   endDate: string,
   userId: string
-): Task[] {
+): Promise<Task[]> {
   const sql = `SELECT DISTINCT * FROM tasks
      WHERE (
        (due_date BETWEEN ? AND ?)
@@ -161,7 +161,7 @@ export function getTasksInRange(
     userId
   ];
 
-  const result = query<Task>(sql, params);
+  const result = await query<Task>(sql, params);
 
   return result;
 }
@@ -169,11 +169,11 @@ export function getTasksInRange(
 /**
  * Get events in a date range (including multi-day events that overlap)
  */
-export function getEventsInRange(
+export async function getEventsInRange(
   startDate: string,
   endDate: string,
   userId: string
-): Event[] {
+): Promise<Event[]> {
   // Import from events module
   return getEvents(startDate, endDate, userId);
 }
@@ -181,12 +181,12 @@ export function getEventsInRange(
 /**
  * Get parks visited in a date range
  */
-export function getParksVisitedInRange(
+export async function getParksVisitedInRange(
   startDate: string,
   endDate: string,
   userId: string
-): ParkContent[] {
-  return query<ParkContent>(
+): Promise<ParkContent[]> {
+  return await query<ParkContent>(
     `SELECT * FROM parks
      WHERE visited BETWEEN ? AND ?
      AND userId = ?
@@ -200,11 +200,11 @@ export function getParksVisitedInRange(
  * - Daily journals by daily_date
  * - General journals by created_at date
  */
-export function getJournalsInRange(
+export async function getJournalsInRange(
   startDate: string,
   endDate: string,
   userId: string
-): JournalContent[] {
+): Promise<JournalContent[]> {
   interface RawJournal {
     id: number;
     userId: string;
@@ -222,7 +222,7 @@ export function getJournalsInRange(
   }
 
   // Need to parse tags from JSON and convert featured/published from number to boolean
-  const rawJournals = query<RawJournal>(
+  const rawJournals = await query<RawJournal>(
     `SELECT * FROM journals
      WHERE ((journal_type = 'daily' AND daily_date BETWEEN ? AND ?)
         OR (journal_type = 'general' AND DATE(created_at) BETWEEN ? AND ?))
@@ -246,12 +246,12 @@ export function getJournalsInRange(
 /**
  * Get workout activities in a date range
  */
-export function getWorkoutActivitiesInRange(
+export async function getWorkoutActivitiesInRange(
   startDate: string,
   endDate: string,
   userId: string
-): WorkoutActivity[] {
-  return query<WorkoutActivity>(
+): Promise<WorkoutActivity[]> {
+  return await query<WorkoutActivity>(
     `SELECT * FROM workout_activities
      WHERE date BETWEEN ? AND ?
      AND userId = ?
@@ -263,12 +263,12 @@ export function getWorkoutActivitiesInRange(
 /**
  * Get goals in a date range (by target_date or completed_date)
  */
-export function getGoalsInRange(
+export async function getGoalsInRange(
   userId: string,
   startDate: string,
   endDate: string
-): CalendarGoal[] {
-  const rows = query<{
+): Promise<CalendarGoal[]> {
+  const rows = await query<{
     id: number;
     slug: string;
     title: string;
@@ -294,12 +294,12 @@ export function getGoalsInRange(
  * Get milestones in a date range (by target_date or completed_date)
  * Includes goal info for navigation
  */
-export function getMilestonesInRange(
+export async function getMilestonesInRange(
   userId: string,
   startDate: string,
   endDate: string
-): CalendarMilestone[] {
-  const rows = query<{
+): Promise<CalendarMilestone[]> {
+  const rows = await query<{
     id: number;
     goalId: number;
     goalSlug: string;
@@ -331,12 +331,12 @@ export function getMilestonesInRange(
 /**
  * Get upcoming goals (incomplete with target_date in range)
  */
-export function getUpcomingGoals(
+export async function getUpcomingGoals(
   userId: string,
   startDate: string,
   endDate: string
-): CalendarGoal[] {
-  const rows = query<{
+): Promise<CalendarGoal[]> {
+  const rows = await query<{
     id: number;
     slug: string;
     title: string;
@@ -358,12 +358,12 @@ export function getUpcomingGoals(
 /**
  * Get upcoming milestones (incomplete with target_date in range)
  */
-export function getUpcomingMilestones(
+export async function getUpcomingMilestones(
   userId: string,
   startDate: string,
   endDate: string
-): CalendarMilestone[] {
-  const rows = query<{
+): Promise<CalendarMilestone[]> {
+  const rows = await query<{
     id: number;
     goalId: number;
     goalSlug: string;
@@ -393,11 +393,11 @@ export function getUpcomingMilestones(
 /**
  * Get goals completed on a specific date
  */
-export function getGoalsCompletedOnDate(
+export async function getGoalsCompletedOnDate(
   userId: string,
   date: string
-): CalendarGoal[] {
-  const rows = query<{
+): Promise<CalendarGoal[]> {
+  const rows = await query<{
     id: number;
     slug: string;
     title: string;
@@ -419,11 +419,11 @@ export function getGoalsCompletedOnDate(
 /**
  * Get milestones completed on a specific date
  */
-export function getMilestonesCompletedOnDate(
+export async function getMilestonesCompletedOnDate(
   userId: string,
   date: string
-): CalendarMilestone[] {
-  const rows = query<{
+): Promise<CalendarMilestone[]> {
+  const rows = await query<{
     id: number;
     goalId: number;
     goalSlug: string;
@@ -466,21 +466,34 @@ export async function getCalendarDataForRange(
   }
 
   // Get all data
-  const moods = query<MoodEntry>(
+  const moods = await query<MoodEntry>(
     `SELECT * FROM mood_entries WHERE date BETWEEN ? AND ? AND userId = ?`,
     [startDate, endDate, userId]
   );
 
-  const activities = getActivitiesInRange(startDate, endDate, userId);
-  const media = getMediaCompletedInRange(startDate, endDate, userId);
-  const tasks = getTasksInRange(startDate, endDate, userId);
-  const events = getEventsInRange(startDate, endDate, userId);
-  const parks = getParksVisitedInRange(startDate, endDate, userId);
-  const journals = getJournalsInRange(startDate, endDate, userId);
-  const workoutActivities = getWorkoutActivitiesInRange(startDate, endDate, userId);
-  const habitCompletions = getHabitCompletionsForRange(userId, startDate, endDate);
-  const goals = getGoalsInRange(userId, startDate, endDate);
-  const milestones = getMilestonesInRange(userId, startDate, endDate);
+  const [
+    activities,
+    media,
+    tasks,
+    events,
+    parks,
+    journals,
+    workoutActivities,
+    habitCompletions,
+    goals,
+    milestones,
+  ] = await Promise.all([
+    getActivitiesInRange(startDate, endDate, userId),
+    getMediaCompletedInRange(startDate, endDate, userId),
+    getTasksInRange(startDate, endDate, userId),
+    getEventsInRange(startDate, endDate, userId),
+    getParksVisitedInRange(startDate, endDate, userId),
+    getJournalsInRange(startDate, endDate, userId),
+    getWorkoutActivitiesInRange(startDate, endDate, userId),
+    getHabitCompletionsForRange(userId, startDate, endDate),
+    getGoalsInRange(userId, startDate, endDate),
+    getMilestonesInRange(userId, startDate, endDate),
+  ]);
 
   // Create a map of date -> data
   const calendarMap = new Map<string, CalendarDayData>();

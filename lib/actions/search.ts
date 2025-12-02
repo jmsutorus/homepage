@@ -44,7 +44,7 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
     const shouldSearch = (type: string) => !filters?.types || filters.types.length === 0 || filters.types.includes(type);
 
     // Helper to build tag clause
-    const buildTagClause = (tablePrefix: string = "") => {
+    const buildTagClause = () => {
       if (!filters?.tags || filters.tags.length === 0) return "";
       // For each tag, we need a LIKE clause. AND them together for "all tags" or OR for "any tag"?
       // Usually filters are AND.
@@ -71,7 +71,7 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
       // If tags are required, tasks should probably be empty unless we add tags to tasks.
       // For now, if tags are present, we skip tasks.
       if (!filters?.tags || filters.tags.length === 0) {
-        tasks = query<any>(
+        tasks = await query<any>(
           `SELECT id, title, due_date as date FROM tasks WHERE userId = ? AND title LIKE ? ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
           [userId, searchTerm, limit]
         ).map(t => ({ 
@@ -86,7 +86,7 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
 
     let journals: SearchResult[] = [];
     if (shouldSearch("journal")) {
-      journals = query<any>(
+      journals = await query<any>(
         `SELECT id, title, slug, daily_date as date, content FROM journals WHERE userId = ? AND (title LIKE ? OR content LIKE ?) ${buildTagClause()} ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
         [userId, searchTerm, searchTerm, limit]
       ).map(j => ({
@@ -101,7 +101,7 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
 
     let media: SearchResult[] = [];
     if (shouldSearch("media")) {
-      media = query<any>(
+      media = await query<any>(
         `SELECT id, title, slug, type as mediaType, description FROM media_content WHERE userId = ? AND (title LIKE ? OR description LIKE ?) ${buildTagClause()} ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
         [userId, searchTerm, searchTerm, limit]
       ).map(m => ({
@@ -115,7 +115,7 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
 
     let parks: SearchResult[] = [];
     if (shouldSearch("park")) {
-      parks = query<any>(
+      parks = await query<any>(
         `SELECT id, title, slug, description FROM parks WHERE userId = ? AND (title LIKE ? OR description LIKE ?) ${buildTagClause()} ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
         [userId, searchTerm, searchTerm, limit]
       ).map(p => ({
@@ -131,7 +131,7 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
     if (shouldSearch("habit")) {
       // Habits don't have tags
       if (!filters?.tags || filters.tags.length === 0) {
-        habits = query<any>(
+        habits = await query<any>(
           `SELECT id, title, description FROM habits WHERE userId = ? AND (title LIKE ? OR description LIKE ?) ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
           [userId, searchTerm, searchTerm, limit]
         ).map(h => ({

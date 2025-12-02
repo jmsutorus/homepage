@@ -18,7 +18,7 @@ import {
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const userId = await await getUserId();
     const searchParams = request.nextUrl.searchParams;
 
     const statusParam = searchParams.get("status");
@@ -46,8 +46,8 @@ export async function GET(request: NextRequest) {
     }
 
     const goals = withProgress
-      ? getGoalsWithProgress(userId, options)
-      : getGoals(userId, options);
+      ? await getGoalsWithProgress(userId, options)
+      : await getGoals(userId, options);
 
     return NextResponse.json(goals);
   } catch (error) {
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const userId = await await getUserId();
     const body = await request.json();
     const { title, description, content, status, target_date, tags, priority } = body;
 
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const goal = createGoal(userId, {
+    const goal = await createGoal(userId, {
       title: title.trim(),
       description: description?.trim() || undefined,
       content: content || undefined,

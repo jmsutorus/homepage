@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { getParkBySlug, getAllParks } from "@/lib/db/parks";
+import { getParkBySlug } from "@/lib/db/parks";
 import { formatDateLongSafe } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { ExportButton } from "@/components/widgets/shared/export-button";
 import { getRelatedParks } from "@/lib/actions/related-content";
 import { RelatedParks } from "@/components/widgets/shared/related-content";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { getUserId } from "@/lib/auth/server";
 
 interface ParkDetailPageProps {
   params: Promise<{
@@ -21,7 +22,8 @@ export const dynamic = "force-dynamic";
 
 export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
   const { slug } = await params;
-  const park = getParkBySlug(slug);
+  const userId = await getUserId();
+  const park = await getParkBySlug(slug, userId);
 
   if (!park) {
     notFound();

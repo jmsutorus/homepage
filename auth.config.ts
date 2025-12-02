@@ -43,7 +43,7 @@ export default {
   },
 
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       // Initial sign in - add user data to token
       if (user) {
         token.id = user.id;

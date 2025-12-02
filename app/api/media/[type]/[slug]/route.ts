@@ -8,6 +8,7 @@ import {
   parseTags,
 } from "@/lib/db/media";
 import type { MediaContentInput } from "@/lib/db/media";
+import { getUserId } from "@/lib/auth/server";
 
 // Helper function to map singular type to plural directory name (for URL paths)
 function getDirectoryName(type: "movie" | "tv" | "book" | "game"): string {
@@ -27,6 +28,7 @@ export async function GET(
 ) {
   try {
     const { type, slug } = await params;
+    const userId = await getUserId();
 
     // Validate type
     const validTypes = ["movie", "tv", "book", "game"];
@@ -34,7 +36,7 @@ export async function GET(
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
 
-    const media = getMediaBySlug(slug);
+    const media = await getMediaBySlug(slug, userId);
 
     if (!media) {
       return NextResponse.json(
@@ -81,6 +83,7 @@ export async function PATCH(
 ) {
   try {
     const { type, slug } = await params;
+    const userId = await getUserId();
     const body = await request.json();
     const { frontmatter, content } = body;
 
@@ -91,7 +94,7 @@ export async function PATCH(
     }
 
     // Check if media exists
-    const existing = getMediaBySlug(slug);
+    const existing = await getMediaBySlug(slug, userId);
     if (!existing) {
       return NextResponse.json(
         { error: "Media not found" },
@@ -126,7 +129,7 @@ export async function PATCH(
       content: content || "",
     };
 
-    const success = updateMedia(slug, updateData);
+    const success = await updateMedia(slug, updateData, userId);
 
     if (!success) {
       return NextResponse.json(
@@ -168,6 +171,7 @@ export async function DELETE(
 ) {
   try {
     const { type, slug } = await params;
+    const userId = await getUserId();
 
     // Validate type
     const validTypes = ["movie", "tv", "book", "game"];
@@ -176,7 +180,7 @@ export async function DELETE(
     }
 
     // Check if media exists
-    const existing = getMediaBySlug(slug);
+    const existing = await getMediaBySlug(slug, userId);
     if (!existing) {
       return NextResponse.json(
         { error: "Media not found" },
@@ -184,7 +188,7 @@ export async function DELETE(
       );
     }
 
-    const success = deleteMedia(slug);
+    const success = await deleteMedia(slug, userId);
 
     if (!success) {
       return NextResponse.json(

@@ -1,13 +1,9 @@
-import { getMediaStatistics, getAllMedia } from "@/lib/db/media";
+import { getAllMedia } from "@/lib/db/media";
 import { getAllParks } from "@/lib/db/parks";
 import { getMoodEntriesForYear } from "@/lib/db/mood";
 import { getAllJournals } from "@/lib/db/journals";
-import { getWorkoutActivityStats, getWorkoutActivitiesByDateRange } from "@/lib/db/workout-activities";
 import { getGithubActivity } from "@/lib/github";
-import { getOwnedGames, getPlayerAchievements, getGameSchema } from "@/lib/api/steam";
 import { execute, query, queryOne } from "@/lib/db";
-import { env } from "@/lib/env";
-import { getRecentlyPlayedGames } from "@/lib/api/steam";
 
 export interface YearlyStats {
   year: number;
@@ -68,7 +64,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   const endDate = `${year}-12-31`;
 
   // Media
-  const allMedia = getAllMedia();
+  const allMedia = await getAllMedia(userId);
   const yearMedia = allMedia.filter((m) => {
     if (!m.completed) return false;
     return m.completed.startsWith(year.toString());
@@ -101,7 +97,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     .map(([genre, count]) => ({ genre, count }));
 
   // Parks
-  const allParks = getAllParks();
+  const allParks = await getAllParks(userId);
   const yearParks = allParks.filter((p) => {
     if (!p.visited) return false;
     return p.visited.startsWith(year.toString());
@@ -125,14 +121,14 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
 
   try {
     // Get Strava athlete for user
-    const athlete = queryOne<{ id: number }>(
+    const athlete = await queryOne<{ id: number }>(
       "SELECT id FROM strava_athlete WHERE userId = ?",
       [userId]
     );
 
     if (athlete) {
       // Fetch activities from Strava DB
-      yearExercises = query(
+      yearExercises = await query(
         `SELECT * FROM strava_activities 
          WHERE athlete_id = ? 
          AND start_date >= ? 
@@ -157,7 +153,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   }
 
   // Mood
-  const yearMoods = getMoodEntriesForYear(year, userId);
+  const yearMoods = await getMoodEntriesForYear(year, userId);
   const moodDistribution: Record<number, number> = {};
   let moodSum = 0;
 
@@ -167,7 +163,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   });
 
   // Journals
-  const allJournals = getAllJournals();
+  const allJournals = await getAllJournals(userId);
   const yearJournals = allJournals.filter((j) => {
     // Use daily_date for daily journals, created_at for general
     const date = j.journal_type === 'daily' && j.daily_date 
@@ -186,7 +182,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   let githubEvents: any[] = [];
   try {
     // Get GitHub token from account table
-    const account = queryOne<{ accessToken: string }>(
+    const account = await queryOne<{ accessToken: string }>(
       "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
       [userId]
     );
@@ -208,7 +204,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   };
 
   // Steam (from DB cache)
-  const steamStats = getCachedSteamStats(year, userId);
+  const steamStats = await getCachedSteamStats(year, userId);
 
   // Monthly Activity
   const monthlyActivity = Array.from({ length: 12 }, (_, i) => ({
@@ -254,7 +250,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   // Habits
   let completedHabitsCount = 0;
   try {
-    const habitsData = query<{ target: number; completion_count: number }>(
+    const habitsData = await query<{ target: number; completion_count: number }>(
       `SELECT h.target, COUNT(hc.id) as completion_count
        FROM habits h
        LEFT JOIN habit_completions hc ON h.id = hc.habit_id AND strftime('%Y', hc.date) = ?
@@ -317,8 +313,8 @@ interface SteamYearlyStat {
   total_playtime: number;
 }
 
-function getCachedSteamStats(year: number, userId: string): SteamYearlyStat[] {
-  return query<SteamYearlyStat>(
+async function getCachedSteamStats(year: number, userId: string): Promise<SteamYearlyStat[]> {
+  return await query<SteamYearlyStat>(
     "SELECT * FROM steam_yearly_stats WHERE year = ? AND userId = ?",
     [year, userId]
   );
@@ -329,7 +325,7 @@ export async function syncYearlySteamData(userId: string, year: number) {
   
   // 1. Get all owned games
   // We need to import getOwnedGames from lib/api/steam.ts (I need to fix the import above)
-  const { getOwnedGames, getPlayerAchievements, getGameSchema } = await import("@/lib/api/steam");
+  const { getOwnedGames, getPlayerAchievements } = await import("@/lib/api/steam");
   
   try {
     const games = await getOwnedGames(undefined, true, true);
@@ -362,7 +358,7 @@ export async function syncYearlySteamData(userId: string, year: number) {
 
         if (unlockedInYear.length > 0) {
           // Upsert into DB
-          execute(
+          await execute(
             `INSERT INTO steam_yearly_stats (userId, year, gameId, gameName, achievements_count, total_playtime)
              VALUES (?, ?, ?, ?, ?, ?)
              ON CONFLICT(userId, year, gameId) DO UPDATE SET

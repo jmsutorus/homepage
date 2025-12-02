@@ -9,8 +9,8 @@ export async function GET() {
     const userId = session.user.id;
 
     // Get unnotified unlocked achievements
-    const rows = query<{ achievementId: string }>(
-      `SELECT achievementId FROM user_achievements 
+    const rows = await query<{ achievementId: string }>(
+      `SELECT achievementId FROM user_achievements
        WHERE userId = ? AND unlocked = 1 AND notified = 0`,
       [userId]
     );
@@ -22,10 +22,10 @@ export async function GET() {
     // Mark them as notified
     const achievementIds = rows.map(r => r.achievementId);
     const placeholders = achievementIds.map(() => "?").join(",");
-    
-    execute(
-      `UPDATE user_achievements 
-       SET notified = 1 
+
+    await execute(
+      `UPDATE user_achievements
+       SET notified = 1
        WHERE userId = ? AND achievementId IN (${placeholders})`,
       [userId, ...achievementIds]
     );

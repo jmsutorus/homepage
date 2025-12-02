@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ChevronLeft, ChevronRight, Edit, CheckCircle2, MapPin, TrendingUp, ExternalLink, Trash2 } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isBefore, startOfToday } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isBefore } from "date-fns";
 import { AddActivityModal } from "../exercise/add-activity-modal";
 import { CompleteActivityModal } from "../exercise/complete-activity-modal";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
@@ -42,7 +42,6 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [activities, setActivities] = useState<WorkoutActivity[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [loading, setLoading] = useState(true);
   const [editingActivity, setEditingActivity] = useState<WorkoutActivity | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [completingActivity, setCompletingActivity] = useState<WorkoutActivity | null>(null);
@@ -72,8 +71,6 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
       }
     } catch (error) {
       console.error("Error fetching activities:", error);
-    } finally {
-      setLoading(false);
     }
   };
 

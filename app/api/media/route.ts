@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       | "planned"
       | null;
 
-    let media = getAllMedia(userId);
+    let media = await getAllMedia(userId);
 
     // Apply filters
     if (type) {
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     const slug = sanitizeSlug(frontmatter.title);
 
     // Check if media with this slug already exists for this user
-    const existing = getMediaBySlug(slug, userId);
+    const existing = await getMediaBySlug(slug, userId);
     if (existing) {
       return NextResponse.json(
         { error: "A media entry with this title already exists" },
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       content: content || "",
     };
 
-    const media = createMedia(mediaInput, userId);
+    const media = await createMedia(mediaInput, userId);
     const dirName = getDirectoryName(frontmatter.type);
 
     // Revalidate paths

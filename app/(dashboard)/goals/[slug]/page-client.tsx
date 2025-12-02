@@ -37,7 +37,6 @@ import {
   deleteGoalAction,
   toggleChecklistItemAction,
   toggleMilestoneAction,
-  updateChecklistItemAction,
   updateGoalAction,
 } from "@/lib/actions/goals";
 import { format, parseISO, isPast, isToday } from "date-fns";

@@ -106,8 +106,9 @@ export function TaskVelocityChart({
 
   // Calculate max Y value for chart scaling
   const maxValue = useMemo(() => {
+    const points = data.dataPoints || [];
     return Math.max(
-      ...data.dataPoints.map((d) => Math.max(d.completed, d.planned)),
+      ...points.map((d) => Math.max(d.completed, d.planned)),
       5 // Minimum max of 5
     );
   }, [data.dataPoints]);
@@ -124,7 +125,7 @@ export function TaskVelocityChart({
   }, [period]);
 
   const hasData =
-    data.stats.totalCompleted > 0 || data.stats.totalPlanned > 0;
+    (data.stats?.totalCompleted || 0) > 0 || (data.stats?.totalPlanned || 0) > 0;
 
   if (!hasData) {
     return (
@@ -227,7 +228,7 @@ export function TaskVelocityChart({
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
-              data={data.dataPoints}
+              data={data.dataPoints || []}
               margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
             >
               <CartesianGrid

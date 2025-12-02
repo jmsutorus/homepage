@@ -20,12 +20,18 @@ export async function getConnectedAccounts(): Promise<ConnectedAccount[]> {
   }
 
   try {
-    const accounts = query<ConnectedAccount>(
+    const accounts = await query<ConnectedAccount>(
       "SELECT providerId, createdAt, accessTokenExpiresAt FROM account WHERE userId = ?",
       [session.user.id]
     );
 
-    return accounts;
+    return accounts.map((account: any) => ({
+      providerId: account.providerId,
+      createdAt: new Date(account.createdAt).getTime(),
+      accessTokenExpiresAt: account.accessTokenExpiresAt
+        ? new Date(account.accessTokenExpiresAt).getTime()
+        : undefined,
+    }));
   } catch (error) {
     console.error("Failed to fetch connected accounts:", error);
     return [];

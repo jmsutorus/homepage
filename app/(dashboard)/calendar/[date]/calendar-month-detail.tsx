@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 
 interface CalendarMonthDetailProps {
-  calendarData: Map<string, CalendarDayData>;
+  calendarData: Record<string, CalendarDayData>;
   year: number;
   month: number;
 }
@@ -43,8 +43,6 @@ const MEDIA_ICONS: Record<string, typeof Film> = {
 
 export function CalendarMonthDetail({
   calendarData,
-  year,
-  month,
 }: CalendarMonthDetailProps) {
   const router = useRouter();
 
@@ -56,7 +54,7 @@ export function CalendarMonthDetail({
   const allJournals: JournalContent[] = [];
   const allGoalsCompleted: CalendarGoal[] = [];
 
-  calendarData.forEach((dayData) => {
+  Object.values(calendarData).forEach((dayData) => {
     allMedia.push(...dayData.media);
     allActivities.push(...dayData.activities);
     allEvents.push(...dayData.events);

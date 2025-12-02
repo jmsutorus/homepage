@@ -17,7 +17,6 @@ export function SummaryCard({
   icon: Icon,
   description,
   className,
-  trend,
   color = "text-primary",
 }: SummaryCardProps) {
   return (

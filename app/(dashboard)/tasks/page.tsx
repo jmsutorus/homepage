@@ -2,6 +2,6 @@ import { TasksPageClient } from "./page-client";
 
 export const dynamic = "force-dynamic";
 
-export default function TasksPage() {
+export default async function TasksPage() {
   return <TasksPageClient />;
 }

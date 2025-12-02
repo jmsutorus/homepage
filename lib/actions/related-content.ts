@@ -75,7 +75,7 @@ export async function getRelatedMedia(
 
   try {
     // Get all media except the current one
-    const allMedia = query<{
+    const allMedia = await query<{
       id: number;
       slug: string;
       title: string;
@@ -133,7 +133,7 @@ export async function getRelatedJournals(
 
   try {
     // Get all journals except the current one
-    const allJournals = query<{
+    const allJournals = await query<{
       id: number;
       slug: string;
       title: string;
@@ -195,7 +195,7 @@ export async function getRelatedParks(
 
   try {
     // Get all parks except the current one
-    const allParks = query<{
+    const allParks = await query<{
       id: number;
       slug: string;
       title: string;

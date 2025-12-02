@@ -21,7 +21,7 @@ const priorityColors = {
 export function RecentTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { animatingTasks, startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
+  const { startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
 
   useEffect(() => {
     fetchTasks();

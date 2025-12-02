@@ -40,14 +40,12 @@ export interface CreateWorkoutActivity {
 
 // CRUD Operations
 
-export function createWorkoutActivity(activity: CreateWorkoutActivity, userId: string): number {
+export async function createWorkoutActivity(activity: CreateWorkoutActivity, userId: string): Promise<number> {
   const db = getDatabase();
-  const result = db
-    .prepare(
-      `INSERT INTO workout_activities (userId, date, time, length, difficulty, type, exercises, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-    .run(
+  const result = await db.execute({
+    sql: `INSERT INTO workout_activities (userId, date, time, length, difficulty, type, exercises, notes)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
       userId,
       activity.date,
       activity.time,
@@ -56,83 +54,88 @@ export function createWorkoutActivity(activity: CreateWorkoutActivity, userId: s
       activity.type,
       JSON.stringify(activity.exercises),
       activity.notes || null
-    );
+    ]
+  });
 
-  return result.lastInsertRowid as number;
+  return Number(result.lastInsertRowid);
 }
 
-export function getWorkoutActivity(id: number, userId: string): WorkoutActivity | undefined {
+export async function getWorkoutActivity(id: number, userId: string): Promise<WorkoutActivity | undefined> {
   const db = getDatabase();
-  return db.prepare("SELECT * FROM workout_activities WHERE id = ? AND userId = ?").get(id, userId) as
-    | WorkoutActivity
-    | undefined;
+  const result = await db.execute({
+    sql: "SELECT * FROM workout_activities WHERE id = ? AND userId = ?",
+    args: [id, userId]
+  });
+  return result.rows[0] as WorkoutActivity | undefined;
 }
 
-export function getAllWorkoutActivities(userId: string): WorkoutActivity[] {
+export async function getAllWorkoutActivities(userId: string): Promise<WorkoutActivity[]> {
   const db = getDatabase();
-  return db
-    .prepare("SELECT * FROM workout_activities WHERE userId = ? ORDER BY date DESC, time DESC")
-    .all(userId) as WorkoutActivity[];
+  const result = await db.execute({
+    sql: "SELECT * FROM workout_activities WHERE userId = ? ORDER BY date DESC, time DESC",
+    args: [userId]
+  });
+  return result.rows as WorkoutActivity[];
 }
 
-export function getWorkoutActivitiesByDateRange(startDate: string, endDate: string, userId: string): WorkoutActivity[] {
+export async function getWorkoutActivitiesByDateRange(startDate: string, endDate: string, userId: string): Promise<WorkoutActivity[]> {
   const db = getDatabase();
-  return db
-    .prepare(
-      `SELECT * FROM workout_activities
-       WHERE userId = ? AND date >= ? AND date <= ?
-       ORDER BY date ASC, time ASC`
-    )
-    .all(userId, startDate, endDate) as WorkoutActivity[];
+  const result = await db.execute({
+    sql: `SELECT * FROM workout_activities
+          WHERE userId = ? AND date >= ? AND date <= ?
+          ORDER BY date ASC, time ASC`,
+    args: [userId, startDate, endDate]
+  });
+  return result.rows as WorkoutActivity[];
 }
 
-export function getWorkoutActivitiesByType(type: string, userId: string): WorkoutActivity[] {
+export async function getWorkoutActivitiesByType(type: string, userId: string): Promise<WorkoutActivity[]> {
   const db = getDatabase();
-  return db
-    .prepare(
-      `SELECT * FROM workout_activities
-       WHERE userId = ? AND type = ?
-       ORDER BY date DESC, time DESC`
-    )
-    .all(userId, type) as WorkoutActivity[];
+  const result = await db.execute({
+    sql: `SELECT * FROM workout_activities
+          WHERE userId = ? AND type = ?
+          ORDER BY date DESC, time DESC`,
+    args: [userId, type]
+  });
+  return result.rows as WorkoutActivity[];
 }
 
-export function getUpcomingWorkoutActivities(userId: string, limit: number = 10): WorkoutActivity[] {
+export async function getUpcomingWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
   const db = getDatabase();
   const today = new Date().toISOString().split("T")[0];
 
-  return db
-    .prepare(
-      `SELECT * FROM workout_activities
-       WHERE userId = ? AND date >= ? AND completed = 0
-       ORDER BY date ASC, time ASC
-       LIMIT ?`
-    )
-    .all(userId, today, limit) as WorkoutActivity[];
+  const result = await db.execute({
+    sql: `SELECT * FROM workout_activities
+          WHERE userId = ? AND date >= ? AND completed = 0
+          ORDER BY date ASC, time ASC
+          LIMIT ?`,
+    args: [userId, today, limit]
+  });
+  return result.rows as WorkoutActivity[];
 }
 
-export function getCompletedWorkoutActivities(userId: string, limit: number = 10): WorkoutActivity[] {
+export async function getCompletedWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
   const db = getDatabase();
 
-  return db
-    .prepare(
-      `SELECT * FROM workout_activities
-       WHERE userId = ? AND completed = 1
-       ORDER BY completed_at DESC
-       LIMIT ?`
-    )
-    .all(userId, limit) as WorkoutActivity[];
+  const result = await db.execute({
+    sql: `SELECT * FROM workout_activities
+          WHERE userId = ? AND completed = 1
+          ORDER BY completed_at DESC
+          LIMIT ?`,
+    args: [userId, limit]
+  });
+  return result.rows as WorkoutActivity[];
 }
 
-export function updateWorkoutActivity(
+export async function updateWorkoutActivity(
   id: number,
   userId: string,
   updates: Partial<Omit<WorkoutActivity, "id" | "userId" | "created_at" | "updated_at">>
-): boolean {
+): Promise<boolean> {
   const db = getDatabase();
 
   // Verify ownership
-  const existing = getWorkoutActivity(id, userId);
+  const existing = await getWorkoutActivity(id, userId);
   if (!existing) {
     return false;
   }
@@ -147,52 +150,55 @@ export function updateWorkoutActivity(
     .join(", ");
 
   if (fields) {
-    db.prepare(`UPDATE workout_activities SET ${fields} WHERE id = ? AND userId = ?`).run(
-      ...Object.values(updates),
-      id,
-      userId
-    );
+    await db.execute({
+      sql: `UPDATE workout_activities SET ${fields} WHERE id = ? AND userId = ?`,
+      args: [...Object.values(updates), id, userId]
+    });
   }
 
   return true;
 }
 
-export function markWorkoutActivityCompleted(
+export async function markWorkoutActivityCompleted(
   id: number,
   userId: string,
   stravaActivityId?: number | null,
   completionNotes?: string | null
-): boolean {
+): Promise<boolean> {
   const db = getDatabase();
 
   // Verify ownership
-  const existing = getWorkoutActivity(id, userId);
+  const existing = await getWorkoutActivity(id, userId);
   if (!existing) {
     return false;
   }
 
   const now = new Date().toISOString();
 
-  db.prepare(
-    `UPDATE workout_activities
-     SET completed = 1, completed_at = ?, strava_activity_id = ?, completion_notes = ?
-     WHERE id = ? AND userId = ?`
-  ).run(now, stravaActivityId || null, completionNotes || null, id, userId);
+  await db.execute({
+    sql: `UPDATE workout_activities
+          SET completed = 1, completed_at = ?, strava_activity_id = ?, completion_notes = ?
+          WHERE id = ? AND userId = ?`,
+    args: [now, stravaActivityId || null, completionNotes || null, id, userId]
+  });
 
   return true;
 }
 
-export function deleteWorkoutActivity(id: number, userId: string): boolean {
+export async function deleteWorkoutActivity(id: number, userId: string): Promise<boolean> {
   const db = getDatabase();
 
   // Verify ownership
-  const existing = getWorkoutActivity(id, userId);
+  const existing = await getWorkoutActivity(id, userId);
   if (!existing) {
     return false;
   }
 
-  const result = db.prepare("DELETE FROM workout_activities WHERE id = ? AND userId = ?").run(id, userId);
-  return result.changes > 0;
+  const result = await db.execute({
+    sql: "DELETE FROM workout_activities WHERE id = ? AND userId = ?",
+    args: [id, userId]
+  });
+  return (result.rowsAffected ?? 0) > 0;
 }
 
 // Analytics and Statistics
@@ -214,7 +220,7 @@ export interface WorkoutActivityStats {
   }[];
 }
 
-export function getWorkoutActivityStats(userId: string, startDate?: string, endDate?: string): WorkoutActivityStats {
+export async function getWorkoutActivityStats(userId: string, startDate?: string, endDate?: string): Promise<WorkoutActivityStats> {
   const db = getDatabase();
 
   let whereClause = " WHERE userId = ?";
@@ -226,52 +232,52 @@ export function getWorkoutActivityStats(userId: string, startDate?: string, endD
   }
 
   // Overall stats
-  const overall = db
-    .prepare(
-      `SELECT
-        COUNT(*) as total_activities,
-        SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed_activities,
-        SUM(length) as total_duration,
-        AVG(length) as avg_duration
-      FROM workout_activities${whereClause}`
-    )
-    .get(...params) as {
-      total_activities: number;
-      completed_activities: number;
-      total_duration: number;
-      avg_duration: number;
-    };
+  const overallResult = await db.execute({
+    sql: `SELECT
+            COUNT(*) as total_activities,
+            SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed_activities,
+            SUM(length) as total_duration,
+            AVG(length) as avg_duration
+          FROM workout_activities${whereClause}`,
+    args: params
+  });
+  const overall = overallResult.rows[0] as {
+    total_activities: number;
+    completed_activities: number;
+    total_duration: number;
+    avg_duration: number;
+  };
 
   // By type
-  const byType = db
-    .prepare(
-      `SELECT
-        type,
-        COUNT(*) as count,
-        SUM(length) as total_duration
-      FROM workout_activities${whereClause}
-      GROUP BY type
-      ORDER BY count DESC`
-    )
-    .all(...params) as { type: string; count: number; total_duration: number }[];
+  const byTypeResult = await db.execute({
+    sql: `SELECT
+            type,
+            COUNT(*) as count,
+            SUM(length) as total_duration
+          FROM workout_activities${whereClause}
+          GROUP BY type
+          ORDER BY count DESC`,
+    args: params
+  });
+  const byType = byTypeResult.rows as { type: string; count: number; total_duration: number }[];
 
   // By difficulty
-  const byDifficulty = db
-    .prepare(
-      `SELECT
-        difficulty,
-        COUNT(*) as count
-      FROM workout_activities${whereClause}
-      GROUP BY difficulty
-      ORDER BY
-        CASE difficulty
-          WHEN 'easy' THEN 1
-          WHEN 'moderate' THEN 2
-          WHEN 'hard' THEN 3
-          WHEN 'very hard' THEN 4
-        END`
-    )
-    .all(...params) as { difficulty: string; count: number }[];
+  const byDifficultyResult = await db.execute({
+    sql: `SELECT
+            difficulty,
+            COUNT(*) as count
+          FROM workout_activities${whereClause}
+          GROUP BY difficulty
+          ORDER BY
+            CASE difficulty
+              WHEN 'easy' THEN 1
+              WHEN 'moderate' THEN 2
+              WHEN 'hard' THEN 3
+              WHEN 'very hard' THEN 4
+            END`,
+    args: params
+  });
+  const byDifficulty = byDifficultyResult.rows as { difficulty: string; count: number }[];
 
   return {
     total_activities: overall.total_activities || 0,
@@ -288,7 +294,7 @@ export function getWorkoutActivityStats(userId: string, startDate?: string, endD
 }
 
 // Helper function to parse exercises from JSON string
-export function parseExercises(exercisesJson: string): Exercise[] {
+export async function parseExercises(exercisesJson: string): Promise<Exercise[]> {
   try {
     return JSON.parse(exercisesJson);
   } catch {

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuickLinks } from "@/components/widgets/quick-links/quick-links";
 import { getRecentlyCompletedMedia } from "@/lib/media";
@@ -30,7 +29,7 @@ export default async function DashboardPage({
   const userId = await getUserId();
 
   // Get recently completed media sorted by completion date (most recent first)
-  const recentMedia = getRecentlyCompletedMedia(4);
+  const recentMedia = await getRecentlyCompletedMedia(userId, 4);
 
   // Get calendar data for current month
   const params = await searchParams;
@@ -48,7 +47,7 @@ export default async function DashboardPage({
 
   if (session?.user?.id) {
     // Get GitHub token from account table
-    const account = queryOne<{ accessToken: string }>(
+    const account = await queryOne<{ accessToken: string }>(
       "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
       [session.user.id]
     );
@@ -66,7 +65,8 @@ export default async function DashboardPage({
     }
   }
 
-  const calendarData = await getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
+  const calendarDataMap = await getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
+  const calendarData = Object.fromEntries(calendarDataMap);
   const calendarColors = await getCalendarColorsForUser();
 
   return (

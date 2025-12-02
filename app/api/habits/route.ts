@@ -9,11 +9,11 @@ import { getUserId } from "@/lib/auth/server";
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const userId = await await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const includeArchived = searchParams.get("includeArchived") === "true";
 
-    const habits = includeArchived ? getAllHabits(userId) : getHabits(userId);
+    const habits = includeArchived ? await getAllHabits(userId) : await getHabits(userId);
     return NextResponse.json(habits);
   } catch (error) {
     console.error("Error fetching habits:", error);
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const userId = await await getUserId();
     const body = await request.json();
     const { title, description, frequency, target } = body;
 
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const habit = createHabit(userId, {
+    const habit = await createHabit(userId, {
       title: title.trim(),
       description,
       frequency,

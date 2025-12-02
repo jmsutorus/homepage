@@ -14,7 +14,7 @@ export interface SavedSearch {
 
 export async function getSavedSearches(): Promise<SavedSearch[]> {
   const userId = await getUserId();
-  const rows = query<{
+  const rows = await query<{
     id: number;
     name: string;
     query: string;

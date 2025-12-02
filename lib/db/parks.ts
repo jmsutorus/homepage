@@ -1,10 +1,6 @@
-import Database from "better-sqlite3";
-import path from "path";
+import { getDatabase } from "./index";
 import { ParkCategoryValue } from "./enums/park-enums";
 import { checkAchievement } from "../achievements";
-
-const dbPath = path.join(process.cwd(), "data", "homepage.db");
-const db = new Database(dbPath);
 
 export interface DBPark {
   id: number;
@@ -71,14 +67,16 @@ function dbToParkContent(row: DBPark): ParkContent {
 /**
  * Get all parks for a specific user
  */
-export function getAllParks(userId: string): ParkContent[] {
+export async function getAllParks(userId: string): Promise<ParkContent[]> {
   try {
-    const stmt = db.prepare(`
-      SELECT * FROM parks
-      WHERE userId = ?
-      ORDER BY visited DESC, created_at DESC
-    `);
-    const rows = stmt.all(userId) as DBPark[];
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT * FROM parks
+            WHERE userId = ?
+            ORDER BY visited DESC, created_at DESC`,
+      args: [userId]
+    });
+    const rows = result.rows as unknown as DBPark[];
     return rows.map(dbToParkContent);
   } catch (error) {
     console.error("Error getting all parks:", error);
@@ -89,14 +87,16 @@ export function getAllParks(userId: string): ParkContent[] {
 /**
  * Get published parks only
  */
-export function getPublishedParks(userId: string): ParkContent[] {
+export async function getPublishedParks(userId: string): Promise<ParkContent[]> {
   try {
-    const stmt = db.prepare(`
-      SELECT * FROM parks
-      WHERE published = 1 AND userId = ?
-      ORDER BY visited DESC, created_at DESC
-    `);
-    const rows = stmt.all(userId) as DBPark[];
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT * FROM parks
+            WHERE published = 1 AND userId = ?
+            ORDER BY visited DESC, created_at DESC`,
+      args: [userId]
+    });
+    const rows = result.rows as unknown as DBPark[];
     return rows.map(dbToParkContent);
   } catch (error) {
     console.error("Error getting published parks:", error);
@@ -107,10 +107,14 @@ export function getPublishedParks(userId: string): ParkContent[] {
 /**
  * Get park by slug for a specific user
  */
-export function getParkBySlug(slug: string, userId: string): ParkContent | null {
+export async function getParkBySlug(slug: string, userId: string): Promise<ParkContent | null> {
   try {
-    const stmt = db.prepare("SELECT * FROM parks WHERE slug = ? AND userId = ?");
-    const row = stmt.get(slug, userId) as DBPark | undefined;
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT * FROM parks WHERE slug = ? AND userId = ?",
+      args: [slug, userId]
+    });
+    const row = result.rows[0] as unknown as DBPark | undefined;
     return row ? dbToParkContent(row) : null;
   } catch (error) {
     console.error("Error getting park by slug:", error);
@@ -121,14 +125,16 @@ export function getParkBySlug(slug: string, userId: string): ParkContent | null 
 /**
  * Get parks by category
  */
-export function getParksByCategory(category: ParkCategoryValue, userId: string): ParkContent[] {
+export async function getParksByCategory(category: ParkCategoryValue, userId: string): Promise<ParkContent[]> {
   try {
-    const stmt = db.prepare(`
-      SELECT * FROM parks
-      WHERE category = ? AND published = 1 AND userId = ?
-      ORDER BY visited DESC, created_at DESC
-    `);
-    const rows = stmt.all(category) as DBPark[];
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT * FROM parks
+            WHERE category = ? AND published = 1 AND userId = ?
+            ORDER BY visited DESC, created_at DESC`,
+      args: [category, userId]
+    });
+    const rows = result.rows as unknown as DBPark[];
     return rows.map(dbToParkContent);
   } catch (error) {
     console.error("Error getting parks by category:", error);
@@ -139,14 +145,16 @@ export function getParksByCategory(category: ParkCategoryValue, userId: string):
 /**
  * Get parks by state
  */
-export function getParksByState(state: string, userId: string): ParkContent[] {
+export async function getParksByState(state: string, userId: string): Promise<ParkContent[]> {
   try {
-    const stmt = db.prepare(`
-      SELECT * FROM parks
-      WHERE state = ? AND published = 1 AND userId = ?
-      ORDER BY visited DESC, created_at DESC
-    `);
-    const rows = stmt.all(state) as DBPark[];
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT * FROM parks
+            WHERE state = ? AND published = 1 AND userId = ?
+            ORDER BY visited DESC, created_at DESC`,
+      args: [state, userId]
+    });
+    const rows = result.rows as unknown as DBPark[];
     return rows.map(dbToParkContent);
   } catch (error) {
     console.error("Error getting parks by state:", error);
@@ -157,14 +165,16 @@ export function getParksByState(state: string, userId: string): ParkContent[] {
 /**
  * Get featured parks
  */
-export function getFeaturedParks(): ParkContent[] {
+export async function getFeaturedParks(): Promise<ParkContent[]> {
   try {
-    const stmt = db.prepare(`
-      SELECT * FROM parks
-      WHERE featured = 1 AND published = 1
-      ORDER BY visited DESC, created_at DESC
-    `);
-    const rows = stmt.all() as DBPark[];
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT * FROM parks
+            WHERE featured = 1 AND published = 1
+            ORDER BY visited DESC, created_at DESC`,
+      args: []
+    });
+    const rows = result.rows as unknown as DBPark[];
     return rows.map(dbToParkContent);
   } catch (error) {
     console.error("Error getting featured parks:", error);
@@ -175,7 +185,7 @@ export function getFeaturedParks(): ParkContent[] {
 /**
  * Create a new park
  */
-export function createPark(data: {
+export async function createPark(data: {
   slug: string;
   title: string;
   category: ParkCategoryValue;
@@ -189,32 +199,33 @@ export function createPark(data: {
   published?: boolean;
   content: string;
   userId: string;
-}): ParkContent {
+}): Promise<ParkContent> {
   try {
-    const stmt = db.prepare(`
-      INSERT INTO parks (
-        slug, title, category, state, poster, description,
-        visited, tags, rating, featured, published, content, userId
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    const db = getDatabase();
 
-    stmt.run(
-      data.slug,
-      data.title,
-      data.category,
-      data.state || null,
-      data.poster || null,
-      data.description || null,
-      data.visited || null,
-      data.tags ? JSON.stringify(data.tags) : null,
-      data.rating !== undefined ? data.rating : null,
-      data.featured ? 1 : 0,
-      data.published !== false ? 1 : 0,
-      data.content,
-      data.userId
-    );
+    await db.execute({
+      sql: `INSERT INTO parks (
+              slug, title, category, state, poster, description,
+              visited, tags, rating, featured, published, content, userId
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        data.slug,
+        data.title,
+        data.category,
+        data.state || null,
+        data.poster || null,
+        data.description || null,
+        data.visited || null,
+        data.tags ? JSON.stringify(data.tags) : null,
+        data.rating !== undefined ? data.rating : null,
+        data.featured ? 1 : 0,
+        data.published !== false ? 1 : 0,
+        data.content,
+        data.userId
+      ]
+    });
 
-    const park = getParkBySlug(data.slug, data.userId);
+    const park = await getParkBySlug(data.slug, data.userId);
     if (!park) {
       throw new Error("Failed to create park");
     }
@@ -232,7 +243,7 @@ export function createPark(data: {
 /**
  * Update a park with ownership verification
  */
-export function updatePark(
+export async function updatePark(
   slug: string,
   userId: string,
   data: {
@@ -249,10 +260,12 @@ export function updatePark(
     published?: boolean;
     content?: string;
   }
-): ParkContent {
+): Promise<ParkContent> {
   try {
+    const db = getDatabase();
+
     // Verify ownership
-    const existing = getParkBySlug(slug, userId);
+    const existing = await getParkBySlug(slug, userId);
     if (!existing) {
       throw new Error("Park not found or access denied");
     }
@@ -314,16 +327,16 @@ export function updatePark(
     }
 
     values.push(slug, userId);
-    const stmt = db.prepare(`
-      UPDATE parks
-      SET ${updates.join(", ")}
-      WHERE slug = ? AND userId = ?
-    `);
 
-    stmt.run(...values);
+    await db.execute({
+      sql: `UPDATE parks
+            SET ${updates.join(", ")}
+            WHERE slug = ? AND userId = ?`,
+      args: values
+    });
 
     const updatedSlug = data.newSlug || slug;
-    const park = getParkBySlug(updatedSlug, userId);
+    const park = await getParkBySlug(updatedSlug, userId);
     if (!park) {
       throw new Error("Failed to update park");
     }
@@ -338,17 +351,21 @@ export function updatePark(
 /**
  * Delete a park with ownership verification
  */
-export function deletePark(slug: string, userId: string): boolean {
+export async function deletePark(slug: string, userId: string): Promise<boolean> {
   try {
+    const db = getDatabase();
+
     // Verify ownership
-    const existing = getParkBySlug(slug, userId);
+    const existing = await getParkBySlug(slug, userId);
     if (!existing) {
       return false;
     }
 
-    const stmt = db.prepare("DELETE FROM parks WHERE slug = ? AND userId = ?");
-    const result = stmt.run(slug, userId);
-    return result.changes > 0;
+    const result = await db.execute({
+      sql: "DELETE FROM parks WHERE slug = ? AND userId = ?",
+      args: [slug, userId]
+    });
+    return (result.rowsAffected ?? 0) > 0;
   } catch (error) {
     console.error("Error deleting park:", error);
     return false;
@@ -358,11 +375,15 @@ export function deletePark(slug: string, userId: string): boolean {
 /**
  * Check if a slug exists
  */
-export function parkSlugExists(slug: string): boolean {
+export async function parkSlugExists(slug: string): Promise<boolean> {
   try {
-    const stmt = db.prepare("SELECT COUNT(*) as count FROM parks WHERE slug = ?");
-    const result = stmt.get(slug) as { count: number };
-    return result.count > 0;
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT COUNT(*) as count FROM parks WHERE slug = ?",
+      args: [slug]
+    });
+    const row = result.rows[0] as unknown as { count: number };
+    return row.count > 0;
   } catch (error) {
     console.error("Error checking park slug:", error);
     return false;

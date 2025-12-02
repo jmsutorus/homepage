@@ -10,7 +10,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  TooltipProps,
   Legend,
 } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

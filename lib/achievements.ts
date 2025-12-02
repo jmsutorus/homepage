@@ -1,8 +1,7 @@
 import { execute, query, queryOne } from "@/lib/db";
-import { v4 as uuidv4 } from "uuid";
 
 export async function getUserAchievements(userId: string) {
-  const rows = query<{ achievementId: string; unlocked: number; progress: number }>(
+  const rows = await query<{ achievementId: string; unlocked: number; progress: number }>(
     `SELECT achievementId, unlocked, progress FROM user_achievements WHERE userId = ?`,
     [userId]
   );
@@ -14,7 +13,7 @@ export async function getUserAchievements(userId: string) {
       progress: row.progress
     };
   });
-  
+
   return map;
 }
 
@@ -127,13 +126,13 @@ export const ACHIEVEMENTS: Achievement[] = [
     target_value: 50,
   },
   {
-    id: 'movie-buff-100',
-    slug: 'movie-buff-100',
-    title: 'Movie Buff',
-    description: 'Watch 100 movies',
+    id: 'movie-buff-10',
+    slug: 'movie-buff-10',
+    title: 'Movie Enthusiast',
+    description: 'Watch 10 movies',
     icon: 'film',
     category: 'media',
-    points: 50,
+    points: 10,
     target_value: 10,
   },
   {
@@ -410,7 +409,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 
 export async function initializeAchievements() {
   for (const achievement of ACHIEVEMENTS) {
-    execute(
+    await execute(
       `INSERT OR IGNORE INTO achievements (id, slug, title, description, icon, category, points, target_value)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -459,14 +458,14 @@ async function unlockAchievement(userId: string, achievementId: string, progress
   if (!achievement) return;
 
   // Check if already unlocked
-  const existing = queryOne<{ unlocked: number }>(
+  const existing = await queryOne<{ unlocked: number }>(
     `SELECT unlocked FROM user_achievements WHERE userId = ? AND achievementId = ?`,
     [userId, achievementId]
   );
 
   if (existing?.unlocked) {
     // Just update progress if needed
-    execute(
+    await execute(
       `UPDATE user_achievements SET progress = ? WHERE userId = ? AND achievementId = ?`,
       [progress, userId, achievementId]
     );
@@ -475,18 +474,18 @@ async function unlockAchievement(userId: string, achievementId: string, progress
 
   // Unlock if progress meets target
   if (progress >= achievement.target_value) {
-    execute(
+    await execute(
       `INSERT INTO user_achievements (userId, achievementId, unlocked, unlocked_at, progress)
        VALUES (?, ?, 1, CURRENT_TIMESTAMP, ?)
        ON CONFLICT(userId, achievementId) DO UPDATE SET
        unlocked = 1, unlocked_at = CURRENT_TIMESTAMP, progress = ?`,
       [userId, achievementId, progress, progress]
     );
-    
+
     console.log(`Achievement Unlocked: ${achievement.title} for user ${userId}`);
   } else {
     // Update progress
-    execute(
+    await execute(
       `INSERT INTO user_achievements (userId, achievementId, unlocked, progress)
        VALUES (?, ?, 0, ?)
        ON CONFLICT(userId, achievementId) DO UPDATE SET progress = ?`,
@@ -499,17 +498,18 @@ async function unlockAchievement(userId: string, achievementId: string, progress
 
 async function checkMoodAchievements(userId: string) {
   // Check First Mood
-  const count = queryOne<{ count: number }>(
+  const countResult = await queryOne<{ count: number }>(
     "SELECT COUNT(*) as count FROM mood_entries WHERE userId = ?",
     [userId]
-  )?.count || 0;
+  );
+  const count = countResult?.count || 0;
 
   if (count >= 1) {
     await unlockAchievement(userId, 'mood-first', count);
   }
 
   // Check Mood Streak (7 and 30 days)
-  const streak = queryOne<{ streak: number }>(
+  const streak = await queryOne<{ streak: number }>(
     `WITH RECURSIVE dates(date) AS (
        SELECT date(min(date)) FROM mood_entries WHERE userId = ?
        UNION ALL
@@ -536,7 +536,7 @@ async function checkMoodAchievements(userId: string) {
      LIMIT 1`,
     [userId, userId]
   );
-  
+
   const currentStreak = streak?.streak || 0;
   await unlockAchievement(userId, 'mood-streak-7', currentStreak);
   await unlockAchievement(userId, 'mood-streak-30', currentStreak);
@@ -544,7 +544,7 @@ async function checkMoodAchievements(userId: string) {
 
 async function checkMediaAchievements(userId: string) {
   // Bookworm
-  const books = queryOne<{ count: number }>(
+  const books = await queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM media_content WHERE userId = ? AND type = 'book' AND status = 'completed'`,
     [userId]
   );
@@ -556,12 +556,13 @@ async function checkMediaAchievements(userId: string) {
   await unlockAchievement(userId, 'bookworm-50', books?.count || 0);
 
   // Movie Buff
-  const movies = queryOne<{ count: number }>(
+  const movies = await queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM media_content WHERE userId = ? AND type = 'movie' AND status = 'completed'`,
     [userId]
   );
 
   await unlockAchievement(userId, 'movie-buff-1', movies?.count || 0);
+  await unlockAchievement(userId, 'movie-buff-10', movies?.count || 0);
   await unlockAchievement(userId, 'movie-buff-25', movies?.count || 0);
   await unlockAchievement(userId, 'movie-buff-50', movies?.count || 0);
   await unlockAchievement(userId, 'movie-buff-100', movies?.count || 0);
@@ -570,12 +571,12 @@ async function checkMediaAchievements(userId: string) {
 async function checkHabitAchievements(userId: string) {
   // Habit Streak 30
   // Placeholder:
-  const completions = queryOne<{ count: number }>(
+  const completions = await queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM habit_completions WHERE userId = ?`,
     [userId]
   );
   await unlockAchievement(userId, 'habit-streak-30', completions?.count || 0);
-  
+
   // Total Habits
   await unlockAchievement(userId, 'habit-master-1', completions?.count || 0);
   await unlockAchievement(userId, 'habit-master-10', completions?.count || 0);
@@ -585,14 +586,14 @@ async function checkHabitAchievements(userId: string) {
 
 async function checkTaskAchievements(userId: string) {
   // Productive Day (5 tasks in a day)
-  const todayTasks = queryOne<{ count: number }>(
+  const todayTasks = await queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM tasks WHERE userId = ? AND completed = 1 AND date(completed_date) = date('now')`,
     [userId]
   );
   await unlockAchievement(userId, 'task-master-5', todayTasks?.count || 0);
 
   // Total Tasks
-  const totalTasks = queryOne<{ count: number }>(
+  const totalTasks = await queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM tasks WHERE userId = ? AND completed = 1`,
     [userId]
   );
@@ -603,7 +604,7 @@ async function checkTaskAchievements(userId: string) {
 }
 
 async function checkParkAchievements(userId: string) {
-  const parks = queryOne<{ count: number }>(
+  const parks = await queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM parks WHERE userId = ? AND visited IS NOT NULL`,
     [userId]
   );
@@ -614,7 +615,7 @@ async function checkParkAchievements(userId: string) {
 }
 
 async function checkJournalAchievements(userId: string) {
-  const journals = queryOne<{ count: number }>(
+  const journals = await queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM journals WHERE userId = ?`,
     [userId]
   );
@@ -628,15 +629,17 @@ async function checkJournalAchievements(userId: string) {
 async function checkExerciseAchievements(userId: string) {
   // Count Strava activities and manual workout activities
   // We'll just sum them up for now, assuming minimal overlap or that overlap is acceptable for "total activity"
-  const stravaCount = queryOne<{ count: number }>(
+  const stravaResult = await queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM strava_activities WHERE userId = ?`,
     [userId]
-  )?.count || 0;
+  );
+  const stravaCount = stravaResult?.count || 0;
 
-  const manualCount = queryOne<{ count: number }>(
+  const manualResult = await queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM workout_activities WHERE userId = ? AND completed = 1`,
     [userId]
-  )?.count || 0;
+  );
+  const manualCount = manualResult?.count || 0;
 
   const totalWorkouts = stravaCount + manualCount;
 

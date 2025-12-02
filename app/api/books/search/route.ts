@@ -51,7 +51,6 @@ export async function POST(request: NextRequest) {
     // Get the first result
     const book = data.items[0];
     const volumeInfo = book.volumeInfo || {};
-    const saleInfo = book.saleInfo || {};
 
     // Parse and format the data
     // Parse rating (Google Books uses 0-5 scale, we use 0-10)

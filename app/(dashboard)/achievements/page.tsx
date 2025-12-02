@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function AchievementsPage() {
   const session = await requireAuth();
 
-  const userAchievements = await getUserAchievements(session.user.id);
+  const userAchievements = await await getUserAchievements(session.user.id);
   
   // Calculate total stats
   const totalPoints = ACHIEVEMENTS.reduce((sum, a) => {

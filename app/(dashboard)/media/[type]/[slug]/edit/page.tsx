@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { MediaEditor } from "@/components/widgets/media/media-editor";
 import { getMediaBySlug } from "@/lib/db/media";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { getUserId } from "@/lib/auth/server";
 
 interface EditMediaPageProps {
   params: Promise<{
@@ -23,10 +24,11 @@ function getApiType(type: string): string {
 
 export default async function EditMediaPage({ params }: EditMediaPageProps) {
   const { type, slug } = await params;
+  const userId = await getUserId();
   const apiType = getApiType(type);
 
   // Fetch existing media data
-  const media = getMediaBySlug(slug);
+  const media = await getMediaBySlug(slug, userId);
 
   if (!media) {
     notFound();

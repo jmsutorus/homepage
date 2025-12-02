@@ -19,7 +19,7 @@ export interface CalendarColorUpdate {
 /**
  * Helper to flatten the nested CalendarColors constant into an array of CalendarColor objects
  */
-function getDefaultCalendarColors(): Omit<CalendarColor, "userId" | "id" | "created_at" | "updated_at">[] {
+async function getDefaultCalendarColors(): Promise<Omit<CalendarColor, "userId" | "id" | "created_at" | "updated_at">[]> {
   const defaults: Omit<CalendarColor, "userId" | "id" | "created_at" | "updated_at">[] = [];
 
    
@@ -48,15 +48,15 @@ function getDefaultCalendarColors(): Omit<CalendarColor, "userId" | "id" | "crea
  * Get all calendar colors for a user
  * Merges user's custom colors with system defaults (for any missing categories)
  */
-export function getCalendarColors(userId: string): CalendarColor[] {
+export async function getCalendarColors(userId: string): Promise<CalendarColor[]> {
   // Try to get user's custom colors
-  const userColors = query<CalendarColor>(
+  const userColors = await query<CalendarColor>(
     `SELECT * FROM calendar_colors WHERE userId = ? ORDER BY category ASC`,
     [userId]
   );
 
   // Get all system defaults
-  const defaults = getDefaultCalendarColors();
+  const defaults = await getDefaultCalendarColors();
 
   // If user has no custom colors, return all defaults
   if (userColors.length === 0) {
@@ -96,8 +96,8 @@ export function getCalendarColors(userId: string): CalendarColor[] {
  * Get calendar colors as a structured object (matching CalendarColors constant structure)
  */
  
-export function getCalendarColorsObject(userId: string): any {
-  const colors = getCalendarColors(userId);
+export async function getCalendarColorsObject(userId: string): Promise<any> {
+  const colors = await getCalendarColors(userId);
    
   const colorObj: any = {};
 
@@ -128,12 +128,12 @@ export function getCalendarColorsObject(userId: string): any {
 /**
  * Update or insert a calendar color for a user
  */
-export function upsertCalendarColor(
+export async function upsertCalendarColor(
   userId: string,
   category: string,
   colors: CalendarColorUpdate
-): void {
-  execute(
+): Promise<void> {
+  await execute(
     `INSERT INTO calendar_colors (userId, category, bg_color, text_color)
      VALUES (?, ?, ?, ?)
      ON CONFLICT(userId, category)
@@ -148,11 +148,11 @@ export function upsertCalendarColor(
 /**
  * Reset a specific category to system default for a user
  */
-export function resetCalendarColorToDefault(
+export async function resetCalendarColorToDefault(
   userId: string,
   category: string
-): void {
-  execute(
+): Promise<void> {
+  await execute(
     `DELETE FROM calendar_colors WHERE userId = ? AND category = ?`,
     [userId, category]
   );
@@ -161,16 +161,16 @@ export function resetCalendarColorToDefault(
 /**
  * Copy system defaults to a user's calendar colors
  */
-export function populateUserColorsFromDefaults(userId: string): void {
+export async function populateUserColorsFromDefaults(userId: string): Promise<void> {
   // First, delete any existing user colors
-  execute(`DELETE FROM calendar_colors WHERE userId = ?`, [userId]);
+  await execute(`DELETE FROM calendar_colors WHERE userId = ?`, [userId]);
 
   // Get all system defaults from constants
-  const systemDefaults = getDefaultCalendarColors();
+  const systemDefaults = await getDefaultCalendarColors();
 
   // Copy system defaults to user
   for (const color of systemDefaults) {
-    execute(
+    await execute(
       `INSERT INTO calendar_colors (userId, category, bg_color, text_color)
        VALUES (?, ?, ?, ?)`,
       [userId, color.category, color.bg_color, color.text_color]
@@ -181,43 +181,45 @@ export function populateUserColorsFromDefaults(userId: string): void {
 /**
  * Reset all calendar colors to system defaults for a user
  */
-export function resetAllCalendarColorsToDefaults(userId: string): void {
-  populateUserColorsFromDefaults(userId);
+export async function resetAllCalendarColorsToDefaults(userId: string): Promise<void> {
+  await populateUserColorsFromDefaults(userId);
 }
 
 /**
  * Check if user has any calendar colors set, if not populate from defaults
  */
-export function ensureUserColorsExist(userId: string): void {
-  const userColors = query<CalendarColor>(
+export async function ensureUserColorsExist(userId: string): Promise<void> {
+  const userColors = await query<CalendarColor>(
     `SELECT id FROM calendar_colors WHERE userId = ? LIMIT 1`,
     [userId]
   );
 
   if (userColors.length === 0) {
-    populateUserColorsFromDefaults(userId);
+    await populateUserColorsFromDefaults(userId);
   }
 }
 
 /**
  * Get a single calendar color by category
  */
-export function getCalendarColorByCategory(
+export async function getCalendarColorByCategory(
   userId: string,
   category: string
-): CalendarColor | null {
+): Promise<CalendarColor | null> {
   // Try user's custom color first
-  const userColor = query<CalendarColor>(
+  const userColors = await query<CalendarColor>(
     `SELECT * FROM calendar_colors WHERE userId = ? AND category = ?`,
     [userId, category]
-  )[0];
+  );
+
+  const userColor = userColors[0];
 
   if (userColor) {
     return userColor;
   }
 
   // Fall back to system default from constants
-  const defaults = getDefaultCalendarColors();
+  const defaults = await getDefaultCalendarColors();
   const defaultColor = defaults.find(d => d.category === category);
   
   if (defaultColor) {

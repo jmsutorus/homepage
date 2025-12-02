@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTaskVelocityData, VelocityPeriod } from "@/lib/db/tasks";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * GET /api/tasks/velocity
@@ -9,6 +10,7 @@ import { getTaskVelocityData, VelocityPeriod } from "@/lib/db/tasks";
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const period = (searchParams.get("period") as VelocityPeriod) || "week";
     const periods = parseInt(searchParams.get("periods") || "12", 10);
@@ -24,7 +26,7 @@ export async function GET(request: NextRequest) {
     // Validate periods count
     const validPeriods = Math.min(Math.max(periods, 1), 52);
 
-    const velocityData = getTaskVelocityData(period, validPeriods);
+    const velocityData = await getTaskVelocityData(userId, period, validPeriods);
     return NextResponse.json(velocityData);
   } catch (error) {
     console.error("Error fetching task velocity:", error);

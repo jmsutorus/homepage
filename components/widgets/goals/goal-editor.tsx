@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +36,6 @@ import {
   updateChecklistItemAction,
   replaceGoalLinksAction,
 } from "@/lib/actions/goals";
-import { showCreationSuccess } from "@/lib/success-toasts";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -58,7 +57,6 @@ import type {
   Goal,
   GoalStatus,
   GoalPriority,
-  GoalMilestone,
   GoalChecklistItem,
   GoalMilestoneWithChecklist,
   GoalLink,

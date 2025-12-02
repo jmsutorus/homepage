@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { getJournalBySlug, getAllJournals, getLinksForJournal, getMoodForDate } from "@/lib/db/journals";
+import { getJournalBySlug, getLinksForJournal, getMoodForDate } from "@/lib/db/journals";
 import { formatDateLongSafe } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { ExportButton } from "@/components/widgets/shared/export-button";
 import { getRelatedJournals } from "@/lib/actions/related-content";
 import { RelatedJournals } from "@/components/widgets/shared/related-content";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { getUserId } from "@/lib/auth/server";
 
 interface JournalDetailPageProps {
   params: Promise<{
@@ -22,19 +23,20 @@ export const dynamic = "force-dynamic";
 
 export default async function JournalDetailPage({ params }: JournalDetailPageProps) {
   const { slug } = await params;
-  const journal = getJournalBySlug(slug);
+  const userId = await getUserId();
+  const journal = await getJournalBySlug(slug, userId);
 
   if (!journal) {
     notFound();
   }
 
   // Get linked items
-  const links = getLinksForJournal(journal.id);
+  const links = await getLinksForJournal(journal.id);
 
   // For daily journals, get mood from mood_entries
   let displayMood = journal.mood;
   if (journal.journal_type === "daily" && journal.daily_date) {
-    const moodRating = getMoodForDate(journal.daily_date);
+    const moodRating = await getMoodForDate(journal.daily_date);
     if (moodRating !== null) {
       displayMood = moodRating;
     }

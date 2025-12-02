@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, GripVertical, Save, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 

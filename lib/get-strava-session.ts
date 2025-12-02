@@ -1,6 +1,5 @@
 "use server";
 
-import { getDatabase } from "@/lib/db";
 import { cookies } from "next/headers";
 
 export interface StravaSession {
@@ -22,26 +21,29 @@ export async function getStravaSession(): Promise<StravaSession | null> {
     }
 
     // Query the session and user from database
-    const db = getDatabase();
+    const { queryOne } = await import("@/lib/db");
 
-    const session = db
-      .prepare(
-        `SELECT userId FROM session WHERE token = ? AND expiresAt > ?`
-      )
-      .get(sessionToken, Date.now()) as any;
+    const session = await queryOne<{ userId: string }>(
+      `SELECT userId FROM session WHERE token = ? AND expiresAt > ?`,
+      [sessionToken, Date.now()]
+    );
 
     if (!session) {
       return null;
     }
 
     // Get the Strava account for this user
-    const account = db
-      .prepare(
-        `SELECT accountId, accessToken, refreshToken, accessTokenExpiresAt
-         FROM account
-         WHERE userId = ? AND providerId = ?`
-      )
-      .get(session.userId, "strava") as any;
+    const account = await queryOne<{
+      accountId: string;
+      accessToken: string;
+      refreshToken: string;
+      accessTokenExpiresAt: number;
+    }>(
+      `SELECT accountId, accessToken, refreshToken, accessTokenExpiresAt
+       FROM account
+       WHERE userId = ? AND providerId = ?`,
+      [session.userId, "strava"]
+    );
 
     if (!account) {
       return null;

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAllParks, createPark, getParkBySlug } from "@/lib/db/parks";
-import { PARK_CATEGORIES, ParkCategoryValue } from "@/lib/db/enums/park-enums";
+import { PARK_CATEGORIES } from "@/lib/db/enums/park-enums";
 import { getUserId } from "@/lib/auth/server";
 
+// Helper function to sanitize slug
 // Helper function to sanitize slug
 function sanitizeSlug(title: string): string {
   return title
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category");
     const state = searchParams.get("state");
 
-    let parks = getAllParks(userId);
+    let parks = await getAllParks(userId);
 
     // Apply filters
     if (category) {
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
     const slug = sanitizeSlug(frontmatter.title);
 
     // Check if park with this slug already exists for this user
-    const existing = getParkBySlug(slug, userId);
+    const existing = await getParkBySlug(slug, userId);
     if (existing) {
       return NextResponse.json(
         { error: "A park entry with this title already exists" },
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
       userId,
     };
 
-    const park = createPark(parkData);
+    const park = await createPark(parkData);
 
     // Revalidate paths
     revalidatePath("/parks");

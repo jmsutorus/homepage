@@ -127,7 +127,7 @@ function parseChecklistRow(row: ChecklistRow): GoalChecklistItem {
 /**
  * Generate a URL-friendly slug from a title
  */
-export function generateSlug(title: string): string {
+export async function generateSlug(title: string): Promise<string> {
   return title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -138,12 +138,12 @@ export function generateSlug(title: string): string {
 /**
  * Ensure slug is unique for a user
  */
-function ensureUniqueSlug(userId: string, baseSlug: string, excludeId?: number): string {
+async function ensureUniqueSlug(userId: string, baseSlug: string, excludeId?: number): Promise<string> {
   let slug = baseSlug;
   let counter = 1;
 
   while (true) {
-    const existing = queryOne<{ id: number }>(
+    const existing = await queryOne<{ id: number }>(
       excludeId
         ? "SELECT id FROM goals WHERE userId = ? AND slug = ? AND id != ?"
         : "SELECT id FROM goals WHERE userId = ? AND slug = ?",
@@ -210,11 +210,11 @@ export function calculateGoalProgress(
 /**
  * Get all goals for a user
  */
-export function getGoals(userId: string, options?: {
+export async function getGoals(userId: string, options?: {
   status?: GoalStatus | GoalStatus[];
   priority?: GoalPriority;
   includeArchived?: boolean;
-}): Goal[] {
+}): Promise<Goal[]> {
   try {
     let sql = "SELECT * FROM goals WHERE userId = ?";
     const params: (string | number | null)[] = [userId];
@@ -239,7 +239,7 @@ export function getGoals(userId: string, options?: {
 
     sql += " ORDER BY CASE status WHEN 'in_progress' THEN 1 WHEN 'not_started' THEN 2 WHEN 'on_hold' THEN 3 ELSE 4 END, target_date ASC, created_at DESC";
 
-    const rows = query<GoalRow>(sql, params);
+    const rows = await query<GoalRow>(sql, params);
     return rows.map(parseGoalRow);
   } catch (error) {
     console.error("Error getting goals:", error);
@@ -250,9 +250,9 @@ export function getGoals(userId: string, options?: {
 /**
  * Get a single goal by ID
  */
-export function getGoalById(id: number, userId: string): Goal | null {
+export async function getGoalById(id: number, userId: string): Promise<Goal | null> {
   try {
-    const row = queryOne<GoalRow>(
+    const row = await queryOne<GoalRow>(
       "SELECT * FROM goals WHERE id = ? AND userId = ?",
       [id, userId]
     );
@@ -266,9 +266,9 @@ export function getGoalById(id: number, userId: string): Goal | null {
 /**
  * Get a single goal by slug
  */
-export function getGoalBySlug(slug: string, userId: string): Goal | null {
+export async function getGoalBySlug(slug: string, userId: string): Promise<Goal | null> {
   try {
-    const row = queryOne<GoalRow>(
+    const row = await queryOne<GoalRow>(
       "SELECT * FROM goals WHERE slug = ? AND userId = ?",
       [slug, userId]
     );
@@ -282,21 +282,21 @@ export function getGoalBySlug(slug: string, userId: string): Goal | null {
 /**
  * Get a goal with all its related data (milestones, checklists, progress)
  */
-export function getGoalWithDetails(slug: string, userId: string): GoalWithDetails | null {
+export async function getGoalWithDetails(slug: string, userId: string): Promise<GoalWithDetails | null> {
   try {
-    const goal = getGoalBySlug(slug, userId);
+    const goal = await getGoalBySlug(slug, userId);
     if (!goal) return null;
 
-    const milestones = getMilestonesByGoalId(goal.id);
-    const goalChecklist = getChecklistByGoalId(goal.id);
+    const milestones = await getMilestonesByGoalId(goal.id);
+    const goalChecklist = await getChecklistByGoalId(goal.id);
 
     // Get checklists for each milestone
     const milestoneChecklists = new Map<number, GoalChecklistItem[]>();
-    const milestonesWithChecklist: GoalMilestoneWithChecklist[] = milestones.map(milestone => {
-      const checklist = getChecklistByMilestoneId(milestone.id);
+    const milestonesWithChecklist: GoalMilestoneWithChecklist[] = await Promise.all(milestones.map(async milestone => {
+      const checklist = await getChecklistByMilestoneId(milestone.id);
       milestoneChecklists.set(milestone.id, checklist);
       return { ...milestone, checklist };
-    });
+    }));
 
     const progress = calculateGoalProgress(milestones, goalChecklist, milestoneChecklists);
 
@@ -315,7 +315,7 @@ export function getGoalWithDetails(slug: string, userId: string): GoalWithDetail
 /**
  * Create a new goal
  */
-export function createGoal(userId: string, data: {
+export async function createGoal(userId: string, data: {
   title: string;
   description?: string;
   content?: string;
@@ -323,12 +323,12 @@ export function createGoal(userId: string, data: {
   target_date?: string;
   tags?: string[];
   priority?: GoalPriority;
-}): Goal {
+}): Promise<Goal> {
   try {
-    const baseSlug = generateSlug(data.title);
-    const slug = ensureUniqueSlug(userId, baseSlug);
+    const baseSlug = await generateSlug(data.title);
+    const slug = await ensureUniqueSlug(userId, baseSlug);
 
-    const result = execute(
+    const result = await execute(
       `INSERT INTO goals (userId, slug, title, description, content, status, target_date, tags, priority)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -344,7 +344,7 @@ export function createGoal(userId: string, data: {
       ]
     );
 
-    const goal = queryOne<GoalRow>("SELECT * FROM goals WHERE id = ?", [result.lastInsertRowid]);
+    const goal = await queryOne<GoalRow>("SELECT * FROM goals WHERE id = ?", [result.lastInsertRowid]);
     if (!goal) throw new Error("Failed to create goal");
     return parseGoalRow(goal);
   } catch (error) {
@@ -356,7 +356,7 @@ export function createGoal(userId: string, data: {
 /**
  * Update a goal
  */
-export function updateGoal(id: number, userId: string, data: {
+export async function updateGoal(id: number, userId: string, data: {
   title?: string;
   description?: string;
   content?: string;
@@ -365,7 +365,7 @@ export function updateGoal(id: number, userId: string, data: {
   completed_date?: string | null;
   tags?: string[];
   priority?: GoalPriority;
-}): Goal {
+}): Promise<Goal> {
   try {
     const updates: string[] = [];
     const values: (string | number | null)[] = [];
@@ -375,8 +375,8 @@ export function updateGoal(id: number, userId: string, data: {
       values.push(data.title);
 
       // Update slug if title changed
-      const baseSlug = generateSlug(data.title);
-      const slug = ensureUniqueSlug(userId, baseSlug, id);
+      const baseSlug = await generateSlug(data.title);
+      const slug = await ensureUniqueSlug(userId, baseSlug, id);
       updates.push("slug = ?");
       values.push(slug);
     }
@@ -422,12 +422,12 @@ export function updateGoal(id: number, userId: string, data: {
     values.push(id);
     values.push(userId);
 
-    execute(
+    await execute(
       `UPDATE goals SET ${updates.join(", ")} WHERE id = ? AND userId = ?`,
       values
     );
 
-    const goal = queryOne<GoalRow>("SELECT * FROM goals WHERE id = ?", [id]);
+    const goal = await queryOne<GoalRow>("SELECT * FROM goals WHERE id = ?", [id]);
     if (!goal) throw new Error("Goal not found");
     return parseGoalRow(goal);
   } catch (error) {
@@ -439,9 +439,9 @@ export function updateGoal(id: number, userId: string, data: {
 /**
  * Delete a goal (cascades to milestones and checklists)
  */
-export function deleteGoal(id: number, userId: string): boolean {
+export async function deleteGoal(id: number, userId: string): Promise<boolean> {
   try {
-    const result = execute("DELETE FROM goals WHERE id = ? AND userId = ?", [id, userId]);
+    const result = await execute("DELETE FROM goals WHERE id = ? AND userId = ?", [id, userId]);
     return result.changes > 0;
   } catch (error) {
     console.error("Error deleting goal:", error);
@@ -456,9 +456,9 @@ export function deleteGoal(id: number, userId: string): boolean {
 /**
  * Get all milestones for a goal
  */
-export function getMilestonesByGoalId(goalId: number): GoalMilestone[] {
+export async function getMilestonesByGoalId(goalId: number): Promise<GoalMilestone[]> {
   try {
-    const rows = query<MilestoneRow>(
+    const rows = await query<MilestoneRow>(
       "SELECT * FROM goal_milestones WHERE goalId = ? ORDER BY order_index ASC, created_at ASC",
       [goalId]
     );
@@ -472,9 +472,9 @@ export function getMilestonesByGoalId(goalId: number): GoalMilestone[] {
 /**
  * Get a single milestone by ID
  */
-export function getMilestoneById(id: number): GoalMilestone | null {
+export async function getMilestoneById(id: number): Promise<GoalMilestone | null> {
   try {
-    const row = queryOne<MilestoneRow>(
+    const row = await queryOne<MilestoneRow>(
       "SELECT * FROM goal_milestones WHERE id = ?",
       [id]
     );
@@ -488,21 +488,21 @@ export function getMilestoneById(id: number): GoalMilestone | null {
 /**
  * Create a new milestone
  */
-export function createMilestone(goalId: number, data: {
+export async function createMilestone(goalId: number, data: {
   title: string;
   description?: string;
   target_date?: string;
   order_index?: number;
-}): GoalMilestone {
+}): Promise<GoalMilestone> {
   try {
     // Get max order_index for this goal
-    const maxOrder = queryOne<{ max_order: number | null }>(
+    const maxOrder = await queryOne<{ max_order: number | null }>(
       "SELECT MAX(order_index) as max_order FROM goal_milestones WHERE goalId = ?",
       [goalId]
     );
     const orderIndex = data.order_index ?? ((maxOrder?.max_order ?? -1) + 1);
 
-    const result = execute(
+    const result = await execute(
       `INSERT INTO goal_milestones (goalId, title, description, target_date, order_index)
        VALUES (?, ?, ?, ?, ?)`,
       [
@@ -514,7 +514,7 @@ export function createMilestone(goalId: number, data: {
       ]
     );
 
-    const milestone = queryOne<MilestoneRow>(
+    const milestone = await queryOne<MilestoneRow>(
       "SELECT * FROM goal_milestones WHERE id = ?",
       [result.lastInsertRowid]
     );
@@ -529,14 +529,14 @@ export function createMilestone(goalId: number, data: {
 /**
  * Update a milestone
  */
-export function updateMilestone(id: number, data: {
+export async function updateMilestone(id: number, data: {
   title?: string;
   description?: string;
   target_date?: string | null;
   completed?: boolean;
   completed_date?: string | null;
   order_index?: number;
-}): GoalMilestone {
+}): Promise<GoalMilestone> {
   try {
     const updates: string[] = [];
     const values: (string | number | null)[] = [];
@@ -581,12 +581,12 @@ export function updateMilestone(id: number, data: {
 
     values.push(id);
 
-    execute(
+    await execute(
       `UPDATE goal_milestones SET ${updates.join(", ")} WHERE id = ?`,
       values
     );
 
-    const milestone = queryOne<MilestoneRow>(
+    const milestone = await queryOne<MilestoneRow>(
       "SELECT * FROM goal_milestones WHERE id = ?",
       [id]
     );
@@ -601,9 +601,9 @@ export function updateMilestone(id: number, data: {
 /**
  * Delete a milestone
  */
-export function deleteMilestone(id: number): boolean {
+export async function deleteMilestone(id: number): Promise<boolean> {
   try {
-    const result = execute("DELETE FROM goal_milestones WHERE id = ?", [id]);
+    const result = await execute("DELETE FROM goal_milestones WHERE id = ?", [id]);
     return result.changes > 0;
   } catch (error) {
     console.error("Error deleting milestone:", error);
@@ -614,10 +614,10 @@ export function deleteMilestone(id: number): boolean {
 /**
  * Reorder milestones
  */
-export function reorderMilestones(goalId: number, milestoneIds: number[]): boolean {
+export async function reorderMilestones(goalId: number, milestoneIds: number[]): Promise<boolean> {
   try {
-    milestoneIds.forEach((id, index) => {
-      execute(
+    milestoneIds.forEach(async (id, index) => {
+      await execute(
         "UPDATE goal_milestones SET order_index = ? WHERE id = ? AND goalId = ?",
         [index, id, goalId]
       );
@@ -636,9 +636,9 @@ export function reorderMilestones(goalId: number, milestoneIds: number[]): boole
 /**
  * Get checklist items for a goal
  */
-export function getChecklistByGoalId(goalId: number): GoalChecklistItem[] {
+export async function getChecklistByGoalId(goalId: number): Promise<GoalChecklistItem[]> {
   try {
-    const rows = query<ChecklistRow>(
+    const rows = await query<ChecklistRow>(
       "SELECT * FROM goal_checklist_items WHERE goalId = ? AND milestoneId IS NULL ORDER BY order_index ASC",
       [goalId]
     );
@@ -652,9 +652,9 @@ export function getChecklistByGoalId(goalId: number): GoalChecklistItem[] {
 /**
  * Get checklist items for a milestone
  */
-export function getChecklistByMilestoneId(milestoneId: number): GoalChecklistItem[] {
+export async function getChecklistByMilestoneId(milestoneId: number): Promise<GoalChecklistItem[]> {
   try {
-    const rows = query<ChecklistRow>(
+    const rows = await query<ChecklistRow>(
       "SELECT * FROM goal_checklist_items WHERE milestoneId = ? ORDER BY order_index ASC",
       [milestoneId]
     );
@@ -668,24 +668,24 @@ export function getChecklistByMilestoneId(milestoneId: number): GoalChecklistIte
 /**
  * Create a checklist item for a goal
  */
-export function createGoalChecklistItem(goalId: number, data: {
+export async function createGoalChecklistItem(goalId: number, data: {
   text: string;
   order_index?: number;
-}): GoalChecklistItem {
+}): Promise<GoalChecklistItem> {
   try {
-    const maxOrder = queryOne<{ max_order: number | null }>(
+    const maxOrder = await queryOne<{ max_order: number | null }>(
       "SELECT MAX(order_index) as max_order FROM goal_checklist_items WHERE goalId = ? AND milestoneId IS NULL",
       [goalId]
     );
     const orderIndex = data.order_index ?? ((maxOrder?.max_order ?? -1) + 1);
 
-    const result = execute(
+    const result = await execute(
       `INSERT INTO goal_checklist_items (goalId, milestoneId, text, order_index)
        VALUES (?, NULL, ?, ?)`,
       [goalId, data.text, orderIndex]
     );
 
-    const item = queryOne<ChecklistRow>(
+    const item = await queryOne<ChecklistRow>(
       "SELECT * FROM goal_checklist_items WHERE id = ?",
       [result.lastInsertRowid]
     );
@@ -700,24 +700,24 @@ export function createGoalChecklistItem(goalId: number, data: {
 /**
  * Create a checklist item for a milestone
  */
-export function createMilestoneChecklistItem(milestoneId: number, data: {
+export async function createMilestoneChecklistItem(milestoneId: number, data: {
   text: string;
   order_index?: number;
-}): GoalChecklistItem {
+}): Promise<GoalChecklistItem> {
   try {
-    const maxOrder = queryOne<{ max_order: number | null }>(
+    const maxOrder = await queryOne<{ max_order: number | null }>(
       "SELECT MAX(order_index) as max_order FROM goal_checklist_items WHERE milestoneId = ?",
       [milestoneId]
     );
     const orderIndex = data.order_index ?? ((maxOrder?.max_order ?? -1) + 1);
 
-    const result = execute(
+    const result = await execute(
       `INSERT INTO goal_checklist_items (goalId, milestoneId, text, order_index)
        VALUES (NULL, ?, ?, ?)`,
       [milestoneId, data.text, orderIndex]
     );
 
-    const item = queryOne<ChecklistRow>(
+    const item = await queryOne<ChecklistRow>(
       "SELECT * FROM goal_checklist_items WHERE id = ?",
       [result.lastInsertRowid]
     );
@@ -732,11 +732,11 @@ export function createMilestoneChecklistItem(milestoneId: number, data: {
 /**
  * Update a checklist item
  */
-export function updateChecklistItem(id: number, data: {
+export async function updateChecklistItem(id: number, data: {
   text?: string;
   completed?: boolean;
   order_index?: number;
-}): GoalChecklistItem {
+}): Promise<GoalChecklistItem> {
   try {
     const updates: string[] = [];
     const values: (string | number | null)[] = [];
@@ -758,12 +758,12 @@ export function updateChecklistItem(id: number, data: {
 
     values.push(id);
 
-    execute(
+    await execute(
       `UPDATE goal_checklist_items SET ${updates.join(", ")} WHERE id = ?`,
       values
     );
 
-    const item = queryOne<ChecklistRow>(
+    const item = await queryOne<ChecklistRow>(
       "SELECT * FROM goal_checklist_items WHERE id = ?",
       [id]
     );
@@ -778,9 +778,9 @@ export function updateChecklistItem(id: number, data: {
 /**
  * Toggle checklist item completion
  */
-export function toggleChecklistItem(id: number): GoalChecklistItem {
+export async function toggleChecklistItem(id: number): Promise<GoalChecklistItem> {
   try {
-    const current = queryOne<ChecklistRow>(
+    const current = await queryOne<ChecklistRow>(
       "SELECT * FROM goal_checklist_items WHERE id = ?",
       [id]
     );
@@ -796,9 +796,9 @@ export function toggleChecklistItem(id: number): GoalChecklistItem {
 /**
  * Delete a checklist item
  */
-export function deleteChecklistItem(id: number): boolean {
+export async function deleteChecklistItem(id: number): Promise<boolean> {
   try {
-    const result = execute("DELETE FROM goal_checklist_items WHERE id = ?", [id]);
+    const result = await execute("DELETE FROM goal_checklist_items WHERE id = ?", [id]);
     return result.changes > 0;
   } catch (error) {
     console.error("Error deleting checklist item:", error);
@@ -809,10 +809,10 @@ export function deleteChecklistItem(id: number): boolean {
 /**
  * Reorder checklist items for a goal
  */
-export function reorderGoalChecklist(goalId: number, itemIds: number[]): boolean {
+export async function reorderGoalChecklist(goalId: number, itemIds: number[]): Promise<boolean> {
   try {
-    itemIds.forEach((id, index) => {
-      execute(
+    itemIds.forEach(async (id, index) => {
+      await execute(
         "UPDATE goal_checklist_items SET order_index = ? WHERE id = ? AND goalId = ? AND milestoneId IS NULL",
         [index, id, goalId]
       );
@@ -827,10 +827,10 @@ export function reorderGoalChecklist(goalId: number, itemIds: number[]): boolean
 /**
  * Reorder checklist items for a milestone
  */
-export function reorderMilestoneChecklist(milestoneId: number, itemIds: number[]): boolean {
+export async function reorderMilestoneChecklist(milestoneId: number, itemIds: number[]): Promise<boolean> {
   try {
-    itemIds.forEach((id, index) => {
-      execute(
+    itemIds.forEach(async (id, index) => {
+      await execute(
         "UPDATE goal_checklist_items SET order_index = ? WHERE id = ? AND milestoneId = ?",
         [index, id, milestoneId]
       );
@@ -849,22 +849,23 @@ export function reorderMilestoneChecklist(milestoneId: number, itemIds: number[]
 /**
  * Get goals with progress for list view
  */
-export function getGoalsWithProgress(userId: string, options?: {
+export async function getGoalsWithProgress(userId: string, options?: {
   status?: GoalStatus | GoalStatus[];
   priority?: GoalPriority;
   includeArchived?: boolean;
-}): (Goal & { progress: number; milestoneCount: number; milestonesCompleted: number })[] {
+}): Promise<(Goal & { progress: number; milestoneCount: number; milestonesCompleted: number })[]> {
   try {
-    const goals = getGoals(userId, options);
+    const goals = await getGoals(userId, options);
 
-    return goals.map(goal => {
-      const milestones = getMilestonesByGoalId(goal.id);
-      const goalChecklist = getChecklistByGoalId(goal.id);
+    const goalsWithProgress = await Promise.all(goals.map(async goal => {
+      const milestones = await getMilestonesByGoalId(goal.id);
+      const goalChecklist = await getChecklistByGoalId(goal.id);
 
       const milestoneChecklists = new Map<number, GoalChecklistItem[]>();
-      milestones.forEach(milestone => {
-        milestoneChecklists.set(milestone.id, getChecklistByMilestoneId(milestone.id));
-      });
+      await Promise.all(milestones.map(async milestone => {
+        const checklist = await getChecklistByMilestoneId(milestone.id);
+        milestoneChecklists.set(milestone.id, checklist);
+      }));
 
       const progress = calculateGoalProgress(milestones, goalChecklist, milestoneChecklists);
 
@@ -874,7 +875,9 @@ export function getGoalsWithProgress(userId: string, options?: {
         milestoneCount: milestones.length,
         milestonesCompleted: milestones.filter(m => m.completed).length,
       };
-    });
+    }));
+
+    return goalsWithProgress;
   } catch (error) {
     console.error("Error getting goals with progress:", error);
     return [];
@@ -884,9 +887,9 @@ export function getGoalsWithProgress(userId: string, options?: {
 /**
  * Get all unique tags from goals
  */
-export function getAllGoalTags(userId: string): string[] {
+export async function getAllGoalTags(userId: string): Promise<string[]> {
   try {
-    const goals = query<{ tags: string | null }>(
+    const goals = await query<{ tags: string | null }>(
       "SELECT tags FROM goals WHERE userId = ?",
       [userId]
     );
@@ -944,9 +947,9 @@ function parseGoalLinkRow(row: GoalLinkRow): GoalLink {
 /**
  * Get all links for a goal
  */
-export function getGoalLinks(goalId: number): GoalLink[] {
+export async function getGoalLinks(goalId: number): Promise<GoalLink[]> {
   try {
-    const rows = query<GoalLinkRow>(
+    const rows = await query<GoalLinkRow>(
       "SELECT * FROM goal_links WHERE goalId = ? ORDER BY created_at DESC",
       [goalId]
     );
@@ -960,9 +963,9 @@ export function getGoalLinks(goalId: number): GoalLink[] {
 /**
  * Get links for a goal filtered by type
  */
-export function getGoalLinksByType(goalId: number, linkedType: GoalLinkType): GoalLink[] {
+export async function getGoalLinksByType(goalId: number, linkedType: GoalLinkType): Promise<GoalLink[]> {
   try {
-    const rows = query<GoalLinkRow>(
+    const rows = await query<GoalLinkRow>(
       "SELECT * FROM goal_links WHERE goalId = ? AND linked_type = ? ORDER BY created_at DESC",
       [goalId, linkedType]
     );
@@ -976,22 +979,22 @@ export function getGoalLinksByType(goalId: number, linkedType: GoalLinkType): Go
 /**
  * Add a link to a goal
  */
-export function addGoalLink(
+export async function addGoalLink(
   userId: string,
   goalId: number,
   linkedType: GoalLinkType,
   linkedId: number,
   linkedSlug?: string,
   note?: string
-): GoalLink {
+): Promise<GoalLink> {
   try {
-    const result = execute(
+    const result = await execute(
       `INSERT INTO goal_links (userId, goalId, linked_type, linked_id, linked_slug, note)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [userId, goalId, linkedType, linkedId, linkedSlug || null, note || null]
     );
 
-    const link = queryOne<GoalLinkRow>(
+    const link = await queryOne<GoalLinkRow>(
       "SELECT * FROM goal_links WHERE id = ?",
       [result.lastInsertRowid]
     );
@@ -1006,9 +1009,9 @@ export function addGoalLink(
 /**
  * Remove a link from a goal
  */
-export function removeGoalLink(id: number): boolean {
+export async function removeGoalLink(id: number): Promise<boolean> {
   try {
-    const result = execute("DELETE FROM goal_links WHERE id = ?", [id]);
+    const result = await execute("DELETE FROM goal_links WHERE id = ?", [id]);
     return result.changes > 0;
   } catch (error) {
     console.error("Error removing goal link:", error);
@@ -1019,13 +1022,13 @@ export function removeGoalLink(id: number): boolean {
 /**
  * Remove a link by goal + type + linked ID
  */
-export function removeGoalLinkByObject(
+export async function removeGoalLinkByObject(
   goalId: number,
   linkedType: GoalLinkType,
   linkedId: number
-): boolean {
+): Promise<boolean> {
   try {
-    const result = execute(
+    const result = await execute(
       "DELETE FROM goal_links WHERE goalId = ? AND linked_type = ? AND linked_id = ?",
       [goalId, linkedType, linkedId]
     );
@@ -1039,10 +1042,10 @@ export function removeGoalLinkByObject(
 /**
  * Update a goal link's note
  */
-export function updateGoalLinkNote(id: number, note: string | null): GoalLink {
+export async function updateGoalLinkNote(id: number, note: string | null): Promise<GoalLink> {
   try {
-    execute("UPDATE goal_links SET note = ? WHERE id = ?", [note, id]);
-    const link = queryOne<GoalLinkRow>("SELECT * FROM goal_links WHERE id = ?", [id]);
+    await execute("UPDATE goal_links SET note = ? WHERE id = ?", [note, id]);
+    const link = await queryOne<GoalLinkRow>("SELECT * FROM goal_links WHERE id = ?", [id]);
     if (!link) throw new Error("Goal link not found");
     return parseGoalLinkRow(link);
   } catch (error) {
@@ -1054,7 +1057,7 @@ export function updateGoalLinkNote(id: number, note: string | null): GoalLink {
 /**
  * Replace all links for a goal
  */
-export function replaceGoalLinks(
+export async function replaceGoalLinks(
   userId: string,
   goalId: number,
   links: Array<{
@@ -1063,15 +1066,15 @@ export function replaceGoalLinks(
     linked_slug?: string;
     note?: string;
   }>
-): GoalLink[] {
+): Promise<GoalLink[]> {
   try {
     // Delete existing links
-    execute("DELETE FROM goal_links WHERE goalId = ?", [goalId]);
+    await execute("DELETE FROM goal_links WHERE goalId = ?", [goalId]);
 
     // Add new links
     const newLinks: GoalLink[] = [];
     for (const link of links) {
-      const newLink = addGoalLink(
+      const newLink = await addGoalLink(
         userId,
         goalId,
         link.linked_type,
@@ -1092,20 +1095,20 @@ export function replaceGoalLinks(
 /**
  * Find all goals that link to a specific item
  */
-export function getGoalsLinkingTo(
+export async function getGoalsLinkingTo(
   userId: string,
   linkedType: GoalLinkType,
   linkedId: number
-): Goal[] {
+): Promise<Goal[]> {
   try {
-    const links = query<{ goalId: number }>(
+    const links = await query<{ goalId: number }>(
       "SELECT DISTINCT goalId FROM goal_links WHERE userId = ? AND linked_type = ? AND linked_id = ?",
       [userId, linkedType, linkedId]
     );
 
     const goals: Goal[] = [];
     for (const link of links) {
-      const goal = getGoalById(link.goalId, userId);
+      const goal = await getGoalById(link.goalId, userId);
       if (goal) goals.push(goal);
     }
 

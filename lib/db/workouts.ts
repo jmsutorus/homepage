@@ -33,14 +33,12 @@ export interface ScheduledWorkout {
 
 // Workout Plan CRUD Operations
 
-export function createWorkoutPlan(plan: Omit<WorkoutPlan, "id" | "created_at" | "updated_at">): number {
+export async function createWorkoutPlan(plan: Omit<WorkoutPlan, "id" | "created_at" | "updated_at">): Promise<number> {
   const db = getDatabase();
-  const result = db
-    .prepare(
-      `INSERT INTO workout_plans (user_id, name, description, exercises, duration, intensity, type)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    )
-    .run(
+  const result = await db.execute({
+    sql: `INSERT INTO workout_plans (user_id, name, description, exercises, duration, intensity, type)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    args: [
       plan.user_id,
       plan.name,
       plan.description || null,
@@ -48,39 +46,48 @@ export function createWorkoutPlan(plan: Omit<WorkoutPlan, "id" | "created_at" | 
       plan.duration,
       plan.intensity,
       plan.type
-    );
+    ]
+  });
 
-  return result.lastInsertRowid as number;
+  return Number(result.lastInsertRowid);
 }
 
-export function getWorkoutPlan(id: number, userId: string): WorkoutPlan | undefined {
+export async function getWorkoutPlan(id: number, userId: string): Promise<WorkoutPlan | undefined> {
   const db = getDatabase();
-  return db.prepare("SELECT * FROM workout_plans WHERE id = ? AND user_id = ?").get(id, userId) as WorkoutPlan | undefined;
+  const result = await db.execute({
+    sql: "SELECT * FROM workout_plans WHERE id = ? AND user_id = ?",
+    args: [id, userId]
+  });
+  return result.rows[0] as WorkoutPlan | undefined;
 }
 
-export function getAllWorkoutPlans(userId: string): WorkoutPlan[] {
+export async function getAllWorkoutPlans(userId: string): Promise<WorkoutPlan[]> {
   const db = getDatabase();
-  return db
-    .prepare("SELECT * FROM workout_plans WHERE user_id = ? ORDER BY created_at DESC")
-    .all(userId) as WorkoutPlan[];
+  const result = await db.execute({
+    sql: "SELECT * FROM workout_plans WHERE user_id = ? ORDER BY created_at DESC",
+    args: [userId]
+  });
+  return result.rows as WorkoutPlan[];
 }
 
-export function getWorkoutPlansByType(userId: string, type: string): WorkoutPlan[] {
+export async function getWorkoutPlansByType(userId: string, type: string): Promise<WorkoutPlan[]> {
   const db = getDatabase();
-  return db
-    .prepare("SELECT * FROM workout_plans WHERE user_id = ? AND type = ? ORDER BY created_at DESC")
-    .all(userId, type) as WorkoutPlan[];
+  const result = await db.execute({
+    sql: "SELECT * FROM workout_plans WHERE user_id = ? AND type = ? ORDER BY created_at DESC",
+    args: [userId, type]
+  });
+  return result.rows as WorkoutPlan[];
 }
 
-export function updateWorkoutPlan(
+export async function updateWorkoutPlan(
   id: number,
   userId: string,
   updates: Partial<Omit<WorkoutPlan, "id" | "user_id" | "created_at" | "updated_at">>
-): boolean {
+): Promise<boolean> {
   const db = getDatabase();
 
   // Verify ownership
-  const existing = getWorkoutPlan(id, userId);
+  const existing = await getWorkoutPlan(id, userId);
   if (!existing) {
     return false;
   }
@@ -90,43 +97,43 @@ export function updateWorkoutPlan(
     .join(", ");
 
   if (fields) {
-    db.prepare(`UPDATE workout_plans SET ${fields} WHERE id = ? AND user_id = ?`).run(
-      ...Object.values(updates),
-      id,
-      userId
-    );
+    await db.execute({
+      sql: `UPDATE workout_plans SET ${fields} WHERE id = ? AND user_id = ?`,
+      args: [...Object.values(updates), id, userId]
+    });
   }
 
   return true;
 }
 
-export function deleteWorkoutPlan(id: number, userId: string): boolean {
+export async function deleteWorkoutPlan(id: number, userId: string): Promise<boolean> {
   const db = getDatabase();
 
   // Verify ownership
-  const existing = getWorkoutPlan(id, userId);
+  const existing = await getWorkoutPlan(id, userId);
   if (!existing) {
     return false;
   }
 
-  const result = db.prepare("DELETE FROM workout_plans WHERE id = ? AND user_id = ?").run(id, userId);
-  return result.changes > 0;
+  const result = await db.execute({
+    sql: "DELETE FROM workout_plans WHERE id = ? AND user_id = ?",
+    args: [id, userId]
+  });
+  return (result.rowsAffected ?? 0) > 0;
 }
 
 // Scheduled Workout CRUD Operations
 
-export function createScheduledWorkout(
+export async function createScheduledWorkout(
   workout: Omit<ScheduledWorkout, "id" | "completed" | "completed_at" | "created_at" | "updated_at">
-): number {
+): Promise<number> {
   const db = getDatabase();
-  const result = db
-    .prepare(
-      `INSERT INTO scheduled_workouts
-       (user_id, workout_plan_id, calendar_event_id, scheduled_date, scheduled_time,
-        duration, reminder_minutes, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-    .run(
+  const result = await db.execute({
+    sql: `INSERT INTO scheduled_workouts
+          (user_id, workout_plan_id, calendar_event_id, scheduled_date, scheduled_time,
+           duration, reminder_minutes, notes)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
       workout.user_id,
       workout.workout_plan_id || null,
       workout.calendar_event_id || null,
@@ -135,83 +142,88 @@ export function createScheduledWorkout(
       workout.duration,
       workout.reminder_minutes,
       workout.notes || null
-    );
+    ]
+  });
 
-  return result.lastInsertRowid as number;
+  return Number(result.lastInsertRowid);
 }
 
-export function getScheduledWorkout(id: number, userId: string): ScheduledWorkout | undefined {
+export async function getScheduledWorkout(id: number, userId: string): Promise<ScheduledWorkout | undefined> {
   const db = getDatabase();
-  return db.prepare("SELECT * FROM scheduled_workouts WHERE id = ? AND user_id = ?").get(id, userId) as
-    | ScheduledWorkout
-    | undefined;
+  const result = await db.execute({
+    sql: "SELECT * FROM scheduled_workouts WHERE id = ? AND user_id = ?",
+    args: [id, userId]
+  });
+  return result.rows[0] as ScheduledWorkout | undefined;
 }
 
-export function getScheduledWorkoutByCalendarEventId(eventId: string, userId: string): ScheduledWorkout | undefined {
+export async function getScheduledWorkoutByCalendarEventId(eventId: string, userId: string): Promise<ScheduledWorkout | undefined> {
   const db = getDatabase();
-  return db
-    .prepare("SELECT * FROM scheduled_workouts WHERE calendar_event_id = ? AND user_id = ?")
-    .get(eventId, userId) as ScheduledWorkout | undefined;
+  const result = await db.execute({
+    sql: "SELECT * FROM scheduled_workouts WHERE calendar_event_id = ? AND user_id = ?",
+    args: [eventId, userId]
+  });
+  return result.rows[0] as ScheduledWorkout | undefined;
 }
 
-export function getScheduledWorkouts(userId: string, startDate?: string, endDate?: string): ScheduledWorkout[] {
+export async function getScheduledWorkouts(userId: string, startDate?: string, endDate?: string): Promise<ScheduledWorkout[]> {
   const db = getDatabase();
 
   if (startDate && endDate) {
-    return db
-      .prepare(
-        `SELECT * FROM scheduled_workouts
-         WHERE user_id = ? AND scheduled_date >= ? AND scheduled_date <= ?
-         ORDER BY scheduled_date ASC, scheduled_time ASC`
-      )
-      .all(userId, startDate, endDate) as ScheduledWorkout[];
+    const result = await db.execute({
+      sql: `SELECT * FROM scheduled_workouts
+            WHERE user_id = ? AND scheduled_date >= ? AND scheduled_date <= ?
+            ORDER BY scheduled_date ASC, scheduled_time ASC`,
+      args: [userId, startDate, endDate]
+    });
+    return result.rows as ScheduledWorkout[];
   }
 
-  return db
-    .prepare(
-      `SELECT * FROM scheduled_workouts
-       WHERE user_id = ?
-       ORDER BY scheduled_date DESC, scheduled_time DESC`
-    )
-    .all(userId) as ScheduledWorkout[];
+  const result = await db.execute({
+    sql: `SELECT * FROM scheduled_workouts
+          WHERE user_id = ?
+          ORDER BY scheduled_date DESC, scheduled_time DESC`,
+    args: [userId]
+  });
+  return result.rows as ScheduledWorkout[];
 }
 
-export function getUpcomingWorkouts(userId: string, limit: number = 10): ScheduledWorkout[] {
+export async function getUpcomingWorkouts(userId: string, limit: number = 10): Promise<ScheduledWorkout[]> {
   const db = getDatabase();
   const today = new Date().toISOString().split("T")[0];
 
-  return db
-    .prepare(
-      `SELECT * FROM scheduled_workouts
-       WHERE user_id = ? AND scheduled_date >= ? AND completed = 0
-       ORDER BY scheduled_date ASC, scheduled_time ASC
-       LIMIT ?`
-    )
-    .all(userId, today, limit) as ScheduledWorkout[];
+  const result = await db.execute({
+    sql: `SELECT * FROM scheduled_workouts
+          WHERE user_id = ? AND scheduled_date >= ? AND completed = 0
+          ORDER BY scheduled_date ASC, scheduled_time ASC
+          LIMIT ?`,
+    args: [userId, today, limit]
+  });
+  return result.rows as ScheduledWorkout[];
 }
 
-export function getCompletedWorkouts(userId: string, limit: number = 10): ScheduledWorkout[] {
+export async function getCompletedWorkouts(userId: string, limit: number = 10): Promise<ScheduledWorkout[]> {
   const db = getDatabase();
 
-  return db
-    .prepare(
-      `SELECT * FROM scheduled_workouts
-       WHERE user_id = ? AND completed = 1
-       ORDER BY completed_at DESC
-       LIMIT ?`
-    )
-    .all(userId, limit) as ScheduledWorkout[];
+  const result = await db.execute({
+    sql: `SELECT * FROM scheduled_workouts
+          WHERE user_id = ? AND completed = 1
+          ORDER BY completed_at DESC
+          LIMIT ?`,
+    args: [userId, limit]
+  });
+  return result.rows as ScheduledWorkout[];
 }
 
-export function updateScheduledWorkout(
+export async function updateScheduledWorkout(
   id: number,
   userId: string,
   updates: Partial<Omit<ScheduledWorkout, "id" | "user_id" | "created_at" | "updated_at">>
-): boolean {
+): Promise<boolean> {
   const db = getDatabase();
 
   // Verify ownership
-  const existing = getScheduledWorkout(id, userId);
+  const existing = await getScheduledWorkout(id, userId);
   if (!existing) {
     return false;
   }
@@ -221,47 +233,50 @@ export function updateScheduledWorkout(
     .join(", ");
 
   if (fields) {
-    db.prepare(`UPDATE scheduled_workouts SET ${fields} WHERE id = ? AND user_id = ?`).run(
-      ...Object.values(updates),
-      id,
-      userId
-    );
+    await db.execute({
+      sql: `UPDATE scheduled_workouts SET ${fields} WHERE id = ? AND user_id = ?`,
+      args: [...Object.values(updates), id, userId]
+    });
   }
 
   return true;
 }
 
-export function markWorkoutCompleted(id: number, userId: string, stravaActivityId?: number): boolean {
+export async function markWorkoutCompleted(id: number, userId: string, stravaActivityId?: number): Promise<boolean> {
   const db = getDatabase();
 
   // Verify ownership
-  const existing = getScheduledWorkout(id, userId);
+  const existing = await getScheduledWorkout(id, userId);
   if (!existing) {
     return false;
   }
 
   const now = new Date().toISOString();
 
-  db.prepare(
-    `UPDATE scheduled_workouts
-     SET completed = 1, completed_at = ?, strava_activity_id = ?
-     WHERE id = ? AND user_id = ?`
-  ).run(now, stravaActivityId || null, id, userId);
+  await db.execute({
+    sql: `UPDATE scheduled_workouts
+          SET completed = 1, completed_at = ?, strava_activity_id = ?
+          WHERE id = ? AND user_id = ?`,
+    args: [now, stravaActivityId || null, id, userId]
+  });
 
   return true;
 }
 
-export function deleteScheduledWorkout(id: number, userId: string): boolean {
+export async function deleteScheduledWorkout(id: number, userId: string): Promise<boolean> {
   const db = getDatabase();
 
   // Verify ownership
-  const existing = getScheduledWorkout(id, userId);
+  const existing = await getScheduledWorkout(id, userId);
   if (!existing) {
     return false;
   }
 
-  const result = db.prepare("DELETE FROM scheduled_workouts WHERE id = ? AND user_id = ?").run(id, userId);
-  return result.changes > 0;
+  const result = await db.execute({
+    sql: "DELETE FROM scheduled_workouts WHERE id = ? AND user_id = ?",
+    args: [id, userId]
+  });
+  return (result.rowsAffected ?? 0) > 0;
 }
 
 // Analytics and Statistics
@@ -274,10 +289,10 @@ export interface WorkoutStats {
   avg_duration: number;
 }
 
-export function getWorkoutStats(userId: string, startDate?: string, endDate?: string): WorkoutStats {
-  const db = getDatabase();
+export async function getWorkoutStats(userId: string, startDate?: string, endDate?: string): Promise<WorkoutStats> {
 
-  let query = `
+
+  let queryString = `
     SELECT
       COUNT(*) as total_workouts,
       SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed_workouts,
@@ -290,11 +305,11 @@ export function getWorkoutStats(userId: string, startDate?: string, endDate?: st
   const params: (string | number)[] = [userId];
 
   if (startDate && endDate) {
-    query += ` AND scheduled_date >= ? AND scheduled_date <= ?`;
+    queryString += ` AND scheduled_date >= ? AND scheduled_date <= ?`;
     params.push(startDate, endDate);
   }
 
-  const result = db.prepare(query).get(...params) as {
+  const result = await queryOne(queryString, params) as {
     total_workouts: number;
     completed_workouts: number;
     total_duration: number;
@@ -317,20 +332,20 @@ export interface WorkoutByType {
   total_duration: number;
 }
 
-export function getWorkoutsByType(userId: string): WorkoutByType[] {
+export async function getWorkoutsByType(userId: string): Promise<WorkoutByType[]> {
   const db = getDatabase();
 
-  return db
-    .prepare(
-      `SELECT
-         wp.type,
-         COUNT(*) as count,
-         SUM(sw.duration) as total_duration
-       FROM scheduled_workouts sw
-       LEFT JOIN workout_plans wp ON sw.workout_plan_id = wp.id
-       WHERE sw.user_id = ? AND sw.completed = 1
-       GROUP BY wp.type
-       ORDER BY count DESC`
-    )
-    .all(userId) as WorkoutByType[];
+  const result = await db.execute({
+    sql: `SELECT
+            wp.type,
+            COUNT(*) as count,
+            SUM(sw.duration) as total_duration
+          FROM scheduled_workouts sw
+          LEFT JOIN workout_plans wp ON sw.workout_plan_id = wp.id
+          WHERE sw.user_id = ? AND sw.completed = 1
+          GROUP BY wp.type
+          ORDER BY count DESC`,
+    args: [userId]
+  });
+  return result.rows as WorkoutByType[];
 }

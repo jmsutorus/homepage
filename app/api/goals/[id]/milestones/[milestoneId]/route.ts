@@ -27,13 +27,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     // Verify user owns the goal
-    const goal = getGoalById(goalId, userId);
+    const goal = await getGoalById(goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
 
     // Verify milestone exists and belongs to this goal
-    const existingMilestone = getMilestoneById(mId);
+    const existingMilestone = await getMilestoneById(mId);
     if (!existingMilestone || existingMilestone.goalId !== goalId) {
       return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
     }

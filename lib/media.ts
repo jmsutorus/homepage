@@ -62,10 +62,11 @@ function dbToMediaItem(dbMedia: MediaContent): MediaItem {
  * Get media item by slug
  * @param directory - Legacy parameter for backwards compatibility (e.g., "media/movies")
  * @param slug - Media slug
+ * @param userId - User ID for filtering
  */
-export function getMediaBySlug(directory: string, slug: string): MediaItem | null {
+export async function getMediaBySlug(directory: string, slug: string, userId: string): Promise<MediaItem | null> {
   try {
-    const dbMedia = dbGetMediaBySlug(slug);
+    const dbMedia = await dbGetMediaBySlug(slug, userId);
     if (!dbMedia) {
       return null;
     }
@@ -79,8 +80,9 @@ export function getMediaBySlug(directory: string, slug: string): MediaItem | nul
 /**
  * Get all media items from a directory
  * @param directory - Directory path (e.g., "media/movies", "media/tv", "media/books", "media/games")
+ * @param userId - User ID for filtering
  */
-export function getAllMedia(directory: string): MediaItem[] {
+export async function getAllMedia(directory: string, userId: string): Promise<MediaItem[]> {
   try {
     // Extract type from directory path
     let type: "movie" | "tv" | "book" | "game" | null = null;
@@ -96,7 +98,7 @@ export function getAllMedia(directory: string): MediaItem[] {
     }
 
     // Get media from database
-    const dbMedia = type ? dbGetMediaByType(type) : dbGetAllMedia();
+    const dbMedia = type ? await dbGetMediaByType(type, userId) : await dbGetAllMedia(userId);
 
     // Convert to MediaItem format
     return dbMedia.map(dbToMediaItem);
@@ -109,9 +111,9 @@ export function getAllMedia(directory: string): MediaItem[] {
 /**
  * Get all media items from all directories
  */
-export function getAllMediaItems(): MediaItem[] {
+export async function getAllMediaItems(userId: string): Promise<MediaItem[]> {
   try {
-    const dbMedia = dbGetAllMedia();
+    const dbMedia = await dbGetAllMedia(userId);
     return dbMedia.map(dbToMediaItem);
   } catch (error) {
     console.error("Error reading all media items", error);
@@ -163,11 +165,12 @@ export function sortMediaByRating(media: MediaItem[]): MediaItem[] {
 
 /**
  * Get recently completed media sorted by completion date (newest first)
+ * @param userId - User ID for filtering
  * @param limit - Number of items to return (default: 4)
  */
-export function getRecentlyCompletedMedia(limit: number = 4): MediaItem[] {
+export async function getRecentlyCompletedMedia(userId: string, limit: number = 4): Promise<MediaItem[]> {
   try {
-    const allMedia = dbGetAllMedia();
+    const allMedia = await dbGetAllMedia(userId);
 
     // Filter for completed media with a completed date
     const completedMedia = allMedia

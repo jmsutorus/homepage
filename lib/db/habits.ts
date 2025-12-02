@@ -32,12 +32,17 @@ export interface HabitCompletion {
 /**
  * Get all active habits for a user
  */
-export function getHabits(userId: string): Habit[] {
+export async function getHabits(userId: string): Promise<Habit[]> {
   try {
-    return query<Habit>(
+    const habits = await query<Habit>(
       "SELECT * FROM habits WHERE userId = ? AND active = 1 ORDER BY order_index ASC, created_at DESC",
       [userId]
     );
+    return habits.map(habit => ({
+      ...habit,
+      created_at: (habit.created_at as unknown) instanceof Date ? (habit.created_at as unknown as Date).toISOString() : String(habit.created_at),
+      updated_at: (habit.updated_at as unknown) instanceof Date ? (habit.updated_at as unknown as Date).toISOString() : String(habit.updated_at),
+    }));
   } catch (error) {
     console.error("Error getting habits:", error);
     return [];
@@ -47,12 +52,17 @@ export function getHabits(userId: string): Habit[] {
 /**
  * Get all habits for a user (including archived)
  */
-export function getAllHabits(userId: string): Habit[] {
+export async function getAllHabits(userId: string): Promise<Habit[]> {
   try {
-    return query<Habit>(
+    const habits = await query<Habit>(
       "SELECT * FROM habits WHERE userId = ? ORDER BY active DESC, order_index ASC, created_at DESC",
       [userId]
     );
+    return habits.map(habit => ({
+      ...habit,
+      created_at: (habit.created_at as unknown) instanceof Date ? (habit.created_at as unknown as Date).toISOString() : String(habit.created_at),
+      updated_at: (habit.updated_at as unknown) instanceof Date ? (habit.updated_at as unknown as Date).toISOString() : String(habit.updated_at),
+    }));
   } catch (error) {
     console.error("Error getting all habits:", error);
     return [];
@@ -62,26 +72,42 @@ export function getAllHabits(userId: string): Habit[] {
 /**
  * Create a new habit
  */
-export function createHabit(userId: string, data: {
+export async function createHabit(userId: string, data: {
   title: string;
   description?: string;
   frequency?: string;
   target?: number;
-}): Habit {
+  createdAt?: string; // Optional client-provided timestamp in local time
+}): Promise<Habit> {
   try {
-    const result = execute(
-      `INSERT INTO habits (userId, title, description, frequency, target)
-       VALUES (?, ?, ?, ?, ?)`,
+    // Use client-provided timestamp if available, otherwise format current time as local
+    let timestamp = data.createdAt;
+    if (!timestamp) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      timestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    const result = await execute(
+      `INSERT INTO habits (userId, title, description, frequency, target, active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 1, ?, ?)`,
       [
         userId,
         data.title,
         data.description || null,
         data.frequency || 'daily',
-        data.target || 1
+        data.target || 1,
+        timestamp,
+        timestamp
       ]
     );
 
-    const habit = queryOne<Habit>("SELECT * FROM habits WHERE id = ?", [result.lastInsertRowid]);
+    const habit = await queryOne<Habit>("SELECT * FROM habits WHERE id = ?", [result.lastInsertRowid]);
     if (!habit) throw new Error("Failed to create habit");
     return habit;
   } catch (error) {
@@ -93,7 +119,7 @@ export function createHabit(userId: string, data: {
 /**
  * Update a habit
  */
-export function updateHabit(id: number, userId: string, data: {
+export async function updateHabit(id: number, userId: string, data: {
   title?: string;
   description?: string;
   frequency?: string;
@@ -101,7 +127,7 @@ export function updateHabit(id: number, userId: string, data: {
   active?: boolean;
   completed?: boolean;
   order_index?: number;
-}): Habit {
+}): Promise<Habit> {
   try {
     const updates: string[] = [];
     const values: (string | number)[] = [];
@@ -140,12 +166,12 @@ export function updateHabit(id: number, userId: string, data: {
     values.push(id);
     values.push(userId);
 
-    execute(
+    await execute(
       `UPDATE habits SET ${updates.join(", ")} WHERE id = ? AND userId = ?`,
       values
     );
 
-    const habit = queryOne<Habit>("SELECT * FROM habits WHERE id = ?", [id]);
+    const habit = await queryOne<Habit>("SELECT * FROM habits WHERE id = ?", [id]);
     if (!habit) throw new Error("Habit not found");
     return habit;
   } catch (error) {
@@ -157,9 +183,9 @@ export function updateHabit(id: number, userId: string, data: {
 /**
  * Delete a habit
  */
-export function deleteHabit(id: number, userId: string): boolean {
+export async function deleteHabit(id: number, userId: string): Promise<boolean> {
   try {
-    const result = execute("DELETE FROM habits WHERE id = ? AND userId = ?", [id, userId]);
+    const result = await execute("DELETE FROM habits WHERE id = ? AND userId = ?", [id, userId]);
     return result.changes > 0;
   } catch (error) {
     console.error("Error deleting habit:", error);
@@ -170,9 +196,9 @@ export function deleteHabit(id: number, userId: string): boolean {
 /**
  * Get habit completions for a specific date
  */
-export function getHabitCompletions(userId: string, date: string): HabitCompletion[] {
+export async function getHabitCompletions(userId: string, date: string): Promise<HabitCompletion[]> {
   try {
-    return query<HabitCompletion>(
+    return await query<HabitCompletion>(
       "SELECT * FROM habit_completions WHERE userId = ? AND date = ?",
       [userId, date]
     );
@@ -185,9 +211,9 @@ export function getHabitCompletions(userId: string, date: string): HabitCompleti
 /**
  * Get habit completions for a date range
  */
-export function getHabitCompletionsForRange(userId: string, startDate: string, endDate: string): HabitCompletion[] {
+export async function getHabitCompletionsForRange(userId: string, startDate: string, endDate: string): Promise<HabitCompletion[]> {
   try {
-    return query<HabitCompletion>(
+    return await query<HabitCompletion>(
       "SELECT * FROM habit_completions WHERE userId = ? AND date >= ? AND date <= ?",
       [userId, startDate, endDate]
     );
@@ -200,21 +226,21 @@ export function getHabitCompletionsForRange(userId: string, startDate: string, e
 /**
  * Toggle habit completion
  */
-export function toggleHabitCompletion(habitId: number, userId: string, date: string): boolean {
+export async function toggleHabitCompletion(habitId: number, userId: string, date: string): Promise<boolean> {
   try {
     // Check if already completed
-    const existing = queryOne<HabitCompletion>(
+    const existing = await queryOne<HabitCompletion>(
       "SELECT * FROM habit_completions WHERE habit_id = ? AND date = ?",
       [habitId, date]
     );
 
     if (existing) {
       // Remove completion
-      execute("DELETE FROM habit_completions WHERE id = ?", [existing.id]);
+      await execute("DELETE FROM habit_completions WHERE id = ?", [existing.id]);
       return false; // Not completed anymore
     } else {
       // Add completion
-      execute(
+      await execute(
         "INSERT INTO habit_completions (habit_id, userId, date) VALUES (?, ?, ?)",
         [habitId, userId, date]
       );
@@ -241,7 +267,7 @@ export interface HabitStats {
 /**
  * Calculate habit statistics
  */
-export function getHabitStats(habit: Habit, userId: string): HabitStats {
+export async function getHabitStats(habit: Habit, userId: string): Promise<HabitStats> {
   try {
     const { frequency = 'daily', created_at } = habit;
     
@@ -255,7 +281,7 @@ export function getHabitStats(habit: Habit, userId: string): HabitStats {
     const daysExisted = Math.floor((todayMidnight.getTime() - createdMidnight.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     // Get all completions (sorted by date descending)
-    const completions = query<HabitCompletion>(
+    const completions = await query<HabitCompletion>(
       "SELECT date FROM habit_completions WHERE habit_id = ? AND userId = ? ORDER BY date DESC",
       [habit.id, userId]
     );
@@ -382,9 +408,9 @@ export interface HabitCompletionChartData {
 /**
  * Get habit completion data for charts (last 12 weeks)
  */
-export function getHabitCompletionsForChart(userId: string): HabitCompletionChartData[] {
+export async function getHabitCompletionsForChart(userId: string): Promise<HabitCompletionChartData[]> {
   try {
-    const habits = getHabits(userId);
+    const habits = await getHabits(userId);
     const today = new Date();
 
     // Calculate the start of 12 weeks ago
@@ -393,9 +419,9 @@ export function getHabitCompletionsForChart(userId: string): HabitCompletionChar
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = today.toISOString().split('T')[0];
 
-    return habits.map(habit => {
-      const completions = getHabitCompletionsForRange(userId, startDateStr, endDateStr)
-        .filter(c => c.habit_id === habit.id);
+    return await Promise.all(habits.map(async (habit) => {
+      const allCompletions = await getHabitCompletionsForRange(userId, startDateStr, endDateStr);
+      const completions = allCompletions.filter(c => c.habit_id === habit.id);
 
       // Group completions by week
       const weeklyMap: Map<string, number> = new Map();
@@ -457,9 +483,9 @@ export function getHabitCompletionsForChart(userId: string): HabitCompletionChar
         habitId: habit.id,
         habitTitle: habit.title,
         weeklyData,
-        stats: getHabitStats(habit, userId),
+        stats: await getHabitStats(habit, userId),
       };
-    });
+    }));
   } catch (error) {
     console.error("Error getting habit completions for chart:", error);
     return [];

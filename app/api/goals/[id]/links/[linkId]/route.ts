@@ -19,12 +19,12 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const linkIdNum = parseInt(linkId);
 
     // Verify user owns the goal
-    const goal = getGoalById(goalId, userId);
+    const goal = await getGoalById(goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
 
-    const success = removeGoalLink(linkIdNum);
+    const success = await removeGoalLink(linkIdNum);
 
     if (!success) {
       return NextResponse.json({ error: "Link not found" }, { status: 404 });

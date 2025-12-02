@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import * as LucideIcons from "lucide-react";
-import { Settings, Plus, Pencil, Trash2 } from "lucide-react";
+import { Settings } from "lucide-react";
 import { QuickLinksEditor } from "./quick-links-editor";
 
 interface QuickLink {

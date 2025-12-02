@@ -126,7 +126,6 @@ export function TaskCompletionAnimation({
     }
   }, [animationState, onAnimationComplete]);
 
-  const isAnimating = animationState !== "idle" && animationState !== "completed";
   const showContent = animationState !== "removing" && animationState !== "completed";
   const showMessage = animationState === "showing-message";
   const contentOpacity =

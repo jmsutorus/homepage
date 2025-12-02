@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { renameTag, deleteTag } from "@/lib/db/media";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * PUT /api/media/tags/[name]
@@ -11,6 +12,7 @@ export async function PUT(
 ) {
   try {
     const { name } = await params;
+    const userId = await getUserId();
     const body = await request.json();
     const { newName } = body;
 
@@ -22,7 +24,7 @@ export async function PUT(
     }
 
     const decodedOldName = decodeURIComponent(name);
-    const updatedCount = renameTag(decodedOldName, newName);
+    const updatedCount = await renameTag(decodedOldName, newName, userId);
 
     return NextResponse.json({
       success: true,
@@ -48,8 +50,9 @@ export async function DELETE(
 ) {
   try {
     const { name } = await params;
+    const userId = await getUserId();
     const decodedName = decodeURIComponent(name);
-    const updatedCount = deleteTag(decodedName);
+    const updatedCount = await deleteTag(decodedName, userId);
 
     return NextResponse.json({
       success: true,

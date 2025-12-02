@@ -1,30 +1,40 @@
-import Database from "better-sqlite3";
+import { createClient, Client } from "@libsql/client";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { env } from "@/lib/env";
 
 // Database instance (singleton)
-let db: Database.Database | null = null;
+let db: Client | null = null;
 
 /**
  * Get the database instance (creates if doesn't exist)
  */
-export function getDatabase(): Database.Database {
+export function getDatabase(): Client {
   if (!db) {
-    // Extract file path from DATABASE_URL
-    const dbPath = env.DATABASE_URL.replace("file:", "");
+    // Check if using remote Turso database or local file
+    // const isRemote = env.DATABASE_URL.startsWith("libsql://") || env.DATABASE_URL.startsWith("https://");
 
-    // Create database instance
-    db = new Database(dbPath, {
-      verbose: process.env.NODE_ENV === "development" ? console.log : undefined,
-    });
+    // if (isRemote) {
+    //   // Create remote Turso connection
+    //   db = createClient({
+    //     url: env.DATABASE_URL,
+    //     authToken: env.DATABASE_AUTH_TOKEN,
+    //   });
+    // } else {
+    //   // Create local file connection
+    //   const dbPath = env.DATABASE_URL.replace("file:", "");
+    //   db = createClient({
+    //     url: `file:${dbPath}`,
+    //   });
+    // }
 
-    // Enable foreign keys and WAL mode for better performance
-    db.pragma("foreign_keys = ON");
-    db.pragma("journal_mode = WAL");
+    db = createClient({
+        url: env.DATABASE_URL,
+        authToken: env.DATABASE_AUTH_TOKEN,
+      });
 
     // Run migrations
-    initializeDatabase(db);
+    // initializeDatabase(db);
   }
 
   return db;
@@ -33,13 +43,21 @@ export function getDatabase(): Database.Database {
 /**
  * Initialize database with schema
  */
-function initializeDatabase(database: Database.Database) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function initializeDatabase(database: Client) {
   // Read schema SQL file
   const schemaPath = join(process.cwd(), "lib", "db", "schema.sql");
   const schema = readFileSync(schemaPath, "utf-8");
 
-  // Execute schema
-  database.exec(schema);
+  // Execute schema (split by semicolons for individual statements)
+  const statements = schema
+    .split(";")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  for (const statement of statements) {
+    await database.execute(statement);
+  }
 
   console.log("✅ Database initialized successfully");
 }
@@ -58,28 +76,40 @@ export function closeDatabase() {
 /**
  * Execute a query with parameters
  */
-export function query<T>(sql: string, params: unknown[] = []): T[] {
+export async function query<T>(sql: string, params: unknown[] = []): Promise<T[]> {
   const database = getDatabase();
-  const statement = database.prepare(sql);
-  return statement.all(...params) as T[];
+  const result = await database.execute({
+    sql,
+    args: params,
+  });
+  return result.rows as T[];
 }
 
 /**
  * Execute a query that returns a single row
  */
-export function queryOne<T>(sql: string, params: unknown[] = []): T | undefined {
+export async function queryOne<T>(sql: string, params: unknown[] = []): Promise<T | undefined> {
   const database = getDatabase();
-  const statement = database.prepare(sql);
-  return statement.get(...params) as T | undefined;
+  const result = await database.execute({
+    sql,
+    args: params,
+  });
+  return result.rows[0] as T | undefined;
 }
 
 /**
  * Execute an insert/update/delete query
  */
-export function execute(sql: string, params: unknown[] = []): Database.RunResult {
+export async function execute(sql: string, params: unknown[] = []) {
   const database = getDatabase();
-  const statement = database.prepare(sql);
-  return statement.run(...params);
+  const result = await database.execute({
+    sql,
+    args: params,
+  });
+  return {
+    changes: result.rowsAffected,
+    lastInsertRowid: result.lastInsertRowid ?? 0,
+  };
 }
 
 // Handle cleanup on process exit

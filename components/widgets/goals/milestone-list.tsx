@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -52,7 +51,7 @@ import {
   Circle,
   Milestone,
 } from "lucide-react";
-import type { GoalMilestoneWithChecklist, GoalChecklistItem } from "@/lib/db/goals";
+import type { GoalMilestoneWithChecklist } from "@/lib/db/goals";
 
 interface MilestoneListProps {
   goalId: number;

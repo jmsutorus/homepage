@@ -11,7 +11,7 @@ export default async function ParksPage() {
   // Require authentication
   const userId = await getUserId();
 
-  const parks = getPublishedParks(userId);
+  const parks = await getPublishedParks(userId);
 
   // Group parks by category
   const parksByCategory = parks.reduce((acc, park) => {

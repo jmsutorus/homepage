@@ -5,9 +5,9 @@ import {
   createJournal,
   getJournalBySlug,
   replaceJournalLinks,
-  getMoodForDate,
   getJournalCount,
 } from "@/lib/db/journals";
+import { getUserId } from "@/lib/auth/server";
 
 // Helper function to sanitize slug
 function sanitizeSlug(title: string): string {
@@ -21,9 +21,10 @@ function sanitizeSlug(title: string): string {
  * GET /api/journals
  * Get all journal entries
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const journals = getAllJournals();
+    const userId = await getUserId();
+    const journals = await getAllJournals(userId);
     return NextResponse.json(journals);
   } catch (error) {
     console.error("Error fetching journals:", error);
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const body = await request.json();
     const { frontmatter, content, links } = body;
 
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
 
     let slug = "";
     const journalData: any = {
+      userId,
       journal_type: journalType,
       content: content || "",
       tags: frontmatter.tags,
@@ -84,7 +87,7 @@ export async function POST(request: NextRequest) {
       journalData.mood = frontmatter.mood;
 
       // Check if journal with this slug already exists
-      const existing = getJournalBySlug(slug);
+      const existing = await getJournalBySlug(slug, userId);
       if (existing) {
         return NextResponse.json(
           { error: "A journal entry with this title already exists" },
@@ -93,13 +96,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const journal = createJournal(journalData);
+    const journal = await createJournal(journalData);
     slug = journal.slug;
 
     // Add links if provided
     if (links && Array.isArray(links) && links.length > 0) {
       try {
-        replaceJournalLinks(journal.id, links);
+        await replaceJournalLinks(journal.id, links);
       } catch (linkError) {
         console.error("Error adding journal links:", linkError);
         // Continue even if links fail - journal was created successfully
@@ -111,7 +114,7 @@ export async function POST(request: NextRequest) {
     revalidatePath(`/journals/${slug}`);
 
     // Get total journal count for milestone detection
-    const totalJournals = getJournalCount();
+    const totalJournals = await getJournalCount(userId);
 
     return NextResponse.json(
       {
