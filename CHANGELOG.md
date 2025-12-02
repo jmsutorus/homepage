@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/jmsutorus/homepage/compare/v1.0.0...v1.1.0) (2025-12-02)
+
+
+### Features
+
+* Migrated DB out of local storage to a dedicated server ([4eaf0ea](https://github.com/jmsutorus/homepage/commit/4eaf0eaf8d767199e9a7942ebbeab6c3bd9b653a))
+
 # 1.0.0 (2025-11-30)
 
 
