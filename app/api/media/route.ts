@@ -5,7 +5,7 @@ import type { MediaContentInput } from "@/lib/db/media";
 import { getUserId } from "@/lib/auth/server";
 
 // Helper function to sanitize slug
-async function sanitizeSlug(title: string): string {
+function sanitizeSlug(title: string): string {
   return title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -29,7 +29,7 @@ function getDirectoryName(type: "movie" | "tv" | "book" | "game"): string {
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = await await getUserId();
+    const userId = await getUserId();
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get("type") as "movie" | "tv" | "book" | null;
     const status = searchParams.get("status") as
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await await getUserId();
+    const userId = await getUserId();
     const body = await request.json();
     const { frontmatter, content } = body;
 
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     };
 
     const media = await createMedia(mediaInput, userId);
-    const dirName = await getDirectoryName(frontmatter.type);
+    const dirName = getDirectoryName(frontmatter.type);
 
     // Revalidate paths
     revalidatePath("/media");
