@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/jmsutorus/homepage/compare/v1.2.0...v1.2.1) (2025-12-02)
+
+
+### Bug Fixes
+
+* Resolve firebase quota error and search async bugs ([110987d](https://github.com/jmsutorus/homepage/commit/110987d877ead002571ed84dc035d49e122800f0))
+
 # [1.2.0](https://github.com/jmsutorus/homepage/compare/v1.1.0...v1.2.0) (2025-12-02)
 
 
