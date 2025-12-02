@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/jmsutorus/homepage/compare/v1.2.1...v1.3.0) (2025-12-02)
+
+
+### Features
+
+* **tasks:** add user templates and analytics tabs ([d2b89f7](https://github.com/jmsutorus/homepage/commit/d2b89f754dfb429991d25ac12f0fa29e15c28bb2))
+
 ## [1.2.1](https://github.com/jmsutorus/homepage/compare/v1.2.0...v1.2.1) (2025-12-02)
 
 
