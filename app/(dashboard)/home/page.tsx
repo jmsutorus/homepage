@@ -20,7 +20,6 @@ import { getHabits, getHabitCompletions } from "@/lib/db/habits";
 import { getMoodEntry, getMoodEntriesInRange } from "@/lib/db/mood";
 import { getAllParks } from "@/lib/db/parks";
 import { getAllJournals } from "@/lib/db/journals";
-import { getUpcomingTasks } from "@/lib/db/tasks";
 import { getAthleteByUserId, getActivities } from "@/lib/db/strava";
 import { DailyHabits } from "@/components/widgets/habits/daily-habits";
 import { MoodSummary } from "@/components/widgets/mood/mood-summary";
@@ -104,7 +103,6 @@ export default async function DashboardPage({
     recentMoodsRaw,
     allParksRaw,
     latestJournalRaw,
-    upcomingTasksRaw,
     recentMediaRaw,
     calendarColors,
     athleteRaw
@@ -119,7 +117,6 @@ export default async function DashboardPage({
     ),
     getAllParks(userId),
     getAllJournals(userId).then(journals => journals[0] || null),
-    getUpcomingTasks(userId),
     getRecentlyCompletedMedia(userId, 4),
     getCalendarColorsForUser(),
     getAthleteByUserId(userId)
@@ -132,7 +129,6 @@ export default async function DashboardPage({
   const recentMoods = serialize(recentMoodsRaw);
   const allParks = serialize(allParksRaw);
   const latestJournal = serialize(latestJournalRaw);
-  const upcomingTasks = serialize(upcomingTasksRaw);
   const recentMedia = serialize(recentMediaRaw);
   const athlete = serialize(athleteRaw);
 
@@ -169,9 +165,9 @@ export default async function DashboardPage({
   const calendarDataRaw = Object.fromEntries(calendarDataMap);
   const calendarData = serializeCalendarData(calendarDataRaw);
 
-  // Pick a random park or featured park
+  // Pick featured park or first park
   const featuredParkRaw = allParks.find(p => p.featured) ||
-                       (allParks.length > 0 ? allParks[Math.floor(Math.random() * allParks.length)] : null);
+                       (allParks.length > 0 ? allParks[0] : null);
   const featuredPark = serialize(featuredParkRaw);
 
   return (

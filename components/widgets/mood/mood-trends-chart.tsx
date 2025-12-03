@@ -21,7 +21,7 @@ interface MoodTrendsChartProps {
   year: number;
 }
 
-export function MoodTrendsChart({ data, year }: MoodTrendsChartProps) {
+export function MoodTrendsChart({ data }: MoodTrendsChartProps) {
   // Process data for the chart
   const chartData = useMemo(() => {
     // Sort by date ascending
@@ -176,7 +176,7 @@ export function MoodTrendsChart({ data, year }: MoodTrendsChartProps) {
 }
 
 // Custom Tooltip
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const dataPoint = payload[0].payload;
     return (

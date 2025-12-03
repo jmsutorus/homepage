@@ -91,6 +91,7 @@ export function JournalEditor({
       fetchMoodForDate(frontmatter.daily_date);
       setLastFetchedDate(frontmatter.daily_date);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
   // Fetch mood when daily_date changes

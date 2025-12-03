@@ -362,7 +362,7 @@ export function WeatherWidget() {
                 {(() => {
                   try {
                     return format(new Date(weather.updated), "h:mm a");
-                  } catch (error) {
+                  } catch {
                     console.error("Error formatting date:", weather.updated);
                     return "recently";
                   }

@@ -8,8 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { FileText } from "lucide-react";
-import { TEMPLATES, Template } from "@/lib/constants/templates";
-import type { TaskTemplate } from "@/lib/db/task-templates";
+import { TEMPLATES } from "@/lib/constants/templates";
 
 interface TemplatePickerProps {
   type: "task" | "journal" | "media";

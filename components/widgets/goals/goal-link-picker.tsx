@@ -113,6 +113,7 @@ export function GoalLinkPicker({ links, onLinksChange }: GoalLinkPickerProps) {
     if (links.length > 0) {
       fetchLinkedDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [links]);
 
   // Search for items to link

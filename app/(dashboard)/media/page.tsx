@@ -2,7 +2,6 @@ import { getAllMediaItems } from "@/lib/media";
 import { MediaPageClient } from "@/components/widgets/media/media-page-client";
 import { getMediaTimelineData, getPaginatedMedia } from "@/lib/db/media";
 import { getUserId } from "@/lib/auth/server";
-import type { MediaItem } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 

@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
 import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 
 interface CalendarDayCellProps {
   day: number;
@@ -45,8 +44,6 @@ function CalendarDayCellComponent({
   onOpenMoodModal,
   onDayClick,
 }: CalendarDayCellProps) {
-  const router = useRouter();
-
   // Use summary data for lightweight rendering
   const hasMood = summary?.moodRating !== null && summary?.moodRating !== undefined;
   const hasMedia = (summary?.mediaCount ?? 0) > 0;
