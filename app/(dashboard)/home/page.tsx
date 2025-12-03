@@ -21,11 +21,13 @@ import { getMoodEntry, getMoodEntriesInRange } from "@/lib/db/mood";
 import { getAllParks } from "@/lib/db/parks";
 import { getAllJournals } from "@/lib/db/journals";
 import { getAthleteByUserId, getActivities } from "@/lib/db/strava";
+import { getGoalsWithProgress } from "@/lib/db/goals";
 import { DailyHabits } from "@/components/widgets/habits/daily-habits";
 import { MoodSummary } from "@/components/widgets/mood/mood-summary";
 import { ParkSummary } from "@/components/widgets/parks/park-summary";
 import { RecentActivity } from "@/components/widgets/exercise/recent-activity";
 import { DailyJournalPreview } from "@/components/widgets/journal/daily-journal-preview";
+import { HomeGoals } from "@/components/widgets/goals/home-goals";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 
@@ -105,7 +107,8 @@ export default async function DashboardPage({
     latestJournalRaw,
     recentMediaRaw,
     calendarColors,
-    athleteRaw
+    athleteRaw,
+    activeGoalsRaw
   ] = await Promise.all([
     getHabits(userId),
     getHabitCompletions(userId, todayStr),
@@ -119,7 +122,8 @@ export default async function DashboardPage({
     getAllJournals(userId).then(journals => journals[0] || null),
     getRecentlyCompletedMedia(userId, 4),
     getCalendarColorsForUser(),
-    getAthleteByUserId(userId)
+    getAthleteByUserId(userId),
+    getGoalsWithProgress(userId, { status: ['not_started', 'in_progress'] })
   ]);
 
   // Serialize all data for client components
@@ -131,6 +135,7 @@ export default async function DashboardPage({
   const latestJournal = serialize(latestJournalRaw);
   const recentMedia = serialize(recentMediaRaw);
   const athlete = serialize(athleteRaw);
+  const activeGoals = serialize(activeGoalsRaw.slice(0, 3)); // Only show top 3 goals
 
   // Fetch Strava activities if athlete exists
   let recentActivities: any[] = [];
@@ -195,7 +200,12 @@ export default async function DashboardPage({
         {/* Column 1: Focus (Tasks & Habits) */}
         <div className="space-y-6">
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold tracking-tight">Focus</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold tracking-tight">Tasks</h2>
+              <Button variant="ghost" size="sm" asChild className="h-6 text-xs">
+                <Link href="/tasks">View All</Link>
+              </Button>
+            </div>
             <RecentTasks />
           </section>
           
@@ -215,6 +225,16 @@ export default async function DashboardPage({
                 />
               </CardContent>
             </Card>
+          </section>
+
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold tracking-tight">Goals</h2>
+              <Button variant="ghost" size="sm" asChild className="h-6 text-xs">
+                <Link href="/goals">View All</Link>
+              </Button>
+            </div>
+            <HomeGoals goals={activeGoals} />
           </section>
         </div>
 

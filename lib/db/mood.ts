@@ -19,8 +19,8 @@ export async function createMoodEntry(
   rating: number,
   note: string | undefined,
   userId: string
-): MoodEntry {
-  execute(
+): Promise<MoodEntry> {
+  await execute(
     `INSERT INTO mood_entries (userId, date, rating, note)
      VALUES (?, ?, ?, ?)
      ON CONFLICT(userId, date) DO UPDATE SET
@@ -30,7 +30,7 @@ export async function createMoodEntry(
     [userId, date, rating, note || null]
   );
 
-  const entry = getMoodEntry(date, userId);
+  const entry = await getMoodEntry(date, userId);
   if (!entry) {
     throw new Error("Failed to create mood entry");
   }
@@ -58,7 +58,7 @@ export async function getMoodEntriesInRange(
   startDate: string,
   endDate: string,
   userId: string
-): MoodEntry[] {
+): Promise<MoodEntry[]> {
   return await query<MoodEntry>(
     "SELECT * FROM mood_entries WHERE userId = ? AND date BETWEEN ? AND ? ORDER BY date ASC",
     [userId, startDate, endDate]
@@ -81,7 +81,7 @@ export async function getAllMoodEntries(userId: string): Promise<MoodEntry[]> {
 export async function getMoodEntriesForYear(year: number, userId: string): Promise<MoodEntry[]> {
   const startDate = `${year}-01-01`;
   const endDate = `${year}-12-31`;
-  return getMoodEntriesInRange(startDate, endDate, userId);
+  return await getMoodEntriesInRange(startDate, endDate, userId);
 }
 
 /**
@@ -92,8 +92,8 @@ export async function updateMoodEntry(
   rating: number,
   note: string | undefined,
   userId: string
-): boolean {
-  const result = execute(
+): Promise<boolean> {
+  const result = await execute(
     "UPDATE mood_entries SET rating = ?, note = ? WHERE date = ? AND userId = ?",
     [rating, note || null, date, userId]
   );
@@ -105,19 +105,19 @@ export async function updateMoodEntry(
  * Delete mood entry
  */
 export async function deleteMoodEntry(date: string, userId: string): Promise<boolean> {
-  const result = execute("DELETE FROM mood_entries WHERE date = ? AND userId = ?", [date, userId]);
+  const result = await execute("DELETE FROM mood_entries WHERE date = ? AND userId = ?", [date, userId]);
   return result.changes > 0;
 }
 
 /**
  * Get mood statistics
  */
-export async function getMoodStatistics(userId: string): {
+export async function getMoodStatistics(userId: string): Promise<{
   total: number;
   average: number;
   byRating: Record<number, number>;
-} {
-  const entries = getAllMoodEntries(userId);
+}> {
+  const entries = await getAllMoodEntries(userId);
   const total = entries.length;
   const sum = entries.reduce((acc, entry) => acc + entry.rating, 0);
   const average = total > 0 ? sum / total : 0;

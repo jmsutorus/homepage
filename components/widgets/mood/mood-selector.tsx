@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Smile, Frown, Meh } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { CuteLoader } from "@/components/ui/cute-loader";
 
 interface MoodSelectorProps {
   date: string;
@@ -22,12 +23,22 @@ const MOODS = [
 
 export function MoodSelector({ date, currentMood, onMoodUpdated }: MoodSelectorProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingMood, setPendingMood] = useState<number | null>(null);
   const router = useRouter();
+
+  // Once the mood updates to match what we saved, stop showing the loader
+  useEffect(() => {
+    if (pendingMood !== null && currentMood === pendingMood) {
+      setIsSaving(false);
+      setPendingMood(null);
+    }
+  }, [currentMood, pendingMood]);
 
   const handleMoodSelect = async (rating: number) => {
     if (isSaving) return;
 
     setIsSaving(true);
+    setPendingMood(rating);
     try {
       const response = await fetch("/api/mood", {
         method: "POST",
@@ -48,13 +59,19 @@ export function MoodSelector({ date, currentMood, onMoodUpdated }: MoodSelectorP
       }
     } catch (error) {
       console.error("Failed to save mood:", error);
-    } finally {
+      // On error, stop loading immediately
       setIsSaving(false);
+      setPendingMood(null);
     }
   };
 
   return (
-    <div className="flex justify-between gap-2 p-4 rounded-lg border bg-card">
+    <div className="relative min-h-[88px] flex justify-between gap-2 p-4 rounded-lg border bg-card">
+      {isSaving && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+          <CuteLoader size={16} />
+        </div>
+      )}
       {MOODS.map(({ rating, icon: Icon, color, label }) => {
         const isSelected = currentMood === rating;
         return (
@@ -68,6 +85,7 @@ export function MoodSelector({ date, currentMood, onMoodUpdated }: MoodSelectorP
                 isSelected ? "bg-accent ring-2 ring-primary" : "hover:bg-accent/50"
               )}
               title={label}
+              disabled={isSaving}
             >
               <Icon 
                 className={cn(
