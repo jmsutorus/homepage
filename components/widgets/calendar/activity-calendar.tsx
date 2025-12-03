@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,24 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
   const [activityToDelete, setActivityToDelete] = useState<WorkoutActivity | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchActivities = async () => {
+  const fetchStravaActivities = useCallback(async (ids: number[]) => {
+    try {
+      const response = await fetch(`/api/strava/activities?ids=${ids.join(",")}`);
+      const data = await response.json();
+
+      if (data.activities) {
+        const map = new Map<number, StravaActivity>();
+        data.activities.forEach((activity: StravaActivity) => {
+          map.set(activity.id, activity);
+        });
+        setStravaActivities(map);
+      }
+    } catch (error) {
+      console.error("Error fetching Strava activities:", error);
+    }
+  }, []);
+
+  const fetchActivities = useCallback(async () => {
     try {
       const start = format(startOfMonth(currentMonth), "yyyy-MM-dd");
       const end = format(endOfMonth(currentMonth), "yyyy-MM-dd");
@@ -72,28 +89,11 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
     } catch (error) {
       console.error("Error fetching activities:", error);
     }
-  };
-
-  const fetchStravaActivities = async (ids: number[]) => {
-    try {
-      const response = await fetch(`/api/strava/activities?ids=${ids.join(",")}`);
-      const data = await response.json();
-
-      if (data.activities) {
-        const map = new Map<number, StravaActivity>();
-        data.activities.forEach((activity: StravaActivity) => {
-          map.set(activity.id, activity);
-        });
-        setStravaActivities(map);
-      }
-    } catch (error) {
-      console.error("Error fetching Strava activities:", error);
-    }
-  };
+  }, [currentMonth, fetchStravaActivities]);
 
   useEffect(() => {
     fetchActivities();
-  }, [currentMonth, onRefresh]);
+  }, [currentMonth, onRefresh, fetchActivities]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);

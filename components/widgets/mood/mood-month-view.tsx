@@ -30,6 +30,7 @@ export function MoodMonthView() {
 
   useEffect(() => {
     fetchMoodData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchMoodData = async () => {

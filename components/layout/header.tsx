@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ThemeToggle } from "./theme-toggle";
 import { MobileNav } from "./mobile-nav";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -175,7 +174,6 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            <ThemeToggle />
           </nav>
         </div>
       </div>

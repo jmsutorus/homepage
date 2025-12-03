@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { getAllMedia, createMedia, getMediaBySlug } from "@/lib/db/media";
+import { getAllMedia, createMedia, getMediaBySlug, getPaginatedMedia } from "@/lib/db/media";
 import type { MediaContentInput } from "@/lib/db/media";
 import { getUserId } from "@/lib/auth/server";
 
@@ -25,34 +25,90 @@ function getDirectoryName(type: "movie" | "tv" | "book" | "game"): string {
 
 /**
  * GET /api/media
- * Get all media entries or filter by type/status
+ * Get all media entries or paginated media with filters
+ * Query params:
+ * - page: Page number (1-indexed)
+ * - pageSize: Number of items per page (default: 25)
+ * - type: Filter by media type (movie, tv, book, game)
+ * - status: Filter by status (in-progress, completed, planned)
+ * - search: Search by title
+ * - paginate: Enable pagination (default: false for backwards compatibility)
  */
 export async function GET(request: NextRequest) {
   try {
     const userId = await getUserId();
     const searchParams = request.nextUrl.searchParams;
-    const type = searchParams.get("type") as "movie" | "tv" | "book" | null;
-    const status = searchParams.get("status") as
-      | "watching"
-      | "completed"
-      | "planned"
-      | null;
 
-    let media = await getAllMedia(userId);
+    // Check if pagination is requested
+    const paginate = searchParams.get("paginate") === "true";
 
-    // Apply filters
-    if (type) {
-      media = media.filter((m) => m.type === type);
+    if (paginate) {
+      // Paginated response
+      const page = parseInt(searchParams.get("page") || "1");
+      const pageSize = parseInt(searchParams.get("pageSize") || "25");
+      const type = searchParams.get("type") as "movie" | "tv" | "book" | "game" | null;
+      const status = searchParams.get("status") as "in-progress" | "completed" | "planned" | null;
+      const search = searchParams.get("search");
+      const genresParam = searchParams.get("genres");
+      const tagsParam = searchParams.get("tags");
+      const sortBy = searchParams.get("sortBy") as
+        | "title-asc"
+        | "title-desc"
+        | "rating-desc"
+        | "rating-asc"
+        | "completed-desc"
+        | "completed-asc"
+        | "started-desc"
+        | "started-asc"
+        | "created-desc"
+        | null;
+
+      const filters: {
+        type?: "movie" | "tv" | "book" | "game";
+        status?: "in-progress" | "completed" | "planned";
+        search?: string;
+        genres?: string[];
+        tags?: string[];
+        sortBy?: typeof sortBy;
+      } = {};
+
+      if (type && type !== null) filters.type = type;
+      if (status && status !== null) filters.status = status;
+      if (search) filters.search = search;
+      if (genresParam) filters.genres = genresParam.split(",");
+      if (tagsParam) filters.tags = tagsParam.split(",");
+      if (sortBy && sortBy !== null) filters.sortBy = sortBy;
+
+      console.log("Fetching paginated media with filters:", JSON.stringify(filters, null, 2));
+      const result = await getPaginatedMedia(userId, page, pageSize, filters);
+      console.log(`Returned ${result.items.length} items, hasMore: ${result.hasMore}`);
+      return NextResponse.json(result);
+    } else {
+      // Legacy non-paginated response for backwards compatibility
+      const type = searchParams.get("type") as "movie" | "tv" | "book" | null;
+      const status = searchParams.get("status") as
+        | "watching"
+        | "completed"
+        | "planned"
+        | null;
+
+      let media = await getAllMedia(userId);
+
+      // Apply filters
+      if (type) {
+        media = media.filter((m) => m.type === type);
+      }
+      if (status) {
+        media = media.filter((m) => m.status === status);
+      }
+
+      return NextResponse.json(media);
     }
-    if (status) {
-      media = media.filter((m) => m.status === status);
-    }
-
-    return NextResponse.json(media);
   } catch (error) {
     console.error("Error fetching media:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to fetch media" },
+      { error: "Failed to fetch media", details: errorMessage },
       { status: 500 }
     );
   }

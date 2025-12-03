@@ -20,7 +20,6 @@ import { getHabits, getHabitCompletions } from "@/lib/db/habits";
 import { getMoodEntry, getMoodEntriesInRange } from "@/lib/db/mood";
 import { getAllParks } from "@/lib/db/parks";
 import { getAllJournals } from "@/lib/db/journals";
-import { getUpcomingTasks } from "@/lib/db/tasks";
 import { getAthleteByUserId, getActivities } from "@/lib/db/strava";
 import { DailyHabits } from "@/components/widgets/habits/daily-habits";
 import { MoodSummary } from "@/components/widgets/mood/mood-summary";
@@ -31,6 +30,48 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 
 export const dynamic = "force-dynamic";
+
+// Serialize any data to plain objects (removes methods and prototypes)
+function serialize<T>(data: T): T {
+  if (data === null || data === undefined) return data;
+  return JSON.parse(JSON.stringify(data));
+}
+
+// Serialize calendar data to plain objects
+function serializeCalendarData(data: Record<string, any>) {
+  // Helper to convert arrays to plain objects
+  const serializeArray = (arr: any[]) => {
+    if (!arr) return arr;
+    return arr.map(item => {
+      if (!item || typeof item !== 'object') return item;
+      // Create a plain object with all enumerable properties
+      return JSON.parse(JSON.stringify(item));
+    });
+  };
+
+  return Object.fromEntries(
+    Object.entries(data).map(([date, dayData]) => [
+      date,
+      {
+        date: dayData.date,
+        mood: dayData.mood ? JSON.parse(JSON.stringify(dayData.mood)) : null,
+        activities: serializeArray(dayData.activities),
+        media: serializeArray(dayData.media),
+        tasks: serializeArray(dayData.tasks),
+        events: serializeArray(dayData.events),
+        parks: serializeArray(dayData.parks),
+        journals: serializeArray(dayData.journals),
+        workoutActivities: serializeArray(dayData.workoutActivities),
+        githubEvents: serializeArray(dayData.githubEvents),
+        habitCompletions: serializeArray(dayData.habitCompletions),
+        goalsDue: serializeArray(dayData.goalsDue),
+        goalsCompleted: serializeArray(dayData.goalsCompleted),
+        milestonesDue: serializeArray(dayData.milestonesDue),
+        milestonesCompleted: serializeArray(dayData.milestonesCompleted),
+      }
+    ])
+  );
+}
 
 export default async function DashboardPage({
   searchParams,
@@ -56,16 +97,15 @@ export default async function DashboardPage({
 
   // Fetch data in parallel
   const [
-    habits,
-    habitCompletions,
-    todayMood,
-    recentMoods,
-    allParks,
-    latestJournal,
-    upcomingTasks,
-    recentMedia,
+    habitsRaw,
+    habitCompletionsRaw,
+    todayMoodRaw,
+    recentMoodsRaw,
+    allParksRaw,
+    latestJournalRaw,
+    recentMediaRaw,
     calendarColors,
-    athlete
+    athleteRaw
   ] = await Promise.all([
     getHabits(userId),
     getHabitCompletions(userId, todayStr),
@@ -77,16 +117,26 @@ export default async function DashboardPage({
     ),
     getAllParks(userId),
     getAllJournals(userId).then(journals => journals[0] || null),
-    getUpcomingTasks(userId),
     getRecentlyCompletedMedia(userId, 4),
     getCalendarColorsForUser(),
     getAthleteByUserId(userId)
   ]);
 
+  // Serialize all data for client components
+  const habits = serialize(habitsRaw);
+  const habitCompletions = serialize(habitCompletionsRaw);
+  const todayMood = serialize(todayMoodRaw);
+  const recentMoods = serialize(recentMoodsRaw);
+  const allParks = serialize(allParksRaw);
+  const latestJournal = serialize(latestJournalRaw);
+  const recentMedia = serialize(recentMediaRaw);
+  const athlete = serialize(athleteRaw);
+
   // Fetch Strava activities if athlete exists
   let recentActivities: any[] = [];
   if (athlete) {
-    recentActivities = await getActivities(athlete.id, 5);
+    const activitiesRaw = await getActivities(athlete.id, 5);
+    recentActivities = serialize(activitiesRaw);
   }
 
   // Fetch GitHub activity
@@ -112,11 +162,13 @@ export default async function DashboardPage({
 
   // Get calendar data
   const calendarDataMap = await getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
-  const calendarData = Object.fromEntries(calendarDataMap);
+  const calendarDataRaw = Object.fromEntries(calendarDataMap);
+  const calendarData = serializeCalendarData(calendarDataRaw);
 
-  // Pick a random park or featured park
-  const featuredPark = allParks.find(p => p.featured) || 
-                       (allParks.length > 0 ? allParks[Math.floor(Math.random() * allParks.length)] : null);
+  // Pick featured park or first park
+  const featuredParkRaw = allParks.find(p => p.featured) ||
+                       (allParks.length > 0 ? allParks[0] : null);
+  const featuredPark = serialize(featuredParkRaw);
 
   return (
     <div className="space-y-6">
@@ -156,10 +208,10 @@ export default async function DashboardPage({
             </div>
             <Card>
               <CardContent className="pt-6">
-                <DailyHabits 
-                  habits={habits} 
-                  completions={habitCompletions} 
-                  date={todayStr} 
+                <DailyHabits
+                  habits={habits}
+                  completions={habitCompletions}
+                  date={todayStr}
                 />
               </CardContent>
             </Card>

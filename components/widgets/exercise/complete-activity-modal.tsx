@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -39,16 +39,7 @@ export function CompleteActivityModal({
   const [stravaActivities, setStravaActivities] = useState<StravaActivity[]>([]);
   const [selectedStravaId, setSelectedStravaId] = useState<string>("");
 
-  // Fetch Strava activities when modal opens and we have an activity
-  useEffect(() => {
-    if (isOpen && activity) {
-      fetchStravaActivities();
-      setCompletionNotes("");
-      setSelectedStravaId("");
-    }
-  }, [isOpen, activity]);
-
-  const fetchStravaActivities = async () => {
+  const fetchStravaActivities = useCallback(async () => {
     if (!activity) return;
 
     try {
@@ -69,7 +60,16 @@ export function CompleteActivityModal({
     } finally {
       setLoadingStrava(false);
     }
-  };
+  }, [activity]);
+
+  // Fetch Strava activities when modal opens and we have an activity
+  useEffect(() => {
+    if (isOpen && activity) {
+      fetchStravaActivities();
+      setCompletionNotes("");
+      setSelectedStravaId("");
+    }
+  }, [isOpen, activity, fetchStravaActivities]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,6 +1,6 @@
 import { DBStravaActivity } from "@/lib/db/strava";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, Clock, MapPin } from "lucide-react";
+import { Activity, MapPin } from "lucide-react";
 import { formatDistance, formatDuration } from "@/lib/utils/strava";
 import { format } from "date-fns";
 import Link from "next/link";

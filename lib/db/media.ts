@@ -118,6 +118,143 @@ export async function getAllMedia(userId: string): Promise<MediaContent[]> {
   );
 }
 
+export interface PaginatedMediaResult {
+  items: MediaContent[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
+type SortOption =
+  | "title-asc"
+  | "title-desc"
+  | "rating-desc"
+  | "rating-asc"
+  | "completed-desc"
+  | "completed-asc"
+  | "started-desc"
+  | "started-asc"
+  | "created-desc";
+
+/**
+ * Get paginated media entries for a specific user
+ * @param userId - User ID
+ * @param page - Page number (1-indexed)
+ * @param pageSize - Number of items per page
+ * @param filters - Optional filters (type, status, search, genres, tags, sort)
+ */
+export async function getPaginatedMedia(
+  userId: string,
+  page: number = 1,
+  pageSize: number = 25,
+  filters?: {
+    type?: "movie" | "tv" | "book" | "game";
+    status?: "in-progress" | "completed" | "planned";
+    search?: string;
+    genres?: string[];
+    tags?: string[];
+    sortBy?: SortOption;
+  }
+): Promise<PaginatedMediaResult> {
+  const offset = (page - 1) * pageSize;
+
+  // Build WHERE clause
+  const whereClauses: string[] = ["userId = ?"];
+  const params: unknown[] = [userId];
+
+  if (filters?.type) {
+    whereClauses.push("type = ?");
+    params.push(filters.type);
+  }
+
+  if (filters?.status) {
+    whereClauses.push("status = ?");
+    params.push(filters.status);
+  }
+
+  if (filters?.search) {
+    whereClauses.push("title LIKE ?");
+    params.push(`%${filters.search}%`);
+  }
+
+  // Note: Genre and tag filtering requires JSON operations
+  // For simplicity, we'll filter these client-side for now
+  // A more advanced implementation could use JSON functions in SQLite
+
+  const whereClause = whereClauses.join(" AND ");
+
+  // Determine ORDER BY clause
+  // SQLite doesn't support NULLS LAST, so we use CASE to handle nulls
+  let orderBy = "created_at DESC";
+  switch (filters?.sortBy) {
+    case "title-asc":
+      orderBy = "title ASC";
+      break;
+    case "title-desc":
+      orderBy = "title DESC";
+      break;
+    case "rating-desc":
+      orderBy = "CASE WHEN rating IS NULL THEN 0 ELSE 1 END DESC, rating DESC";
+      break;
+    case "rating-asc":
+      orderBy = "CASE WHEN rating IS NULL THEN 0 ELSE 1 END DESC, rating ASC";
+      break;
+    case "completed-desc":
+      orderBy = "CASE WHEN completed IS NULL THEN 0 ELSE 1 END DESC, completed DESC";
+      break;
+    case "completed-asc":
+      orderBy = "CASE WHEN completed IS NULL THEN 0 ELSE 1 END DESC, completed ASC";
+      break;
+    case "started-desc":
+      orderBy = "CASE WHEN started IS NULL THEN 0 ELSE 1 END DESC, started DESC";
+      break;
+    case "started-asc":
+      orderBy = "CASE WHEN started IS NULL THEN 0 ELSE 1 END DESC, started ASC";
+      break;
+    case "created-desc":
+    default:
+      orderBy = "created_at DESC";
+  }
+
+  // Get all matching items for counting and genre/tag filtering
+  let allItems = await query<MediaContent>(
+    `SELECT * FROM media_content WHERE ${whereClause} ORDER BY ${orderBy}`,
+    params
+  );
+
+  // Apply genre filter if specified
+  if (filters?.genres && filters.genres.length > 0) {
+    allItems = allItems.filter((item) => {
+      if (!item.genres) return false;
+      const itemGenres = JSON.parse(item.genres);
+      return itemGenres.some((g: string) => filters.genres!.includes(g));
+    });
+  }
+
+  // Apply tag filter if specified
+  if (filters?.tags && filters.tags.length > 0) {
+    allItems = allItems.filter((item) => {
+      if (!item.tags) return false;
+      const itemTags = JSON.parse(item.tags);
+      return itemTags.some((t: string) => filters.tags!.includes(t));
+    });
+  }
+
+  const total = allItems.length;
+
+  // Apply pagination
+  const items = allItems.slice(offset, offset + pageSize);
+
+  return {
+    items,
+    total,
+    page,
+    pageSize,
+    hasMore: offset + items.length < total,
+  };
+}
+
 /**
  * Get media entries by type for a specific user
  */

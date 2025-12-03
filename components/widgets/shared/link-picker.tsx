@@ -75,6 +75,7 @@ export function LinkPicker({ links, onLinksChange }: LinkPickerProps) {
     };
 
     fetchLinkedDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [links]);
 
   // Search for items to link
