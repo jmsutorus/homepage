@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { DBParkCategory, ParkCategoryValue, PARK_CATEGORIES } from '@/lib/db/enums/park-enums';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { TagInput } from '@/components/search/tag-input';
+import { Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface ParkFrontmatter {
   title: string;
@@ -49,6 +50,7 @@ export function ParkEditor({
 }: ParkEditorProps) {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [frontmatter, setFrontmatter] = useState<ParkFrontmatter>(
     initialFrontmatter || {
@@ -62,6 +64,229 @@ export function ParkEditor({
   const [content, setContent] = useState(initialContent);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+
+  // Helper function to convert ISO date to YYYY-MM-DD format
+  const normalizeDate = (dateString: string): string => {
+    try {
+      if (dateString.includes('T')) {
+        return dateString.split('T')[0];
+      }
+      return dateString;
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Helper function to remove Obsidian wiki-link syntax
+  const removeObsidianSyntax = (text: string): string => {
+    return text.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (match, link, alias) => {
+      return alias || link;
+    });
+  };
+
+  // Parse markdown file with frontmatter
+  const parseMarkdownFile = (fileContent: string, filename: string) => {
+    try {
+      const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+      const match = fileContent.match(frontmatterRegex);
+
+      if (!match) {
+        const cleanedContent = removeObsidianSyntax(fileContent);
+        setContent(cleanedContent);
+        setUploadMessage('File imported (no frontmatter found)');
+        
+        // If title is empty, use filename
+        if (!frontmatter.title) {
+           const filenameWithoutExt = filename.replace(/\.md$/, '');
+           setFrontmatter(prev => ({ ...prev, title: filenameWithoutExt }));
+        }
+        return;
+      }
+
+      const [, frontmatterStr, contentStr] = match;
+      const parsedFrontmatter: Partial<ParkFrontmatter> = {};
+
+      const lines = frontmatterStr.split('\n');
+      let currentArrayKey: string | null = null;
+      let currentArray: string[] = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.trim().startsWith('-')) {
+          const item = line.trim().substring(1).trim();
+          let cleanItem = item.replace(/^["']|["']$/g, '');
+          cleanItem = removeObsidianSyntax(cleanItem);
+          currentArray.push(cleanItem);
+          continue;
+        }
+
+        if (currentArrayKey && currentArray.length > 0) {
+          const key = currentArrayKey.toLowerCase();
+          if (key === 'tags' || key === 'tag') {
+            parsedFrontmatter.tags = currentArray;
+          }
+          currentArrayKey = null;
+          currentArray = [];
+        }
+
+        const colonIndex = line.indexOf(':');
+        if (colonIndex === -1) continue;
+
+        const key = line.substring(0, colonIndex).trim().toLowerCase();
+        let value = line.substring(colonIndex + 1).trim();
+
+        if (!value) {
+          if (key === 'tags' || key === 'tag') {
+            currentArrayKey = key;
+            currentArray = [];
+          }
+          continue;
+        }
+
+        if ((value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+
+        value = removeObsidianSyntax(value);
+
+        if (value.startsWith('[') && value.endsWith(']')) {
+          const items = value.slice(1, -1).split(',').map(item => {
+            let cleanItem = item.trim().replace(/^["']|["']$/g, '');
+            cleanItem = removeObsidianSyntax(cleanItem);
+            return cleanItem;
+          }).filter(Boolean);
+
+          if (key === 'tags' || key === 'tag') {
+            parsedFrontmatter.tags = items;
+          }
+          continue;
+        }
+
+        switch (key) {
+          case 'title':
+            parsedFrontmatter.title = value;
+            break;
+          case 'category':
+             // Try to match with existing categories
+             const normalizedCategory = value.trim();
+             if (PARK_CATEGORIES.includes(normalizedCategory as any)) {
+                 parsedFrontmatter.category = normalizedCategory as ParkCategoryValue;
+             }
+             break;
+          case 'state':
+          case 'location':
+            parsedFrontmatter.state = value;
+            break;
+          case 'poster':
+          case 'image':
+          case 'imageurl':
+            parsedFrontmatter.poster = value;
+            break;
+          case 'description':
+          case 'summary':
+            parsedFrontmatter.description = value;
+            break;
+          case 'visited':
+          case 'date':
+          case 'datevisited':
+            parsedFrontmatter.visited = normalizeDate(value);
+            break;
+          case 'rating':
+            parsedFrontmatter.rating = parseFloat(value);
+            break;
+          case 'featured':
+            parsedFrontmatter.featured = value === 'true' || value === '1' || value === 'yes';
+            break;
+          case 'published':
+            parsedFrontmatter.published = value === 'true' || value === '1' || value === 'yes';
+            break;
+        }
+      }
+
+      if (currentArrayKey && currentArray.length > 0) {
+        const key = currentArrayKey.toLowerCase();
+        if (key === 'tags' || key === 'tag') {
+          parsedFrontmatter.tags = currentArray;
+        }
+      }
+
+      // If title is missing, use filename
+      if (!parsedFrontmatter.title && !frontmatter.title) {
+        const filenameWithoutExt = filename.replace(/\.md$/, '');
+        parsedFrontmatter.title = filenameWithoutExt;
+      }
+
+      setFrontmatter({
+        ...frontmatter,
+        ...parsedFrontmatter,
+        tags: parsedFrontmatter.tags || frontmatter.tags || [],
+      });
+
+      const cleanedContent = removeObsidianSyntax(contentStr.trim());
+      setContent(cleanedContent);
+      setUploadMessage('✅ File imported successfully!');
+      setError(null);
+
+    } catch (err) {
+      console.error('Error parsing markdown file:', err);
+      setError('Failed to parse markdown file. Please check the format.');
+    }
+  };
+
+  const handleFileSelect = async (files: File[]) => {
+    if (files.length === 0) return;
+
+    const mdFiles = files.filter(f => f.name.endsWith('.md'));
+
+    if (mdFiles.length === 0) {
+      setError('Please upload .md (Markdown) files');
+      return;
+    }
+
+    // Only handle single file for now as per requirement "Add New Park page" (singular)
+    const file = mdFiles[0];
+    try {
+      const text = await file.text();
+      parseMarkdownFile(text, file.name);
+    } catch (err) {
+      console.error('Error reading file:', err);
+      setError('Failed to read file');
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    setError(null);
+    setUploadMessage(null);
+
+    const files = Array.from(e.dataTransfer.files);
+    handleFileSelect(files);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null);
+    setUploadMessage(null);
+
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length > 0) {
+      handleFileSelect(files);
+    }
+  };
 
   // Markdown toolbar functions
   const insertMarkdown = (before: string, after: string = '') => {
@@ -135,8 +360,55 @@ export function ParkEditor({
   return (
     <form onSubmit={handleSave} className="space-y-6">
       {error && (
-        <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded">
+        <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded flex items-center gap-2">
+          <AlertCircle className="h-5 w-5" />
           {error}
+        </div>
+      )}
+
+      {uploadMessage && (
+        <div className="bg-green-500/10 border border-green-500 text-green-500 px-4 py-3 rounded flex items-center gap-2">
+          <CheckCircle2 className="h-5 w-5" />
+          {uploadMessage}
+        </div>
+      )}
+
+      {/* Drag and Drop Zone */}
+      {mode === 'create' && (
+        <div
+          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            isDragging
+              ? 'border-primary bg-primary/10'
+              : 'border-muted-foreground/25 hover:border-primary/50'
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <div className="flex flex-col items-center justify-center gap-2">
+            <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+            <h3 className="text-lg font-semibold">Import from Markdown</h3>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+              Drag and drop a .md file here to auto-fill the form, or click to browse.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Select File
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept=".md"
+              onChange={handleFileInputChange}
+            />
+          </div>
         </div>
       )}
 

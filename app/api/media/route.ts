@@ -69,7 +69,16 @@ export async function GET(request: NextRequest) {
         search?: string;
         genres?: string[];
         tags?: string[];
-        sortBy?: typeof sortBy;
+        sortBy?:
+          | "title-asc"
+          | "title-desc"
+          | "rating-desc"
+          | "rating-asc"
+          | "completed-desc"
+          | "completed-asc"
+          | "started-desc"
+          | "started-asc"
+          | "created-desc";
       } = {};
 
       if (type && type !== null) filters.type = type;

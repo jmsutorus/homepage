@@ -11,7 +11,8 @@ async function migrate() {
     console.log("Starting migration: Adding 'completed' column to habits table...");
 
     // Check if the column already exists
-    const tableInfo = db.prepare("PRAGMA table_info(habits)").all() as any[];
+    const result = await db.execute("PRAGMA table_info(habits)");
+    const tableInfo = result.rows as unknown as any[];
     const hasCompletedColumn = tableInfo.some((col) => col.name === "completed");
 
     if (hasCompletedColumn) {
@@ -20,7 +21,7 @@ async function migrate() {
     }
 
     // Add the completed column
-    db.prepare("ALTER TABLE habits ADD COLUMN completed BOOLEAN DEFAULT 0").run();
+    await db.execute("ALTER TABLE habits ADD COLUMN completed BOOLEAN DEFAULT 0");
 
     console.log("✓ Successfully added 'completed' column to habits table.");
     console.log("Migration completed successfully!");

@@ -3,13 +3,14 @@ import { getDatabase } from "../lib/db/index";
 /**
  * Verify the parks table structure
  */
-function verifyParksTable() {
+async function verifyParksTable() {
   console.log("🔍 Verifying parks table structure...\n");
 
   const db = getDatabase();
 
   // Get table info
-  const tableInfo = db.prepare("PRAGMA table_info(parks)").all();
+  const tableInfoResult = await db.execute("PRAGMA table_info(parks)");
+  const tableInfo = tableInfoResult.rows;
 
   if (tableInfo.length === 0) {
     console.log("❌ Parks table does not exist!");
@@ -20,14 +21,14 @@ function verifyParksTable() {
   console.table(tableInfo);
 
   // Get indexes
-  const indexes = db.prepare("PRAGMA index_list(parks)").all();
+  const indexesResult = await db.execute("PRAGMA index_list(parks)");
+  const indexes = indexesResult.rows;
   console.log("\nParks table indexes:");
   console.table(indexes);
 
   // Get row count
-  const count = db.prepare("SELECT COUNT(*) as count FROM parks").get() as {
-    count: number;
-  };
+  const countResult = await db.execute("SELECT COUNT(*) as count FROM parks");
+  const count = countResult.rows[0] as unknown as { count: number };
   console.log(`\n✅ Parks table exists with ${count.count} rows`);
 }
 
@@ -35,11 +36,13 @@ function verifyParksTable() {
  * Run verification if this file is executed directly
  */
 if (require.main === module) {
-  try {
-    verifyParksTable();
-    process.exit(0);
-  } catch (error) {
-    console.error("❌ Error verifying parks table:", error);
-    process.exit(1);
-  }
+  (async () => {
+    try {
+      await verifyParksTable();
+      process.exit(0);
+    } catch (error) {
+      console.error("❌ Error verifying parks table:", error);
+      process.exit(1);
+    }
+  })();
 }

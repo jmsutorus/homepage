@@ -6,7 +6,8 @@ import { getDatabase } from "@/lib/db";
 async function verify() {
   try {
     const db = getDatabase();
-    const user = db.prepare("SELECT id FROM user LIMIT 1").get() as { id: string };
+    const result = await db.execute("SELECT id FROM user LIMIT 1");
+    const user = result.rows[0] as unknown as { id: string } | undefined;
     
     if (!user) {
       console.log("No user found in database.");
@@ -21,10 +22,10 @@ async function verify() {
     console.log(`Date: ${today}`);
 
     // 1. Fetch actual data
-    const moodEntry = getMoodEntry(today, userId);
-    const dailyJournal = getDailyJournalByDate(today);
-    const habits = getHabits(userId);
-    const habitCompletions = getHabitCompletions(userId, today);
+    const moodEntry = await getMoodEntry(today, userId);
+    const dailyJournal = await getDailyJournalByDate(today, userId);
+    const habits = await getHabits(userId);
+    const habitCompletions = await getHabitCompletions(userId, today);
 
     console.log("--- Current State ---");
     console.log(`Mood Entry: ${moodEntry ? "Found" : "Missing"}`);

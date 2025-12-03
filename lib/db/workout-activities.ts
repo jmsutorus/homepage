@@ -66,7 +66,7 @@ export async function getWorkoutActivity(id: number, userId: string): Promise<Wo
     sql: "SELECT * FROM workout_activities WHERE id = ? AND userId = ?",
     args: [id, userId]
   });
-  return result.rows[0] as WorkoutActivity | undefined;
+  return result.rows[0] as unknown as WorkoutActivity | undefined;
 }
 
 export async function getAllWorkoutActivities(userId: string): Promise<WorkoutActivity[]> {
@@ -75,7 +75,7 @@ export async function getAllWorkoutActivities(userId: string): Promise<WorkoutAc
     sql: "SELECT * FROM workout_activities WHERE userId = ? ORDER BY date DESC, time DESC",
     args: [userId]
   });
-  return result.rows as WorkoutActivity[];
+  return result.rows as unknown as WorkoutActivity[];
 }
 
 export async function getWorkoutActivitiesByDateRange(startDate: string, endDate: string, userId: string): Promise<WorkoutActivity[]> {
@@ -86,7 +86,7 @@ export async function getWorkoutActivitiesByDateRange(startDate: string, endDate
           ORDER BY date ASC, time ASC`,
     args: [userId, startDate, endDate]
   });
-  return result.rows as WorkoutActivity[];
+  return result.rows as unknown as WorkoutActivity[];
 }
 
 export async function getWorkoutActivitiesByType(type: string, userId: string): Promise<WorkoutActivity[]> {
@@ -97,7 +97,7 @@ export async function getWorkoutActivitiesByType(type: string, userId: string): 
           ORDER BY date DESC, time DESC`,
     args: [userId, type]
   });
-  return result.rows as WorkoutActivity[];
+  return result.rows as unknown as WorkoutActivity[];
 }
 
 export async function getUpcomingWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
@@ -111,7 +111,7 @@ export async function getUpcomingWorkoutActivities(userId: string, limit: number
           LIMIT ?`,
     args: [userId, today, limit]
   });
-  return result.rows as WorkoutActivity[];
+  return result.rows as unknown as WorkoutActivity[];
 }
 
 export async function getCompletedWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
@@ -124,7 +124,7 @@ export async function getCompletedWorkoutActivities(userId: string, limit: numbe
           LIMIT ?`,
     args: [userId, limit]
   });
-  return result.rows as WorkoutActivity[];
+  return result.rows as unknown as WorkoutActivity[];
 }
 
 export async function updateWorkoutActivity(
@@ -241,7 +241,7 @@ export async function getWorkoutActivityStats(userId: string, startDate?: string
           FROM workout_activities${whereClause}`,
     args: params
   });
-  const overall = overallResult.rows[0] as {
+  const overall = overallResult.rows[0] as unknown as {
     total_activities: number;
     completed_activities: number;
     total_duration: number;
@@ -259,7 +259,7 @@ export async function getWorkoutActivityStats(userId: string, startDate?: string
           ORDER BY count DESC`,
     args: params
   });
-  const byType = byTypeResult.rows as { type: string; count: number; total_duration: number }[];
+  const byType = byTypeResult.rows as unknown as { type: string; count: number; total_duration: number }[];
 
   // By difficulty
   const byDifficultyResult = await db.execute({
@@ -277,7 +277,7 @@ export async function getWorkoutActivityStats(userId: string, startDate?: string
             END`,
     args: params
   });
-  const byDifficulty = byDifficultyResult.rows as { difficulty: string; count: number }[];
+  const byDifficulty = byDifficultyResult.rows as unknown as { difficulty: string; count: number }[];
 
   return {
     total_activities: overall.total_activities || 0,

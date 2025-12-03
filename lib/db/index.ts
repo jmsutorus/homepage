@@ -82,7 +82,7 @@ export async function query<T>(sql: string, params: any[] = []): Promise<T[]> {
     sql,
     args: params,
   });
-  return result.rows as T[];
+  return result.rows as unknown as T[];
 }
 
 /**
@@ -94,7 +94,7 @@ export async function queryOne<T>(sql: string, params: any[] = []): Promise<T | 
     sql,
     args: params,
   });
-  return result.rows[0] as T | undefined;
+  return result.rows[0] as unknown as T | undefined;
 }
 
 /**

@@ -15,7 +15,7 @@ export async function seedDatabase() {
     sql: "SELECT id FROM user LIMIT 1",
     args: []
   });
-  const user = result.rows[0] as { id: string } | undefined;
+  const user = result.rows[0] as unknown as { id: string } | undefined;
 
   if (!user) {
     console.log("⚠️ No user found. Skipping seed data that requires a user.");
