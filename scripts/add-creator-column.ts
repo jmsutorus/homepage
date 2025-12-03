@@ -1,54 +1,59 @@
+
 import { getDatabase } from '@/lib/db/index';
 
 const db = getDatabase();
 
-console.log('🔍 Checking media_content table structure...\n');
+(async () => {
+  console.log('🔍 Checking media_content table structure...\n');
 
-// Get current table info
-const columns = db.prepare("PRAGMA table_info(media_content)").all() as Array<{
-  cid: number;
-  name: string;
-  type: string;
-  notnull: number;
-  dflt_value: string | null;
-  pk: number;
-}>;
+  // Get current table info
+  const result = await db.execute("PRAGMA table_info(media_content)");
+  const columns = result.rows as unknown as Array<{
+    cid: number;
+    name: string;
+    type: string;
+    notnull: number;
+    dflt_value: string | null;
+    pk: number;
+  }>;
 
-console.log('Current columns:');
-columns.forEach(col => {
-  console.log(`  - ${col.name} (${col.type})`);
-});
+  console.log('Current columns:');
+  columns.forEach(col => {
+    console.log(`  - ${col.name} (${col.type})`);
+  });
 
-// Check if creator column exists
-const hasCreatorColumn = columns.some(col => col.name === 'creator');
+  // Check if creator column exists
+  const hasCreatorColumn = columns.some(col => col.name === 'creator');
 
-if (hasCreatorColumn) {
-  console.log('\n✅ creator column already exists. No changes needed.');
-} else {
-  console.log('\n⚠️  creator column is missing. Adding it now...\n');
+  if (hasCreatorColumn) {
+    console.log('\n✅ creator column already exists. No changes needed.');
+  } else {
+    console.log('\n⚠️  creator column is missing. Adding it now...\n');
 
-  try {
-    // Add the creator column
-    db.exec(`
-      ALTER TABLE media_content
-      ADD COLUMN creator TEXT;
-    `);
+    try {
+      // Add the creator column
+      await db.execute(`
+        ALTER TABLE media_content
+        ADD COLUMN creator TEXT;
+      `);
 
-    console.log('✅ Successfully added creator column to media_content table\n');
+      console.log('✅ Successfully added creator column to media_content table\n');
 
-    // Verify the column was added
-    const updatedColumns = db.prepare("PRAGMA table_info(media_content)").all() as Array<{
-      name: string;
-    }>;
+      // Verify the column was added
+      const updatedResult = await db.execute("PRAGMA table_info(media_content)");
+      const updatedColumns = updatedResult.rows as unknown as Array<{
+        name: string;
+      }>;
 
-    console.log('Updated columns:');
-    updatedColumns.forEach(col => {
-      console.log(`  - ${col.name}`);
-    });
+      console.log('Updated columns:');
+      updatedColumns.forEach(col => {
+        console.log(`  - ${col.name}`);
+      });
 
-    console.log('\n✨ Migration complete! You can now import media files with creator information.');
-  } catch (error) {
-    console.error('❌ Error adding creator column:', error);
-    process.exit(1);
+      console.log('\n✨ Migration complete! You can now import media files with creator information.');
+    } catch (error) {
+      console.error('❌ Error adding creator column:', error);
+      process.exit(1);
+    }
   }
-}
+})();

@@ -4,7 +4,7 @@ async function updateUserIds() {
   console.log("Starting user ID update process...\n");
 
   // Find the user ID for jmsutorus@gmail.com
-  const user = queryOne<{ id: string }>(
+  const user = await queryOne<{ id: string }>(
     "SELECT id FROM user WHERE email = ?",
     ["jmsutorus@gmail.com"]
   );
@@ -19,7 +19,7 @@ async function updateUserIds() {
 
   // Check media_content table
   console.log("Checking media_content table...");
-  const mediaWithoutUserId = query<{ id: number; title: string }>(
+  const mediaWithoutUserId = await query<{ id: number; title: string }>(
     "SELECT id, title FROM media_content WHERE userId IS NULL OR userId = ''"
   );
   console.log(`Found ${mediaWithoutUserId.length} media records without userId`);
@@ -30,7 +30,7 @@ async function updateUserIds() {
       console.log(`  - ${media.id}: ${media.title}`);
     });
 
-    const mediaResult = execute(
+    const mediaResult = await execute(
       "UPDATE media_content SET userId = ? WHERE userId IS NULL OR userId = ''",
       [userId]
     );
@@ -41,7 +41,7 @@ async function updateUserIds() {
 
   // Check parks table
   console.log("Checking parks table...");
-  const parksWithoutUserId = query<{ id: number; title: string }>(
+  const parksWithoutUserId = await query<{ id: number; title: string }>(
     "SELECT id, title FROM parks WHERE userId IS NULL OR userId = ''"
   );
   console.log(`Found ${parksWithoutUserId.length} parks records without userId`);
@@ -52,7 +52,7 @@ async function updateUserIds() {
       console.log(`  - ${park.id}: ${park.title}`);
     });
 
-    const parksResult = execute(
+    const parksResult = await execute(
       "UPDATE parks SET userId = ? WHERE userId IS NULL OR userId = ''",
       [userId]
     );
@@ -63,19 +63,25 @@ async function updateUserIds() {
 
   // Summary
   console.log("=== Summary ===");
-  const totalMedia = queryOne<{ count: number }>(
+  const totalMediaResult = await queryOne<{ count: number }>(
     "SELECT COUNT(*) as count FROM media_content"
-  )?.count || 0;
-  const mediaWithUserId = queryOne<{ count: number }>(
-    "SELECT COUNT(*) as count FROM media_content WHERE userId IS NOT NULL AND userId != ''"
-  )?.count || 0;
+  );
+  const totalMedia = totalMediaResult?.count || 0;
 
-  const totalParks = queryOne<{ count: number }>(
+  const mediaWithUserIdResult = await queryOne<{ count: number }>(
+    "SELECT COUNT(*) as count FROM media_content WHERE userId IS NOT NULL AND userId != ''"
+  );
+  const mediaWithUserId = mediaWithUserIdResult?.count || 0;
+
+  const totalParksResult = await queryOne<{ count: number }>(
     "SELECT COUNT(*) as count FROM parks"
-  )?.count || 0;
-  const parksWithUserId = queryOne<{ count: number }>(
+  );
+  const totalParks = totalParksResult?.count || 0;
+
+  const parksWithUserIdResult = await queryOne<{ count: number }>(
     "SELECT COUNT(*) as count FROM parks WHERE userId IS NOT NULL AND userId != ''"
-  )?.count || 0;
+  );
+  const parksWithUserId = parksWithUserIdResult?.count || 0;
 
   console.log(`Media: ${mediaWithUserId}/${totalMedia} have userId`);
   console.log(`Parks: ${parksWithUserId}/${totalParks} have userId`);

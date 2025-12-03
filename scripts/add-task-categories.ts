@@ -1,3 +1,4 @@
+
 import { getDatabase } from "../lib/db/index";
 
 /**
@@ -8,7 +9,7 @@ import { getDatabase } from "../lib/db/index";
  * - Initial default categories
  */
 
-function migrateTaskCategories() {
+async function migrateTaskCategories() {
   const db = getDatabase();
 
   console.log("Starting task categories migration...");
@@ -16,13 +17,21 @@ function migrateTaskCategories() {
   try {
     // Add category column to tasks table
     console.log("Adding category column to tasks table...");
-    db.exec(`
-      ALTER TABLE tasks ADD COLUMN category TEXT;
-    `);
+    try {
+      await db.execute(`
+        ALTER TABLE tasks ADD COLUMN category TEXT;
+      `);
+    } catch (error) {
+       if (error instanceof Error && error.message.includes("duplicate column name")) {
+         console.log("⚠ Category column already exists, skipping...");
+       } else {
+         throw error;
+       }
+    }
 
     // Create task_categories table
     console.log("Creating task_categories table...");
-    db.exec(`
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS task_categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId TEXT NOT NULL,
@@ -35,23 +44,22 @@ function migrateTaskCategories() {
 
     // Create index for faster lookups
     console.log("Creating indexes...");
-    db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_task_categories_userId ON task_categories(userId);
-      CREATE INDEX IF NOT EXISTS idx_tasks_category ON tasks(category);
-    `);
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_task_categories_userId ON task_categories(userId);");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_tasks_category ON tasks(category);");
 
     // Insert default categories for existing users
     console.log("Inserting default categories...");
-    const users = db.prepare("SELECT DISTINCT userId FROM tasks").all() as { userId: string }[];
+    const result = await db.execute("SELECT DISTINCT userId FROM tasks");
+    const users = result.rows as unknown as { userId: string }[];
 
     const defaultCategories = ["House", "Chore", "Work", "Buy"];
-    const insertStmt = db.prepare(
-      "INSERT OR IGNORE INTO task_categories (userId, name) VALUES (?, ?)"
-    );
 
     for (const user of users) {
       for (const category of defaultCategories) {
-        insertStmt.run(user.userId, category);
+        await db.execute({
+          sql: "INSERT OR IGNORE INTO task_categories (userId, name) VALUES (?, ?)",
+          args: [user.userId, category]
+        });
       }
     }
 
@@ -60,14 +68,20 @@ function migrateTaskCategories() {
     console.log(`  - Created task_categories table`);
     console.log(`  - Added default categories for ${users.length} user(s)`);
   } catch (error) {
-    if (error instanceof Error && error.message.includes("duplicate column name")) {
-      console.log("⚠ Category column already exists, skipping...");
-    } else {
-      console.error("Migration failed:", error);
-      throw error;
-    }
+    console.error("Migration failed:", error);
+    throw error;
   }
 }
 
 // Run migration
-migrateTaskCategories();
+if (require.main === module) {
+  (async () => {
+    try {
+      await migrateTaskCategories();
+      process.exit(0);
+    } catch (error) {
+      console.error("❌ Error migrating task categories:", error);
+      process.exit(1);
+    }
+  })();
+}

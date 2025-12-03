@@ -1,7 +1,6 @@
 #!/usr/bin/env tsx
 
-import Database from "better-sqlite3";
-import { env } from "@/lib/env";
+import { getDatabase } from "@/lib/db/index";
 
 /**
  * Migrate media_content table from old schema to new schema
@@ -40,35 +39,33 @@ interface OldMediaContent {
 async function migrateMediaSchema() {
   console.log("🚀 Starting media schema migration...\n");
 
-  // Create direct database connection without running schema
-  const dbPath = env.DATABASE_URL.replace("file:", "");
-  const db = new Database(dbPath);
-  db.pragma("foreign_keys = ON");
-  db.pragma("journal_mode = WAL");
+  const db = getDatabase();
 
   try {
     // Step 1: Check if old table exists
-    const tableCheck = db.prepare(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='media_content'"
-    ).get();
+    const tableCheckResult = await db.execute({
+      sql: "SELECT name FROM sqlite_master WHERE type='table' AND name='media_content'",
+      args: []
+    });
+    const tableCheck = tableCheckResult.rows[0];
 
     if (!tableCheck) {
       console.log("⚠️  No media_content table found. Nothing to migrate.");
-      db.close();
       return;
     }
 
     console.log("📊 Found existing media_content table");
 
     // Step 2: Read all existing media
-    const oldMedia = db.prepare("SELECT * FROM media_content").all() as OldMediaContent[];
+    const oldMediaResult = await db.execute("SELECT * FROM media_content");
+    const oldMedia = oldMediaResult.rows as unknown as OldMediaContent[];
     console.log(`📁 Found ${oldMedia.length} existing media entries\n`);
 
     if (oldMedia.length === 0) {
       console.log("⚠️  No data to migrate. Dropping old table and creating new schema...");
-      db.exec("DROP TABLE IF EXISTS media_content");
+      await db.execute("DROP TABLE IF EXISTS media_content");
       // Apply just the media content table schema
-      db.exec(`
+      await db.execute(`
 -- Media Content Table
 CREATE TABLE IF NOT EXISTS media_content (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,12 +87,14 @@ CREATE TABLE IF NOT EXISTS media_content (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX IF NOT EXISTS idx_media_content_type ON media_content(type);
-CREATE INDEX IF NOT EXISTS idx_media_content_status ON media_content(status);
-CREATE INDEX IF NOT EXISTS idx_media_content_slug ON media_content(slug);
-CREATE INDEX IF NOT EXISTS idx_media_content_completed ON media_content(completed);
-CREATE INDEX IF NOT EXISTS idx_media_content_featured ON media_content(featured);
-CREATE INDEX IF NOT EXISTS idx_media_content_published ON media_content(published);
+`);
+      await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_type ON media_content(type);");
+      await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_status ON media_content(status);");
+      await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_slug ON media_content(slug);");
+      await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_completed ON media_content(completed);");
+      await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_featured ON media_content(featured);");
+      await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_published ON media_content(published);");
+      await db.execute(`
 CREATE TRIGGER IF NOT EXISTS update_media_content_timestamp
 AFTER UPDATE ON media_content
 BEGIN
@@ -103,22 +102,21 @@ BEGIN
 END;
       `);
       console.log("✅ New schema applied successfully");
-      db.close();
       return;
     }
 
     // Step 3: Create backup table
     console.log("💾 Creating backup table...");
-    db.exec("CREATE TABLE IF NOT EXISTS media_content_backup AS SELECT * FROM media_content");
+    await db.execute("CREATE TABLE IF NOT EXISTS media_content_backup AS SELECT * FROM media_content");
     console.log("✅ Backup created: media_content_backup\n");
 
     // Step 4: Drop old table
     console.log("🗑️  Dropping old media_content table...");
-    db.exec("DROP TABLE media_content");
+    await db.execute("DROP TABLE media_content");
 
     // Step 5: Apply new schema (just the media_content part)
     console.log("📋 Applying new schema...");
-    db.exec(`
+    await db.execute(`
 -- Media Content Table
 -- Stores media library entries (movies, TV shows, books, video games) with markdown content
 CREATE TABLE IF NOT EXISTS media_content (
@@ -141,15 +139,14 @@ CREATE TABLE IF NOT EXISTS media_content (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- Indexes for media_content
-CREATE INDEX IF NOT EXISTS idx_media_content_type ON media_content(type);
-CREATE INDEX IF NOT EXISTS idx_media_content_status ON media_content(status);
-CREATE INDEX IF NOT EXISTS idx_media_content_slug ON media_content(slug);
-CREATE INDEX IF NOT EXISTS idx_media_content_completed ON media_content(completed);
-CREATE INDEX IF NOT EXISTS idx_media_content_featured ON media_content(featured);
-CREATE INDEX IF NOT EXISTS idx_media_content_published ON media_content(published);
-
+`);
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_type ON media_content(type);");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_status ON media_content(status);");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_slug ON media_content(slug);");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_completed ON media_content(completed);");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_featured ON media_content(featured);");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_media_content_published ON media_content(published);");
+    await db.execute(`
 -- Trigger to update updated_at timestamp on media_content
 CREATE TRIGGER IF NOT EXISTS update_media_content_timestamp
 AFTER UPDATE ON media_content
@@ -161,13 +158,6 @@ END;
 
     // Step 6: Migrate data
     console.log("🔄 Migrating data to new schema...");
-
-    const insertStmt = db.prepare(`
-      INSERT INTO media_content (
-        slug, title, type, status, rating, started, completed, released,
-        genres, poster, tags, length, featured, published, content, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
 
     let successCount = 0;
     let errorCount = 0;
@@ -186,25 +176,33 @@ END;
           newRating = newRating * 2;
         }
 
-        insertStmt.run(
-          media.slug,
-          media.title,
-          media.type,
-          newStatus,
-          newRating,
-          media.date_started, // started
-          media.date_watched, // completed
-          null, // released
-          media.genres,
-          media.image_url, // poster
-          null, // tags
-          null, // length
-          0, // featured
-          1, // published
-          media.content,
-          media.created_at,
-          media.updated_at
-        );
+        await db.execute({
+          sql: `
+            INSERT INTO media_content (
+              slug, title, type, status, rating, started, completed, released,
+              genres, poster, tags, length, featured, published, content, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            media.slug,
+            media.title,
+            media.type,
+            newStatus,
+            newRating,
+            media.date_started, // started
+            media.date_watched, // completed
+            null, // released
+            media.genres,
+            media.image_url, // poster
+            null, // tags
+            null, // length
+            0, // featured
+            1, // published
+            media.content,
+            media.created_at,
+            media.updated_at
+          ]
+        });
 
         console.log(`  ✅ Migrated: ${media.slug}`);
         successCount++;
@@ -228,15 +226,13 @@ END;
     console.log("   - You can drop the backup table once verified:");
     console.log("     DROP TABLE media_content_backup;\n");
 
-    db.close();
-
   } catch (error) {
     console.error("💥 Migration failed:", error);
     console.log("\n⚠️  Attempting to restore from backup...");
 
     try {
-      db.exec("DROP TABLE IF EXISTS media_content");
-      db.exec("ALTER TABLE media_content_backup RENAME TO media_content");
+      await db.execute("DROP TABLE IF EXISTS media_content");
+      await db.execute("ALTER TABLE media_content_backup RENAME TO media_content");
       console.log("✅ Backup restored successfully");
     } catch (restoreError) {
       console.error("❌ Failed to restore backup:", restoreError);

@@ -7,7 +7,7 @@ async function main() {
   const db = getDatabase();
 
   // 1. Find a user with a Strava account
-  const account = queryOne<{ userId: string; accessToken: string; refreshToken: string; accessTokenExpiresAt: number }>(
+  const account = await queryOne<{ userId: string; accessToken: string; refreshToken: string; accessTokenExpiresAt: number }>(
     "SELECT userId, accessToken, refreshToken, accessTokenExpiresAt FROM account WHERE providerId = 'strava' LIMIT 1"
   );
 
@@ -21,7 +21,7 @@ async function main() {
 
   // 2. Manually expire the token (set expiresAt to 1 hour ago)
   const oneHourAgo = Math.floor(Date.now() / 1000) - 3600;
-  execute(
+  await execute(
     "UPDATE account SET accessTokenExpiresAt = ? WHERE userId = ? AND providerId = 'strava'",
     [oneHourAgo, account.userId]
   );
@@ -34,7 +34,7 @@ async function main() {
     console.log("Successfully retrieved token.");
 
     // 4. Verify the token was updated in the DB
-    const updatedAccount = queryOne<{ accessToken: string; accessTokenExpiresAt: number }>(
+    const updatedAccount = await queryOne<{ accessToken: string; accessTokenExpiresAt: number }>(
       "SELECT accessToken, accessTokenExpiresAt FROM account WHERE userId = ? AND providerId = 'strava'",
       [account.userId]
     );

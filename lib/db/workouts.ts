@@ -1,4 +1,4 @@
-import { getDatabase } from "./index";
+import { getDatabase, queryOne } from "./index";
 
 // Types
 export interface WorkoutPlan {
@@ -58,7 +58,7 @@ export async function getWorkoutPlan(id: number, userId: string): Promise<Workou
     sql: "SELECT * FROM workout_plans WHERE id = ? AND user_id = ?",
     args: [id, userId]
   });
-  return result.rows[0] as WorkoutPlan | undefined;
+  return result.rows[0] as unknown as WorkoutPlan | undefined;
 }
 
 export async function getAllWorkoutPlans(userId: string): Promise<WorkoutPlan[]> {
@@ -67,7 +67,7 @@ export async function getAllWorkoutPlans(userId: string): Promise<WorkoutPlan[]>
     sql: "SELECT * FROM workout_plans WHERE user_id = ? ORDER BY created_at DESC",
     args: [userId]
   });
-  return result.rows as WorkoutPlan[];
+  return result.rows as unknown as WorkoutPlan[];
 }
 
 export async function getWorkoutPlansByType(userId: string, type: string): Promise<WorkoutPlan[]> {
@@ -76,7 +76,7 @@ export async function getWorkoutPlansByType(userId: string, type: string): Promi
     sql: "SELECT * FROM workout_plans WHERE user_id = ? AND type = ? ORDER BY created_at DESC",
     args: [userId, type]
   });
-  return result.rows as WorkoutPlan[];
+  return result.rows as unknown as WorkoutPlan[];
 }
 
 export async function updateWorkoutPlan(
@@ -154,7 +154,7 @@ export async function getScheduledWorkout(id: number, userId: string): Promise<S
     sql: "SELECT * FROM scheduled_workouts WHERE id = ? AND user_id = ?",
     args: [id, userId]
   });
-  return result.rows[0] as ScheduledWorkout | undefined;
+  return result.rows[0] as unknown as ScheduledWorkout | undefined;
 }
 
 export async function getScheduledWorkoutByCalendarEventId(eventId: string, userId: string): Promise<ScheduledWorkout | undefined> {
@@ -163,7 +163,7 @@ export async function getScheduledWorkoutByCalendarEventId(eventId: string, user
     sql: "SELECT * FROM scheduled_workouts WHERE calendar_event_id = ? AND user_id = ?",
     args: [eventId, userId]
   });
-  return result.rows[0] as ScheduledWorkout | undefined;
+  return result.rows[0] as unknown as ScheduledWorkout | undefined;
 }
 
 export async function getScheduledWorkouts(userId: string, startDate?: string, endDate?: string): Promise<ScheduledWorkout[]> {
@@ -176,7 +176,7 @@ export async function getScheduledWorkouts(userId: string, startDate?: string, e
             ORDER BY scheduled_date ASC, scheduled_time ASC`,
       args: [userId, startDate, endDate]
     });
-    return result.rows as ScheduledWorkout[];
+    return result.rows as unknown as ScheduledWorkout[];
   }
 
   const result = await db.execute({
@@ -185,7 +185,7 @@ export async function getScheduledWorkouts(userId: string, startDate?: string, e
           ORDER BY scheduled_date DESC, scheduled_time DESC`,
     args: [userId]
   });
-  return result.rows as ScheduledWorkout[];
+  return result.rows as unknown as ScheduledWorkout[];
 }
 
 export async function getUpcomingWorkouts(userId: string, limit: number = 10): Promise<ScheduledWorkout[]> {
@@ -199,7 +199,7 @@ export async function getUpcomingWorkouts(userId: string, limit: number = 10): P
           LIMIT ?`,
     args: [userId, today, limit]
   });
-  return result.rows as ScheduledWorkout[];
+  return result.rows as unknown as ScheduledWorkout[];
 }
 
 export async function getCompletedWorkouts(userId: string, limit: number = 10): Promise<ScheduledWorkout[]> {
@@ -212,7 +212,7 @@ export async function getCompletedWorkouts(userId: string, limit: number = 10): 
           LIMIT ?`,
     args: [userId, limit]
   });
-  return result.rows as ScheduledWorkout[];
+  return result.rows as unknown as ScheduledWorkout[];
 }
 
 export async function updateScheduledWorkout(
@@ -347,5 +347,5 @@ export async function getWorkoutsByType(userId: string): Promise<WorkoutByType[]
           ORDER BY count DESC`,
     args: [userId]
   });
-  return result.rows as WorkoutByType[];
+  return result.rows as unknown as WorkoutByType[];
 }

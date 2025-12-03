@@ -4,17 +4,17 @@ import { PARK_CATEGORIES } from "../lib/db/enums/park-enums";
 /**
  * Migration script to add the parks table to the database
  */
-function addParksTable() {
+async function addParksTable() {
   console.log("🔄 Adding parks table to database...");
 
   const db = getDatabase();
 
   // Check if parks table already exists
-  const tableExists = db
-    .prepare(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='parks'"
-    )
-    .get();
+  const result = await db.execute({
+    sql: "SELECT name FROM sqlite_master WHERE type='table' AND name='parks'",
+    args: []
+  });
+  const tableExists = result.rows.length > 0;
 
   if (tableExists) {
     console.log("⚠️  Parks table already exists, skipping migration");
@@ -45,19 +45,19 @@ function addParksTable() {
     );
   `;
 
-  db.exec(createTableSQL);
+  await db.execute(createTableSQL);
 
   // Create index on slug for faster lookups
-  db.exec("CREATE INDEX IF NOT EXISTS idx_parks_slug ON parks(slug);");
+  await db.execute("CREATE INDEX IF NOT EXISTS idx_parks_slug ON parks(slug);");
 
   // Create index on category for filtering
-  db.exec("CREATE INDEX IF NOT EXISTS idx_parks_category ON parks(category);");
+  await db.execute("CREATE INDEX IF NOT EXISTS idx_parks_category ON parks(category);");
 
   // Create index on state for filtering
-  db.exec("CREATE INDEX IF NOT EXISTS idx_parks_state ON parks(state);");
+  await db.execute("CREATE INDEX IF NOT EXISTS idx_parks_state ON parks(state);");
 
   // Create index on published for filtering
-  db.exec(
+  await db.execute(
     "CREATE INDEX IF NOT EXISTS idx_parks_published ON parks(published);"
   );
 
@@ -68,11 +68,13 @@ function addParksTable() {
  * Run migration if this file is executed directly
  */
 if (require.main === module) {
-  try {
-    addParksTable();
-    process.exit(0);
-  } catch (error) {
-    console.error("❌ Error adding parks table:", error);
-    process.exit(1);
-  }
+  (async () => {
+    try {
+      await addParksTable();
+      process.exit(0);
+    } catch (error) {
+      console.error("❌ Error adding parks table:", error);
+      process.exit(1);
+    }
+  })();
 }
