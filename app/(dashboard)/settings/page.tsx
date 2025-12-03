@@ -13,6 +13,7 @@ import { MediaTagsGenresManager } from "@/components/widgets/settings/media-tags
 import { CalendarColorsManager } from "@/components/widgets/settings/calendar-colors-manager";
 import { WeatherLocationManager } from "@/components/widgets/settings/weather-location-manager";
 import { SignOutButton } from "@/components/widgets/settings/sign-out-button";
+import { ThemeSettings } from "@/components/widgets/settings/theme-settings";
 
 export default async function SettingsPage() {
   const connectedAccounts = await getConnectedAccounts();
@@ -26,6 +27,8 @@ export default async function SettingsPage() {
             Manage your account settings and preferences.
           </p>
         </div>
+
+        <ThemeSettings />
 
         <CalendarColorsManager />
 

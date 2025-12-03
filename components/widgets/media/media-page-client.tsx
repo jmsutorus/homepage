@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { MediaItem } from "@/lib/media";
 import { MediaGrid } from "./media-grid";
+import { PaginatedMediaGrid } from "./paginated-media-grid";
 import { MediaConsumptionTimeline } from "./media-consumption-timeline";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
@@ -21,10 +22,35 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, ChevronDown, ChevronRight, X } from "lucide-react";
 import Link from "next/link";
-import type { MediaTimelineData } from "@/lib/db/media";
+import type { MediaTimelineData, PaginatedMediaResult, MediaContent } from "@/lib/db/media";
+
+// Convert MediaContent to MediaItem
+function dbToMediaItem(dbMedia: MediaContent): MediaItem {
+  return {
+    slug: dbMedia.slug,
+    frontmatter: {
+      title: dbMedia.title,
+      type: dbMedia.type,
+      status: dbMedia.status,
+      rating: dbMedia.rating ?? undefined,
+      started: dbMedia.started ?? undefined,
+      completed: dbMedia.completed ?? undefined,
+      released: dbMedia.released ?? undefined,
+      genres: dbMedia.genres ? JSON.parse(dbMedia.genres) : undefined,
+      poster: dbMedia.poster ?? undefined,
+      tags: dbMedia.tags ? JSON.parse(dbMedia.tags) : undefined,
+      description: dbMedia.description ?? undefined,
+      length: dbMedia.length ?? undefined,
+      featured: dbMedia.featured === 1,
+      published: dbMedia.published === 1,
+    },
+    content: dbMedia.content,
+  };
+}
 
 interface MediaPageClientProps {
   allMedia: MediaItem[];
+  initialCompletedMedia: PaginatedMediaResult;
   timelineData?: MediaTimelineData;
 }
 
@@ -40,7 +66,11 @@ type SortOption =
 
 type ViewTab = "media" | "analytics";
 
-export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps) {
+export function MediaPageClient({
+  allMedia,
+  initialCompletedMedia,
+  timelineData,
+}: MediaPageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [viewTab, setViewTab] = useState<ViewTab>("media");
@@ -147,15 +177,12 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
     }
   }, [sortBy]);
 
-  // Separate in-progress, planned, and completed media
-  const { inProgressMedia, plannedMedia, completedMedia } = useMemo(() => {
-    // First separate by completion status
+  // Separate in-progress and planned media (completed items are paginated separately)
+  const { inProgressMedia, plannedMedia } = useMemo(() => {
     // In Progress: status is "in-progress"
     const inProgress = allMedia.filter((item) => item.frontmatter.status === "in-progress");
     // Planned: status is "planned"
     const planned = allMedia.filter((item) => item.frontmatter.status === "planned");
-    // Completed: status is "completed" (completed date is optional)
-    const completed = allMedia.filter((item) => item.frontmatter.status === "completed");
 
     // Sort in-progress by started date (most recent first)
     const sortedInProgress = [...inProgress].sort((a, b) => {
@@ -172,42 +199,47 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
     return {
       inProgressMedia: sortedInProgress,
       plannedMedia: sortedPlanned,
-      completedMedia: completed,
     };
   }, [allMedia]);
 
-  // Filter and search media (only apply to completed media)
-  const filteredMedia = useMemo(() => {
-    let filtered = completedMedia;
+  // Convert initial completed media to MediaItem format
+  const initialCompletedItems = useMemo(
+    () => initialCompletedMedia.items.map(dbToMediaItem),
+    [initialCompletedMedia]
+  );
 
-    // Filter by type
+  // Build filters for paginated completed media
+  const completedFilters = useMemo(() => {
+    const filters: {
+      type?: "movie" | "tv" | "book" | "game";
+      status: "completed";
+      search?: string;
+      genres?: string[];
+      tags?: string[];
+      sortBy: typeof sortBy;
+    } = {
+      status: "completed",
+      sortBy,
+    };
+
     if (activeTab !== "all") {
-      filtered = filtered.filter((item) => item.frontmatter.type === activeTab);
+      filters.type = activeTab;
     }
 
-    // Filter by genres (match ANY of the selected genres)
-    if (activeGenres.length > 0) {
-      filtered = filtered.filter((item) =>
-        item.frontmatter.genres?.some((genre) => activeGenres.includes(genre))
-      );
-    }
-
-    // Filter by tags (match ANY of the selected tags)
-    if (activeTags.length > 0) {
-      filtered = filtered.filter((item) =>
-        item.frontmatter.tags?.some((tag) => activeTags.includes(tag))
-      );
-    }
-
-    // Search by title
     if (searchQuery) {
-      filtered = filtered.filter((item) =>
-        item.frontmatter.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      filters.search = searchQuery;
     }
 
-    return sortMedia(filtered);
-  }, [completedMedia, activeTab, searchQuery, activeGenres, activeTags, sortMedia]);
+    if (activeGenres.length > 0) {
+      filters.genres = activeGenres;
+    }
+
+    if (activeTags.length > 0) {
+      filters.tags = activeTags;
+    }
+
+    return filters;
+  }, [activeTab, searchQuery, activeGenres, activeTags, sortBy]);
 
   // Filter in-progress media by type and search
   const filteredInProgress = useMemo(() => {
@@ -620,34 +652,26 @@ export function MediaPageClient({ allMedia, timelineData }: MediaPageClientProps
         </div>
       )}
 
-      {/* Completed Media Grid */}
-      {filteredMedia.length > 0 && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Completed</h2>
-            <p className="text-sm text-muted-foreground">
-              Finished watching, reading, or playing ({filteredMedia.length})
-            </p>
-          </div>
-          <MediaGrid
-            items={filteredMedia}
-            emptyMessage={
-              searchQuery
-                ? `No results found for "${searchQuery}"`
-                : `No ${activeTab === "all" ? "media" : activeTab === "game" ? "games" : `${activeTab}s`} found`
-            }
-          />
+      {/* Completed Media Grid - Paginated */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Completed</h2>
+          <p className="text-sm text-muted-foreground">
+            Finished watching, reading, or playing
+          </p>
         </div>
-      )}
-
-      {/* Empty state when no media at all */}
-      {filteredInProgress.length === 0 && filteredPlanned.length === 0 && filteredMedia.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          {searchQuery
-            ? `No results found for "${searchQuery}"`
-            : `No ${activeTab === "all" ? "media" : activeTab === "game" ? "games" : `${activeTab}s`} found`}
-        </div>
-      )}
+        <PaginatedMediaGrid
+          initialItems={initialCompletedItems}
+          filters={completedFilters}
+          emptyMessage={
+            searchQuery
+              ? `No results found for "${searchQuery}"`
+              : filteredInProgress.length === 0 && filteredPlanned.length === 0
+              ? `No ${activeTab === "all" ? "media" : activeTab === "game" ? "games" : `${activeTab}s`} found`
+              : "No completed media found"
+          }
+        />
+      </div>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 mt-6">

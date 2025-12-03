@@ -30,6 +30,16 @@ const nextConfig: NextConfig = {
         hostname: "m.media-amazon.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "images.theposterdb.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.igdb.com",
+        pathname: "/**",
+      },
       // Plex/Tautulli images (localhost)
       // Note: If your Tautulli is on a custom domain, add it here
       {
