@@ -124,20 +124,6 @@ export function RecentTasks() {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Tasks</CardTitle>
-            <CardDescription>Your upcoming tasks</CardDescription>
-          </div>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/tasks">
-              View All
-              <ExternalLink className="ml-2 h-3 w-3" />
-            </Link>
-          </Button>
-        </div>
-      </CardHeader>
       <CardContent>
         {tasks.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
