@@ -1,3 +1,11 @@
+## [1.4.1](https://github.com/jmsutorus/homepage/compare/v1.4.0...v1.4.1) (2025-12-03)
+
+
+### Bug Fixes
+
+* **dashboard:** add goals section and improve loading states ([#11](https://github.com/jmsutorus/homepage/issues/11)) ([54711b8](https://github.com/jmsutorus/homepage/commit/54711b85b5fa062863b6f79ae3eb70d82d3fc6a5))
+* **db:** add missing await keywords in async functions ([#12](https://github.com/jmsutorus/homepage/issues/12)) ([520b90a](https://github.com/jmsutorus/homepage/commit/520b90a7c3ea3a2dea2fe06edc484c2ccafed156))
+
 # [1.4.0](https://github.com/jmsutorus/homepage/compare/v1.3.1...v1.4.0) (2025-12-03)
 
 
