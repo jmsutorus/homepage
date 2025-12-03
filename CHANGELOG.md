@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/jmsutorus/homepage/compare/v1.3.1...v1.4.0) (2025-12-03)
+
+
+### Features
+
+* **media:** add pagination for completed media with infinite scroll ([#10](https://github.com/jmsutorus/homepage/issues/10)) ([6c77239](https://github.com/jmsutorus/homepage/commit/6c77239857f28aef3bd78ca2fffaa8342232364b))
+
 ## [1.3.1](https://github.com/jmsutorus/homepage/compare/v1.3.0...v1.3.1) (2025-12-02)
 
 
