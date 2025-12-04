@@ -90,7 +90,7 @@ env:
     value: "your-google-client-id.apps.googleusercontent.com"
 
   - variable: GOOGLE_REDIRECT_URI
-    value: "https://your-app.web.app/api/auth/callback/google"
+    value: "https://homepage.sutorus.com/api/auth/callback/google"
 
   # ============================================================================
   # STRAVA API
