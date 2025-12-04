@@ -16,8 +16,7 @@
     "db:migrate-media": "tsx scripts/migrate-media-to-db.ts",
     "db:migrate-schema": "tsx scripts/migrate-media-schema.ts",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "prepare": "husky || exit 0"
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@auth/core": "^0.41.0",
