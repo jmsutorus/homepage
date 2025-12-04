@@ -44,10 +44,10 @@ env:
   # Replace with your actual production URL
 
   - variable: NEXTAUTH_URL
-    value: "https://homepage--homepage-7cfc8.us-east5.hosted.app/"
+    value: "https://homepage.sutorus.com"
 
   - variable: AUTH_URL
-    value: "https://homepage--homepage-7cfc8.us-east5.hosted.app/"
+    value: "https://homepage.sutorus.com"
 
   # ============================================================================
   # FIREBASE CONFIGURATION
