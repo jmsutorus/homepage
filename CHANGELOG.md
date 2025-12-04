@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/jmsutorus/homepage/compare/v1.4.1...v1.4.2) (2025-12-04)
+
+
+### Bug Fixes
+
+* **build:** improve Firebase App Hosting secret fetching ([#15](https://github.com/jmsutorus/homepage/issues/15)) ([f2f0f35](https://github.com/jmsutorus/homepage/commit/f2f0f35bc1902547ef02da3cc77d9efff5479c13))
+
 ## [1.4.1](https://github.com/jmsutorus/homepage/compare/v1.4.0...v1.4.1) (2025-12-03)
 
 
