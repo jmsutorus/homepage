@@ -1,3 +1,10 @@
+## [1.4.3](https://github.com/jmsutorus/homepage/compare/v1.4.2...v1.4.3) (2025-12-04)
+
+
+### Bug Fixes
+
+* **auth:** handle missing allowed_users table gracefully ([#22](https://github.com/jmsutorus/homepage/issues/22)) ([0d932ea](https://github.com/jmsutorus/homepage/commit/0d932eae3c8fd6388eef9c0709aaaa683e41b3f9))
+
 ## [1.4.2](https://github.com/jmsutorus/homepage/compare/v1.4.1...v1.4.2) (2025-12-04)
 
 
