@@ -52,7 +52,7 @@ env:
 
   # Client-side Firebase config (must be environment variables for client bundle)
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: "AIzaSyBjBmpeInUApQodyJNgCPN3cfeQEdAVI8c"
+    value: "your-key"
 
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: "homepage-7cfc8.firebaseapp.com"

@@ -10,6 +10,7 @@ const SECRET_MAPPINGS: Record<string, string> = {
   DATABASE_AUTH_TOKEN: 'homepage-prod-database-auth-token',
   AUTH_SECRET: 'homepage-prod-nextauth-secret',
   NEXTAUTH_SECRET: 'homepage-prod-nextauth-secret',
+  NEXT_PUBLIC_FIREBASE_API_KEY: 'homepage-prod-nextauth-api-key',
   FIREBASE_PRIVATE_KEY: 'homepage-prod-firebase-private-key',
   FIREBASE_CLIENT_EMAIL: 'homepage-prod-firebase-client-email',
   AUTH_GOOGLE_SECRET: 'homepage-prod-auth-google-secret',
