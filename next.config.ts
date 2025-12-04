@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Reduce memory usage during build by limiting workers
+  experimental: {
+    // Limit the number of workers for static page generation
+    workerThreads: false,
+    cpus: 1,
+  },
   images: {
     remotePatterns: [
       // Steam avatars and game images

@@ -8,11 +8,11 @@ runConfig:
   # Maximum number of instances
   maxInstances: 3
 
-  # Memory allocation per instance
-  memory: 512Mi
+  # Memory allocation per instance (increased for Next.js build)
+  memory: 2Gi
 
   # CPU allocation (1 = 1 vCPU)
-  cpu: 1
+  cpu: 2
 
   # Maximum concurrent requests per instance
   concurrency: 80
@@ -24,6 +24,10 @@ env:
 
   - variable: NODE_ENV
     value: production
+
+  # Increase Node.js heap size for memory-intensive builds (3GB for Next.js + TypeScript)
+  - variable: NODE_OPTIONS
+    value: "--max-old-space-size=3072"
 
   # ============================================================================
   # DATABASE CONFIGURATION
