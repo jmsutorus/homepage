@@ -11,6 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   RefreshCw,
   Cloud,
   MapPin,
@@ -18,10 +23,12 @@ import {
   Edit2,
   Check,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { format } from "date-fns";
 import { getWeatherEmoji } from "@/lib/api/weather";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface WeatherPeriod {
   number: number;
@@ -56,6 +63,7 @@ export function WeatherWidget() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isForecastOpen, setIsForecastOpen] = useState(false);
 
   // Location editing state
   const [isEditingLocation, setIsEditingLocation] = useState(false);
@@ -334,26 +342,41 @@ export function WeatherWidget() {
             </div>
 
             {/* 3-Day Forecast */}
-            <div>
-              <h3 className="font-semibold mb-3">3-Day Forecast</h3>
-              <div className="grid grid-cols-3 gap-3">
-                {weather.forecast.slice(0, 6).map((period) => (
-                  <div
-                    key={period.number}
-                    className="flex flex-col items-center p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                  >
-                    <p className="text-xs font-medium mb-2">{period.name}</p>
-                    <span className="text-2xl mb-2">
-                      {getWeatherEmoji(period.shortForecast)}
-                    </span>
-                    <p className="text-lg font-bold">{period.temperature}°</p>
-                    <p className="text-xs text-muted-foreground text-center mt-1">
-                      {period.shortForecast}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Collapsible open={isForecastOpen} onOpenChange={setIsForecastOpen}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full flex items-center justify-between p-3 h-auto hover:bg-accent/50"
+                >
+                  <h3 className="font-semibold">3-Day Forecast</h3>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 transition-transform duration-200",
+                      isForecastOpen && "rotate-180"
+                    )}
+                  />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3">
+                <div className="grid grid-cols-3 gap-3">
+                  {weather.forecast.slice(0, 6).map((period) => (
+                    <div
+                      key={period.number}
+                      className="flex flex-col items-center p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                    >
+                      <p className="text-xs font-medium mb-2">{period.name}</p>
+                      <span className="text-2xl mb-2">
+                        {getWeatherEmoji(period.shortForecast)}
+                      </span>
+                      <p className="text-lg font-bold">{period.temperature}°</p>
+                      <p className="text-xs text-muted-foreground text-center mt-1">
+                        {period.shortForecast}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             {/* Last Updated */}
             {weather.updated && (

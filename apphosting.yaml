@@ -1,0 +1,187 @@
+# Firebase App Hosting Configuration
+# https://firebase.google.com/docs/app-hosting
+
+runConfig:
+  # Minimum number of instances (0 = scale to zero when idle)
+  minInstances: 0
+
+  # Maximum number of instances
+  maxInstances: 3
+
+  # Memory allocation per instance
+  memory: 512Mi
+
+  # CPU allocation (1 = 1 vCPU)
+  cpu: 1
+
+  # Maximum concurrent requests per instance
+  concurrency: 80
+
+env:
+  # ============================================================================
+  # RUNTIME ENVIRONMENT
+  # ============================================================================
+
+  - variable: NODE_ENV
+    value: production
+
+  # ============================================================================
+  # DATABASE CONFIGURATION
+  # ============================================================================
+  # Note: DATABASE_AUTH_TOKEN is fetched from GCP Secret Manager at build time
+
+  - variable: DATABASE_URL
+    value: "libsql://homepage-jmsutorus.aws-us-east-2.turso.io"
+
+  # ============================================================================
+  # AUTHENTICATION & SESSION
+  # ============================================================================
+  # Note: AUTH_SECRET/NEXTAUTH_SECRET is fetched from GCP Secret Manager
+  # Replace with your actual production URL
+
+  - variable: NEXTAUTH_URL
+    value: "https://homepage--homepage-7cfc8.us-east5.hosted.app/"
+
+  # ============================================================================
+  # FIREBASE CONFIGURATION
+  # ============================================================================
+  # Server-side Firebase credentials (FIREBASE_PRIVATE_KEY & CLIENT_EMAIL are in Secret Manager)
+
+  - variable: FIREBASE_PROJECT_ID
+    value: "homepage-7cfc8"
+
+  # Client-side Firebase config (must be environment variables for client bundle)
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "your-key"
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "homepage-7cfc8.firebaseapp.com"
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "homepage-7cfc8"
+
+  # ============================================================================
+  # OAUTH CLIENT IDs (PUBLIC)
+  # ============================================================================
+  # Note: OAuth secrets are in GCP Secret Manager, only client IDs here
+
+  - variable: AUTH_GOOGLE_ID
+    value: "705251858590-vo9t5ccccvqi043un1qse7vinna5egri.apps.googleusercontent.com"
+
+  - variable: AUTH_GITHUB_ID
+    value: "Ov23liwjCBux58mO7p0R"
+
+  - variable: AUTH_STRAVA_ID
+    value: "184907"
+
+  # ============================================================================
+  # GOOGLE CALENDAR API
+  # ============================================================================
+  # Note: GOOGLE_CLIENT_SECRET is in GCP Secret Manager
+
+  - variable: GOOGLE_CLIENT_ID
+    value: "your-google-client-id.apps.googleusercontent.com"
+
+  - variable: GOOGLE_REDIRECT_URI
+    value: "https://your-app.web.app/api/auth/callback/google"
+
+  # ============================================================================
+  # STRAVA API
+  # ============================================================================
+  # Note: STRAVA_CLIENT_SECRET is in GCP Secret Manager
+
+  - variable: STRAVA_CLIENT_ID
+    value: "your-strava-client-id"
+
+  # ============================================================================
+  # STEAM API
+  # ============================================================================
+  # Note: STEAM_API_KEY is in GCP Secret Manager
+
+  - variable: STEAM_ID
+    value: "your-steam-id-64-bit"
+
+  # ============================================================================
+  # HOME ASSISTANT & PLEX
+  # ============================================================================
+  # Note: HOMEASSISTANT_TOKEN and TAUTULLI_API_KEY are in GCP Secret Manager
+
+  - variable: HOMEASSISTANT_URL
+    value: "http://homeassistant.local:8123"
+
+  - variable: TAUTULLI_URL
+    value: "http://localhost:8181"
+
+  # ============================================================================
+  # WEATHER SERVICE
+  # ============================================================================
+
+  - variable: WEATHER_APP_NAME
+    value: "Homepage"
+
+  - variable: WEATHER_CONTACT_EMAIL
+    value: "your-email@example.com"
+
+  # ============================================================================
+  # FEATURE FLAGS
+  # ============================================================================
+
+  - variable: ENABLE_STEAM
+    value: "true"
+
+  - variable: ENABLE_STRAVA
+    value: "true"
+
+  - variable: ENABLE_HOMEASSISTANT
+    value: "false"
+
+  - variable: ENABLE_PLEX
+    value: "true"
+
+  - variable: ENABLE_WEATHER
+    value: "true"
+
+  # ============================================================================
+  # CACHE TTL CONFIGURATION (seconds)
+  # ============================================================================
+
+  - variable: CACHE_TTL_STRAVA
+    value: "900"
+
+  - variable: CACHE_TTL_STEAM
+    value: "300"
+
+  - variable: CACHE_TTL_HA
+    value: "60"
+
+  - variable: CACHE_TTL_PLEX
+    value: "120"
+
+  - variable: CACHE_TTL_WEATHER
+    value: "1800"
+
+# ============================================================================
+# SECRETS MANAGEMENT
+# ============================================================================
+# Secrets are NOT defined here - they are fetched from GCP Secret Manager
+# at build time by the prebuild script (scripts/fetch-secrets.ts).
+#
+# The following secrets are managed in GCP Secret Manager:
+#   - DATABASE_AUTH_TOKEN
+#   - NEXTAUTH_SECRET (AUTH_SECRET)
+#   - FIREBASE_PRIVATE_KEY
+#   - FIREBASE_CLIENT_EMAIL
+#   - AUTH_GOOGLE_SECRET
+#   - AUTH_GITHUB_SECRET
+#   - AUTH_STRAVA_SECRET
+#   - GOOGLE_CLIENT_SECRET
+#   - STEAM_API_KEY
+#   - GITHUB_TOKEN
+#   - OMDB_API_KEY
+#   - GOOGLE_BOOKS_API_KEY
+#   - HOMEASSISTANT_TOKEN
+#   - TAUTULLI_API_KEY
+#   - STRAVA_CLIENT_SECRET
+#
+# See documentation/SECRET-MANAGEMENT.md for details
+# ============================================================================
