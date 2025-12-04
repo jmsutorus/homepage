@@ -95,10 +95,23 @@ async function fetchSecrets() {
   console.log('🔐 Production environment: fetching secrets from GCP Secret Manager');
 
   const client = new SecretManagerServiceClient();
-  const projectId = process.env.FIREBASE_PROJECT_ID || process.env.GCP_PROJECT;
+
+  // Try to get project ID from various sources
+  let projectId = process.env.FIREBASE_PROJECT_ID || process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT;
+
+  // If running in Firebase App Hosting, try to extract from FIREBASE_CONFIG
+  if (!projectId && process.env.FIREBASE_CONFIG) {
+    try {
+      const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
+      projectId = firebaseConfig.projectId;
+      console.log('  Extracted project ID from FIREBASE_CONFIG');
+    } catch (error) {
+      console.warn('  Failed to parse FIREBASE_CONFIG');
+    }
+  }
 
   if (!projectId) {
-    throw new Error('Missing FIREBASE_PROJECT_ID or GCP_PROJECT environment variable');
+    throw new Error('Missing project ID. Checked: FIREBASE_PROJECT_ID, GCP_PROJECT, GCLOUD_PROJECT, FIREBASE_CONFIG');
   }
 
   console.log(`  Project: ${projectId}`);
