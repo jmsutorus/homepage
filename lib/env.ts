@@ -13,7 +13,10 @@ export const env = createEnv({
     // Node Environment
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
-    // NextAuth
+    // Auth.js (NextAuth v5)
+    AUTH_SECRET: z.string().min(32).optional(),
+    AUTH_URL: z.string().url().optional(),
+    // Legacy support for NextAuth v4 naming
     NEXTAUTH_SECRET: z.string().min(32).optional(),
     NEXTAUTH_URL: z.string().url().optional(),
 
@@ -124,7 +127,10 @@ export const env = createEnv({
     // Node
     NODE_ENV: process.env.NODE_ENV,
 
-    // NextAuth
+    // Auth.js (NextAuth v5)
+    AUTH_SECRET: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+    AUTH_URL: process.env.AUTH_URL || process.env.NEXTAUTH_URL,
+    // Legacy support
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
 
