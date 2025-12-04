@@ -35,7 +35,7 @@ env:
   # Note: DATABASE_AUTH_TOKEN is fetched from GCP Secret Manager at build time
 
   - variable: DATABASE_URL
-    value: "libsql://homepage-jmsutorus.aws-us-east-2.turso.io"
+    value: "libsql://homepage-stg-jmsutorus.aws-us-east-2.turso.io"
 
   # ============================================================================
   # AUTHENTICATION & SESSION
