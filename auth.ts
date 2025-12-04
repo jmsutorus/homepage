@@ -58,15 +58,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // Merge the callbacks from auth.config.ts
     ...authConfig.callbacks,
     async signIn({ user }) {
-      if (!user.email) return false;
+      if (!user.email) {
+        console.error("Sign-in blocked: No email provided");
+        return false;
+      }
 
       try {
         const { queryOne } = await import("@/lib/db");
+
+        // Check if allowed_users table exists and user is in it
+        const tableExists = queryOne(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='allowed_users'"
+        );
+
+        // If table doesn't exist, allow all sign-ins (graceful degradation)
+        if (!tableExists) {
+          console.warn("allowed_users table not found - allowing all authenticated users");
+          return true;
+        }
+
+        // Check if user is in allowed_users list
         const allowed = queryOne("SELECT 1 FROM allowed_users WHERE email = ?", [user.email]);
+
+        if (!allowed) {
+          console.warn(`Sign-in blocked: ${user.email} not in allowed_users`);
+        }
+
         return !!allowed;
       } catch (error) {
         console.error("Error checking allowed users:", error);
-        return false;
+        // On error, allow sign-in to prevent lockout (log the error for debugging)
+        console.error("Allowing sign-in despite error to prevent lockout");
+        return true;
       }
     },
   },
