@@ -124,7 +124,7 @@ env:
     value: "Homepage"
 
   - variable: WEATHER_CONTACT_EMAIL
-    value: "your-email@example.com"
+    value: "jmsutorus@gmail.com"
 
   # ============================================================================
   # FEATURE FLAGS
