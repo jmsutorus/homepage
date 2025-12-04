@@ -101,6 +101,57 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
 
+## 🔐 Secret Management
+
+This application uses **GCP Secret Manager** for secure secret storage in production, with automatic fallback to `.env.local` for local development.
+
+### Local Development
+
+Secrets are loaded from your `.env.local` file:
+
+```bash
+cp .env.example .env.local
+# Fill in your secrets
+npm run dev
+```
+
+### Production Deployment (Firebase App Hosting)
+
+In production, secrets are automatically fetched from GCP Secret Manager at build time:
+
+- **Authentication**: Uses Workload Identity Federation (no service account keys needed)
+- **Build Process**: The `prebuild` script (`scripts/fetch-secrets.ts`) runs before each build
+- **Secrets Stored in GCP**: 15 sensitive secrets (API keys, OAuth secrets, tokens)
+- **Configuration in Code**: URLs, feature flags, and public IDs remain as environment variables
+
+**What's in Secret Manager:**
+- Database credentials
+- OAuth client secrets (Google, GitHub, Strava)
+- API keys (Steam, OMDb, Google Books, GitHub)
+- Service tokens (Home Assistant, Tautulli, Firebase)
+
+**What stays as environment variables:**
+- Public client IDs
+- Service URLs
+- Feature flags
+- Cache TTL configuration
+- `NEXT_PUBLIC_*` variables (required for client bundle)
+
+For detailed setup, secret rotation, and troubleshooting, see [`documentation/SECRET-MANAGEMENT.md`](documentation/SECRET-MANAGEMENT.md).
+
+### Testing Secret Fetching
+
+```bash
+# Test GCP connection (requires gcloud authentication)
+tsx scripts/test-secret-fetch.ts
+
+# Build with secret fetching
+npm run build
+
+# Build locally without secret fetching
+npm run build:local
+```
+
 ## 📜 Available Scripts
 
 - `npm run dev`: Starts the development server.
