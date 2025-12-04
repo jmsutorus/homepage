@@ -59,7 +59,7 @@ env:
 
   # Client-side Firebase config (must be environment variables for client bundle)
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: "your-key"
+    secret: homepage-prod-nextauth-api-key
 
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: "homepage-7cfc8.firebaseapp.com"
@@ -170,25 +170,50 @@ env:
 # ============================================================================
 # SECRETS MANAGEMENT
 # ============================================================================
-# Secrets are NOT defined here - they are fetched from GCP Secret Manager
-# at build time by the prebuild script (scripts/fetch-secrets.ts).
-#
-# The following secrets are managed in GCP Secret Manager:
-#   - DATABASE_AUTH_TOKEN
-#   - NEXTAUTH_SECRET (AUTH_SECRET)
-#   - FIREBASE_PRIVATE_KEY
-#   - FIREBASE_CLIENT_EMAIL
-#   - AUTH_GOOGLE_SECRET
-#   - AUTH_GITHUB_SECRET
-#   - AUTH_STRAVA_SECRET
-#   - GOOGLE_CLIENT_SECRET
-#   - STEAM_API_KEY
-#   - GITHUB_TOKEN
-#   - OMDB_API_KEY
-#   - GOOGLE_BOOKS_API_KEY
-#   - HOMEASSISTANT_TOKEN
-#   - TAUTULLI_API_KEY
-#   - STRAVA_CLIENT_SECRET
-#
-# See documentation/SECRET-MANAGEMENT.md for details
-# ============================================================================
+  - variable: DATABASE_AUTH_TOKEN
+    secret: homepage-prod-database-auth-token
+
+  - variable: AUTH_SECRET
+    secret: homepage-prod-nextauth-secret
+
+  - variable: NEXTAUTH_SECRET
+    secret: homepage-prod-nextauth-secret
+
+  - variable: FIREBASE_PRIVATE_KEY
+    secret: homepage-prod-firebase-private-key
+
+  - variable: FIREBASE_CLIENT_EMAIL
+    secret: homepage-prod-firebase-client-email
+
+  - variable: AUTH_GOOGLE_SECRET
+    secret: homepage-prod-auth-google-secret
+
+  - variable: AUTH_GITHUB_SECRET
+    secret: homepage-prod-auth-github-secret
+
+  - variable: AUTH_STRAVA_SECRET
+    secret: homepage-prod-auth-strava-secret
+
+  - variable: GOOGLE_CLIENT_SECRET
+    secret: homepage-prod-google-client-secret
+
+  - variable: STEAM_API_KEY
+    secret: homepage-prod-steam-api-key
+
+  - variable: GITHUB_TOKEN
+    secret: homepage-prod-github-token
+
+  - variable: OMDB_API_KEY
+    secret: homepage-prod-omdb-api-key
+
+  - variable: GOOGLE_BOOKS_API_KEY
+    secret: homepage-prod-google-books-api-key
+
+  - variable: HOMEASSISTANT_TOKEN
+    secret: homepage-prod-homeassistant-token
+
+  - variable: TAUTULLI_API_KEY
+    secret: homepage-prod-tautulli-api-key
+
+  - variable: STRAVA_CLIENT_SECRET
+    secret: homepage-prod-strava-client-secret
