@@ -87,7 +87,7 @@ env:
   # Note: GOOGLE_CLIENT_SECRET is in GCP Secret Manager
 
   - variable: GOOGLE_CLIENT_ID
-    value: "your-google-client-id.apps.googleusercontent.com"
+    value: "705251858590-vo9t5ccccvqi043un1qse7vinna5egri.apps.googleusercontent.com"
 
   - variable: GOOGLE_REDIRECT_URI
     value: "https://homepage.sutorus.com/api/auth/callback/google"
@@ -98,7 +98,7 @@ env:
   # Note: STRAVA_CLIENT_SECRET is in GCP Secret Manager
 
   - variable: STRAVA_CLIENT_ID
-    value: "your-strava-client-id"
+    value: "184907"
 
   # ============================================================================
   # STEAM API
@@ -106,7 +106,7 @@ env:
   # Note: STEAM_API_KEY is in GCP Secret Manager
 
   - variable: STEAM_ID
-    value: "your-steam-id-64-bit"
+    value: "76561198092223234"
 
   # ============================================================================
   # HOME ASSISTANT & PLEX
