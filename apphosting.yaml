@@ -46,6 +46,9 @@ env:
   - variable: NEXTAUTH_URL
     value: "https://homepage--homepage-7cfc8.us-east5.hosted.app/"
 
+  - variable: AUTH_URL
+    value: "https://homepage--homepage-7cfc8.us-east5.hosted.app/"
+
   # ============================================================================
   # FIREBASE CONFIGURATION
   # ============================================================================

@@ -1,5 +1,8 @@
 name: Release
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -25,7 +28,13 @@ jobs:
           node-version: "lts/*"
       - name: Install dependencies
         run: npm clean-install
-      - name: Release
+      - name: Validate Release (Dry-run on PR)
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release --dry-run
+      - name: Release (Actual release on main)
+        if: github.event_name == 'push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release

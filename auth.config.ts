@@ -68,4 +68,7 @@ export default {
   },
 
   debug: process.env.NODE_ENV === "development",
+
+  // Trust all hosts in production (required for Firebase/serverless deployments)
+  trustHost: true,
 } satisfies NextAuthConfig;

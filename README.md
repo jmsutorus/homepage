@@ -24,7 +24,7 @@ This is a personal dashboard application built with Next.js, designed to be a ce
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Component Library**: [shadcn/ui](https://ui.shadcn.com/)
 - **Authentication**: [NextAuth.js](https://next-auth.js.org/)
-- **Database**: [SQLite](https://www.sqlite.org/) with `better-sqlite3`
+- **Database**: [Turso](https://turso.tech/) (libSQL) with `@libsql/client`
 - **Content**: [MDX](https://mdxjs.com/) for journaling and content pages.
 
 ## 🚀 Getting Started
@@ -84,12 +84,15 @@ To enable the Google Books search feature when creating new media entries:
 
 ### 4. Database Setup
 
-The project uses a SQLite database. To initialize and seed it for the first time, run:
+The project uses [Turso](https://turso.tech/) as the database provider. To set up your database:
 
-```bash
-npm run db:seed
-```
-This will create a `homepage.db` file in the `homepage/data` directory.
+1. Create a Turso account and database at [turso.tech](https://turso.tech/)
+2. Add your database credentials to `.env.local`:
+   ```
+   DATABASE_URL=libsql://your-database.turso.io
+   DATABASE_AUTH_TOKEN=your_auth_token_here
+   ```
+3. The database schema can be found in `lib/db/schema.sql` for reference
 
 ### 5. Run the Development Server
 
@@ -158,8 +161,6 @@ npm run build:local
 - `npm run build`: Creates a production build of the application.
 - `npm run start`: Starts the production server.
 - `npm run lint`: Lints the codebase using ESLint.
-- `npm run db:seed`: Initializes the database schema and seeds it with initial data.
-- `npm run db:reset`: Deletes the existing database file and re-seeds it.
 
 ## 🔄 CI/CD & Automation
 
