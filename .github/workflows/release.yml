@@ -34,8 +34,8 @@ jobs:
           echo "Triggering Firebase App Hosting deployment..."
           firebase apphosting:rollouts:create homepage --project homepage-7cfc8 --git-branch main --force
 
-  pre-release:
-    name: Pre-release
+  create-branch:
+    name: Create Release Branch
     needs: deploy
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
