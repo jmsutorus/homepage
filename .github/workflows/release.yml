@@ -32,7 +32,7 @@ jobs:
       - name: Trigger Firebase App Hosting Rollout
         run: |
           echo "Triggering Firebase App Hosting deployment..."
-          firebase apphosting:rollouts:create homepage
+          firebase apphosting:rollouts:create homepage --project homepage-7cfc8
 
   release:
     name: Release
