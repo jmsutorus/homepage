@@ -71,24 +71,24 @@ jobs:
       - name: Create Release Branch
         if: github.event_name == 'workflow_dispatch'
         run: |
-          git checkout -b ${{ vars.PR_Branch }}
+          git checkout -b Release_Branch
 
       - name: Release
         if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches ${{ vars.PR_Branch }}
+        run: npx semantic-release --branches Release_Branch
 
       - name: Create Pull Request
         if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create --base main --head ${{ vars.PR_Branch }} --title "chore(release): new release" --body "Automated release PR created by semantic-release workflow."
+          gh pr create --base main --head Release_Branch --title "chore(release): new release" --body "Automated release PR created by semantic-release workflow."
 
       - name: Enable Auto-Merge
         if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr merge ${{ vars.PR_Branch }} --auto --merge --delete-branch
+          gh pr merge Release_Branch --auto --merge --delete-branch
