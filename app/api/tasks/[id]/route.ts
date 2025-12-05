@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTask, updateTask, deleteTask, TaskPriority } from "@/lib/db/tasks";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -20,7 +20,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     // Check if task exists
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const existingTask = await getTask(taskId, userId);
     if (!existingTask) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
@@ -87,7 +91,11 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid task ID" }, { status: 400 });
     }
 
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const success = await deleteTask(taskId, userId);
 
     if (!success) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTaskVelocityData, VelocityPeriod } from "@/lib/db/tasks";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/tasks/velocity
@@ -10,7 +10,11 @@ import { getUserId } from "@/lib/auth/server";
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const searchParams = request.nextUrl.searchParams;
     const period = (searchParams.get("period") as VelocityPeriod) || "week";
     const periods = parseInt(searchParams.get("periods") || "12", 10);

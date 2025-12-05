@@ -52,3 +52,16 @@ export async function requireAdmin() {
 
   return session;
 }
+
+/**
+ * Require authentication for API routes - returns 401 JSON if not authenticated
+ */
+export async function requireAuthApi() {
+  const session = await auth();
+
+  if (!session?.user) {
+    return null;
+  }
+
+  return session;
+}

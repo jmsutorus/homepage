@@ -7,7 +7,7 @@ import {
   replaceJournalLinks,
   getJournalCount,
 } from "@/lib/db/journals";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 // Helper function to sanitize slug
 function sanitizeSlug(title: string): string {
@@ -23,7 +23,11 @@ function sanitizeSlug(title: string): string {
  */
 export async function GET() {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const journals = await getAllJournals(userId);
     return NextResponse.json(journals);
   } catch (error) {
@@ -41,7 +45,11 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { frontmatter, content, links } = body;
 

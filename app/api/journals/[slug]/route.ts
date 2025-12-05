@@ -8,7 +8,7 @@ import {
   replaceJournalLinks,
   getMoodForDate,
 } from "@/lib/db/journals";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 // GET - Read existing journal entry for editing
 export async function GET(
@@ -17,7 +17,11 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
 
     const journal = await getJournalBySlug(slug, userId);
 
@@ -71,7 +75,11 @@ export async function PATCH(
 ) {
   try {
     const { slug } = await params;
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { frontmatter, content, links } = body;
 
@@ -161,7 +169,11 @@ export async function DELETE(
 ) {
   try {
     const { slug } = await params;
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
 
     // Check if journal exists
     const existing = await getJournalBySlug(slug, userId);

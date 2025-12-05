@@ -6,7 +6,7 @@ import {
   reorderCategories,
   getUserQuickLinks,
 } from "@/lib/db/quick-links";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/quick-links/categories
@@ -14,7 +14,11 @@ import { getUserId } from "@/lib/auth/server";
  */
 export async function GET() {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const quickLinks = getUserQuickLinks(userId);
     return NextResponse.json(quickLinks);
   } catch (error) {
@@ -33,7 +37,11 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { name } = body;
 
@@ -61,9 +69,13 @@ export async function POST(request: NextRequest) {
  * Update a category or reorder categories
  * Body: { id?: number, name?: string } OR { categoryIds: number[] }
  */
-export async function PUT(request: NextRequest) {
+export async function PATCH(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
 
     // Handle reordering
@@ -108,7 +120,11 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get("id");
 

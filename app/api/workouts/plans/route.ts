@@ -5,27 +5,7 @@ import {
   updateWorkoutPlan,
   deleteWorkoutPlan,
 } from "@/lib/db/workouts";
-import { auth } from "@/auth";
-import { cookies } from "next/headers";
-
-/**
- * Helper function to get user ID from session
- */
-async function getUserIdFromSession(): Promise<string | null> {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("better-auth.session_token")?.value;
-
-  if (!sessionToken) {
-    return null;
-  }
-
-  const db = (auth as any).options.database;
-  const session = db
-    .prepare("SELECT userId FROM session WHERE token = ? AND expiresAt > ?")
-    .get(sessionToken, Date.now()) as { userId: string } | undefined;
-
-  return session?.userId || null;
-}
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/workouts/plans
@@ -33,11 +13,11 @@ async function getUserIdFromSession(): Promise<string | null> {
  */
 export async function GET() {
   try {
-    const userId = await getUserIdFromSession();
-
-    if (!userId) {
+    const session = await requireAuthApi();
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
     const plans = await getAllWorkoutPlans(userId);
 
@@ -54,11 +34,11 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserIdFromSession();
-
-    if (!userId) {
+    const session = await requireAuthApi();
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
     const body = await request.json();
     const { name, description, exercises, duration, intensity, type } = body;
@@ -95,11 +75,11 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const userId = await getUserIdFromSession();
-
-    if (!userId) {
+    const session = await requireAuthApi();
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
     const body = await request.json();
     const { id, ...updates } = body;
@@ -133,11 +113,11 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const userId = await getUserIdFromSession();
-
-    if (!userId) {
+    const session = await requireAuthApi();
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");

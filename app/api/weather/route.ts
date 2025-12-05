@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getWeatherForCity } from "@/lib/api/weather";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 import { queryOne } from "@/lib/db";
 import { env } from "@/lib/env";
 
@@ -11,8 +11,14 @@ export const revalidate = 1800; // 30 minutes
  * GET /api/weather
  * Returns weather data for the authenticated user's saved location
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
+
     // Check if weather integration is enabled
     if (!env.ENABLE_WEATHER) {
       return NextResponse.json(
@@ -22,7 +28,7 @@ export async function GET() {
     }
 
     // Get authenticated user
-    const userId = await getUserId();
+    // userId is already obtained from session above
 
     // Get user's saved location
     const user = await queryOne<{ location: string | null }>(

@@ -6,7 +6,7 @@ import {
   deleteLink,
   initializeDefaultQuickLinks,
 } from "@/lib/db/quick-links";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/quick-links
@@ -14,7 +14,11 @@ import { getUserId } from "@/lib/auth/server";
  */
 export async function GET() {
   try {
-    const userId = await await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const quickLinks = await getUserQuickLinks(userId);
 
     // If no quick links exist, initialize defaults
@@ -40,7 +44,11 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { categoryId, title, url, icon } = body;
 
@@ -64,13 +72,17 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * PUT /api/quick-links
+ * PATCH /api/quick-links
  * Update a link
  * Body: { id: number, title?: string, url?: string, icon?: string, categoryId?: number }
  */
-export async function PUT(request: NextRequest) {
+export async function PATCH(request: NextRequest) {
   try {
-    const userId = await await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { id, ...updates } = body;
 
@@ -112,7 +124,11 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const userId = await await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get("id");
 

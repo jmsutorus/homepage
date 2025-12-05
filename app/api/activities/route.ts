@@ -8,7 +8,7 @@ import {
   markWorkoutActivityCompleted,
   type CreateWorkoutActivity,
 } from "@/lib/db/workout-activities";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/activities
@@ -16,7 +16,11 @@ import { getUserId } from "@/lib/auth/server";
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get("start_date");
     const endDate = searchParams.get("end_date");
@@ -44,7 +48,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { date, time, length, difficulty, type, exercises, notes } = body;
 
@@ -92,7 +100,11 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { id, ...updates } = body;
 
@@ -120,6 +132,11 @@ export async function PATCH(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { id, strava_activity_id, completion_notes } = body;
 
@@ -129,7 +146,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Mark workout activity as completed
-    await markWorkoutActivityCompleted(id, strava_activity_id, completion_notes);
+    await markWorkoutActivityCompleted(id, userId, strava_activity_id, completion_notes);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -147,7 +164,11 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 

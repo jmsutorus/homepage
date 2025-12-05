@@ -8,7 +8,7 @@ import {
   parseTags,
 } from "@/lib/db/media";
 import type { MediaContentInput } from "@/lib/db/media";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 // Helper function to map singular type to plural directory name (for URL paths)
 function getDirectoryName(type: "movie" | "tv" | "book" | "game"): string {
@@ -28,7 +28,11 @@ export async function GET(
 ) {
   try {
     const { type, slug } = await params;
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
 
     // Validate type
     const validTypes = ["movie", "tv", "book", "game"];
@@ -83,7 +87,11 @@ export async function PATCH(
 ) {
   try {
     const { type, slug } = await params;
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { frontmatter, content } = body;
 
@@ -171,7 +179,11 @@ export async function DELETE(
 ) {
   try {
     const { type, slug } = await params;
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
 
     // Validate type
     const validTypes = ["movie", "tv", "book", "game"];

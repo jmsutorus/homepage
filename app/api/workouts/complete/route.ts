@@ -1,26 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { markWorkoutCompleted, getScheduledWorkout } from "@/lib/db/workouts";
-import { auth } from "@/auth";
-import { cookies } from "next/headers";
-
-/**
- * Helper function to get user ID from session
- */
-async function getUserIdFromSession(): Promise<string | null> {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("better-auth.session_token")?.value;
-
-  if (!sessionToken) {
-    return null;
-  }
-
-  const db = (auth as any).options.database;
-  const session = db
-    .prepare("SELECT userId FROM session WHERE token = ? AND expiresAt > ?")
-    .get(sessionToken, Date.now()) as { userId: string } | undefined;
-
-  return session?.userId || null;
-}
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * POST /api/workouts/complete
@@ -28,11 +8,11 @@ async function getUserIdFromSession(): Promise<string | null> {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserIdFromSession();
-
-    if (!userId) {
+    const session = await requireAuthApi();
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
     const body = await request.json();
     const { id, strava_activity_id } = body;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAllParks, createPark, getParkBySlug } from "@/lib/db/parks";
 import { PARK_CATEGORIES } from "@/lib/db/enums/park-enums";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 // Helper function to sanitize slug
 // Helper function to sanitize slug
@@ -19,7 +19,11 @@ function sanitizeSlug(title: string): string {
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const searchParams = request.nextUrl.searchParams;
     const category = searchParams.get("category");
     const state = searchParams.get("state");
@@ -50,7 +54,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { frontmatter, content } = body;
 

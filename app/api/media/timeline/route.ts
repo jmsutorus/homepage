@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMediaTimelineData, TimelinePeriod } from "@/lib/db/media";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/media/timeline
@@ -10,6 +10,11 @@ import { getUserId } from "@/lib/auth/server";
  */
 export async function GET(request: NextRequest) {
   try {
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const searchParams = request.nextUrl.searchParams;
     const period = (searchParams.get("period") as TimelinePeriod) || "month";
     const periods = parseInt(searchParams.get("periods") || "12", 10);
@@ -25,7 +30,7 @@ export async function GET(request: NextRequest) {
     // Validate periods count
     const validPeriods = Math.min(Math.max(periods, 1), 52);
 
-    const userId = await getUserId();
+
     const timelineData = await getMediaTimelineData(userId, period, validPeriods);
     return NextResponse.json(timelineData);
   } catch (error) {
