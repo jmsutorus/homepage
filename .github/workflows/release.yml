@@ -3,16 +3,39 @@ on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+
 permissions:
-  contents: read # for checkout
+  contents: write # for checkout
+  issues: write # to be able to comment on released issues
+  pull-requests: write # to be able to comment on released pull requests
+  id-token: write # to enable use of OIDC for npm provenance
+
 jobs:
-  release:
-    name: Release
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
     environment: prod
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Trigger Firebase Deployment
+        env:
+          FIREBASE_DEPLOY_TOKEN: ${{ secrets.FIREBASE_DEPLOY_TOKEN }}
+        run: |
+          echo "Triggering Firebase App Hosting deployment..."
+          npx firebase apphosting:rollouts:create homepage --branch main --force
+          # This step uses the configured secret to push main to be deployed.
+          # or git push https://x-access-token:${FIREBASE_DEPLOY_TOKEN}@github.com/user/repo.git main
+
+  release:
+    name: Release
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: prod
+    if: always() && (github.event_name == 'pull_request' || needs.deploy.result == 'success')
     permissions:
       contents: write # to be able to publish a GitHub release
       issues: write # to be able to comment on released issues
@@ -36,32 +59,32 @@ jobs:
         run: npx semantic-release --dry-run
       
       - name: Configure Git User
-        if: github.event_name == 'push'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Create Release Branch
-        if: github.event_name == 'push'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           git checkout -b ${{ vars.PR_Branch }}
 
       - name: Release
-        if: github.event_name == 'push'
+        if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release --branches ${{ vars.PR_Branch }}
 
       - name: Create Pull Request
-        if: github.event_name == 'push'
+        if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr create --base main --head ${{ vars.PR_Branch }} --title "chore(release): new release" --body "Automated release PR created by semantic-release workflow."
 
       - name: Enable Auto-Merge
-        if: github.event_name == 'push'
+        if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr merge ${{ vars.PR_Branch }} --auto --merge
+          gh pr merge ${{ vars.PR_Branch }} --auto --merge --delete-branch
