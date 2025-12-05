@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { deleteWorkoutActivity } from "@/lib/db/workout-activities";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * DELETE /api/activities/[id]
@@ -12,7 +12,11 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const activityId = parseInt(id, 10);
 
     if (isNaN(activityId)) {

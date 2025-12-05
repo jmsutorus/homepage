@@ -1,14 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAllUniqueGenres } from "@/lib/db/media";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/media/genres
  * Get all unique genres across all media
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const genres = await getAllUniqueGenres(userId);
     return NextResponse.json({ genres });
   } catch (error) {

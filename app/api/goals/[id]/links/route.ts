@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getGoalById, getGoalLinks, addGoalLink, replaceGoalLinks, GoalLinkType } from "@/lib/db/goals";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -13,7 +13,11 @@ interface RouteParams {
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const { id } = await params;
     const goalId = parseInt(id);
 
@@ -41,7 +45,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const { id } = await params;
     const goalId = parseInt(id);
 
@@ -90,7 +98,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
  */
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const { id } = await params;
     const goalId = parseInt(id);
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 import {
   getGoalById,
   getGoalWithDetails,
@@ -20,7 +20,11 @@ interface RouteContext {
  */
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const { id } = await context.params;
     const goalId = parseInt(id, 10);
 
@@ -56,7 +60,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const { id } = await context.params;
     const goalId = parseInt(id, 10);
 
@@ -122,7 +130,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
  */
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const { id } = await context.params;
     const goalId = parseInt(id, 10);
 

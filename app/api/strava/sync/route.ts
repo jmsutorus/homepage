@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncStravaData } from "@/lib/services/strava-sync";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * POST /api/strava/sync
@@ -19,7 +19,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const result = await syncStravaData(accessToken, userId, full);
 
     if (!result.success) {

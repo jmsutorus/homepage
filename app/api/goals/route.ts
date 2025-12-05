@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 import {
   getGoals,
   getGoalsWithProgress,
@@ -18,7 +18,11 @@ import {
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = await await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const searchParams = request.nextUrl.searchParams;
 
     const statusParam = searchParams.get("status");
@@ -65,7 +69,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { title, description, content, status, target_date, tags, priority } = body;
 

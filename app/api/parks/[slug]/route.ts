@@ -6,7 +6,7 @@ import {
   deletePark,
 } from "@/lib/db/parks";
 import { PARK_CATEGORIES } from "@/lib/db/enums/park-enums";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 // GET - Read existing park entry for editing
 export async function GET(
@@ -16,7 +16,11 @@ export async function GET(
   try {
     const { slug } = await params;
 
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const park = await getParkBySlug(slug, userId);
 
     if (!park) {
@@ -63,7 +67,11 @@ export async function PATCH(
     const { frontmatter, content } = body;
 
     // Check if park exists
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const existing = await getParkBySlug(slug, userId);
     if (!existing) {
       return NextResponse.json(
@@ -139,7 +147,11 @@ export async function DELETE(
     const { slug } = await params;
 
     // Check if park exists
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const existing = await getParkBySlug(slug, userId);
     if (!existing) {
       return NextResponse.json(

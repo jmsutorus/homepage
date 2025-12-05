@@ -1,6 +1,49 @@
-import { NextResponse } from "next/server";
+
+import { NextRequest, NextResponse } from "next/server";
 import { renameGenre, deleteGenre } from "@/lib/db/media";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
+
+/**
+ * GET /api/media/genres/[name]
+ * Rename a genre across all media entries
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ name: string }> }
+) {
+  try {
+    const { name } = await params;
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
+    const body = await request.json();
+    const { newName } = body;
+
+    if (!newName || typeof newName !== "string") {
+      return NextResponse.json(
+        { error: "New name is required" },
+        { status: 400 }
+      );
+    }
+
+    const decodedOldName = decodeURIComponent(name);
+    const updatedCount = await renameGenre(decodedOldName, newName, userId);
+
+    return NextResponse.json({
+      success: true,
+      updatedCount,
+      message: `Renamed genre "${decodedOldName}" to "${newName}" in ${updatedCount} media item(s)`,
+    });
+  } catch (error) {
+    console.error("Error renaming genre:", error);
+    return NextResponse.json(
+      { error: "Failed to rename genre" },
+      { status: 500 }
+    );
+  }
+}
 
 /**
  * PUT /api/media/genres/[name]
@@ -12,7 +55,11 @@ export async function PUT(
 ) {
   try {
     const { name } = await params;
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { newName } = body;
 
@@ -45,12 +92,16 @@ export async function PUT(
  * Delete a genre from all media entries
  */
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     const { name } = await params;
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const decodedName = decodeURIComponent(name);
     const updatedCount = await deleteGenre(decodedName, userId);
 

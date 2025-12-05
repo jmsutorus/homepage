@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 import { execute, queryOne } from "@/lib/db";
 import { validateLocationFormat } from "@/lib/api/geocoding";
 import { getWeatherForCity } from "@/lib/api/weather";
@@ -12,7 +12,11 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
 
     const user = await queryOne<{ location: string | null }>(
       "SELECT location FROM user WHERE id = ?",
@@ -39,7 +43,11 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { location } = body;
 

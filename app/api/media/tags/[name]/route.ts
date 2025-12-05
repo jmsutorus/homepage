@@ -1,18 +1,27 @@
-import { NextResponse } from "next/server";
+
+import { NextRequest, NextResponse } from "next/server";
 import { renameTag, deleteTag } from "@/lib/db/media";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
+// The following two lines were redundant after consolidating imports
+// import { requireAuthApi } from "@/lib/auth/server"; // Added import for requireAuthApi
+// import { NextRequest } from "next/server"; // Added import for NextRequest
 
 /**
  * PUT /api/media/tags/[name]
  * Rename a tag across all media entries
  */
 export async function PUT(
-  request: Request,
+  request: NextRequest, // Changed Request to NextRequest
   { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     const { name } = await params;
-    const userId = await getUserId();
+    // Replaced getUserId call with requireAuthApi check
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { newName } = body;
 
@@ -45,12 +54,16 @@ export async function PUT(
  * Delete a tag from all media entries
  */
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ name: string }> }
 ) {
   try {
     const { name } = await params;
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const decodedName = decodeURIComponent(name);
     const updatedCount = await deleteTag(decodedName, userId);
 

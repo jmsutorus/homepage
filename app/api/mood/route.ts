@@ -6,7 +6,7 @@ import {
   getMoodEntriesForYear,
   getAllMoodEntries,
 } from "@/lib/db/mood";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/mood
@@ -18,7 +18,11 @@ import { getUserId } from "@/lib/auth/server";
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = await await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const searchParams = request.nextUrl.searchParams;
     const date = searchParams.get("date");
     const year = searchParams.get("year");
@@ -64,7 +68,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { date, rating, note } = body;
 

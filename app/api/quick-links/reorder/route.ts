@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { reorderLinks } from "@/lib/db/quick-links";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * PUT /api/quick-links/reorder
  * Reorder links within a category
  * Body: { categoryId: number, linkIds: number[] }
  */
-export async function PUT(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { categoryId, linkIds } = body;
 

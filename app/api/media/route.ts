@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAllMedia, createMedia, getMediaBySlug, getPaginatedMedia } from "@/lib/db/media";
 import type { MediaContentInput } from "@/lib/db/media";
-import { getUserId } from "@/lib/auth/server";
+import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 // Helper function to sanitize slug
 function sanitizeSlug(title: string): string {
@@ -36,7 +36,11 @@ function getDirectoryName(type: "movie" | "tv" | "book" | "game"): string {
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const searchParams = request.nextUrl.searchParams;
 
     // Check if pagination is requested
@@ -129,7 +133,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId();
+    const session = await requireAuthApi();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
     const body = await request.json();
     const { frontmatter, content } = body;
 
