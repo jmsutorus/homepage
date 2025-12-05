@@ -34,12 +34,35 @@ jobs:
           echo "Triggering Firebase App Hosting deployment..."
           firebase apphosting:rollouts:create homepage --project homepage-7cfc8 --git-branch main --force
 
-  release:
-    name: Release
+  pre-release:
+    name: Pre-release
     needs: deploy
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git User
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and Push Release Branch
+        run: |
+          git checkout -b Release_Branch
+          git push origin Release_Branch
+
+  release:
+    name: Release
+    needs: create-branch
+    runs-on: ubuntu-latest
     environment: prod
-    if: always() && (github.event_name == 'pull_request' || needs.deploy.result == 'success')
+    if: always() && (github.event_name == 'pull_request' || needs.create-branch.result == 'success')
     permissions:
       contents: write # to be able to publish a GitHub release
       issues: write # to be able to comment on released issues
@@ -50,28 +73,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: Release_Branch
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
+
       - name: Install dependencies
         run: npm clean-install
+
       - name: Validate Release (Dry-run on PR)
         if: github.event_name == 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release --dry-run
-      
-      - name: Configure Git User
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Create Release Branch
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          git checkout -b Release_Branch
 
       - name: Release
         if: github.event_name == 'workflow_dispatch'
