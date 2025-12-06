@@ -75,13 +75,23 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: |
+          npx semantic-release
+          echo "Checking if release commits were created..."
+          git log --oneline -5
 
       - name: Create and Push Release Branch
         if: github.event_name == 'workflow_dispatch'
         run: |
+          echo "Current branch: $(git branch --show-current)"
+          echo "Creating Release_Branch from current state..."
           git checkout -b Release_Branch
+          git log --oneline -5
+          echo "Pushing Release_Branch..."
           git push origin Release_Branch
+          echo "Checking diff between main and Release_Branch..."
+          git fetch origin main
+          git log origin/main..Release_Branch --oneline
 
       - name: Create Pull Request
         if: github.event_name == 'workflow_dispatch'
