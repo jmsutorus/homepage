@@ -1,3 +1,10 @@
+## [1.4.6](https://github.com/jmsutorus/homepage/compare/v1.4.5...v1.4.6) (2025-12-06)
+
+
+### Bug Fixes
+
+* release notes fix v2 ([221c152](https://github.com/jmsutorus/homepage/commit/221c152fcfb57772c5a1592202c1d7ee4a20e12c))
+
 ## [1.4.5](https://github.com/jmsutorus/homepage/compare/v1.4.4...v1.4.5) (2025-12-06)
 
 
