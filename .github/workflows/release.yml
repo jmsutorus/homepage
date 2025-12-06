@@ -80,29 +80,29 @@ jobs:
           echo "Checking if release commits were created..."
           git log --oneline -5
 
-      - name: Create and Push Release Branch
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          echo "Current branch: $(git branch --show-current)"
-          echo "Creating Release_Branch from current state..."
-          git checkout -b Release_Branch
-          git log --oneline -5
-          echo "Pushing Release_Branch..."
-          git push origin Release_Branch
-          echo "Checking diff between main and Release_Branch..."
-          git fetch origin main
-          git log origin/main..Release_Branch --oneline
+      # - name: Create and Push Release Branch
+      #   if: github.event_name == 'workflow_dispatch'
+      #   run: |
+      #     echo "Current branch: $(git branch --show-current)"
+      #     echo "Creating Release_Branch from current state..."
+      #     git checkout -b Release_Branch
+      #     git log --oneline -5
+      #     echo "Pushing Release_Branch..."
+      #     git push origin Release_Branch
+      #     echo "Checking diff between main and Release_Branch..."
+      #     git fetch origin main
+      #     git log origin/main..Release_Branch --oneline
 
-      - name: Create Pull Request
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr create --base main --head Release_Branch --title "chore(release): new release" --body "Automated release PR created by semantic-release workflow."
+      # - name: Create Pull Request
+      #   if: github.event_name == 'workflow_dispatch'
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     gh pr create --base main --head Release_Branch --title "chore(release): new release" --body "Automated release PR created by semantic-release workflow."
 
-      - name: Enable Auto-Merge
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr merge Release_Branch --auto --merge --delete-branch
+      # - name: Enable Auto-Merge
+      #   if: github.event_name == 'workflow_dispatch'
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     gh pr merge Release_Branch --auto --merge --delete-branch
