@@ -71,16 +71,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release --dry-run
 
-      - name: Create and Checkout Release Branch
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          git checkout -b Release_Branch
-
-      - name: Release
+      - name: Release (Create release commits on main)
         if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
+      - name: Create and Push Release Branch
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git checkout -b Release_Branch
+          git push origin Release_Branch
 
       - name: Create Pull Request
         if: github.event_name == 'workflow_dispatch'
