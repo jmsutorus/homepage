@@ -36,6 +36,9 @@ export function ShareYearDialog({ stats, year }: ShareYearDialogProps) {
         quality: 1,
         pixelRatio: 2, // Higher quality for retina displays
         backgroundColor: "#0f172a", // slate-900 fallback
+        cacheBust: true, // Force reload fonts and images
+        skipFonts: true, // Skip font loading to avoid errors
+        preferredFontFormat: "woff2",
       });
       return dataUrl;
     } catch (error) {
