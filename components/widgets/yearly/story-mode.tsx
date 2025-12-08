@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { StorySlide, StorySlideProps } from "./story-slide";
@@ -34,9 +34,27 @@ export function StoryMode({ stats, year, previousYearStats, onClose, onShare }: 
   const slides = generateSlides(stats, year, previousYearStats);
   const totalSlides = slides.length;
 
+  // Navigation functions
+  const nextSlide = useCallback(() => {
+    if (currentSlide < totalSlides - 1) {
+      setDirection(1);
+      setCurrentSlide((prev) => prev + 1);
+    } else {
+      // Reached the end
+      storyCompleteConfetti();
+    }
+  }, [currentSlide, totalSlides]);
+
+  const prevSlide = useCallback(() => {
+    if (currentSlide > 0) {
+      setDirection(-1);
+      setCurrentSlide((prev) => prev - 1);
+    }
+  }, [currentSlide]);
+
   // Track mounted state for portal
-  useEffect(() => {
-    setMounted(true);
+  useLayoutEffect(() => {
+    queueMicrotask(() => setMounted(true));
     // Prevent body scroll when story mode is active
     document.body.style.overflow = 'hidden';
     return () => {
@@ -57,7 +75,7 @@ export function StoryMode({ stats, year, previousYearStats, onClose, onShare }: 
     }, 4000); // 4 seconds per slide
 
     return () => clearTimeout(timer);
-  }, [isPlaying, currentSlide, totalSlides]);
+  }, [isPlaying, currentSlide, totalSlides, nextSlide]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -75,24 +93,7 @@ export function StoryMode({ stats, year, previousYearStats, onClose, onShare }: 
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentSlide]);
-
-  const nextSlide = useCallback(() => {
-    if (currentSlide < totalSlides - 1) {
-      setDirection(1);
-      setCurrentSlide((prev) => prev + 1);
-    } else {
-      // Reached the end
-      storyCompleteConfetti();
-    }
-  }, [currentSlide, totalSlides]);
-
-  const prevSlide = useCallback(() => {
-    if (currentSlide > 0) {
-      setDirection(-1);
-      setCurrentSlide((prev) => prev - 1);
-    }
-  }, [currentSlide]);
+  }, [nextSlide, prevSlide, onClose]);
 
   const goToSlide = useCallback((index: number) => {
     setDirection(index > currentSlide ? 1 : -1);
