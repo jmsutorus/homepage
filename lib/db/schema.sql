@@ -985,3 +985,25 @@ CREATE TABLE IF NOT EXISTS task_templates (
 
 -- Create index for faster lookups by user
 CREATE INDEX IF NOT EXISTS idx_task_templates_userId ON task_templates(userId);
+
+-- Scratch Pad Table
+-- Stores a single quick note per user for temporary jotting
+CREATE TABLE IF NOT EXISTS scratch_pads (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  content TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId)
+);
+
+-- Index for faster lookups by user
+CREATE INDEX IF NOT EXISTS idx_scratch_pads_userId ON scratch_pads(userId);
+
+-- Trigger to update updated_at timestamp on scratch_pads
+CREATE TRIGGER IF NOT EXISTS update_scratch_pads_timestamp
+AFTER UPDATE ON scratch_pads
+BEGIN
+  UPDATE scratch_pads SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
