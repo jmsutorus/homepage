@@ -30,6 +30,7 @@ import { DailyJournalPreview } from "@/components/widgets/journal/daily-journal-
 import { HomeGoals } from "@/components/widgets/goals/home-goals";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
+import { ScratchPad } from "@/components/widgets/scratch-pad/scratch-pad";
 
 export const dynamic = "force-dynamic";
 
@@ -178,7 +179,7 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6">
       <ActionBanner />
-      
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -190,6 +191,9 @@ export default async function DashboardPage({
           {/* Optional: Add global action buttons here */}
         </div>
       </div>
+
+      {/* Scratch Pad */}
+      <ScratchPad />
 
       {/* Quick Links */}
       <QuickLinks />
