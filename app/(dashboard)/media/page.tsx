@@ -41,20 +41,25 @@ function serializePaginatedResult(result: Awaited<ReturnType<typeof getPaginated
 export default async function MediaPage() {
   const userId = await getUserId();
 
-  // Get ALL media items for in-progress and planned (usually small numbers)
-  const allMedia = await getAllMediaItems(userId);
-
-  // Get initial paginated completed media items (first 25)
-  const initialCompletedMediaRaw = await getPaginatedMedia(userId, 1, 25, {
-    status: "completed",
-    sortBy: "completed-desc",
-  });
+  // Fetch all data in parallel
+  const [
+    allMedia,
+    initialCompletedMediaRaw,
+    timelineData
+  ] = await Promise.all([
+    // Get ALL media items for in-progress and planned (usually small numbers)
+    getAllMediaItems(userId),
+    // Get initial paginated completed media items (first 25)
+    getPaginatedMedia(userId, 1, 25, {
+      status: "completed",
+      sortBy: "completed-desc",
+    }),
+    // Get timeline data on the server for initial render
+    getMediaTimelineData(userId, "month", 12)
+  ]);
 
   // Convert to plain serializable object
   const initialCompletedMedia = serializePaginatedResult(initialCompletedMediaRaw);
-
-  // Get timeline data on the server for initial render
-  const timelineData = await getMediaTimelineData(userId, "month", 12);
 
   return (
     <MediaPageClient

@@ -858,8 +858,10 @@ export async function getGoalsWithProgress(userId: string, options?: {
     const goals = await getGoals(userId, options);
 
     const goalsWithProgress = await Promise.all(goals.map(async goal => {
-      const milestones = await getMilestonesByGoalId(goal.id);
-      const goalChecklist = await getChecklistByGoalId(goal.id);
+      const [milestones, goalChecklist] = await Promise.all([
+        getMilestonesByGoalId(goal.id),
+        getChecklistByGoalId(goal.id)
+      ]);
 
       const milestoneChecklists = new Map<number, GoalChecklistItem[]>();
       await Promise.all(milestones.map(async milestone => {

@@ -17,39 +17,47 @@ interface CalendarPageProps {
 export default async function CalendarPage({ searchParams }: CalendarPageProps) {
   const params = await searchParams;
 
-  // Get current month data or use await query params
+  // Get current month data or use query params
   const now = new Date();
   const currentYear = params.year ? parseInt(params.year) : now.getFullYear();
   const currentMonth = params.month ? parseInt(params.month) : now.getMonth() + 1; // JavaScript months are 0-indexed
 
-  // Fetch GitHub activity if user is authenticated and has linked account
-  const session = await auth();
-  let githubEvents: any[] = [];
+  // Start fetching independent data in parallel
+  const sessionPromise = auth();
+  const calendarColorsPromise = getCalendarColorsForUser();
 
-  if (session?.user?.id) {
-    // Get GitHub token from account table
-    const account = await queryOne<{ accessToken: string }>(
-      "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
-      [session.user.id]
-    );
-
-    if (account?.accessToken) {
-      const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`;
-      const lastDay = new Date(currentYear, currentMonth, 0).getDate();
-      const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
-
-      githubEvents = await await getGithubActivity(
-        account.accessToken,
-        startDate,
-        endDate
+  // Define GitHub events promise
+  const githubEventsPromise = (async () => {
+    const session = await sessionPromise;
+    if (session?.user?.id) {
+      const account = await queryOne<{ accessToken: string }>(
+        "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
+        [session.user.id]
       );
-    }
-  }
 
-  // Use lightweight summary data for initial render (optimized for calendar grid)
-  // Full day details are lazy-loaded on demand when user clicks a day
-  const summaryData = await await getCalendarSummaryForMonth(currentYear, currentMonth, githubEvents);
-  const calendarColors = await await getCalendarColorsForUser();
+      if (account?.accessToken) {
+        const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`;
+        const lastDay = new Date(currentYear, currentMonth, 0).getDate();
+        const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+        return getGithubActivity(
+          account.accessToken,
+          startDate,
+          endDate
+        );
+      }
+    }
+    return [];
+  })();
+
+  // Fetch summary data, passing the githubEvents promise
+  const summaryDataPromise = getCalendarSummaryForMonth(currentYear, currentMonth, githubEventsPromise);
+
+  // Wait for all data to be ready
+  const [summaryData, calendarColors] = await Promise.all([
+    summaryDataPromise,
+    calendarColorsPromise
+  ]);
 
   return (
     <div className="space-y-4 sm:space-y-6">

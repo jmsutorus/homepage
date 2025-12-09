@@ -35,44 +35,6 @@ export default async function DailyPage({ params }: DailyPageProps) {
   nextDateObj.setDate(nextDateObj.getDate() + 1);
   const nextDate = nextDateObj.toISOString().split("T")[0];
 
-  // Fetch GitHub activity if user is authenticated and has linked account
-  const session = await auth();
-  const userId = session?.user?.id;
-
-  const journal = userId ? await getDailyJournalByDate(date, userId) : null;
-  const allHabits = await getHabitsAction();
-
-  // Filter habits to only show those created on or before the page date
-  const habits = allHabits.filter(habit => {
-    // Handle both ISO format (2024-01-15T10:30:00) and SQLite format (2024-01-15 10:30:00)
-    const habitCreatedDate = habit.created_at.split('T')[0].split(' ')[0];
-    return habitCreatedDate <= date;
-  });
-
-  const completions = await getHabitCompletionsAction(date);
-  const mood = userId ? await getMoodForDate(date, userId) : null;
-
-  let githubEvents: any[] = [];
-
-  if (userId) {
-    // Get GitHub token from account table
-    const account = await queryOne<{ accessToken: string; accountId: string }>(
-      "SELECT accessToken, accountId FROM account WHERE userId = ? AND providerId = 'github'",
-      [userId]
-    );
-
-    if (account?.accessToken) {
-      githubEvents = await getGithubActivity(
-        account.accessToken,
-        date,
-        `${date}T23:59:59`
-      );
-    }
-  }
-
-  const dailyData = await getCalendarDataForDate(date, githubEvents);
-
-  // Get all tasks for the viewed date and surrounding week (7 days before/after)
   // Calculate the date range: 7 days before to 7 days after
   const viewedDate = new Date(date);
   const weekBefore = new Date(viewedDate);
@@ -83,10 +45,93 @@ export default async function DailyPage({ params }: DailyPageProps) {
   const startDateStr = weekBefore.toISOString().split("T")[0];
   const endDateStr = weekAfter.toISOString().split("T")[0];
 
-  // Import functions to get all relevant tasks and goals
+  // Start fetching auth immediately
+  const sessionPromise = auth();
+
+  // Import functions dynamically to avoid blocking
   const { getTasksInRange, getUpcomingGoals, getUpcomingMilestones, getGoalsCompletedOnDate, getMilestonesCompletedOnDate } = await import("@/lib/db/calendar");
-  console.log(userId);
-  const allRelevantTasks = userId ? await getTasksInRange(startDateStr, endDateStr, userId) : [];
+
+
+
+  // Start independent fetches
+  const allHabitsPromise = getHabitsAction();
+  const completionsPromise = getHabitCompletionsAction(date);
+
+  // Wait for user data to get githubEvents for calendar data
+  // Note: getCalendarDataForDate accepts a promise for githubEvents, so we can start it early if we extract that promise
+  // But here we wrapped it in userDataPromise. Let's just wait for userDataPromise for simplicity as it bundles most things.
+  // Actually, to fully optimize, we should pass the githubEvents promise to getCalendarDataForDate.
+  
+  // Let's reconstruct to allow passing the promise.
+  const session = await sessionPromise;
+  const userId = session?.user?.id;
+
+  let githubEventsPromise: Promise<any[]> = Promise.resolve([]);
+  if (userId) {
+    githubEventsPromise = (async () => {
+      const account = await queryOne<{ accessToken: string; accountId: string }>(
+        "SELECT accessToken, accountId FROM account WHERE userId = ? AND providerId = 'github'",
+        [userId]
+      );
+      if (account?.accessToken) {
+        return getGithubActivity(account.accessToken, date, `${date}T23:59:59`);
+      }
+      return [];
+    })();
+  }
+
+  const dailyDataPromise = getCalendarDataForDate(date, githubEventsPromise);
+
+  // Now fetch the rest in parallel
+  const [
+    userData,
+    allHabits,
+    completions,
+    dailyData
+  ] = await Promise.all([
+    (async () => {
+      if (!userId) return null;
+      const [
+        journal,
+        mood,
+        allRelevantTasks,
+        upcomingGoals,
+        upcomingMilestones,
+        completedGoals,
+        completedMilestones,
+        colors
+      ] = await Promise.all([
+        getDailyJournalByDate(date, userId),
+        getMoodForDate(date, userId),
+        getTasksInRange(startDateStr, endDateStr, userId),
+        getUpcomingGoals(userId, date, endDateStr),
+        getUpcomingMilestones(userId, date, endDateStr),
+        getGoalsCompletedOnDate(userId, date),
+        getMilestonesCompletedOnDate(userId, date),
+        getCalendarColorsObject(userId)
+      ]);
+      return { journal, mood, allRelevantTasks, upcomingGoals, upcomingMilestones, completedGoals, completedMilestones, colors };
+    })(),
+    allHabitsPromise,
+    completionsPromise,
+    dailyDataPromise
+  ]);
+
+  const journal = userData?.journal ?? null;
+  const mood = userData?.mood ?? null;
+  const allRelevantTasks = userData?.allRelevantTasks ?? [];
+  const upcomingGoals = userData?.upcomingGoals ?? [];
+  const upcomingMilestones = userData?.upcomingMilestones ?? [];
+  const completedGoals = userData?.completedGoals ?? [];
+  const completedMilestones = userData?.completedMilestones ?? [];
+  const colors = userData?.colors ?? {};
+
+  // Filter habits to only show those created on or before the page date
+  const habits = allHabits.filter(habit => {
+    // Handle both ISO format (2024-01-15T10:30:00) and SQLite format (2024-01-15 10:30:00)
+    const habitCreatedDate = habit.created_at.split('T')[0].split(' ')[0];
+    return habitCreatedDate <= date;
+  });
 
   // Debug: Log the date range and tasks found
   console.log(`[Daily Page] Viewing date: ${date}`);
@@ -114,15 +159,6 @@ export default async function DailyPage({ params }: DailyPageProps) {
     const taskDueDate = t.due_date.split("T")[0];
     return taskDueDate >= date;
   }) ?? [];
-
-  // Goals and milestones data
-  const upcomingGoals = userId ? await getUpcomingGoals(userId, date, endDateStr) : [];
-  const upcomingMilestones = userId ? await getUpcomingMilestones(userId, date, endDateStr) : [];
-  const completedGoals = userId ? await getGoalsCompletedOnDate(userId, date) : [];
-  const completedMilestones = userId ? await getMilestonesCompletedOnDate(userId, date) : [];
-
-  // Calendar colors
-  const colors = userId ? await getCalendarColorsObject(userId) : {};
 
   // Workout activities
   const upcomingWorkoutActivities = dailyData?.workoutActivities.filter((w) => !w.completed) ?? [];

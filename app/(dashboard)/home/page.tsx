@@ -83,7 +83,7 @@ export default async function DashboardPage({
 }) {
   // Require authentication
   const userId = await getUserId();
-  const session = await auth();
+  const sessionPromise = auth();
 
   // Parse date params
   const params = await searchParams;
@@ -93,10 +93,34 @@ export default async function DashboardPage({
   const todayStr = now.toISOString().split('T')[0];
 
   // Feature flags
-  const isPlexEnabled = await getFeatureFlag("Plex", false);
-  const isSteamEnabled = await getFeatureFlag("Steam", false);
-  const isHomeAssistantEnabled = await getFeatureFlag("HomeAssistant", false);
-  const isWeatherEnabled = await getFeatureFlag("Weather", false);
+  const isPlexEnabledPromise = getFeatureFlag("Plex", false);
+  const isSteamEnabledPromise = getFeatureFlag("Steam", false);
+  const isHomeAssistantEnabledPromise = getFeatureFlag("HomeAssistant", false);
+  const isWeatherEnabledPromise = getFeatureFlag("Weather", false);
+
+  // GitHub events fetch
+  const githubEventsPromise = (async () => {
+    const session = await sessionPromise;
+    if (session?.user?.id) {
+      const account = await queryOne<{ accessToken: string }>(
+        "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
+        [session.user.id]
+      );
+
+      if (account?.accessToken) {
+        const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`;
+        const lastDay = new Date(currentYear, currentMonth, 0).getDate();
+        const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+        return getGithubActivity(
+          account.accessToken,
+          startDate,
+          endDate
+        );
+      }
+    }
+    return [];
+  })();
 
   // Fetch data in parallel
   const [
@@ -109,7 +133,13 @@ export default async function DashboardPage({
     recentMediaRaw,
     calendarColors,
     athleteRaw,
-    activeGoalsRaw
+    activeGoalsRaw,
+    recentActivitiesRaw,
+    isPlexEnabled,
+    isSteamEnabled,
+    isHomeAssistantEnabled,
+    isWeatherEnabled,
+    calendarDataMap
   ] = await Promise.all([
     getHabits(userId),
     getHabitCompletions(userId, todayStr),
@@ -124,7 +154,15 @@ export default async function DashboardPage({
     getRecentlyCompletedMedia(userId, 4),
     getCalendarColorsForUser(),
     getAthleteByUserId(userId),
-    getGoalsWithProgress(userId, { status: ['not_started', 'in_progress'] })
+    getGoalsWithProgress(userId, { status: ['not_started', 'in_progress'] }),
+    // Use the new function to fetch activities directly by userId
+    import("@/lib/db/strava").then(mod => mod.getActivitiesByUserId(userId, 5)),
+    isPlexEnabledPromise,
+    isSteamEnabledPromise,
+    isHomeAssistantEnabledPromise,
+    isWeatherEnabledPromise,
+    // Pass the github events promise directly
+    getCalendarDataForMonth(currentYear, currentMonth, githubEventsPromise)
   ]);
 
   // Serialize all data for client components
@@ -137,37 +175,8 @@ export default async function DashboardPage({
   const recentMedia = serialize(recentMediaRaw);
   const athlete = serialize(athleteRaw);
   const activeGoals = serialize(activeGoalsRaw.slice(0, 3)); // Only show top 3 goals
+  const recentActivities = serialize(recentActivitiesRaw);
 
-  // Fetch Strava activities if athlete exists
-  let recentActivities: any[] = [];
-  if (athlete) {
-    const activitiesRaw = await getActivities(athlete.id, 5);
-    recentActivities = serialize(activitiesRaw);
-  }
-
-  // Fetch GitHub activity
-  let githubEvents: any[] = [];
-  if (session?.user?.id) {
-    const account = await queryOne<{ accessToken: string }>(
-      "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
-      [session.user.id]
-    );
-
-    if (account?.accessToken) {
-      const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`;
-      const lastDay = new Date(currentYear, currentMonth, 0).getDate();
-      const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
-
-      githubEvents = await getGithubActivity(
-        account.accessToken,
-        startDate,
-        endDate
-      );
-    }
-  }
-
-  // Get calendar data
-  const calendarDataMap = await getCalendarDataForMonth(currentYear, currentMonth, githubEvents);
   const calendarDataRaw = Object.fromEntries(calendarDataMap);
   const calendarData = serializeCalendarData(calendarDataRaw);
 

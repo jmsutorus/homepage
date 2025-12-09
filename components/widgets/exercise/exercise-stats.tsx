@@ -46,19 +46,29 @@ interface Stats {
   };
 }
 
-export function ExerciseStats() {
-  const [activities, setActivities] = useState<StravaActivity[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
+interface ExerciseStatsProps {
+  initialActivities?: StravaActivity[];
+  initialStats?: Stats;
+}
+
+export function ExerciseStats({ initialActivities = [], initialStats }: ExerciseStatsProps) {
+  const [activities, setActivities] = useState<StravaActivity[]>(initialActivities);
+  const [stats, setStats] = useState<Stats | null>(initialStats || null);
   const [lastSync, setLastSync] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(initialActivities.length === 0);
   const [isSyncing, setIsSyncing] = useState(false);
   const [needsSync, setNeedsSync] = useState(false);
   const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const isFirstRender = useState(true)[0];
 
   useEffect(() => {
+    if (isFirstRender && initialActivities.length > 0) {
+      setIsLoading(false);
+      return;
+    }
     fetchActivities();
   }, []);
 

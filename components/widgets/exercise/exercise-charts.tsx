@@ -26,12 +26,21 @@ interface Activity {
 
 type ChartType = "distance" | "time" | "count";
 
-export function ExerciseCharts() {
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface ExerciseChartsProps {
+  initialActivities?: Activity[];
+}
+
+export function ExerciseCharts({ initialActivities = [] }: ExerciseChartsProps) {
+  const [activities, setActivities] = useState<Activity[]>(initialActivities);
+  const [isLoading, setIsLoading] = useState(initialActivities.length === 0);
   const [chartType, setChartType] = useState<ChartType>("distance");
+  const isFirstRender = useState(true)[0];
 
   useEffect(() => {
+    if (isFirstRender && initialActivities.length > 0) {
+      setIsLoading(false);
+      return;
+    }
     fetchActivities();
   }, []);
 
