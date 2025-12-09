@@ -43,7 +43,11 @@ export interface YearlyStats {
     generalCount: number;
   };
   habits: {
+    total: number;
     completed: number;
+    active: number;
+    totalCompletions: number;
+    byFrequency: Record<string, number>;
   };
   tasks: {
     total: number;
@@ -68,12 +72,23 @@ export interface YearlyStats {
     gamesPlayed: number;
     topGames: { name: string; achievements: number }[];
   };
+  games: {
+    total: number; // From database games
+    averageRating: number;
+    totalSteamGames: number; // Games played on Steam
+    totalAchievements: number;
+    totalPlaytime: number; // in minutes
+    topRatedGames: { title: string; rating: number; completed: string }[];
+    topGenres: { genre: string; count: number }[];
+    topSteamGames: { name: string; achievements: number; playtime: number }[];
+  };
   monthlyActivity: {
     month: number; // 0-11
     media: number;
     books: number;
     movies: number;
     tv: number;
+    games: number;
     parks: number;
     exercises: number;
     journals: number;
@@ -93,6 +108,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   const allMedia = await getAllMedia(userId);
   const yearMedia = allMedia.filter((m) => {
     if (!m.completed) return false;
+    if (m.status !== 'completed') return false;
     return m.completed.startsWith(year.toString());
   });
   
@@ -103,9 +119,12 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   let bookRatingCount = 0;
   let movieTVRatingSum = 0;
   let movieTVRatingCount = 0;
+  let gameRatingSum = 0;
+  let gameRatingCount = 0;
   const genreCounts: Record<string, number> = {};
   const bookGenreCounts: Record<string, number> = {};
   const movieTVGenreCounts: Record<string, number> = {};
+  const gameGenreCounts: Record<string, number> = {};
 
   yearMedia.forEach((m) => {
     mediaByType[m.type] = (mediaByType[m.type] || 0) + 1;
@@ -125,6 +144,11 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
         movieTVRatingSum += m.rating;
         movieTVRatingCount++;
       }
+      // Track game ratings separately
+      else if (type === 'game') {
+        gameRatingSum += m.rating;
+        gameRatingCount++;
+      }
     }
     if (m.genres) {
       try {
@@ -140,6 +164,10 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
           // Track movie/TV genres separately
           else if (type === 'movie' || type === 'tv' || type === 'tv_show' || type === 'show') {
             movieTVGenreCounts[g] = (movieTVGenreCounts[g] || 0) + 1;
+          }
+          // Track game genres separately
+          else if (type === 'game') {
+            gameGenreCounts[g] = (gameGenreCounts[g] || 0) + 1;
           }
         });
       } catch {}
@@ -157,6 +185,11 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     .map(([genre, count]) => ({ genre, count }));
 
   const topMovieTVGenres = Object.entries(movieTVGenreCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([genre, count]) => ({ genre, count }));
+
+  const topGameGenres = Object.entries(gameGenreCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
     .map(([genre, count]) => ({ genre, count }));
@@ -187,6 +220,20 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     .map((m) => ({
       title: m.title,
       type: m.type,
+      rating: m.rating || 0,
+      completed: m.completed || '',
+    }));
+
+  // Get top rated games
+  const topRatedGames = yearMedia
+    .filter((m) => {
+      const type = m.type.toLowerCase();
+      return type === 'game' && m.rating && m.rating > 0;
+    })
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .slice(0, 3)
+    .map((m) => ({
+      title: m.title,
       rating: m.rating || 0,
       completed: m.completed || '',
     }));
@@ -312,6 +359,18 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   // Steam (from DB cache)
   const steamStats = await getCachedSteamStats(year, userId);
 
+  // Calculate combined game stats (database games + Steam)
+  const dbGamesCount = yearMedia.filter(m => m.type.toLowerCase() === 'game').length;
+  const totalPlaytime = steamStats.reduce((acc, s) => acc + s.total_playtime, 0);
+  const topSteamGames = steamStats
+    .sort((a, b) => b.achievements_count - a.achievements_count)
+    .slice(0, 5)
+    .map(s => ({
+      name: s.gameName,
+      achievements: s.achievements_count,
+      playtime: s.total_playtime
+    }));
+
   // Monthly Activity
   const monthlyActivity = Array.from({ length: 12 }, (_, i) => ({
     month: i,
@@ -319,6 +378,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     books: 0,
     movies: 0,
     tv: 0,
+    games: 0,
     parks: 0,
     exercises: 0,
     journals: 0,
@@ -331,7 +391,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
       const month = new Date(m.completed).getMonth();
       monthlyActivity[month].media++;
 
-      // Track books, movies, and TV separately
+      // Track books, movies, TV, and games separately
       const type = m.type.toLowerCase();
       if (type === 'book') {
         monthlyActivity[month].books++;
@@ -339,6 +399,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
         monthlyActivity[month].movies++;
       } else if (type === 'tv' || type === 'tv_show' || type === 'show') {
         monthlyActivity[month].tv++;
+      } else if (type === 'game') {
+        monthlyActivity[month].games++;
       }
     }
   });
@@ -367,19 +429,53 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
   });
 
   // Habits
-  let completedHabitsCount = 0;
+  const habitStats = {
+    total: 0,
+    completed: 0,
+    active: 0,
+    totalCompletions: 0,
+    byFrequency: {} as Record<string, number>,
+  };
+
   try {
-    const habitsData = await query<{ target: number; completion_count: number }>(
-      `SELECT h.target, COUNT(hc.id) as completion_count
-       FROM habits h
-       LEFT JOIN habit_completions hc ON h.id = hc.habit_id AND strftime('%Y', hc.date) = ?
-       WHERE h.userId = ?
-       AND strftime('%Y', h.created_at) = ?
-       GROUP BY h.id`,
-      [year.toString(), userId, year.toString()]
+    // Get all habits created in the year
+    const yearHabits = await query<{ id: number; frequency: string; target: number; active: number }>(
+      `SELECT id, frequency, target, active FROM habits WHERE userId = ? AND strftime('%Y', created_at) = ?`,
+      [userId, year.toString()]
     );
 
-    completedHabitsCount = habitsData.filter(h => h.completion_count >= h.target).length;
+    habitStats.total = yearHabits.length;
+    habitStats.active = yearHabits.filter(h => h.active === 1).length;
+
+    // Group by frequency
+    yearHabits.forEach(h => {
+      const freq = h.frequency || 'daily';
+      habitStats.byFrequency[freq] = (habitStats.byFrequency[freq] || 0) + 1;
+    });
+
+    // Get completion data for these habits
+    if (yearHabits.length > 0) {
+      const habitIds = yearHabits.map(h => h.id).join(',');
+      const completionData = await query<{ habit_id: number; completion_count: number }>(
+        `SELECT habit_id, COUNT(*) as completion_count
+         FROM habit_completions
+         WHERE habit_id IN (${habitIds})
+         AND strftime('%Y', date) = ?
+         GROUP BY habit_id`,
+        [year.toString()]
+      );
+
+      // Calculate total completions
+      habitStats.totalCompletions = completionData.reduce((sum, h) => sum + h.completion_count, 0);
+
+      // Calculate completed habits (met target)
+      completionData.forEach(cd => {
+        const habit = yearHabits.find(h => h.id === cd.habit_id);
+        if (habit && cd.completion_count >= habit.target) {
+          habitStats.completed++;
+        }
+      });
+    }
   } catch (e) {
     console.error("Failed to fetch habit data", e);
   }
@@ -459,9 +555,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
       totalEntries: yearMoods.length,
     },
     journals: journalStats,
-    habits: {
-      completed: completedHabitsCount,
-    },
+    habits: habitStats,
     tasks: taskStats,
     goals: goalStats,
     github: githubStats,
@@ -472,6 +566,16 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
         .sort((a, b) => b.achievements_count - a.achievements_count)
         .slice(0, 5)
         .map(s => ({ name: s.gameName, achievements: s.achievements_count })),
+    },
+    games: {
+      total: dbGamesCount,
+      averageRating: gameRatingCount > 0 ? gameRatingSum / gameRatingCount : 0,
+      totalSteamGames: steamStats.length,
+      totalAchievements: steamStats.reduce((acc, s) => acc + s.achievements_count, 0),
+      totalPlaytime: totalPlaytime,
+      topRatedGames,
+      topGenres: topGameGenres,
+      topSteamGames,
     },
     monthlyActivity,
   };

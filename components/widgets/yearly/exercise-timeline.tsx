@@ -151,44 +151,6 @@ export function ExerciseTimeline({ stats }: ExerciseTimelineProps) {
             </div>
           </div>
 
-          {/* Workout Type Distribution */}
-          {workoutTypeData.length > 0 && (
-            <div>
-              <h4 className="text-sm font-semibold mb-3">Workout Types</h4>
-              <div className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={workoutTypeData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis
-                      dataKey="name"
-                      className="text-xs"
-                      tick={{ fill: "hsl(var(--muted-foreground))" }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis
-                      className="text-xs"
-                      tick={{ fill: "hsl(var(--muted-foreground))" }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Bar
-                      dataKey="count"
-                      fill="#f97316"
-                      radius={[8, 8, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-
           {/* Workout Type Breakdown */}
           {stats.exercises.byType.length > 0 && (
             <div>

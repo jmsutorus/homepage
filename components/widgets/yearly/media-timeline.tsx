@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { YearlyStats } from "@/lib/data/yearly-data";
 import { Film, TrendingUp, Star, Calendar, Sparkles } from "lucide-react";
@@ -239,42 +239,38 @@ export function MediaTimeline({ stats }: MediaTimelineProps) {
           {filteredStats.media.topGenres.length > 0 && (
             <div>
               <h4 className="text-sm font-semibold mb-3">Top Genres</h4>
-              <div style={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={filteredStats.media.topGenres.slice(0, 8)}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis
-                      dataKey="genre"
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--popover))",
-                        borderColor: "hsl(var(--border))",
-                        borderRadius: "var(--radius)",
-                        color: "hsl(var(--popover-foreground))"
-                      }}
-                      itemStyle={{ color: "#a855f7" }}
-                    />
-                    <Bar
-                      dataKey="count"
-                      fill="#a855f7"
-                      radius={[8, 8, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="space-y-3">
+                {filteredStats.media.topGenres.slice(0, 8).map((genre, index) => {
+                  const percentage = (genre.count / filteredStats.media.total) * 100;
+                  const COLORS = ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'];
+                  const color = COLORS[index % COLORS.length];
+
+                  return (
+                    <div key={genre.genre} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="font-medium">{genre.genre}</span>
+                        </div>
+                        <span className="text-muted-foreground">
+                          {genre.count} ({percentage.toFixed(0)}%)
+                        </span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden ml-5">
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: color }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percentage}%` }}
+                          transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
