@@ -11,6 +11,8 @@ import {
   Github,
   Gamepad2,
   CheckCircle2,
+  ListTodo,
+  Target,
 } from "lucide-react";
 
 interface ShareableCardProps {
@@ -23,11 +25,14 @@ export const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
     return (
       <div
         ref={ref}
-        className="w-[600px] h-[800px] bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8 text-white"
-        style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
+        className="w-[600px] min-h-[1000px] bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8 text-white flex flex-col"
+        style={{
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif",
+          WebkitFontSmoothing: "antialiased" as const,
+        }}
       >
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             {year}
           </h1>
@@ -35,7 +40,7 @@ export const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 mb-6">
           <StatItem
             icon={<Film className="h-6 w-6" />}
             value={stats.media.total}
@@ -79,6 +84,20 @@ export const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
             color="text-emerald-400"
           />
           <StatItem
+            icon={<ListTodo className="h-6 w-6" />}
+            value={stats.tasks.completed}
+            label="Tasks Done"
+            sublabel={`${stats.tasks.completionRate.toFixed(0)}% complete`}
+            color="text-blue-500"
+          />
+          <StatItem
+            icon={<Target className="h-6 w-6" />}
+            value={stats.goals.completed}
+            label="Goals Achieved"
+            sublabel={`${stats.goals.inProgress} in progress`}
+            color="text-purple-500"
+          />
+          <StatItem
             icon={<Github className="h-6 w-6" />}
             value={stats.github.totalEvents}
             label="GitHub"
@@ -95,15 +114,15 @@ export const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
         </div>
 
         {/* Highlights */}
-        <div className="mt-8 p-4 rounded-xl bg-white/10 backdrop-blur">
+        <div className="mt-auto p-4 rounded-xl bg-white/10 backdrop-blur">
           <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">
             Highlights
           </h3>
-          <div className="space-y-2 text-sm">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
             {stats.media.topGenres[0] && (
               <div className="flex items-center gap-2">
                 <span className="text-purple-400">Top Genre:</span>
-                <span className="text-white">{stats.media.topGenres[0].genre}</span>
+                <span className="text-white truncate">{stats.media.topGenres[0].genre}</span>
               </div>
             )}
             {stats.steam.topGames[0] && (
@@ -116,7 +135,31 @@ export const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
               <div className="flex items-center gap-2">
                 <span className="text-purple-400">Active Time:</span>
                 <span className="text-white">
-                  {Math.round(stats.exercises.totalDuration / 60)} hours
+                  {Math.round(stats.exercises.totalDuration / 60)}h
+                </span>
+              </div>
+            )}
+            {stats.mood.average > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-purple-400">Avg Mood:</span>
+                <span className="text-white">
+                  {stats.mood.average.toFixed(1)}/5
+                </span>
+              </div>
+            )}
+            {stats.tasks.completionRate > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-purple-400">Task Success:</span>
+                <span className="text-white">
+                  {stats.tasks.completionRate.toFixed(0)}%
+                </span>
+              </div>
+            )}
+            {stats.goals.completed > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-purple-400">Goals Hit:</span>
+                <span className="text-white">
+                  {stats.goals.completed} achieved
                 </span>
               </div>
             )}
@@ -124,7 +167,7 @@ export const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pt-6 text-center">
+        <div className="pt-6 text-center">
           <div className="inline-flex items-center gap-2 text-slate-400 text-sm">
             <span className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400" />
             <span>My Personal Dashboard</span>
