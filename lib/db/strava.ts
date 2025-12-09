@@ -196,6 +196,9 @@ export async function getActivity(activityId: number): Promise<DBStravaActivity 
 /**
  * Get all activities for an athlete
  */
+/**
+ * Get all activities for an athlete
+ */
 export async function getActivities(
   athleteId: number,
   limit = 50
@@ -206,6 +209,22 @@ export async function getActivities(
      ORDER BY start_date DESC
      LIMIT ?`,
     [athleteId, limit]
+  );
+}
+
+/**
+ * Get all activities for a user
+ */
+export async function getActivitiesByUserId(
+  userId: string,
+  limit = 50
+): Promise<DBStravaActivity[]> {
+  return await query<DBStravaActivity>(
+    `SELECT * FROM strava_activities
+     WHERE userId = ?
+     ORDER BY start_date DESC
+     LIMIT ?`,
+    [userId, limit]
   );
 }
 
@@ -347,4 +366,62 @@ export async function deleteActivities(athleteId: number): Promise<boolean> {
 export async function getLastSyncTime(athleteId: number): Promise<Date | null> {
   const athlete = await getAthlete(athleteId);
   return athlete?.last_sync ? new Date(athlete.last_sync) : null;
+}
+
+/**
+ * Get activity statistics for a user
+ */
+export async function getActivityStatsByUserId(userId: string) {
+  const stats = await queryOne<{
+    total_activities: number;
+    total_distance: number;
+    total_moving_time: number;
+    total_elevation_gain: number;
+  }>(
+    `SELECT
+      COUNT(*) as total_activities,
+      SUM(distance) as total_distance,
+      SUM(moving_time) as total_moving_time,
+      SUM(total_elevation_gain) as total_elevation_gain
+     FROM strava_activities
+     WHERE userId = ?`,
+    [userId]
+  );
+
+  return stats || {
+    total_activities: 0,
+    total_distance: 0,
+    total_moving_time: 0,
+    total_elevation_gain: 0,
+  };
+}
+
+/**
+ * Get year-to-date statistics for a user
+ */
+export async function getYTDStatsByUserId(userId: string) {
+  const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString();
+
+  const stats = await queryOne<{
+    total_activities: number;
+    total_distance: number;
+    total_moving_time: number;
+    total_elevation_gain: number;
+  }>(
+    `SELECT
+      COUNT(*) as total_activities,
+      SUM(distance) as total_distance,
+      SUM(moving_time) as total_moving_time,
+      SUM(total_elevation_gain) as total_elevation_gain
+     FROM strava_activities
+     WHERE userId = ? AND start_date >= ?`,
+    [userId, yearStart]
+  );
+
+  return stats || {
+    total_activities: 0,
+    total_distance: 0,
+    total_moving_time: 0,
+    total_elevation_gain: 0,
+  };
 }

@@ -15,25 +15,17 @@ interface Exercise {
   weight?: number;
 }
 
-interface WorkoutActivity {
-  id: number;
-  date: string;
-  time: string;
-  length: number;
-  difficulty: "easy" | "moderate" | "hard" | "very hard";
-  type: "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
-  exercises: string;
-  notes?: string;
-  completed: boolean;
-}
+import type { WorkoutActivity } from "@/lib/db/workout-activities";
 
 interface UpcomingActivitiesProps {
   onRefresh?: number;
+  initialActivities?: WorkoutActivity[];
 }
 
-export function UpcomingActivities({ onRefresh }: UpcomingActivitiesProps) {
-  const [activities, setActivities] = useState<WorkoutActivity[]>([]);
-  const [loading, setLoading] = useState(true);
+export function UpcomingActivities({ onRefresh, initialActivities = [] }: UpcomingActivitiesProps) {
+  const [activities, setActivities] = useState<WorkoutActivity[]>(initialActivities);
+  const [loading, setLoading] = useState(initialActivities.length === 0);
+  const isFirstRender = useState(true)[0];
 
   const fetchActivities = async () => {
     try {
@@ -62,6 +54,10 @@ export function UpcomingActivities({ onRefresh }: UpcomingActivitiesProps) {
   };
 
   useEffect(() => {
+    if (isFirstRender && initialActivities.length > 0) {
+      setLoading(false);
+      return;
+    }
     fetchActivities();
   }, [onRefresh]);
 

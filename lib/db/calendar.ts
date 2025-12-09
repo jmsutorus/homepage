@@ -452,10 +452,13 @@ export async function getMilestonesCompletedOnDate(
 /**
  * Get all calendar data for a date range, grouped by day
  */
+/**
+ * Get all calendar data for a date range, grouped by day
+ */
 export async function getCalendarDataForRange(
   startDate: string,
   endDate: string,
-  githubEvents: GithubEvent[] = []
+  githubEvents: GithubEvent[] | Promise<GithubEvent[]> = []
 ): Promise<Map<string, CalendarDayData>> {
   const session = await auth();
   const userId = session?.user?.id;
@@ -482,6 +485,7 @@ export async function getCalendarDataForRange(
     habitCompletions,
     goals,
     milestones,
+    resolvedGithubEvents
   ] = await Promise.all([
     getActivitiesInRange(startDate, endDate, userId),
     getMediaCompletedInRange(startDate, endDate, userId),
@@ -493,6 +497,7 @@ export async function getCalendarDataForRange(
     getHabitCompletionsForRange(userId, startDate, endDate),
     getGoalsInRange(userId, startDate, endDate),
     getMilestonesInRange(userId, startDate, endDate),
+    Promise.resolve(githubEvents)
   ]);
 
   // Create a map of date -> data
@@ -633,7 +638,7 @@ export async function getCalendarDataForRange(
   });
 
   // Add GitHub events
-  githubEvents.forEach((event) => {
+  resolvedGithubEvents.forEach((event) => {
     if (event.created_at) {
       const dateStr = event.created_at.split("T")[0];
       const dayData = calendarMap.get(dateStr);
@@ -700,7 +705,7 @@ export async function getCalendarDataForRange(
 export async function getCalendarDataForMonth(
   year: number,
   month: number, // 1-12
-  githubEvents: GithubEvent[] = []
+  githubEvents: GithubEvent[] | Promise<GithubEvent[]> = []
 ): Promise<Map<string, CalendarDayData>> {
   const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
   const lastDay = new Date(year, month, 0).getDate();
@@ -714,7 +719,7 @@ export async function getCalendarDataForMonth(
  */
 export async function getCalendarDataForDate(
   date: string,
-  githubEvents: GithubEvent[] = []
+  githubEvents: GithubEvent[] | Promise<GithubEvent[]> = []
 ): Promise<CalendarDayData | undefined> {
   const tomorrowDate = new Date(date);
   tomorrowDate.setDate(tomorrowDate.getDate() + 2);
@@ -818,7 +823,7 @@ export function convertToSummary(
 export async function getCalendarSummaryForMonth(
   year: number,
   month: number,
-  githubEvents: GithubEvent[] = []
+  githubEvents: GithubEvent[] | Promise<GithubEvent[]> = []
 ): Promise<Map<string, CalendarDaySummary>> {
   const fullData = await getCalendarDataForMonth(year, month, githubEvents);
   const today = new Date().toISOString().split("T")[0];
@@ -831,3 +836,4 @@ export async function getCalendarSummaryForMonth(
 
   return summaryMap;
 }
+

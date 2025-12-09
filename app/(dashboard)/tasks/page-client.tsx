@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { Task, TaskVelocityData, VelocityPeriod } from "@/lib/db/tasks";
 import { TaskForm } from "@/components/widgets/tasks/task-form";
 import { TaskList } from "@/components/widgets/tasks/task-list";
@@ -14,13 +14,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 type FilterType = "all" | "active" | "completed";
 type ViewTab = "tasks" | "manage" | "analytics";
 
-export function TasksPageClient() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+interface TasksPageClientProps {
+  initialTasks: Task[];
+  initialVelocityData: TaskVelocityData;
+}
+
+export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPageClientProps) {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [filter, setFilter] = useState<FilterType>("all");
-  const [isLoading, setIsLoading] = useState(true);
-  const [velocityData, setVelocityData] = useState<TaskVelocityData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [velocityData, setVelocityData] = useState<TaskVelocityData | null>(initialVelocityData);
   const [velocityPeriod, setVelocityPeriod] = useState<VelocityPeriod>("week");
   const [viewTab, setViewTab] = useState<ViewTab>("tasks");
+
+  // Track if it's the first render to avoid double fetching
+  const isFirstRender = useState(true)[0]; // We can't use useRef here because we need to trigger re-renders? No, useRef is fine for logic.
+  // Actually, useRef is better for this pattern.
+  const isMounted = useRef(false);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -58,12 +68,26 @@ export function TasksPageClient() {
   }, []);
 
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     fetchTasks();
   }, [fetchTasks]);
 
   useEffect(() => {
+    // Only fetch if period changes (initial fetch is handled by server)
+    // But velocityPeriod is state, so it's "week" initially.
+    // We need to skip the first one if it matches initial.
+    if (velocityPeriod === "week" && initialVelocityData) {
+       // Check if we are mounting?
+       // If we use the same isMounted ref, it might be tricky if effects run in different order?
+       // Actually, simpler:
+       // We can just check if we have data for the current period? No, we don't store it by period.
+       return;
+    }
     fetchVelocityData(velocityPeriod);
-  }, [velocityPeriod, fetchVelocityData]);
+  }, [velocityPeriod, fetchVelocityData, initialVelocityData]);
 
   const handlePeriodChange = (period: VelocityPeriod) => {
     setVelocityPeriod(period);

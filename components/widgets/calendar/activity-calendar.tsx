@@ -36,11 +36,12 @@ interface StravaActivity {
 interface ActivityCalendarProps {
   onRefresh?: number;
   onActivityUpdated?: () => void;
+  initialActivities?: WorkoutActivity[];
 }
 
-export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalendarProps) {
+export function ActivityCalendar({ onRefresh, onActivityUpdated, initialActivities = [] }: ActivityCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [activities, setActivities] = useState<WorkoutActivity[]>([]);
+  const [activities, setActivities] = useState<WorkoutActivity[]>(initialActivities);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [editingActivity, setEditingActivity] = useState<WorkoutActivity | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -50,6 +51,7 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<WorkoutActivity | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const isFirstRender = useState(true)[0];
 
   const fetchStravaActivities = useCallback(async (ids: number[]) => {
     try {
@@ -92,6 +94,19 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated }: ActivityCalen
   }, [currentMonth, fetchStravaActivities]);
 
   useEffect(() => {
+    if (isFirstRender && initialActivities.length > 0 && isSameMonth(currentMonth, new Date())) {
+      // If we have initial data and it's the current month, we might still need to fetch strava activities?
+      // The initial data passed from server doesn't include strava details map.
+      // So we should probably still fetch strava activities if needed.
+      const stravaIds = initialActivities
+        .filter((a: WorkoutActivity) => a.strava_activity_id)
+        .map((a: WorkoutActivity) => a.strava_activity_id as number);
+
+      if (stravaIds.length > 0) {
+        fetchStravaActivities(stravaIds);
+      }
+      return;
+    }
     fetchActivities();
   }, [currentMonth, onRefresh, fetchActivities]);
 

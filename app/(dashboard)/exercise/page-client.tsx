@@ -12,12 +12,25 @@ import { PageTabsList } from "@/components/ui/page-tabs-list";
 
 type ViewTab = "exercise" | "analytics";
 
+import { WorkoutActivity } from "@/lib/db/workout-activities";
+
 interface ExercisePageClientProps {
   athleteId?: number;
   lastSync?: string;
+  initialUpcomingActivities: WorkoutActivity[];
+  initialCalendarActivities: WorkoutActivity[];
+  initialStravaActivities: any[]; // Using any to avoid importing StravaActivity type from component
+  initialStats: any; // Using any to avoid importing Stats type from component
 }
 
-export function ExercisePageClient({ athleteId, lastSync }: ExercisePageClientProps) {
+export function ExercisePageClient({ 
+  athleteId, 
+  lastSync,
+  initialUpcomingActivities,
+  initialCalendarActivities,
+  initialStravaActivities,
+  initialStats
+}: ExercisePageClientProps) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [viewTab, setViewTab] = useState<ViewTab>("exercise");
 
@@ -47,10 +60,16 @@ export function ExercisePageClient({ athleteId, lastSync }: ExercisePageClientPr
 
         <TabsContent value="exercise" className="space-y-6 mt-6">
           {/* Upcoming Activities */}
-          <UpcomingActivities onRefresh={refreshKey} />
+          <UpcomingActivities 
+            onRefresh={refreshKey} 
+            initialActivities={initialUpcomingActivities}
+          />
 
           {/* Activity Calendar */}
-          <ActivityCalendar onRefresh={refreshKey} />
+          <ActivityCalendar 
+            onRefresh={refreshKey} 
+            initialActivities={initialCalendarActivities}
+          />
 
           {/* Strava Sync Widget */}
           <StravaSync athleteId={athleteId} lastSync={lastSync} />
@@ -59,8 +78,13 @@ export function ExercisePageClient({ athleteId, lastSync }: ExercisePageClientPr
         <TabsContent value="analytics" className="space-y-6 mt-6">
           {/* Exercise Stats and Charts */}
           <div className="grid gap-4 lg:grid-cols-2">
-            <ExerciseStats />
-            <ExerciseCharts />
+            <ExerciseStats 
+              initialActivities={initialStravaActivities}
+              initialStats={initialStats}
+            />
+            <ExerciseCharts 
+              initialActivities={initialStravaActivities}
+            />
           </div>
         </TabsContent>
       </Tabs>
