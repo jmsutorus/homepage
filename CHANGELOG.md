@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/jmsutorus/homepage/compare/v1.4.6...v1.5.0) (2025-12-09)
+
+
+### Features
+
+* **homepage:** add scratch pad widget ([#44](https://github.com/jmsutorus/homepage/issues/44)) ([8e37859](https://github.com/jmsutorus/homepage/commit/8e37859f7520f5895363f8758cdd3681c5b5335f))
+
 ## [1.4.6](https://github.com/jmsutorus/homepage/compare/v1.4.5...v1.4.6) (2025-12-06)
 
 
