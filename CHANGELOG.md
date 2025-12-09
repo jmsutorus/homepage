@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/jmsutorus/homepage/compare/v1.5.0...v1.6.0) (2025-12-09)
+
+
+### Features
+
+* **dashboard:** add loading states and optimize data fetching ([#51](https://github.com/jmsutorus/homepage/issues/51)) ([66d2240](https://github.com/jmsutorus/homepage/commit/66d2240443b5bf7d2a1df5866093b7f2c8459880))
+
 # [1.5.0](https://github.com/jmsutorus/homepage/compare/v1.4.6...v1.5.0) (2025-12-09)
 
 
