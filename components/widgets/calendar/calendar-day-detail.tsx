@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import type { CalendarDayData } from "@/lib/db/calendar";
 import type { Event } from "@/lib/db/events";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
@@ -18,6 +20,7 @@ import { DailyMedia } from "../daily/daily-media";
 import { DailyParks } from "../daily/daily-parks";
 import { DailyJournals } from "../daily/daily-journals";
 import { DailyTasks } from "../daily/daily-tasks";
+import { ExternalLink } from "lucide-react";
 
 interface CalendarDayDetailProps {
   date: string;
@@ -42,9 +45,17 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>{formattedDate}</CardTitle>
-          <CardDescription>Loading day details...</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div className="space-y-1.5">
+            <CardTitle>{formattedDate}</CardTitle>
+            <CardDescription>Loading day details...</CardDescription>
+          </div>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/daily/${date}`} className="flex items-center gap-1.5">
+              View Full Day
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -66,9 +77,17 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
   if (error) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>{formattedDate}</CardTitle>
-          <CardDescription className="text-destructive">{error}</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div className="space-y-1.5">
+            <CardTitle>{formattedDate}</CardTitle>
+            <CardDescription className="text-destructive">{error}</CardDescription>
+          </div>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/daily/${date}`} className="flex items-center gap-1.5">
+              View Full Day
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
         </CardHeader>
       </Card>
     );
@@ -165,9 +184,17 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
   if (!hasAnyData) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>{formattedDate}</CardTitle>
-          <CardDescription>No data recorded for this day</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
+          <div className="space-y-1.5">
+            <CardTitle>{formattedDate}</CardTitle>
+            <CardDescription>No data recorded for this day</CardDescription>
+          </div>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/daily/${date}`} className="flex items-center gap-1.5">
+              View Full Day
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
         </CardHeader>
       </Card>
     );
@@ -175,9 +202,17 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{formattedDate}</CardTitle>
-        <CardDescription>Summary of your day</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
+        <div className="space-y-1.5">
+          <CardTitle>{formattedDate}</CardTitle>
+          <CardDescription>Summary of your day</CardDescription>
+        </div>
+        <Button variant="ghost" size="sm" asChild>
+          <Link href={`/daily/${date}`} className="flex items-center gap-1.5">
+            View Full Day
+            <ExternalLink className="h-3.5 w-3.5" />
+          </Link>
+        </Button>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Mood Section */}

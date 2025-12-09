@@ -20,7 +20,18 @@ import { Badge } from '@/components/ui/badge';
 import { DBParkCategory, ParkCategoryValue, PARK_CATEGORIES } from '@/lib/db/enums/park-enums';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { TagInput } from '@/components/search/tag-input';
-import { Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface ParkFrontmatter {
   title: string;
@@ -357,6 +368,32 @@ export function ParkEditor({
     }
   };
 
+  const handleDelete = async () => {
+    if (!existingSlug) return;
+
+    setIsSaving(true); // Reuse existing saving state
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/parks/${existingSlug}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete park');
+      }
+
+      // Redirect to parks list on success
+      router.push('/parks');
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      showCreationError('park', err);
+      setIsSaving(false);
+    }
+  };
+
   return (
     <form onSubmit={handleSave} className="space-y-6">
       {error && (
@@ -658,18 +695,55 @@ export function ParkEditor({
       </Tabs>
 
       {/* Action Buttons */}
-      <div className="flex gap-4 justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-          disabled={isSaving}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isSaving || !frontmatter.title}>
-          {isSaving ? 'Saving...' : mode === 'create' ? 'Create' : 'Save Changes'}
-        </Button>
+      <div className="flex gap-4 justify-between">
+        {/* Delete button - only in edit mode */}
+        {mode === 'edit' && existingSlug && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isSaving}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete this
+                  park entry and all associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+
+        {/* Cancel and Save buttons */}
+        <div className="flex gap-4 ml-auto">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isSaving}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSaving || !frontmatter.title}>
+            {isSaving ? 'Saving...' : mode === 'create' ? 'Create' : 'Save Changes'}
+          </Button>
+        </div>
       </div>
     </form>
   );
