@@ -66,3 +66,49 @@ export async function getTagsWithFrequency(): Promise<TagFrequency[]> {
     return [];
   }
 }
+
+export interface GenreFrequency {
+  genre: string;
+  count: number;
+}
+
+export async function getGenresWithFrequency(): Promise<GenreFrequency[]> {
+  const userId = await getUserId();
+  const genreCounts: Record<string, number> = {};
+
+  try {
+    // Get genres from media_content table
+    const media = await query<{ genres: string | null }>(
+      "SELECT genres FROM media_content WHERE userId = ?",
+      [userId]
+    );
+
+    media.forEach((row) => {
+      if (row.genres) {
+        try {
+          const parsed = JSON.parse(row.genres);
+          if (Array.isArray(parsed)) {
+            parsed.forEach((genre: string) => {
+              if (typeof genre === "string") {
+                const normalized = genre.trim();
+                if (normalized) {
+                  genreCounts[normalized] = (genreCounts[normalized] || 0) + 1;
+                }
+              }
+            });
+          }
+        } catch {
+          // Ignore parsing errors
+        }
+      }
+    });
+
+    // Convert to array and sort by frequency
+    return Object.entries(genreCounts)
+      .map(([genre, count]) => ({ genre, count }))
+      .sort((a, b) => b.count - a.count);
+  } catch (error) {
+    console.error("Error fetching genres:", error);
+    return [];
+  }
+}

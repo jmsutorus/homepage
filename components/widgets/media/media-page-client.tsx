@@ -6,7 +6,7 @@ import { MediaItem } from "@/lib/media";
 import { MediaGrid } from "./media-grid";
 import { PaginatedMediaGrid } from "./paginated-media-grid";
 import { MediaConsumptionTimeline } from "./media-consumption-timeline";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,8 @@ function dbToMediaItem(dbMedia: MediaContent): MediaItem {
       featured: dbMedia.featured === 1,
       published: dbMedia.published === 1,
     },
-    content: dbMedia.content,
+    // Content might be undefined if not selected for performance
+    content: dbMedia.content ?? "",
   };
 }
 
@@ -396,15 +397,43 @@ export function MediaPageClient({
         <TabsContent value="media" className="space-y-4 sm:space-y-6 mt-6">
           {/* Filters and Search */}
           <div className="flex flex-col gap-4">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
-          <TabsList className="w-full grid grid-cols-5 h-auto">
-            <TabsTrigger value="all" className="text-xs sm:text-sm">All ({stats.all})</TabsTrigger>
-            <TabsTrigger value="movie" className="text-xs sm:text-sm">Movies ({stats.movie})</TabsTrigger>
-            <TabsTrigger value="tv" className="text-xs sm:text-sm">TV ({stats.tv})</TabsTrigger>
-            <TabsTrigger value="book" className="text-xs sm:text-sm">Books ({stats.book})</TabsTrigger>
-            <TabsTrigger value="game" className="text-xs sm:text-sm">Games ({stats.game})</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground w-full">
+          <Button
+            variant={activeTab === "all" ? "default" : "ghost"}
+            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+            onClick={() => setActiveTab("all")}
+          >
+            All ({stats.all})
+          </Button>
+          <Button
+            variant={activeTab === "movie" ? "default" : "ghost"}
+            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+            onClick={() => setActiveTab("movie")}
+          >
+            Movies ({stats.movie})
+          </Button>
+          <Button
+            variant={activeTab === "tv" ? "default" : "ghost"}
+            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+            onClick={() => setActiveTab("tv")}
+          >
+            TV ({stats.tv})
+          </Button>
+          <Button
+            variant={activeTab === "book" ? "default" : "ghost"}
+            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+            onClick={() => setActiveTab("book")}
+          >
+            Books ({stats.book})
+          </Button>
+          <Button
+            variant={activeTab === "game" ? "default" : "ghost"}
+            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+            onClick={() => setActiveTab("game")}
+          >
+            Games ({stats.game})
+          </Button>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
           <div className="relative sm:col-span-2">

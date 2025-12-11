@@ -54,7 +54,8 @@ function dbToMediaItem(dbMedia: MediaContent): MediaItem {
       featured: dbMedia.featured === 1,
       published: dbMedia.published === 1,
     },
-    content: dbMedia.content,
+    // Content might be undefined if not selected for performance
+    content: dbMedia.content ?? "",
   };
 }
 
@@ -81,8 +82,9 @@ export async function getMediaBySlug(directory: string, slug: string, userId: st
  * Get all media items from a directory
  * @param directory - Directory path (e.g., "media/movies", "media/tv", "media/books", "media/games")
  * @param userId - User ID for filtering
+ * @param includeContent - Whether to include the content field (default: false for performance)
  */
-export async function getAllMedia(directory: string, userId: string): Promise<MediaItem[]> {
+export async function getAllMedia(directory: string, userId: string, includeContent: boolean = false): Promise<MediaItem[]> {
   try {
     // Extract type from directory path
     let type: "movie" | "tv" | "book" | "game" | null = null;
@@ -98,7 +100,7 @@ export async function getAllMedia(directory: string, userId: string): Promise<Me
     }
 
     // Get media from database
-    const dbMedia = type ? await dbGetMediaByType(type, userId) : await dbGetAllMedia(userId);
+    const dbMedia = type ? await dbGetMediaByType(type, userId, includeContent) : await dbGetAllMedia(userId, includeContent);
 
     // Convert to MediaItem format
     return dbMedia.map(dbToMediaItem);
@@ -110,10 +112,12 @@ export async function getAllMedia(directory: string, userId: string): Promise<Me
 
 /**
  * Get all media items from all directories
+ * @param userId - User ID
+ * @param includeContent - Whether to include the content field (default: false for performance)
  */
-export async function getAllMediaItems(userId: string): Promise<MediaItem[]> {
+export async function getAllMediaItems(userId: string, includeContent: boolean = false): Promise<MediaItem[]> {
   try {
-    const dbMedia = await dbGetAllMedia(userId);
+    const dbMedia = await dbGetAllMedia(userId, includeContent);
     return dbMedia.map(dbToMediaItem);
   } catch (error) {
     console.error("Error reading all media items", error);
@@ -167,10 +171,11 @@ export function sortMediaByRating(media: MediaItem[]): MediaItem[] {
  * Get recently completed media sorted by completion date (newest first)
  * @param userId - User ID for filtering
  * @param limit - Number of items to return (default: 4)
+ * @param includeContent - Whether to include the content field (default: false for performance)
  */
-export async function getRecentlyCompletedMedia(userId: string, limit: number = 4): Promise<MediaItem[]> {
+export async function getRecentlyCompletedMedia(userId: string, limit: number = 4, includeContent: boolean = false): Promise<MediaItem[]> {
   try {
-    const allMedia = await dbGetAllMedia(userId);
+    const allMedia = await dbGetAllMedia(userId, includeContent);
 
     // Filter for completed media with a completed date
     const completedMedia = allMedia

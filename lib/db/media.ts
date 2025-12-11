@@ -20,7 +20,7 @@ export interface MediaContent {
   creator: string | null; // JSON array of creator strings (directors/authors)
   featured: number; // SQLite boolean (0 or 1)
   published: number; // SQLite boolean (0 or 1)
-  content: string; // Markdown content
+  content?: string; // Markdown content (optional when not selected for performance)
   created_at: string;
   updated_at: string;
 }
@@ -110,10 +110,16 @@ export async function getMediaBySlug(slug: string, userId: string): Promise<Medi
 
 /**
  * Get all media entries for a specific user
+ * @param userId - User ID
+ * @param includeContent - Whether to include the content field (default: false for performance)
  */
-export async function getAllMedia(userId: string): Promise<MediaContent[]> {
+export async function getAllMedia(userId: string, includeContent: boolean = false): Promise<MediaContent[]> {
+  const fields = includeContent
+    ? "*"
+    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, created_at, updated_at";
+
   return await query<MediaContent>(
-    "SELECT * FROM media_content WHERE userId = ? ORDER BY created_at DESC",
+    `SELECT ${fields} FROM media_content WHERE userId = ? ORDER BY created_at DESC`,
     [userId]
   );
 }
@@ -143,6 +149,7 @@ type SortOption =
  * @param page - Page number (1-indexed)
  * @param pageSize - Number of items per page
  * @param filters - Optional filters (type, status, search, genres, tags, sort)
+ * @param includeContent - Whether to include the content field (default: false for performance)
  */
 export async function getPaginatedMedia(
   userId: string,
@@ -155,7 +162,8 @@ export async function getPaginatedMedia(
     genres?: string[];
     tags?: string[];
     sortBy?: SortOption;
-  }
+  },
+  includeContent: boolean = false
 ): Promise<PaginatedMediaResult> {
   const offset = (page - 1) * pageSize;
 
@@ -217,9 +225,14 @@ export async function getPaginatedMedia(
       orderBy = "created_at DESC";
   }
 
+  // Select only necessary fields for performance
+  const fields = includeContent
+    ? "*"
+    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, created_at, updated_at";
+
   // Get all matching items for counting and genre/tag filtering
   let allItems = await query<MediaContent>(
-    `SELECT * FROM media_content WHERE ${whereClause} ORDER BY ${orderBy}`,
+    `SELECT ${fields} FROM media_content WHERE ${whereClause} ORDER BY ${orderBy}`,
     params
   );
 
@@ -257,40 +270,65 @@ export async function getPaginatedMedia(
 
 /**
  * Get media entries by type for a specific user
+ * @param type - Media type
+ * @param userId - User ID
+ * @param includeContent - Whether to include the content field (default: false for performance)
  */
 export async function getMediaByType(
   type: "movie" | "tv" | "book" | "game",
-  userId: string
+  userId: string,
+  includeContent: boolean = false
 ): Promise<MediaContent[]> {
+  const fields = includeContent
+    ? "*"
+    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, created_at, updated_at";
+
   return await query<MediaContent>(
-    "SELECT * FROM media_content WHERE type = ? AND userId = ? ORDER BY created_at DESC",
+    `SELECT ${fields} FROM media_content WHERE type = ? AND userId = ? ORDER BY created_at DESC`,
     [type, userId]
   );
 }
 
 /**
  * Get media entries by status for a specific user
+ * @param status - Media status
+ * @param userId - User ID
+ * @param includeContent - Whether to include the content field (default: false for performance)
  */
 export async function getMediaByStatus(
   status: "in-progress" | "completed" | "planned",
-  userId: string
+  userId: string,
+  includeContent: boolean = false
 ): Promise<MediaContent[]> {
+  const fields = includeContent
+    ? "*"
+    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, created_at, updated_at";
+
   return await query<MediaContent>(
-    "SELECT * FROM media_content WHERE status = ? AND userId = ? ORDER BY created_at DESC",
+    `SELECT ${fields} FROM media_content WHERE status = ? AND userId = ? ORDER BY created_at DESC`,
     [status, userId]
   );
 }
 
 /**
  * Get media entries by type and status for a specific user
+ * @param type - Media type
+ * @param status - Media status
+ * @param userId - User ID
+ * @param includeContent - Whether to include the content field (default: false for performance)
  */
 export async function getMediaByTypeAndStatus(
   type: "movie" | "tv" | "book" | "game",
   status: "in-progress" | "completed" | "planned",
-  userId: string
+  userId: string,
+  includeContent: boolean = false
 ): Promise<MediaContent[]> {
+  const fields = includeContent
+    ? "*"
+    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, created_at, updated_at";
+
   return await query<MediaContent>(
-    `SELECT * FROM media_content
+    `SELECT ${fields} FROM media_content
      WHERE type = ? AND status = ? AND userId = ?
      ORDER BY created_at DESC`,
     [type, status, userId]

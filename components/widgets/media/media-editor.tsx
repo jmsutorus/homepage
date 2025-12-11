@@ -23,6 +23,7 @@ import { BookSearchModal, type BookData } from './book-search-modal';
 import { Upload, FileText, CheckCircle2, XCircle, AlertCircle, Film, BookOpen } from 'lucide-react';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { TagInput } from '@/components/search/tag-input';
+import { GenreInput } from '@/components/search/genre-input';
 import { TemplatePicker } from '@/components/widgets/shared/template-picker';
 import { Template } from '@/lib/constants/templates';
 
@@ -81,7 +82,6 @@ export function MediaEditor({
     }
   );
   const [content, setContent] = useState(initialContent);
-  const [genreInput, setGenreInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -680,24 +680,6 @@ export function MediaEditor({
     }, 0);
   };
 
-  const addGenre = () => {
-    if (genreInput.trim() && !frontmatter.genres?.includes(genreInput.trim())) {
-      setFrontmatter({
-        ...frontmatter,
-        genres: [...(frontmatter.genres || []), genreInput.trim()],
-      });
-      setGenreInput('');
-    }
-  };
-
-  const removeGenre = (genre: string) => {
-    setFrontmatter({
-      ...frontmatter,
-      genres: frontmatter.genres?.filter((g) => g !== genre),
-    });
-  };
-
-
   const handleIMDBMediaSelect = (data: IMDBMediaData) => {
     // Populate the form with IMDB data
     setFrontmatter({
@@ -1210,44 +1192,14 @@ export function MediaEditor({
                 </div>
 
                 {/* Genres */}
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="genres">Genres</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="genres"
-                      value={genreInput}
-                      onChange={(e) => setGenreInput(e.target.value)}
-                      placeholder="Enter genre"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addGenre();
-                        }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      onClick={addGenre}
-                      disabled={!genreInput.trim()}
-                      variant="outline"
-                    >
-                      Add
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {frontmatter.genres?.map((genre) => (
-                      <Badge key={genre} variant="secondary">
-                        {genre}
-                        <button
-                          type="button"
-                          onClick={() => removeGenre(genre)}
-                          className="cursor-pointer ml-2 hover:text-red-500"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
+                <div className="md:col-span-2">
+                  <GenreInput
+                    selectedGenres={frontmatter.genres || []}
+                    onGenresChange={(genres) =>
+                      setFrontmatter({ ...frontmatter, genres })
+                    }
+                    placeholder="Enter custom genre or search existing..."
+                  />
                 </div>
 
                 {/* Tags */}
