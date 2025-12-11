@@ -50,7 +50,8 @@ function dbToMediaItem(dbMedia: MediaContent): MediaItem {
       featured: dbMedia.featured === 1,
       published: dbMedia.published === 1,
     },
-    content: dbMedia.content,
+    // Content might be undefined if not selected for performance
+    content: dbMedia.content ?? "",
   };
 }
 
