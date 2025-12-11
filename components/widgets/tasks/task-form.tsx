@@ -4,13 +4,15 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Sparkles } from "lucide-react";
-import { TaskPriority, TaskCategory } from "@/lib/db/tasks";
+import { CalendarIcon, Plus, Sparkles, ChevronDown, ChevronRight } from "lucide-react";
+import { TaskPriority, TaskCategory, TaskStatusRecord, PredefinedTaskStatus } from "@/lib/db/tasks";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 import { TemplatePicker } from "@/components/widgets/shared/template-picker";
 import type { TaskTemplate } from "@/lib/db/task-templates";
@@ -22,9 +24,13 @@ interface TaskFormProps {
 
 export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const [rawInput, setRawInput] = useState("");
+  const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [category, setCategory] = useState<string>("");
   const [categories, setCategories] = useState<TaskCategory[]>([]);
+  const [status, setStatus] = useState<string>("active");
+  const [statuses, setStatuses] = useState<{ predefined: PredefinedTaskStatus[]; custom: TaskStatusRecord[] }>({ predefined: [], custom: [] });
+  const [showDescription, setShowDescription] = useState(false);
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [isAdding, setIsAdding] = useState(false);
   const [manualOverride, setManualOverride] = useState(false);
@@ -37,9 +43,10 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
 
   const showNLPHint = parsedContent && (parsedContent.hasDate || parsedContent.hasPriority);
 
-  // Fetch categories on mount
+  // Fetch categories and statuses on mount
   useEffect(() => {
     fetchCategories();
+    fetchStatuses();
   }, []);
 
   const fetchCategories = async () => {
@@ -51,6 +58,18 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       }
     } catch (error) {
       console.error("Failed to fetch categories:", error);
+    }
+  };
+
+  const fetchStatuses = async () => {
+    try {
+      const response = await fetch("/api/task-statuses");
+      if (response.ok) {
+        const data = await response.json();
+        setStatuses(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch statuses:", error);
     }
   };
 
@@ -79,6 +98,8 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: finalTitle,
+          description: description.trim() || undefined,
+          status: status,
           priority: finalPriority,
           category: category || undefined,
           dueDate: dueDateString,
@@ -87,10 +108,13 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
 
       if (response.ok) {
         setRawInput("");
+        setDescription("");
+        setStatus("active");
         setPriority("medium");
         setCategory("");
         setDueDate(undefined);
         setManualOverride(false);
+        setShowDescription(false);
         showCreationSuccess("task");
         onTaskAdded();
       } else {
@@ -178,6 +202,35 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
           </Button>
         </div>
 
+        {/* Description Field - Collapsible */}
+        <Collapsible open={showDescription} onOpenChange={setShowDescription}>
+          <CollapsibleTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            >
+              {showDescription ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+              Add description
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-2">
+            <Textarea
+              placeholder="Add optional notes or details..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={isAdding}
+              rows={3}
+              className="resize-none"
+            />
+          </CollapsibleContent>
+        </Collapsible>
+
       <div className="flex gap-2 justify-end flex-wrap">
         <TemplatePicker type="task" onSelect={handleTemplateSelect} />
         <div>
@@ -211,6 +264,35 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
                   {cat.name}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="status" className="sr-only">
+            Status
+          </Label>
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger id="status" className="cursor-pointer">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="blocked">Blocked</SelectItem>
+              <SelectItem value="on_hold">On Hold</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              {statuses.custom.length > 0 && (
+                <>
+                  <SelectSeparator />
+                  {statuses.custom.map((s) => (
+                    <SelectItem key={s.id} value={s.name}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
             </SelectContent>
           </Select>
         </div>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTask, updateTask, deleteTask, TaskPriority } from "@/lib/db/tasks";
+import { getTask, updateTask, deleteTask, TaskPriority, TaskStatus, isValidTaskStatus } from "@/lib/db/tasks";
 import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 interface RouteContext {
@@ -8,7 +8,7 @@ interface RouteContext {
 
 /**
  * PATCH /api/tasks/[id]
- * Body: { title?, completed?, dueDate?, priority?, category? }
+ * Body: { title?, description?, completed?, status?, dueDate?, priority?, category? }
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
@@ -33,7 +33,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const body = await request.json();
     const updates: {
       title?: string;
+      description?: string;
       completed?: boolean;
+      status?: TaskStatus;
       due_date?: string;
       priority?: TaskPriority;
       category?: string | null;
@@ -41,6 +43,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (body.title !== undefined) {
       updates.title = body.title;
+    }
+
+    if (body.description !== undefined) {
+      updates.description = body.description;
+    }
+
+    if (body.status !== undefined) {
+      // Validate status
+      if (!(await isValidTaskStatus(userId, body.status))) {
+        return NextResponse.json(
+          { error: "Invalid status" },
+          { status: 400 }
+        );
+      }
+      updates.status = body.status;
     }
 
     if (body.completed !== undefined) {

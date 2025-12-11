@@ -5,6 +5,7 @@ import type { Task, TaskVelocityData, VelocityPeriod } from "@/lib/db/tasks";
 import { TaskForm } from "@/components/widgets/tasks/task-form";
 import { TaskList } from "@/components/widgets/tasks/task-list";
 import { CategoryManager } from "@/components/widgets/tasks/category-manager";
+import { StatusManager } from "@/components/widgets/tasks/status-manager";
 import { TaskTemplateManager } from "@/components/widgets/tasks/task-template-manager";
 import { TaskVelocityChart } from "@/components/widgets/tasks/task-velocity-chart";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -178,6 +179,9 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
               <CategoryManager onCategoriesChanged={handleTasksChanged} />
             </CardContent>
           </Card>
+
+          {/* Status Manager */}
+          <StatusManager onStatusesChanged={handleTasksChanged} />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 mt-6">

@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Task } from "@/lib/db/tasks";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select";
+import { Task, TaskStatusRecord, PredefinedTaskStatus } from "@/lib/db/tasks";
 import { format } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { TaskCompletionAnimation, useTaskCompletionAnimation } from "@/components/ui/animations/task-completion-animation";
@@ -31,11 +32,49 @@ const priorityColors = {
   high: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
 };
 
+const statusColors: Record<string, string> = {
+  active: "bg-green-500/10 text-green-500 hover:bg-green-500/20",
+  in_progress: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
+  blocked: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
+  on_hold: "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20",
+  cancelled: "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20",
+  completed: "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20",
+};
+
+function getStatusColor(status: string): string {
+  return statusColors[status.toLowerCase()] || "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20";
+}
+
+function formatStatusName(status: string): string {
+  return status
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [localTasks, setLocalTasks] = useState(tasks);
   const { startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
   const [rescheduleTaskId, setRescheduleTaskId] = useState<number | null>(null);
+  const [statuses, setStatuses] = useState<{ predefined: PredefinedTaskStatus[]; custom: TaskStatusRecord[] }>({ predefined: [], custom: [] });
+
+  // Fetch statuses on mount
+  useEffect(() => {
+    fetchStatuses();
+  }, []);
+
+  const fetchStatuses = async () => {
+    try {
+      const response = await fetch("/api/task-statuses");
+      if (response.ok) {
+        const data = await response.json();
+        setStatuses(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch statuses:", error);
+    }
+  };
 
   // Update local tasks when prop changes
   useEffect(() => {
@@ -105,6 +144,35 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
     }
   };
 
+  const handleStatusChange = async (taskId: number, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        // Update local state optimistically
+        setLocalTasks(prev => prev.map(task =>
+          task.id === taskId ? { ...task, status: newStatus } : task
+        ));
+
+        toast.success("Status updated", {
+          description: `Task status changed to ${formatStatusName(newStatus)}`
+        });
+
+        // Refresh tasks to get updated completed state
+        onTasksChanged();
+      }
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+      toast.error("Failed to update status", {
+        description: "Please try again."
+      });
+    }
+  };
+
   const handleReschedule = async (taskId: number, date: Date) => {
     // Tranform the date to the format yyyy-MM-dd
     const formattedDate = format(date, "yyyy-MM-dd");
@@ -162,10 +230,49 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
                     >
                       {task.title}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
+                    {task.description && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        {task.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <Badge variant="secondary" className={priorityColors[task.priority]}>
                         {task.priority}
                       </Badge>
+
+                      {/* Status Dropdown */}
+                      <Select
+                        value={task.status || 'active'}
+                        onValueChange={(value) => handleStatusChange(task.id, value)}
+                      >
+                        <SelectTrigger
+                          className={`h-6 w-auto border-0 gap-1 px-2 text-xs font-medium cursor-pointer ${getStatusColor(task.status || 'active')}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <SelectValue>
+                            {formatStatusName(task.status || 'active')}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="blocked">Blocked</SelectItem>
+                          <SelectItem value="on_hold">On Hold</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          {statuses.custom.length > 0 && (
+                            <>
+                              <SelectSeparator />
+                              {statuses.custom.map((s) => (
+                                <SelectItem key={s.id} value={s.name}>
+                                  {s.name}
+                                </SelectItem>
+                              ))}
+                            </>
+                          )}
+                        </SelectContent>
+                      </Select>
+
                       {task.category && (
                         <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">
                           {task.category}

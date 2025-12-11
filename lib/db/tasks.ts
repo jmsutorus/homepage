@@ -1,16 +1,31 @@
 import { execute, query, queryOne } from "./index";
 import { checkAchievement } from "../achievements";
 
+// Predefined task statuses
+export const PREDEFINED_TASK_STATUSES = [
+  'active',
+  'in_progress',
+  'blocked',
+  'on_hold',
+  'cancelled',
+  'completed'
+] as const;
+
+export type PredefinedTaskStatus = typeof PREDEFINED_TASK_STATUSES[number];
+export type TaskStatus = PredefinedTaskStatus | string; // Allow custom statuses
+
 export type TaskPriority = "low" | "medium" | "high";
 
 export interface Task {
   id: number;
   title: string;
-  completed: boolean;
+  description: string | null;
+  completed: boolean; // Kept for backward compatibility, synced with status
   completed_date: string | null; // YYYY-MM-DD format
   due_date: string | null; // ISO 8601 format
   priority: TaskPriority;
   category: string | null;
+  status: TaskStatus;
   userId: string | null;
   created_at: string;
   updated_at: string;
@@ -18,6 +33,7 @@ export interface Task {
 
 export interface TaskFilter {
   completed?: boolean;
+  status?: TaskStatus | TaskStatus[];
   priority?: TaskPriority;
   category?: string;
   search?: string;
@@ -30,6 +46,29 @@ export interface TaskCategory {
   created_at: string;
 }
 
+export interface TaskStatusRecord {
+  id: number;
+  userId: string;
+  name: string;
+  color: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Check if a task status represents a completed state
+ */
+export function isStatusCompleted(status: TaskStatus): boolean {
+  return status.toLowerCase() === 'completed';
+}
+
+/**
+ * Get the computed completed boolean from status
+ */
+export function getCompletedFromStatus(status: TaskStatus): boolean {
+  return isStatusCompleted(status);
+}
+
 /**
  * Create a new task
  */
@@ -38,11 +77,22 @@ export async function createTask(
   dueDate?: string,
   priority: TaskPriority = "medium",
   category?: string,
-  userId?: string
+  userId?: string,
+  description?: string,
+  status: TaskStatus = "active"
 ): Promise<Task> {
   const result = await execute(
-    "INSERT INTO tasks (title, due_date, priority, category, userId) VALUES (?, ?, ?, ?, ?)",
-    [title, dueDate || null, priority, category || null, userId || null]
+    "INSERT INTO tasks (title, description, due_date, priority, category, status, userId, completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    [
+      title,
+      description || null,
+      dueDate || null,
+      priority,
+      category || null,
+      status,
+      userId || null,
+      isStatusCompleted(status) ? 1 : 0 // Auto-set completed boolean
+    ]
   );
 
   const task = await queryOne<Task>("SELECT * FROM tasks WHERE id = ?", [result.lastInsertRowid]);
@@ -78,6 +128,16 @@ export async function getAllTasks(filter?: TaskFilter, userId?: string): Promise
     params.push(filter.completed ? 1 : 0);
   }
 
+  if (filter?.status !== undefined) {
+    if (Array.isArray(filter.status)) {
+      sql += ` AND status IN (${filter.status.map(() => '?').join(',')})`;
+      params.push(...filter.status);
+    } else {
+      sql += " AND status = ?";
+      params.push(filter.status);
+    }
+  }
+
   if (filter?.priority) {
     sql += " AND priority = ?";
     params.push(filter.priority);
@@ -97,7 +157,7 @@ export async function getAllTasks(filter?: TaskFilter, userId?: string): Promise
     params.push(`%${filter.search}%`);
   }
 
-  sql += " ORDER BY completed ASC, due_date ASC NULLS LAST, priority DESC, created_at DESC";
+  sql += " ORDER BY completed ASC, status ASC, due_date ASC NULLS LAST, priority DESC, created_at DESC";
 
   return await query<Task>(sql, params);
 }
@@ -137,7 +197,7 @@ export async function getUpcomingTasks(userId: string): Promise<Task[]> {
  */
 export async function updateTask(
   id: number,
-  updates: Partial<Pick<Task, "title" | "completed" | "due_date" | "priority" | "category">>
+  updates: Partial<Pick<Task, "title" | "description" | "completed" | "status" | "due_date" | "priority" | "category">>
 ): Promise<boolean> {
   const fields: string[] = [];
   const params: unknown[] = [];
@@ -147,9 +207,39 @@ export async function updateTask(
     params.push(updates.title);
   }
 
-  if (updates.completed !== undefined) {
+  if (updates.description !== undefined) {
+    fields.push("description = ?");
+    params.push(updates.description);
+  }
+
+  // Handle status updates (takes priority over completed)
+  if (updates.status !== undefined) {
+    fields.push("status = ?");
+    params.push(updates.status);
+
+    // Auto-update completed boolean based on status
+    const isCompleted = isStatusCompleted(updates.status);
+    fields.push("completed = ?");
+    params.push(isCompleted ? 1 : 0);
+
+    // Set/clear completed_date based on status
+    if (isCompleted) {
+      const today = new Date().toISOString().split("T")[0];
+      fields.push("completed_date = ?");
+      params.push(today);
+    } else {
+      fields.push("completed_date = ?");
+      params.push(null);
+    }
+  } else if (updates.completed !== undefined) {
+    // Handle direct completed boolean update (backward compatibility)
     fields.push("completed = ?");
     params.push(updates.completed ? 1 : 0);
+
+    // Also update status to match
+    const newStatus = updates.completed ? 'completed' : 'active';
+    fields.push("status = ?");
+    params.push(newStatus);
 
     // Set completed_date when marking task as complete
     if (updates.completed) {
@@ -187,9 +277,14 @@ export async function updateTask(
   const result = await execute(sql, params);
 
   if (result.changes > 0) {
-    // Check for achievements if completed status changed to true
-    if (updates.completed === true) {
-      // Need userId. Fetch task to get it.
+    // Check for achievements if status changed to completed
+    if (updates.status && isStatusCompleted(updates.status)) {
+      const task = await queryOne<Task>("SELECT * FROM tasks WHERE id = ?", [id]);
+      if (task && task.userId) {
+        checkAchievement(task.userId, 'tasks').catch(console.error);
+      }
+    } else if (updates.completed === true) {
+      // Also check if completed was set directly (backward compatibility)
       const task = await queryOne<Task>("SELECT * FROM tasks WHERE id = ?", [id]);
       if (task && task.userId) {
         checkAchievement(task.userId, 'tasks').catch(console.error);
@@ -511,4 +606,128 @@ function getWeekNumber(date: Date): number {
   const startOfYear = new Date(date.getFullYear(), 0, 1);
   const pastDays = (date.getTime() - startOfYear.getTime()) / 86400000;
   return Math.ceil((pastDays + startOfYear.getDay() + 1) / 7);
+}
+
+// ==================== Task Statuses ====================
+
+/**
+ * Get all task statuses (predefined + user custom) for a user
+ */
+export async function getAllTaskStatuses(userId: string): Promise<{ predefined: PredefinedTaskStatus[]; custom: TaskStatusRecord[] }> {
+  const customStatuses = await query<TaskStatusRecord>(
+    "SELECT * FROM task_statuses WHERE userId = ? ORDER BY name ASC",
+    [userId]
+  );
+
+  return {
+    predefined: [...PREDEFINED_TASK_STATUSES],
+    custom: customStatuses
+  };
+}
+
+/**
+ * Get only custom statuses for a user
+ */
+export async function getCustomTaskStatuses(userId: string): Promise<TaskStatusRecord[]> {
+  return await query<TaskStatusRecord>(
+    "SELECT * FROM task_statuses WHERE userId = ? ORDER BY name ASC",
+    [userId]
+  );
+}
+
+/**
+ * Create a custom task status
+ */
+export async function createTaskStatus(userId: string, name: string, color?: string): Promise<TaskStatusRecord> {
+  const result = await execute(
+    "INSERT INTO task_statuses (userId, name, color) VALUES (?, ?, ?)",
+    [userId, name, color || null]
+  );
+
+  const status = await queryOne<TaskStatusRecord>(
+    "SELECT * FROM task_statuses WHERE id = ?",
+    [result.lastInsertRowid]
+  );
+
+  if (!status) {
+    throw new Error("Failed to create task status");
+  }
+
+  return status;
+}
+
+/**
+ * Update a custom task status
+ */
+export async function updateTaskStatus(id: number, userId: string, updates: { name?: string; color?: string }): Promise<boolean> {
+  const fields: string[] = [];
+  const params: unknown[] = [];
+
+  if (updates.name !== undefined) {
+    fields.push("name = ?");
+    params.push(updates.name);
+  }
+
+  if (updates.color !== undefined) {
+    fields.push("color = ?");
+    params.push(updates.color);
+  }
+
+  if (fields.length === 0) {
+    return false;
+  }
+
+  params.push(id);
+  params.push(userId);
+
+  const sql = `UPDATE task_statuses SET ${fields.join(", ")} WHERE id = ? AND userId = ?`;
+  const result = await execute(sql, params);
+
+  return result.changes > 0;
+}
+
+/**
+ * Delete a custom task status
+ * This will set status back to 'active' for all tasks using this status
+ */
+export async function deleteTaskStatus(id: number, userId: string): Promise<boolean> {
+  // First, get the status name
+  const status = await queryOne<TaskStatusRecord>(
+    "SELECT * FROM task_statuses WHERE id = ? AND userId = ?",
+    [id, userId]
+  );
+
+  if (status) {
+    // Update all tasks using this status to 'active'
+    await execute(
+      "UPDATE tasks SET status = 'active' WHERE status = ? AND userId = ?",
+      [status.name, userId]
+    );
+  }
+
+  // Then delete the status
+  const result = await execute(
+    "DELETE FROM task_statuses WHERE id = ? AND userId = ?",
+    [id, userId]
+  );
+
+  return result.changes > 0;
+}
+
+/**
+ * Validate if a status name is valid for a user (predefined or custom)
+ */
+export async function isValidTaskStatus(userId: string, statusName: string): Promise<boolean> {
+  // Check if it's a predefined status
+  if (PREDEFINED_TASK_STATUSES.includes(statusName as PredefinedTaskStatus)) {
+    return true;
+  }
+
+  // Check if it's a custom status for this user
+  const customStatus = await queryOne<TaskStatusRecord>(
+    "SELECT * FROM task_statuses WHERE userId = ? AND name = ?",
+    [userId, statusName]
+  );
+
+  return !!customStatus;
 }

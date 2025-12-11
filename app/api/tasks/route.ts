@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createTask, getAllTasks, TaskPriority, TaskFilter } from "@/lib/db/tasks";
+import { createTask, getAllTasks, TaskPriority, TaskFilter, isValidTaskStatus } from "@/lib/db/tasks";
 import { getUserId, requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/tasks
  * Query params:
  * - completed: Filter by completion status (true/false)
+ * - status: Filter by status
  * - priority: Filter by priority (low/medium/high)
  * - category: Filter by category name
  * - search: Search in title
@@ -19,6 +20,7 @@ export async function GET(request: NextRequest) {
     const userId = session.user.id;
     const searchParams = request.nextUrl.searchParams;
     const completedParam = searchParams.get("completed");
+    const status = searchParams.get("status");
     const priority = searchParams.get("priority") as TaskPriority | null;
     const category = searchParams.get("category");
     const search = searchParams.get("search");
@@ -27,6 +29,10 @@ export async function GET(request: NextRequest) {
 
     if (completedParam !== null) {
       filter.completed = completedParam === "true";
+    }
+
+    if (status) {
+      filter.status = status;
     }
 
     if (priority) {
@@ -54,7 +60,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/tasks
- * Body: { title: string, dueDate?: string, priority?: string, category?: string }
+ * Body: { title: string, description?: string, dueDate?: string, priority?: string, category?: string, status?: string }
  */
 export async function POST(request: NextRequest) {
   try {
@@ -64,12 +70,20 @@ export async function POST(request: NextRequest) {
     }
     const userId = session.user.id;
     const body = await request.json();
-    const { title, dueDate, priority, category } = body;
+    const { title, description, dueDate, priority, category, status } = body;
 
     // Validate input
     if (!title || typeof title !== "string" || title.trim().length === 0) {
       return NextResponse.json(
         { error: "Title is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate status if provided
+    if (status && !(await isValidTaskStatus(userId, status))) {
+      return NextResponse.json(
+        { error: "Invalid status" },
         { status: 400 }
       );
     }
@@ -80,7 +94,9 @@ export async function POST(request: NextRequest) {
       dueDate || undefined,
       (priority as TaskPriority) || "medium",
       category || undefined,
-      userId
+      userId,
+      description || undefined,
+      status || "active"
     );
 
     return NextResponse.json(task, { status: 201 });
