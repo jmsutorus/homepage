@@ -67,16 +67,49 @@ export function PaginatedMediaGrid({
   const observerTarget = useRef<HTMLDivElement>(null);
   const prefetchedPageRef = useRef<number | null>(null);
   const prefetchedDataRef = useRef<MediaItem[] | null>(null);
+  const isInitialMount = useRef(true);
 
-  // Reset when filters change
+  // Use initial items on first mount
   useEffect(() => {
-    setItems(initialItems);
+    if (isInitialMount.current) {
+      setItems(initialItems);
+      setHasMore(initialItems.length >= 25);
+      isInitialMount.current = false;
+    }
+  }, [initialItems]);
+
+  // Reset and fetch when filters change (skip initial mount)
+  useEffect(() => {
+    // Skip on initial mount - we use initialItems instead
+    if (isInitialMount.current) {
+      return;
+    }
+
+    // Reset state
     setPage(1);
-    setHasMore(initialItems.length >= 25); // Changed from === to >= to be safer
-    setError(null); // Clear any previous errors
+    setError(null);
     prefetchedPageRef.current = null;
     prefetchedDataRef.current = null;
-  }, [initialItems, filters]);
+
+    // Fetch fresh data with new filters
+    const fetchFilteredData = async () => {
+      setIsLoading(true);
+      const result = await fetchPage(1);
+      if (result) {
+        setItems(result.items);
+        setHasMore(result.hasMore);
+
+        // Prefetch next page if there's more
+        if (result.hasMore) {
+          await fetchPage(2, true);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    fetchFilteredData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
   // Fetch a specific page
   const fetchPage = useCallback(

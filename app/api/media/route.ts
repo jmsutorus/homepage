@@ -93,7 +93,8 @@ export async function GET(request: NextRequest) {
       if (sortBy && sortBy !== null) filters.sortBy = sortBy;
 
       console.log("Fetching paginated media with filters:", JSON.stringify(filters, null, 2));
-      const result = await getPaginatedMedia(userId, page, pageSize, filters);
+      // Exclude content field for performance (not needed for list view)
+      const result = await getPaginatedMedia(userId, page, pageSize, filters, false);
       console.log(`Returned ${result.items.length} items, hasMore: ${result.hasMore}`);
       return NextResponse.json(result);
     } else {
@@ -105,7 +106,8 @@ export async function GET(request: NextRequest) {
         | "planned"
         | null;
 
-      let media = await getAllMedia(userId);
+      // Exclude content field for performance (not needed for list view)
+      let media = await getAllMedia(userId, false);
 
       // Apply filters
       if (type) {
