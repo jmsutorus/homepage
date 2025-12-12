@@ -191,9 +191,9 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
       <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as ViewTab)}>
         <PageTabsList
           tabs={[
-            { value: "tasks", label: "Tasks", icon: ListTodo },
-            { value: "manage", label: "Manage", icon: Settings },
-            { value: "analytics", label: "Analytics", icon: TrendingUp },
+            { value: "tasks", label: "Tasks", icon: ListTodo, showLabel: false },
+            { value: "manage", label: "Manage", icon: Settings, showLabel: false },
+            { value: "analytics", label: "Analytics", icon: TrendingUp, showLabel: false },
           ]}
           actionButton={{
             label: "New Task",
