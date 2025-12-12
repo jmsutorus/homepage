@@ -12,8 +12,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, Plus } from "lucide-react";
+import { Filter, Plus, ListTodo, Settings, TrendingUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { MobileTaskSheet } from "@/components/widgets/tasks/mobile-task-sheet";
 
 type FilterType = "all" | "active" | "completed";
 type ViewTab = "tasks" | "manage" | "analytics";
@@ -35,6 +37,8 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
   const [velocityPeriod, setVelocityPeriod] = useState<VelocityPeriod>("week");
   const [viewTab, setViewTab] = useState<ViewTab>("tasks");
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [completedTasksOpen, setCompletedTasksOpen] = useState(false);
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
   // Track if it's the first render to avoid double fetching
   const isFirstRender = useState(true)[0]; // We can't use useRef here because we need to trigger re-renders? No, useRef is fine for logic.
@@ -149,8 +153,9 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+    <div className="md:space-y-6">
+      {/* Desktop: Header and New Task button */}
+      <div className="hidden md:flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tasks</h1>
           <p className="text-muted-foreground text-sm sm:text-base">
@@ -170,16 +175,21 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
       <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as ViewTab)}>
         <PageTabsList
           tabs={[
-            { value: "tasks", label: "Tasks" },
-            { value: "manage", label: "Manage" },
-            { value: "analytics", label: "Analytics" },
+            { value: "tasks", label: "Tasks", icon: ListTodo },
+            { value: "manage", label: "Manage", icon: Settings },
+            { value: "analytics", label: "Analytics", icon: TrendingUp },
           ]}
+          actionButton={{
+            label: "New Task",
+            onClick: () => setMobileSheetOpen(true),
+            icon: Plus,
+          }}
         />
 
-        <TabsContent value="tasks" className="space-y-6 mt-6">
-          {/* Task Form */}
+        <TabsContent value="tasks" className="space-y-6 md:mt-6 pb-20 md:pb-0">
+          {/* Task Form - Desktop Only */}
           {showTaskForm && (
-            <Card>
+            <Card className="hidden md:block">
               <CardHeader>
                 <CardTitle>Add New Task</CardTitle>
                 <CardDescription>Create a task with optional due date and priority</CardDescription>
@@ -190,7 +200,7 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
             </Card>
           )}
 
-          {/* Task List */}
+          {/* Active Tasks */}
           <Card>
             <CardHeader>
               <div className="flex flex-col gap-4">
@@ -198,7 +208,7 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
                   <div>
                     <CardTitle>Your Tasks</CardTitle>
                     <CardDescription className="text-sm">
-                      {stats.total} total • {stats.active} active • {stats.completed} completed
+                      {stats.active} active tasks
                     </CardDescription>
                   </div>
                 </div>
@@ -206,7 +216,6 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
                 {/* Additional Filters */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex items-center gap-2 flex-1 sm:flex-none">
-                    <Filter className="h-4 w-4 text-muted-foreground" />
                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                       <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="All Categories" />
@@ -234,7 +243,6 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
                         <SelectItem value="blocked">Blocked</SelectItem>
                         <SelectItem value="on_hold">On Hold</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
                         {statuses.map((status) => (
                           <SelectItem key={status.id} value={status.name}>
                             {status.name}
@@ -250,13 +258,47 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
               {isLoading ? (
                 <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
               ) : (
-                <TaskList tasks={tasks} onTasksChanged={handleTasksChanged} />
+                <TaskList tasks={tasks.filter(t => !t.completed)} onTasksChanged={handleTasksChanged} />
               )}
             </CardContent>
           </Card>
+
+          {/* Completed Tasks */}
+          {stats.completed > 0 && (
+            <Collapsible open={completedTasksOpen} onOpenChange={setCompletedTasksOpen}>
+              <Card>
+                <CardHeader>
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity">
+                      <div>
+                        <CardTitle>Completed Tasks</CardTitle>
+                        <CardDescription className="text-sm">
+                          {stats.completed} completed tasks
+                        </CardDescription>
+                      </div>
+                      <ChevronDown
+                        className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${
+                          completedTasksOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </div>
+                  </CollapsibleTrigger>
+                </CardHeader>
+                <CollapsibleContent>
+                  <CardContent>
+                    {isLoading ? (
+                      <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
+                    ) : (
+                      <TaskList tasks={tasks.filter(t => t.completed)} onTasksChanged={handleTasksChanged} />
+                    )}
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          )}
         </TabsContent>
 
-        <TabsContent value="manage" className="space-y-6 mt-6">
+        <TabsContent value="manage" className="space-y-6 md:mt-6 pb-20 md:pb-0">
           {/* Task Templates */}
           <TaskTemplateManager onTemplatesChanged={handleTasksChanged} />
 
@@ -275,7 +317,7 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
           <StatusManager onStatusesChanged={handleTasksChanged} />
         </TabsContent>
 
-        <TabsContent value="analytics" className="space-y-6 mt-6">
+        <TabsContent value="analytics" className="space-y-6 md:mt-6 pb-20 md:pb-0">
           {/* Task Velocity Chart */}
           {velocityData && (
             <TaskVelocityChart
@@ -285,6 +327,13 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Mobile Task Sheet */}
+      <MobileTaskSheet
+        open={mobileSheetOpen}
+        onOpenChange={setMobileSheetOpen}
+        onTaskAdded={handleTasksChanged}
+      />
     </div>
   );
 }

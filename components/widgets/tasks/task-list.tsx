@@ -219,16 +219,16 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
                       </p>
                     )}
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <Badge variant="secondary" className={priorityColors[task.priority]}>
-                        {task.priority}
-                      </Badge>
-
                       {/* Status Dropdown */}
                       <TaskStatusSelect
                         status={task.status}
                         onStatusChange={(value) => handleStatusChange(task.id, value)}
                         customStatuses={statuses.custom}
                       />
+                      
+                      <Badge variant="secondary" className={priorityColors[task.priority]}>
+                        {task.priority}
+                      </Badge>
 
                       {task.category && (
                         <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">
