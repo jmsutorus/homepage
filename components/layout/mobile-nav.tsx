@@ -43,6 +43,7 @@ export function MobileNav() {
         { href: "/habits", label: "Habits", icon: <Heart className="h-5 w-5" /> },
         { href: "/exercise", label: "Exercise", icon: <Dumbbell className="h-5 w-5" /> },
         { href: "/mood", label: "Mood", icon: <Smile className="h-5 w-5" /> },
+        { href: "/goals", label: "Goals", icon: <Target className="h-5 w-5" /> },
       ],
     },
     {
@@ -56,7 +57,6 @@ export function MobileNav() {
     {
       title: "Progress",
       links: [
-        { href: "/goals", label: "Goals", icon: <Target className="h-5 w-5" /> },
         { href: "/achievements", label: "Achievements", icon: <Trophy className="h-5 w-5" /> },
         {
           href: `/year/${new Date().getFullYear()}`,
