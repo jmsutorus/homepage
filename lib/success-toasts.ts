@@ -38,7 +38,8 @@ type EntityType =
   | "media"
   | "park"
   | "category"
-  | "link";
+  | "link"
+  | "goal";
 
 /**
  * Default success messages for each entity type
@@ -54,6 +55,7 @@ const DEFAULT_MESSAGES: Record<EntityType, string> = {
   park: "Park visit recorded",
   category: "Category created",
   link: "Link added",
+  goal: "Goal created successfully!",
 };
 
 /**
@@ -64,6 +66,7 @@ const DEFAULT_DESCRIPTIONS: Partial<Record<EntityType, string>> = {
   activity: "Keep up the momentum!",
   mood: "Thanks for checking in with yourself.",
   journal: "Your thoughts have been saved.",
+  goal: "One step closer to your dreams!",
 };
 
 /**
