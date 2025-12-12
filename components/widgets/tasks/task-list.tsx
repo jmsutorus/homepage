@@ -25,6 +25,7 @@ import { Calendar, Trash2, Clock, ArrowRight } from "lucide-react";
 interface TaskListProps {
   tasks: Task[];
   onTasksChanged: () => void;
+  showDetails?: boolean;
 }
 
 const priorityColors = {
@@ -35,7 +36,7 @@ const priorityColors = {
 
 
 
-export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
+export function TaskList({ tasks, onTasksChanged, showDetails = true }: TaskListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [localTasks, setLocalTasks] = useState(tasks);
   const { startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
@@ -213,38 +214,43 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
                     >
                       {task.title}
                     </p>
-                    {task.description && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                        {task.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      {/* Status Dropdown */}
-                      <TaskStatusSelect
-                        status={task.status}
-                        onStatusChange={(value) => handleStatusChange(task.id, value)}
-                        customStatuses={statuses.custom}
-                      />
-                      
-                      <Badge variant="secondary" className={priorityColors[task.priority]}>
-                        {task.priority}
-                      </Badge>
+                      {showDetails && (
+                        <>
+                          {task.description && (
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                              {task.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            {/* Status Dropdown */}
+                            <TaskStatusSelect
+                              status={task.status}
+                              onStatusChange={(value) => handleStatusChange(task.id, value)}
+                              customStatuses={statuses.custom}
+                            />
+                            
+                            <Badge variant="secondary" className={priorityColors[task.priority]}>
+                              {task.priority}
+                            </Badge>
 
-                      {task.category && (
-                        <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">
-                          {task.category}
-                        </Badge>
-                      )}
-                      {task.due_date && task.due_date.trim() !== "" && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          <span>
-                            {format(new Date(task.due_date.replaceAll("-", "/")), "MMM d, yyyy")}
-                          </span>
-                        </div>
+                            {task.category && (
+                              <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">
+                                {task.category}
+                              </Badge>
+                            )}
+                            {task.due_date && task.due_date.trim() !== "" && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                <span>
+                                  {format(new Date(task.due_date.replaceAll("-", "/")), "MMM d, yyyy")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
-                  </div>
+
 
                   <Button
                     variant="ghost"

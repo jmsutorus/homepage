@@ -12,10 +12,18 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, Plus, ListTodo, Settings, TrendingUp, ChevronDown } from "lucide-react";
+import { Filter, Plus, ListTodo, Settings, TrendingUp, ChevronDown, MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { MobileTaskSheet } from "@/components/widgets/tasks/mobile-task-sheet";
+import { MobileFilterSheet } from "@/components/widgets/tasks/mobile-filter-sheet";
 
 type FilterType = "all" | "active" | "completed";
 type ViewTab = "tasks" | "manage" | "analytics";
@@ -39,6 +47,8 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [completedTasksOpen, setCompletedTasksOpen] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [showDetails, setShowDetails] = useState(true);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Track if it's the first render to avoid double fetching
   const isFirstRender = useState(true)[0]; // We can't use useRef here because we need to trigger re-renders? No, useRef is fine for logic.
@@ -146,6 +156,12 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
     fetchCategoriesAndStatuses();
   };
 
+  const handleMobileFilterApply = (category: string, status: string) => {
+    setCategoryFilter(category);
+    setStatusFilter(status);
+    setMobileFilterOpen(false);
+  };
+
   const stats = {
     total: tasks.length,
     active: tasks.filter((t) => !t.completed).length,
@@ -205,16 +221,37 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
             <CardHeader>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <CardTitle>Your Tasks</CardTitle>
-                    <CardDescription className="text-sm">
-                      {stats.active} active tasks
-                    </CardDescription>
+                  <div className="flex items-center justify-between w-full sm:w-auto">
+                    <div>
+                      <CardTitle>Your Tasks</CardTitle>
+                      <CardDescription className="text-sm">
+                        {stats.active} active tasks
+                      </CardDescription>
+                    </div>
+                    {/* Mobile Options Menu */}
+                    <div className="md:hidden">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setMobileFilterOpen(true)}>
+                            Sort / Filter...
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => setShowDetails(!showDetails)}>
+                            {showDetails ? "Hide Details" : "Show Details"}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </div>
 
-                {/* Additional Filters */}
-                <div className="flex flex-col sm:flex-row gap-3">
+                {/* Additional Filters - Hidden on Mobile */}
+                <div className="hidden md:flex flex-col sm:flex-row gap-3">
                   <div className="flex items-center gap-2 flex-1 sm:flex-none">
                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                       <SelectTrigger className="w-full sm:w-[180px]">
@@ -258,7 +295,11 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
               {isLoading ? (
                 <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
               ) : (
-                <TaskList tasks={tasks.filter(t => !t.completed)} onTasksChanged={handleTasksChanged} />
+                <TaskList 
+                  tasks={tasks.filter(t => !t.completed)} 
+                  onTasksChanged={handleTasksChanged}
+                  showDetails={showDetails}
+                />
               )}
             </CardContent>
           </Card>
@@ -289,7 +330,11 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
                     {isLoading ? (
                       <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
                     ) : (
-                      <TaskList tasks={tasks.filter(t => t.completed)} onTasksChanged={handleTasksChanged} />
+                      <TaskList 
+                        tasks={tasks.filter(t => t.completed)} 
+                        onTasksChanged={handleTasksChanged}
+                        showDetails={showDetails}
+                      />
                     )}
                   </CardContent>
                 </CollapsibleContent>
@@ -333,6 +378,16 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
         open={mobileSheetOpen}
         onOpenChange={setMobileSheetOpen}
         onTaskAdded={handleTasksChanged}
+      />
+
+      <MobileFilterSheet
+        open={mobileFilterOpen}
+        onOpenChange={setMobileFilterOpen}
+        categories={categories}
+        statuses={statuses}
+        currentCategory={categoryFilter}
+        currentStatus={statusFilter}
+        onApply={handleMobileFilterApply}
       />
     </div>
   );
