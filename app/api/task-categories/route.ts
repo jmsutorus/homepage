@@ -3,6 +3,7 @@ import {
   getAllTaskCategories,
   createTaskCategory,
 } from "@/lib/db/tasks";
+import { getUserId } from "@/lib/auth/server";
 
 /**
  * GET /api/task-categories
@@ -27,6 +28,7 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
     const body = await request.json();
     const { name } = body;
 
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const category = await createTaskCategory(name.trim());
+    const category = await createTaskCategory(userId, name.trim());
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
     console.error("Error creating task category:", error);

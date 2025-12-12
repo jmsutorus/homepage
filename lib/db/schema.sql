@@ -113,6 +113,9 @@ CREATE TABLE IF NOT EXISTS tasks (
   completed_date TEXT, -- YYYY-MM-DD format, set when task is marked complete
   due_date TEXT,
   priority TEXT CHECK(priority IN ('low', 'medium', 'high')) DEFAULT 'medium',
+  category TEXT,
+  description TEXT,
+  status TEXT DEFAULT 'active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
@@ -124,6 +127,7 @@ CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
 CREATE INDEX IF NOT EXISTS idx_tasks_completed_date ON tasks(completed_date);
 CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
 CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
+CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
 
 -- API Cache Table
 -- Stores cached API responses with expiration
@@ -1006,4 +1010,27 @@ CREATE TRIGGER IF NOT EXISTS update_scratch_pads_timestamp
 AFTER UPDATE ON scratch_pads
 BEGIN
   UPDATE scratch_pads SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Task Statuses Table
+-- User-defined custom statuses for tasks (per user)
+CREATE TABLE IF NOT EXISTS task_statuses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  color TEXT, -- Optional color for UI
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(userId, name),
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for task_statuses
+CREATE INDEX IF NOT EXISTS idx_task_statuses_userId ON task_statuses(userId);
+
+-- Trigger to update updated_at timestamp on task_statuses
+CREATE TRIGGER IF NOT EXISTS update_task_statuses_timestamp
+AFTER UPDATE ON task_statuses
+BEGIN
+  UPDATE task_statuses SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;

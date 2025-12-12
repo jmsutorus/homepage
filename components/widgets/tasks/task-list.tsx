@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Task } from "@/lib/db/tasks";
+
+import { Task, TaskStatusRecord, PredefinedTaskStatus } from "@/lib/db/tasks";
 import { format } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { TaskCompletionAnimation, useTaskCompletionAnimation } from "@/components/ui/animations/task-completion-animation";
@@ -18,11 +19,13 @@ import {
 } from "@/components/ui/context-menu";
 import { addDays, startOfToday } from "date-fns";
 import { RescheduleDialog } from "./reschedule-dialog";
+import { TaskStatusSelect } from "./task-status-select";
 import { Calendar, Trash2, Clock, ArrowRight } from "lucide-react";
 
 interface TaskListProps {
   tasks: Task[];
   onTasksChanged: () => void;
+  showDetails?: boolean;
 }
 
 const priorityColors = {
@@ -31,11 +34,31 @@ const priorityColors = {
   high: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
 };
 
-export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
+
+
+export function TaskList({ tasks, onTasksChanged, showDetails = true }: TaskListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [localTasks, setLocalTasks] = useState(tasks);
   const { startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
   const [rescheduleTaskId, setRescheduleTaskId] = useState<number | null>(null);
+  const [statuses, setStatuses] = useState<{ predefined: PredefinedTaskStatus[]; custom: TaskStatusRecord[] }>({ predefined: [], custom: [] });
+
+  // Fetch statuses on mount
+  useEffect(() => {
+    fetchStatuses();
+  }, []);
+
+  const fetchStatuses = async () => {
+    try {
+      const response = await fetch("/api/task-statuses");
+      if (response.ok) {
+        const data = await response.json();
+        setStatuses(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch statuses:", error);
+    }
+  };
 
   // Update local tasks when prop changes
   useEffect(() => {
@@ -105,6 +128,35 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
     }
   };
 
+  const handleStatusChange = async (taskId: number, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        // Update local state optimistically
+        setLocalTasks(prev => prev.map(task =>
+          task.id === taskId ? { ...task, status: newStatus } : task
+        ));
+
+        toast.success("Status updated", {
+          description: `Task status changed to ${newStatus.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`
+        });
+
+        // Refresh tasks to get updated completed state
+        onTasksChanged();
+      }
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+      toast.error("Failed to update status", {
+        description: "Please try again."
+      });
+    }
+  };
+
   const handleReschedule = async (taskId: number, date: Date) => {
     // Tranform the date to the format yyyy-MM-dd
     const formattedDate = format(date, "yyyy-MM-dd");
@@ -162,30 +214,48 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
                     >
                       {task.title}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary" className={priorityColors[task.priority]}>
-                        {task.priority}
-                      </Badge>
-                      {task.category && (
-                        <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">
-                          {task.category}
-                        </Badge>
-                      )}
-                      {task.due_date && task.due_date.trim() !== "" && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          <span>
-                            {format(new Date(task.due_date.replaceAll("-", "/")), "MMM d, yyyy")}
-                          </span>
-                        </div>
+                      {showDetails && (
+                        <>
+                          {task.description && (
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                              {task.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            {/* Status Dropdown */}
+                            <TaskStatusSelect
+                              status={task.status}
+                              onStatusChange={(value) => handleStatusChange(task.id, value)}
+                              customStatuses={statuses.custom}
+                            />
+                            
+                            <Badge variant="secondary" className={priorityColors[task.priority]}>
+                              {task.priority}
+                            </Badge>
+
+                            {task.category && (
+                              <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">
+                                {task.category}
+                              </Badge>
+                            )}
+                            {task.due_date && task.due_date.trim() !== "" && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                <span>
+                                  {format(new Date(task.due_date.replaceAll("-", "/")), "MMM d, yyyy")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
-                  </div>
+
 
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                     onClick={() => handleDelete(task.id)}
                     disabled={deletingId === task.id}
                   >

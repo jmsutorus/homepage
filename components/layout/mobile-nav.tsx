@@ -83,7 +83,7 @@ export function MobileNav() {
         <SheetHeader>
           <SheetTitle>Navigation</SheetTitle>
         </SheetHeader>
-        <nav className="mt-6 flex flex-col space-y-6">
+        <nav className="mt-6 flex flex-col space-y-6 overflow-y-auto flex-1 pb-4">
           {navSections.map((section) => (
             <div key={section.title} className="space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground px-2">
