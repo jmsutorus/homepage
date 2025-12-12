@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select";
+
 import { Task, TaskStatusRecord, PredefinedTaskStatus } from "@/lib/db/tasks";
 import { format } from "date-fns";
 import { AnimatePresence } from "framer-motion";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/context-menu";
 import { addDays, startOfToday } from "date-fns";
 import { RescheduleDialog } from "./reschedule-dialog";
+import { TaskStatusSelect } from "./task-status-select";
 import { Calendar, Trash2, Clock, ArrowRight } from "lucide-react";
 
 interface TaskListProps {
@@ -32,25 +33,7 @@ const priorityColors = {
   high: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
 };
 
-const statusColors: Record<string, string> = {
-  active: "bg-green-500/10 text-green-500 hover:bg-green-500/20",
-  in_progress: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
-  blocked: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
-  on_hold: "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20",
-  cancelled: "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20",
-  completed: "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20",
-};
 
-function getStatusColor(status: string): string {
-  return statusColors[status.toLowerCase()] || "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20";
-}
-
-function formatStatusName(status: string): string {
-  return status
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
 
 export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -159,7 +142,7 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
         ));
 
         toast.success("Status updated", {
-          description: `Task status changed to ${formatStatusName(newStatus)}`
+          description: `Task status changed to ${newStatus.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`
         });
 
         // Refresh tasks to get updated completed state
@@ -241,37 +224,11 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
                       </Badge>
 
                       {/* Status Dropdown */}
-                      <Select
-                        value={task.status || 'active'}
-                        onValueChange={(value) => handleStatusChange(task.id, value)}
-                      >
-                        <SelectTrigger
-                          className={`h-6 w-auto border-0 gap-1 px-2 text-xs font-medium cursor-pointer ${getStatusColor(task.status || 'active')}`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <SelectValue>
-                            {formatStatusName(task.status || 'active')}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="in_progress">In Progress</SelectItem>
-                          <SelectItem value="blocked">Blocked</SelectItem>
-                          <SelectItem value="on_hold">On Hold</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                          {statuses.custom.length > 0 && (
-                            <>
-                              <SelectSeparator />
-                              {statuses.custom.map((s) => (
-                                <SelectItem key={s.id} value={s.name}>
-                                  {s.name}
-                                </SelectItem>
-                              ))}
-                            </>
-                          )}
-                        </SelectContent>
-                      </Select>
+                      <TaskStatusSelect
+                        status={task.status}
+                        onStatusChange={(value) => handleStatusChange(task.id, value)}
+                        customStatuses={statuses.custom}
+                      />
 
                       {task.category && (
                         <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">
