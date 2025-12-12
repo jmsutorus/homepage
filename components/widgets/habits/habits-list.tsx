@@ -184,143 +184,241 @@ export function HabitsList({ habits }: HabitsListProps) {
               exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
               transition={{ duration: 0.2 }}
             >
-              <Card className={cn(
-                "transition-opacity",
-                !habit.active && "opacity-60",
-                habit.completed && "border-green-500/50 bg-green-50/50 dark:bg-green-950/20"
-              )}>
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="cursor-move text-muted-foreground pt-1">
-                      <GripVertical className="h-5 w-5" />
-                    </div>
+              {/* Desktop View */}
+              <div className="hidden md:block">
+                <Card className={cn(
+                  "transition-opacity",
+                  !habit.active && "opacity-60",
+                  habit.completed && "border-green-500/50 bg-green-50/50 dark:bg-green-950/20"
+                )}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="cursor-move text-muted-foreground pt-1">
+                        <GripVertical className="h-5 w-5" />
+                      </div>
 
-                    <div className="flex-1 space-y-3">
-                      {/* Title and Description */}
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className={cn("font-medium text-lg", !habit.active && "line-through")}>
-                            {habit.title}
-                          </h3>
-                          {canBeCompleted && (
-                            <Badge variant="outline" className="border-yellow-500 text-yellow-700 dark:text-yellow-400">
-                              🎯 Target Reached!
-                            </Badge>
+                      <div className="flex-1 space-y-3">
+                        {/* Title and Description */}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className={cn("font-medium text-lg", !habit.active && "line-through")}>
+                              {habit.title}
+                            </h3>
+                            {canBeCompleted && (
+                              <Badge variant="outline" className="border-yellow-500 text-yellow-700 dark:text-yellow-400">
+                                🎯 Target Reached!
+                              </Badge>
+                            )}
+                          </div>
+                          {habit.description && (
+                            <p className="text-sm text-muted-foreground mt-1">{habit.description}</p>
                           )}
                         </div>
-                        {habit.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{habit.description}</p>
-                        )}
-                      </div>
 
-                      {/* Motivational Message */}
-                      <div className={cn(
-                        "text-sm font-medium px-3 py-2 rounded-md border",
-                        habit.completed
-                          ? "text-green-700 dark:text-green-400 bg-green-100/50 dark:bg-green-900/20 border-green-300 dark:border-green-800"
-                          : canBeCompleted
-                            ? "text-yellow-700 dark:text-yellow-400 bg-yellow-100/50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800"
-                            : "text-primary bg-primary/5 border-primary/20"
-                      )}>
-                        {motivationalMessage}
-                      </div>
+                        {/* Motivational Message */}
+                        <div className={cn(
+                          "text-sm font-medium px-3 py-2 rounded-md border",
+                          habit.completed
+                            ? "text-green-700 dark:text-green-400 bg-green-100/50 dark:bg-green-900/20 border-green-300 dark:border-green-800"
+                            : canBeCompleted
+                              ? "text-yellow-700 dark:text-yellow-400 bg-yellow-100/50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800"
+                              : "text-primary bg-primary/5 border-primary/20"
+                        )}>
+                          {motivationalMessage}
+                        </div>
 
-                      {/* Stats */}
-                      <div className="flex flex-wrap gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Flame className="h-4 w-4 text-orange-500" />
-                          <span className="text-muted-foreground">Streak:</span>
-                          <span className="font-semibold">{habit.stats.currentStreak} days</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-blue-500" />
-                          <span className="text-muted-foreground">Existed:</span>
-                          <span className="font-semibold">{habit.stats.daysExisted} days</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-green-500" />
-                          <span className="text-muted-foreground">Total:</span>
-                          <span className="font-semibold">{habit.stats.totalCompletions} times</span>
-                        </div>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-1.5 text-muted-foreground">
-                            <Target className="h-3.5 w-3.5" />
-                            <span>Progress to target</span>
+                        {/* Stats */}
+                        <div className="flex flex-wrap gap-4 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Flame className="h-4 w-4 text-orange-500" />
+                            <span className="text-muted-foreground">Streak:</span>
+                            <span className="font-semibold">{habit.stats.currentStreak} days</span>
                           </div>
-                          <span className="font-medium">
-                            {habit.stats.totalCompletions}/{habit.target}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-blue-500" />
+                            <span className="text-muted-foreground">Existed:</span>
+                            <span className="font-semibold">{habit.stats.daysExisted} days</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-green-500" />
+                            <span className="text-muted-foreground">Total:</span>
+                            <span className="font-semibold">{habit.stats.totalCompletions} times</span>
+                          </div>
                         </div>
-                        <AnimatedProgress
-                          value={habit.stats.totalCompletions}
-                          max={habit.target}
-                          size="md"
-                          color={
-                            habit.completed
-                              ? "success"
-                              : habit.stats.totalCompletions >= habit.target
-                                ? "warning"
-                                : "primary"
-                          }
-                        />
-                      </div>
 
-                      {/* Frequency and Target */}
-                      <div className="flex gap-2 text-xs text-muted-foreground">
-                        <span className="capitalize">{habit.frequency.replaceAll("_", " ")}</span>
-                        <span>•</span>
-                        <span>Target: {habit.target}x</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-3 pt-1">
-                      {/* Mark Complete Button */}
-                      {canBeCompleted && (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleComplete(habit.id)}
-                          disabled={isCompleting === habit.id}
-                          className="bg-green-600 hover:bg-green-700 cursor-pointer"
-                        >
-                          <CheckCircle2 className="h-4 w-4 mr-2" />
-                          {isCompleting === habit.id ? "Completing..." : "Mark Complete"}
-                        </Button>
-                      )}
-
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">Active</span>
-                          <Switch
-                            checked={habit.active}
-                            onCheckedChange={() => handleToggleActive(habit)}
-                            disabled={habit.completed}
+                        {/* Progress Bar */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Target className="h-3.5 w-3.5" />
+                              <span>Progress to target</span>
+                            </div>
+                            <span className="font-medium">
+                              {habit.stats.totalCompletions}/{habit.target}
+                            </span>
+                          </div>
+                          <AnimatedProgress
+                            value={habit.stats.totalCompletions}
+                            max={habit.target}
+                            size="md"
+                            color={
+                              habit.completed
+                                ? "success"
+                                : habit.stats.totalCompletions >= habit.target
+                                  ? "warning"
+                                  : "primary"
+                            }
                           />
                         </div>
 
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(habit.id)}
-                          disabled={isDeleting === habit.id}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer group"
-                        >
-                          <motion.div
-                            whileHover={{ rotate: 15, scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                        {/* Frequency and Target */}
+                        <div className="flex gap-2 text-xs text-muted-foreground">
+                          <span className="capitalize">{habit.frequency.replaceAll("_", " ")}</span>
+                          <span>•</span>
+                          <span>Target: {habit.target}x</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-3 pt-1">
+                        {/* Mark Complete Button */}
+                        {canBeCompleted && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleComplete(habit.id)}
+                            disabled={isCompleting === habit.id}
+                            className="bg-green-600 hover:bg-green-700 cursor-pointer"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </motion.div>
-                        </Button>
+                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                            {isCompleting === habit.id ? "Completing..." : "Mark Complete"}
+                          </Button>
+                        )}
+
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Active</span>
+                            <Switch
+                              checked={habit.active}
+                              onCheckedChange={() => handleToggleActive(habit)}
+                              disabled={habit.completed}
+                            />
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(habit.id)}
+                            disabled={isDeleting === habit.id}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer group"
+                          >
+                            <motion.div
+                              whileHover={{ rotate: 15, scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </motion.div>
+                          </Button>
+                        </div>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Mobile View */}
+              <div className={cn(
+                "md:hidden flex items-center gap-3 p-3 rounded-lg border bg-card transition-colors",
+                !habit.active && "opacity-60 bg-muted/50",
+                habit.completed && "border-green-500/30 bg-green-50/30 dark:bg-green-950/20"
+              )}>
+                {/* Checkbox for quick completion (if not already completed for the day) */}
+                 {canBeCompleted ? (
+                   <div 
+                      className="h-6 w-6 rounded-full border-2 border-green-500 flex items-center justify-center bg-green-500 text-white shadow-sm cursor-pointer"
+                      onClick={() => handleComplete(habit.id)}
+                   >
+                      <CheckCircle2 className="h-4 w-4" />
+                   </div>
+                 ) : (
+                    <div className="h-6 w-6 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center">
+                      <div className="h-3 w-3 rounded-full bg-muted-foreground/0" />
+                    </div>
+                 )}
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className={cn("font-medium truncate", !habit.active && "line-through text-muted-foreground")}>
+                      {habit.title}
+                    </span>
+                    {canBeCompleted && (
+                      <Badge variant="outline" className="h-5 px-1.5 text-[10px] border-yellow-500 text-yellow-700 dark:text-yellow-400">
+                        Target!
+                      </Badge>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                    <div className="flex items-center gap-1">
+                       <Flame className="h-3 w-3 text-orange-500" />
+                       <span>{habit.stats.currentStreak}</span>
+                    </div>
+                    <span>•</span>
+                    <div className="flex items-center gap-1">
+                       <Target className="h-3 w-3" />
+                       <span>{habit.stats.totalCompletions}/{habit.target}</span>
+                    </div>
+                  </div>
+                   <div className="mt-2 h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                      <div 
+                        className={cn("h-full rounded-full transition-all duration-500", 
+                          habit.completed ? "bg-green-500" : 
+                          habit.stats.totalCompletions >= habit.target ? "bg-yellow-500" : "bg-primary"
+                        )}
+                        style={{ width: `${Math.min(100, (habit.stats.totalCompletions / habit.target) * 100)}%` }}
+                      />
+                   </div>
+                </div>
+
+                <div className="flex items-start">
+                   {/* We can use a dropdown here similar to tasks */}
+                   <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 -mr-1"
+                      onClick={(e) => {
+                          e.stopPropagation();
+                          // Could open a sheet or dropdown. For now, let's just reuse the desktop delete/toggle logic in a simpler way or just show delete if that is the main action
+                          // Actually, best to replicate the "More" menu from tasks if possible, or just show toggle active / delete
+                      }}
+                   >
+                     {/* For this iteration, let's keep it simple and just show the 'More' menu if we had one, 
+                         but since we don't have a standardized 'More' menu component for habits yet, 
+                         let's just expose the Delete action or perhaps a context menu trigger?
+                         The design requested "Use the task screen as inspiration". Tasks use a ContextMenu/Dropdown.
+                         Let's leave it as just the delete button for now to keep it clean, OR add a dropdown.
+                      */}
+                      
+                      {/* Let's try to add a Dropdown here for mobile actions */}
+                   </Button>
+                   <div className="flex flex-col gap-1">
+                      <Switch
+                        checked={habit.active}
+                        onCheckedChange={() => handleToggleActive(habit)}
+                        disabled={habit.completed}
+                        className="scale-75 origin-right"
+                      />
+                       <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(habit.id)}
+                            disabled={isDeleting === habit.id}
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                           <Trash2 className="h-4 w-4" />
+                       </Button>
+                   </div>
+                </div>
+              </div>
             </motion.div>
           );
         })}
