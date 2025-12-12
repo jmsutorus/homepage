@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { TaskStatusRecord } from "@/lib/db/tasks";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,23 @@ function formatStatusName(status: string): string {
 export function TaskStatusSelect({ status, onStatusChange, customStatuses }: TaskStatusSelectProps) {
   const [open, setOpen] = useState(false);
 
+  // When not open, show as a Badge
+  if (!open) {
+    return (
+      <Badge
+        variant="secondary"
+        className={cn("cursor-pointer", getStatusColor(status || 'active'))}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
+      >
+        {formatStatusName(status || 'active')}
+      </Badge>
+    );
+  }
+
+  // When open, show as a Select
   return (
     <Select
       value={status || 'active'}
@@ -42,17 +60,9 @@ export function TaskStatusSelect({ status, onStatusChange, customStatuses }: Tas
       onOpenChange={setOpen}
     >
       <SelectTrigger
-        className={cn(
-          "w-auto gap-1 px-2 py-0.5 text-xs font-medium transition-all duration-200 h-auto min-h-0",
-          open 
-            ? "border-input bg-background text-foreground ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md" 
-            : cn("border-transparent shadow-none focus:ring-0", getStatusColor(status || 'active')),
-          // When closed, resemble a badge (rounded-full is standard for badges in this project based on badge.tsx)
-          !open && "rounded-full [&>svg]:hidden" 
-        )}
+        className="w-auto gap-1 px-2 py-0.5 text-xs font-medium h-auto"
         onClick={(e) => {
           e.stopPropagation();
-          // The SelectTrigger's default behavior handles opening, but we want to ensure it works smoothly.
         }}
       >
         <SelectValue>

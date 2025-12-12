@@ -373,10 +373,10 @@ export async function getAllTaskCategories(): Promise<TaskCategory[]> {
 /**
  * Create a new task category
  */
-export async function createTaskCategory(name: string): Promise<TaskCategory> {
+export async function createTaskCategory(userId: string, name: string): Promise<TaskCategory> {
   const result = await execute(
-    "INSERT INTO task_categories (name) VALUES (?)",
-    [name]
+    "INSERT INTO task_categories (userId, name) VALUES (?, ?)",
+    [userId, name]
   );
 
   const category = (await query<TaskCategory>(

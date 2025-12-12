@@ -249,7 +249,7 @@ export function TaskList({ tasks, onTasksChanged }: TaskListProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                     onClick={() => handleDelete(task.id)}
                     disabled={deletingId === task.id}
                   >
