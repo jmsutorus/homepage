@@ -1,3 +1,17 @@
+# [1.7.0](https://github.com/jmsutorus/homepage/compare/v1.6.0...v1.7.0) (2025-12-12)
+
+
+### Bug Fixes
+
+* **ui:** add navigation and delete functionality ([#52](https://github.com/jmsutorus/homepage/issues/52)) ([4a2b070](https://github.com/jmsutorus/homepage/commit/4a2b0700edb391784c192d73b7f5c37c34674359))
+
+
+### Features
+
+* habits mobile view added ([#64](https://github.com/jmsutorus/homepage/issues/64)) ([8e2ce8a](https://github.com/jmsutorus/homepage/commit/8e2ce8a723066250050f051d41366e5729da503a))
+* **media:** add genre autocomplete and optimize page performance ([#59](https://github.com/jmsutorus/homepage/issues/59)) ([25dfad6](https://github.com/jmsutorus/homepage/commit/25dfad61e30bd0829a4a16eeb226ee4022b6d227))
+* tasks have been updated to be mobile friendly ([#63](https://github.com/jmsutorus/homepage/issues/63)) ([7d466b5](https://github.com/jmsutorus/homepage/commit/7d466b53e0ada48f271d1d76e8606ff527c1e749))
+
 # [1.6.0](https://github.com/jmsutorus/homepage/compare/v1.5.0...v1.6.0) (2025-12-09)
 
 
