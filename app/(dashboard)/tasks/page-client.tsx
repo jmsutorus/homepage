@@ -170,22 +170,44 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
 
   return (
     <div className="md:space-y-6">
-      {/* Desktop: Header and New Task button */}
-      <div className="hidden md:flex items-start justify-between gap-4">
+      {/* Header and Actions */}
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tasks</h1>
           <p className="text-muted-foreground text-sm sm:text-base">
             Manage your todo list with priorities and due dates
           </p>
         </div>
+        
+        {/* Desktop: New Task Button */}
         <Button
           onClick={() => setShowTaskForm(!showTaskForm)}
           size="sm"
-          className="mt-1"
+          className="mt-1 hidden md:flex"
         >
           <Plus className="h-4 w-4 mr-2" />
           {showTaskForm ? "Hide Form" : "New Task"}
         </Button>
+
+        {/* Mobile: Options Menu */}
+        <div className="md:hidden mt-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setMobileFilterOpen(true)}>
+                Sort / Filter...
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setShowDetails(!showDetails)}>
+                {showDetails ? "Hide Details" : "Show Details"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as ViewTab)}>
@@ -202,7 +224,7 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
           }}
         />
 
-        <TabsContent value="tasks" className="space-y-6 md:mt-6 pb-20 md:pb-0">
+        <TabsContent value="tasks" className="space-y-6 mt-6 pb-20 md:pb-0">
           {/* Task Form - Desktop Only */}
           {showTaskForm && (
             <Card className="hidden md:block">
@@ -216,93 +238,89 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
             </Card>
           )}
 
-          {/* Active Tasks */}
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center justify-between w-full sm:w-auto">
-                    <div>
-                      <CardTitle>Your Tasks</CardTitle>
-                      <CardDescription className="text-sm">
-                        {stats.active} active tasks
-                      </CardDescription>
+          {/* Active Tasks - Desktop View (Card) */}
+          <div className="hidden md:block">
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center justify-between w-full sm:w-auto">
+                      <div>
+                        <CardTitle>Your Tasks</CardTitle>
+                        <CardDescription className="text-sm">
+                          {stats.active} active tasks
+                        </CardDescription>
+                      </div>
                     </div>
-                    {/* Mobile Options Menu */}
-                    <div className="md:hidden">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setMobileFilterOpen(true)}>
-                            Sort / Filter...
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => setShowDetails(!showDetails)}>
-                            {showDetails ? "Hide Details" : "Show Details"}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                  </div>
+
+                  {/* Additional Filters */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex items-center gap-2 flex-1 sm:flex-none">
+                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                          <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.name}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-1 sm:flex-none">
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                          <SelectValue placeholder="All Statuses" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Statuses</SelectItem>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="blocked">Blocked</SelectItem>
+                          <SelectItem value="on_hold">On Hold</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                          {statuses.map((status) => (
+                            <SelectItem key={status.id} value={status.name}>
+                              {status.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
+                ) : (
+                  <TaskList 
+                    tasks={tasks.filter(t => !t.completed)} 
+                    onTasksChanged={handleTasksChanged}
+                    showDetails={showDetails}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-                {/* Additional Filters - Hidden on Mobile */}
-                <div className="hidden md:flex flex-col sm:flex-row gap-3">
-                  <div className="flex items-center gap-2 flex-1 sm:flex-none">
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                      <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="All Categories" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.name}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex items-center gap-2 flex-1 sm:flex-none">
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="All Statuses" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="in_progress">In Progress</SelectItem>
-                        <SelectItem value="blocked">Blocked</SelectItem>
-                        <SelectItem value="on_hold">On Hold</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                        {statuses.map((status) => (
-                          <SelectItem key={status.id} value={status.name}>
-                            {status.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
-              ) : (
-                <TaskList 
-                  tasks={tasks.filter(t => !t.completed)} 
-                  onTasksChanged={handleTasksChanged}
-                  showDetails={showDetails}
-                />
-              )}
-            </CardContent>
-          </Card>
+          {/* Active Tasks - Mobile View (No Card wrapper) */}
+          <div className="md:hidden">
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
+            ) : (
+              <TaskList 
+                tasks={tasks.filter(t => !t.completed)} 
+                onTasksChanged={handleTasksChanged}
+                showDetails={showDetails}
+              />
+            )}
+          </div>
 
           {/* Completed Tasks */}
           {stats.completed > 0 && (
