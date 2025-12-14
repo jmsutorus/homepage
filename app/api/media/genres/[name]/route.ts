@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { renameGenre, deleteGenre } from "@/lib/db/media";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/media/genres/[name]

@@ -11,7 +11,7 @@ import {
   type CreateEventInput,
   type UpdateEventInput,
 } from "@/lib/db/events";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/events

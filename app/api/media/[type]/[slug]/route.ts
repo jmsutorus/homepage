@@ -8,7 +8,7 @@ import {
   parseTags,
 } from "@/lib/db/media";
 import type { MediaContentInput } from "@/lib/db/media";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 // Helper function to map singular type to plural directory name (for URL paths)
 function getDirectoryName(type: "movie" | "tv" | "book" | "game"): string {

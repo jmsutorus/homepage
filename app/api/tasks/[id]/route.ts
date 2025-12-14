@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTask, updateTask, deleteTask, TaskPriority, TaskStatus, isValidTaskStatus } from "@/lib/db/tasks";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

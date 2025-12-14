@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAllParks, createPark, getParkBySlug } from "@/lib/db/parks";
 import { PARK_CATEGORIES } from "@/lib/db/enums/park-enums";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 // Helper function to sanitize slug
 // Helper function to sanitize slug

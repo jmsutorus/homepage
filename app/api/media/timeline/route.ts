@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMediaTimelineData, TimelinePeriod } from "@/lib/db/media";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/media/timeline

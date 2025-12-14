@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getGoalById, removeGoalLink } from "@/lib/db/goals";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 interface RouteParams {
   params: Promise<{ id: string; linkId: string }>;

@@ -8,7 +8,7 @@ import {
   replaceJournalLinks,
   getMoodForDate,
 } from "@/lib/db/journals";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 // GET - Read existing journal entry for editing
 export async function GET(

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAllMedia, createMedia, getMediaBySlug, getPaginatedMedia } from "@/lib/db/media";
 import type { MediaContentInput } from "@/lib/db/media";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 // Helper function to sanitize slug
 function sanitizeSlug(title: string): string {

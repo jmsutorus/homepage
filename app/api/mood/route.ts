@@ -6,7 +6,7 @@ import {
   getMoodEntriesForYear,
   getAllMoodEntries,
 } from "@/lib/db/mood";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/mood

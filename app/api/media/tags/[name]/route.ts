@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { renameTag, deleteTag } from "@/lib/db/media";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 // The following two lines were redundant after consolidating imports
 // import { requireAuthApi } from "@/lib/auth/server"; // Added import for requireAuthApi
 // import { NextRequest } from "next/server"; // Added import for NextRequest

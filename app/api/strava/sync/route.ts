@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncStravaData } from "@/lib/services/strava-sync";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * POST /api/strava/sync
