@@ -6,7 +6,11 @@ import { MoodEntryModal } from "./mood-entry-modal";
 import { MoodEntry } from "@/lib/db/mood";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, WifiOff } from "lucide-react";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { addToQueue } from "@/lib/pwa/offline-queue";
+import { generateTempId } from "@/lib/pwa/optimistic-updates";
+import { toast } from "sonner";
 
 interface MoodHeatmapProps {
   year?: number;
@@ -15,6 +19,7 @@ interface MoodHeatmapProps {
 }
 
 export function MoodHeatmap({ year = new Date().getFullYear(), data, onMoodChange }: MoodHeatmapProps) {
+  const { isOnline } = useNetworkStatus();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<MoodEntry | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,11 +44,32 @@ export function MoodHeatmap({ year = new Date().getFullYear(), data, onMoodChang
   const handleSaveMood = async (rating: number, note: string) => {
     if (!selectedDate) return;
 
+    const moodData = {
+      date: selectedDate,
+      rating,
+      note,
+    };
+
     try {
+      // Handle offline mode
+      if (!isOnline) {
+        const tempId = generateTempId("mood");
+        await addToQueue("LOG_MOOD", moodData, tempId);
+
+        // Show offline success message
+        toast.success("Mood saved offline", {
+          description: "Will sync when you're back online",
+          icon: <WifiOff className="h-4 w-4" />,
+        });
+
+        return;
+      }
+
+      // Online mode - normal API call
       const response = await fetch("/api/mood", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: selectedDate, rating, note }),
+        body: JSON.stringify(moodData),
       });
 
       if (response.ok) {

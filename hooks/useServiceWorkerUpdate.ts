@@ -34,14 +34,6 @@ export function useServiceWorkerUpdate() {
       window.location.reload();
     };
 
-    const handleStateChange = (worker: ServiceWorker) => () => {
-      if (worker.state === "installed") {
-        console.log("✅ New service worker installed and waiting");
-      } else if (worker.state === "activated") {
-        console.log("✅ New service worker activated");
-      }
-    };
-
     const setupServiceWorker = async () => {
       try {
         const registration = await navigator.serviceWorker.getRegistration();
