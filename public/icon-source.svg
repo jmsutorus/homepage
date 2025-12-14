@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#E67E22" rx="102.4"/>
+
+  <!-- "H" Lettermark -->
+  <text
+    x="256"
+    y="356"
+    font-family="'Geist', -apple-system, sans-serif"
+    font-size="320"
+    font-weight="700"
+    fill="#FFFFFF"
+    text-anchor="middle">H</text>
+</svg>

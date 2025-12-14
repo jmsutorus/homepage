@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createTask, getAllTasks, TaskPriority, TaskFilter, isValidTaskStatus } from "@/lib/db/tasks";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/tasks

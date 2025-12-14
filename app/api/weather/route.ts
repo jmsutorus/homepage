@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWeatherForCity } from "@/lib/api/weather";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 import { queryOne } from "@/lib/db";
 import { env } from "@/lib/env";
 

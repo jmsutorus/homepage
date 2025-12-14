@@ -8,7 +8,7 @@ import {
   markWorkoutActivityCompleted,
   type CreateWorkoutActivity,
 } from "@/lib/db/workout-activities";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/activities

@@ -36,6 +36,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MobileCommandPalette } from "./mobile-command-palette";
 
 interface CommandPaletteProps {
   className?: string;
@@ -59,7 +60,16 @@ export function CommandPalette({ className }: CommandPaletteProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [pages, setPages] = React.useState<string[]>(["home"]);
+  const [isMobile, setIsMobile] = React.useState(false);
   const router = useRouter();
+
+  // Mobile detection
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Search state
   const debouncedQuery = useDebounce(search, 300);
@@ -612,6 +622,11 @@ export function CommandPalette({ className }: CommandPaletteProps) {
       </div>
     </Command.Group>
   );
+
+  // Use mobile version on mobile devices
+  if (isMobile) {
+    return <MobileCommandPalette open={open} onOpenChange={setOpen} />;
+  }
 
   return (
     <>

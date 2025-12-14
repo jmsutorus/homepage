@@ -14,6 +14,7 @@ import { CalendarColorsManager } from "@/components/widgets/settings/calendar-co
 import { WeatherLocationManager } from "@/components/widgets/settings/weather-location-manager";
 import { SignOutButton } from "@/components/widgets/settings/sign-out-button";
 import { ThemeSettings } from "@/components/widgets/settings/theme-settings";
+import { PWAInstallCard } from "@/components/widgets/settings/pwa-install-card";
 
 export default async function SettingsPage() {
   const connectedAccounts = await getConnectedAccounts();
@@ -29,6 +30,8 @@ export default async function SettingsPage() {
         </div>
 
         <ThemeSettings />
+
+        <PWAInstallCard />
 
         <CalendarColorsManager />
 

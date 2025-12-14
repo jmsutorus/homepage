@@ -6,7 +6,7 @@ import {
   deletePark,
 } from "@/lib/db/parks";
 import { PARK_CATEGORIES } from "@/lib/db/enums/park-enums";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 // GET - Read existing park entry for editing
 export async function GET(

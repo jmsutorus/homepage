@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 import { execute, queryOne } from "@/lib/db";
 import { validateLocationFormat } from "@/lib/api/geocoding";
 import { getWeatherForCity } from "@/lib/api/weather";

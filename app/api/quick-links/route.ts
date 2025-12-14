@@ -6,7 +6,7 @@ import {
   deleteLink,
   initializeDefaultQuickLinks,
 } from "@/lib/db/quick-links";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/quick-links

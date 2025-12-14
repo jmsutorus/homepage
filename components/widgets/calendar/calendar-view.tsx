@@ -7,6 +7,7 @@ import { CalendarDayDetail } from "./calendar-day-detail";
 import { CalendarMonthSummary } from "./calendar-month-summary";
 import { MoodEntryModal } from "../mood/mood-entry-modal";
 import { EventModal, type EventFormData } from "./event-modal";
+import { MobileEventSheet } from "./mobile-event-sheet";
 import type { CalendarDaySummary, CalendarDayData } from "@/lib/db/calendar";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ export function CalendarView({ year, month, summaryData, colors }: CalendarViewP
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDayForDetail, setSelectedDayForDetail] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Lazy loading state for day details
   const [dayDetailData, setDayDetailData] = useState<CalendarDayData | null>(null);
@@ -49,6 +51,14 @@ export function CalendarView({ year, month, summaryData, colors }: CalendarViewP
 
   // Cache for loaded day details
   const dayDetailCache = useRef<Map<string, CalendarDayData>>(new Map());
+
+  // Simple mobile detection
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Clear selected day and cache when month/year changes
   useEffect(() => {
@@ -327,14 +337,23 @@ export function CalendarView({ year, month, summaryData, colors }: CalendarViewP
         />
       )}
 
-      {/* Event Modal */}
+      {/* Event Modal or Sheet - Desktop uses Dialog, Mobile uses Sheet */}
       {selectedDate && (
-        <EventModal
-          open={isEventModalOpen}
-          onOpenChange={setIsEventModalOpen}
-          date={selectedDate}
-          onSave={handleSaveEvent}
-        />
+        isMobile ? (
+          <MobileEventSheet
+            open={isEventModalOpen}
+            onOpenChange={setIsEventModalOpen}
+            date={selectedDate}
+            onSave={handleSaveEvent}
+          />
+        ) : (
+          <EventModal
+            open={isEventModalOpen}
+            onOpenChange={setIsEventModalOpen}
+            date={selectedDate}
+            onSave={handleSaveEvent}
+          />
+        )
       )}
     </div>
   );

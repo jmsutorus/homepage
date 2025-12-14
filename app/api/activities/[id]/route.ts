@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { deleteWorkoutActivity } from "@/lib/db/workout-activities";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * DELETE /api/activities/[id]

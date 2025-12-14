@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTaskVelocityData, VelocityPeriod } from "@/lib/db/tasks";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/tasks/velocity

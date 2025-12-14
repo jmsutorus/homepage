@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getHabits, getAllHabits, createHabit } from "@/lib/db/habits";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * GET /api/habits

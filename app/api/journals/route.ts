@@ -7,7 +7,7 @@ import {
   replaceJournalLinks,
   getJournalCount,
 } from "@/lib/db/journals";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 // Helper function to sanitize slug
 function sanitizeSlug(title: string): string {

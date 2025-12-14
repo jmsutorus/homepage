@@ -11,7 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Calendar, CheckSquare, Heart, Dumbbell, Smile, BookOpen, Image as ImageIcon, MapPin, Target, Trophy, TrendingUp } from "lucide-react";
+import { Menu, Calendar, CalendarDays, CheckSquare, Heart, Dumbbell, Smile, BookOpen, Image as ImageIcon, MapPin, Target, Trophy, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavLink {
@@ -29,11 +29,16 @@ export function MobileNav() {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
 
+  // Format today's date as YYYY-MM-DD
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
   const navSections: NavSection[] = [
     {
       title: "Calendar",
       links: [
         { href: "/calendar", label: "Calendar", icon: <Calendar className="h-5 w-5" /> },
+        { href: `/daily/${todayStr}`, label: "Today", icon: <CalendarDays className="h-5 w-5" /> },
       ],
     },
     {

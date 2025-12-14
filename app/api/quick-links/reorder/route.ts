@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { reorderLinks } from "@/lib/db/quick-links";
-import { getUserId, requireAuthApi } from "@/lib/auth/server";
+import { requireAuthApi } from "@/lib/auth/server";
 
 /**
  * PUT /api/quick-links/reorder
