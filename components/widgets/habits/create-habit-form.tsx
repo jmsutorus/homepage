@@ -21,11 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { Plus, WifiOff } from "lucide-react";
 import { useState } from "react";
 import { SuccessCheck } from "@/components/ui/animations/success-check";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { addToQueue } from "@/lib/pwa/offline-queue";
+import { generateTempId } from "@/lib/pwa/optimistic-updates";
+import { toast } from "sonner";
 
 export function CreateHabitForm() {
+  const { isOnline } = useNetworkStatus();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -51,13 +56,31 @@ export function CreateHabitForm() {
       const seconds = String(now.getSeconds()).padStart(2, '0');
       const localTimestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
-      await createHabitAction({
+      const habitData = {
         title,
         description,
         frequency,
         target,
-        createdAt: localTimestamp, // Pass client's local time
-      });
+        createdAt: localTimestamp,
+      };
+
+      // Handle offline mode
+      if (!isOnline) {
+        const tempId = generateTempId("habit");
+        await addToQueue("CREATE_HABIT", habitData, tempId);
+
+        // Show offline success message
+        toast.success("Habit saved offline", {
+          description: "Will sync when you're back online",
+          icon: <WifiOff className="h-4 w-4" />,
+        });
+
+        setOpen(false);
+        return;
+      }
+
+      // Online mode - use server action
+      await createHabitAction(habitData);
       setShowSuccess(true);
       // Wait for animation to play before closing
       setTimeout(() => {
@@ -66,6 +89,9 @@ export function CreateHabitForm() {
       }, 2000);
     } catch (error) {
       console.error("Failed to create habit:", error);
+      toast.error("Failed to create habit", {
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
     } finally {
       setLoading(false);
     }

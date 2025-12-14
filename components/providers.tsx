@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AchievementToastListener } from "@/components/widgets/achievements/achievement-toast-listener";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { UpdatePrompt } from "@/components/pwa/update-prompt";
+import { SyncStatus } from "@/components/pwa/sync-status";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -22,6 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <AchievementToastListener />
         <InstallPrompt />
         <UpdatePrompt />
+        <SyncStatus />
       </ThemeProvider>
     </SessionProvider>
   );

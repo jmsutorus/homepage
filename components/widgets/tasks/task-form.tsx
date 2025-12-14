@@ -11,18 +11,23 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Sparkles, ChevronDown, ChevronRight } from "lucide-react";
+import { CalendarIcon, Plus, Sparkles, ChevronDown, ChevronRight, WifiOff } from "lucide-react";
 import { TaskPriority, TaskCategory, TaskStatusRecord, PredefinedTaskStatus } from "@/lib/db/tasks";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 import { TemplatePicker } from "@/components/widgets/shared/template-picker";
 import type { TaskTemplate } from "@/lib/db/task-templates";
 import { parseTaskInput, hasParseableContent } from "@/lib/utils/task-parser";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { addToQueue } from "@/lib/pwa/offline-queue";
+import { generateTempId } from "@/lib/pwa/optimistic-updates";
+import { toast } from "sonner";
 
 interface TaskFormProps {
   onTaskAdded: () => void;
 }
 
 export function TaskForm({ onTaskAdded }: TaskFormProps) {
+  const { isOnline } = useNetworkStatus();
   const [rawInput, setRawInput] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
@@ -93,17 +98,45 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         ? `${finalDueDate.getFullYear()}-${String(finalDueDate.getMonth() + 1).padStart(2, '0')}-${String(finalDueDate.getDate()).padStart(2, '0')}`
         : undefined;
 
+      const taskData = {
+        title: finalTitle,
+        description: description.trim() || undefined,
+        status: status,
+        priority: finalPriority,
+        category: category || undefined,
+        dueDate: dueDateString,
+      };
+
+      // Handle offline mode
+      if (!isOnline) {
+        const tempId = generateTempId("task");
+        await addToQueue("CREATE_TASK", taskData, tempId);
+
+        // Reset form
+        setRawInput("");
+        setDescription("");
+        setStatus("active");
+        setPriority("medium");
+        setCategory("");
+        setDueDate(undefined);
+        setManualOverride(false);
+        setShowDescription(false);
+
+        // Show offline success message
+        toast.success("Task saved offline", {
+          description: "Will sync when you're back online",
+          icon: <WifiOff className="h-4 w-4" />,
+        });
+
+        onTaskAdded();
+        return;
+      }
+
+      // Online mode - normal API call
       const response = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: finalTitle,
-          description: description.trim() || undefined,
-          status: status,
-          priority: finalPriority,
-          category: category || undefined,
-          dueDate: dueDateString,
-        }),
+        body: JSON.stringify(taskData),
       });
 
       if (response.ok) {
