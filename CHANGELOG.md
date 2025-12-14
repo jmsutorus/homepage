@@ -1,3 +1,11 @@
+# [1.8.0](https://github.com/jmsutorus/homepage/compare/v1.7.0...v1.8.0) (2025-12-14)
+
+
+### Features
+
+* offline sycing added ([#67](https://github.com/jmsutorus/homepage/issues/67)) ([522c92c](https://github.com/jmsutorus/homepage/commit/522c92c7be95f64b5ff09cdf14031ed0c2dbafdf))
+* pwa added for offline support ([#66](https://github.com/jmsutorus/homepage/issues/66)) ([c292dc2](https://github.com/jmsutorus/homepage/commit/c292dc2d1b0cf57fd483707738af2ca169af66f6))
+
 # [1.7.0](https://github.com/jmsutorus/homepage/compare/v1.6.0...v1.7.0) (2025-12-12)
 
 
