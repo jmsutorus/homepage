@@ -188,6 +188,7 @@ export async function POST(request: NextRequest) {
       length: frontmatter.length,
       featured: frontmatter.featured,
       published: frontmatter.published,
+      timeSpent: frontmatter.timeSpent,
       content: content || "",
     };
 

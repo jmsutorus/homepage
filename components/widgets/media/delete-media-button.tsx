@@ -63,7 +63,7 @@ export function DeleteMediaButton({ slug, mediaType }: DeleteMediaButtonProps) {
     <>
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="destructive" disabled={isDeleting} className="cursor-pointer">
+          <Button variant="destructive" size="sm" disabled={isDeleting} className="border border-transparent">
             <Trash2 className="mr-2 h-4 w-4" />
             {isDeleting ? "Deleting..." : "Delete"}
           </Button>

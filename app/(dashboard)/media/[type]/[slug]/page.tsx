@@ -69,7 +69,7 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
               filename={slug}
             />
           )}
-          <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none">
+          <Button variant="outline" size="sm" asChild>
             <Link href={`/media/${type}/${slug}/edit`}>
               <Pencil className="mr-2 h-4 w-4" />
               Edit

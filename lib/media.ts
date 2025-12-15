@@ -23,6 +23,7 @@ export interface MediaFrontmatter {
   length?: string;
   featured?: boolean;
   published?: boolean;
+  timeSpent?: number; // Time spent in minutes
 }
 
 // Interface matching the old MediaItem structure
@@ -53,6 +54,7 @@ function dbToMediaItem(dbMedia: MediaContent): MediaItem {
       length: dbMedia.length ?? undefined,
       featured: dbMedia.featured === 1,
       published: dbMedia.published === 1,
+      timeSpent: dbMedia.time_spent,
     },
     // Content might be undefined if not selected for performance
     content: dbMedia.content ?? "",

@@ -66,6 +66,7 @@ export async function GET(
         length: media.length,
         featured: media.featured === 1,
         published: media.published === 1,
+        timeSpent: media.time_spent,
       },
       content: media.content,
       slug: media.slug,
@@ -134,6 +135,7 @@ export async function PATCH(
       length: frontmatter.length || undefined,
       featured: frontmatter.featured,
       published: frontmatter.published,
+      timeSpent: frontmatter.timeSpent !== undefined ? frontmatter.timeSpent : undefined,
       content: content || "",
     };
 

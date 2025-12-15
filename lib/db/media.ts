@@ -20,6 +20,7 @@ export interface MediaContent {
   creator: string | null; // JSON array of creator strings (directors/authors)
   featured: number; // SQLite boolean (0 or 1)
   published: number; // SQLite boolean (0 or 1)
+  time_spent: number; // Time spent in minutes
   content?: string; // Markdown content (optional when not selected for performance)
   created_at: string;
   updated_at: string;
@@ -42,6 +43,7 @@ export interface MediaContentInput {
   creator?: string[]; // Will be converted to JSON
   featured?: boolean;
   published?: boolean;
+  timeSpent?: number; // Time spent in minutes
   content: string;
 }
 
@@ -56,8 +58,8 @@ export async function createMedia(data: MediaContentInput, userId: string): Prom
   const result = await execute(
     `INSERT INTO media_content (
       slug, title, type, status, rating, started, completed, released,
-      genres, poster, tags, description, length, creator, featured, published, content, userId
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      genres, poster, tags, description, length, creator, featured, published, time_spent, content, userId
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.slug,
       data.title,
@@ -75,6 +77,7 @@ export async function createMedia(data: MediaContentInput, userId: string): Prom
       creatorJson,
       data.featured ? 1 : 0,
       data.published !== false ? 1 : 0, // Default to true/1
+      data.timeSpent || 0,
       data.content,
       userId,
     ]
@@ -116,7 +119,7 @@ export async function getMediaBySlug(slug: string, userId: string): Promise<Medi
 export async function getAllMedia(userId: string, includeContent: boolean = false): Promise<MediaContent[]> {
   const fields = includeContent
     ? "*"
-    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, created_at, updated_at";
+    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, time_spent, created_at, updated_at";
 
   return await query<MediaContent>(
     `SELECT ${fields} FROM media_content WHERE userId = ? ORDER BY created_at DESC`,
@@ -228,7 +231,7 @@ export async function getPaginatedMedia(
   // Select only necessary fields for performance
   const fields = includeContent
     ? "*"
-    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, created_at, updated_at";
+    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, time_spent, created_at, updated_at";
 
   // Get all matching items for counting and genre/tag filtering
   let allItems = await query<MediaContent>(
@@ -281,7 +284,7 @@ export async function getMediaByType(
 ): Promise<MediaContent[]> {
   const fields = includeContent
     ? "*"
-    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, created_at, updated_at";
+    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, time_spent, created_at, updated_at";
 
   return await query<MediaContent>(
     `SELECT ${fields} FROM media_content WHERE type = ? AND userId = ? ORDER BY created_at DESC`,
@@ -302,7 +305,7 @@ export async function getMediaByStatus(
 ): Promise<MediaContent[]> {
   const fields = includeContent
     ? "*"
-    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, created_at, updated_at";
+    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, time_spent, created_at, updated_at";
 
   return await query<MediaContent>(
     `SELECT ${fields} FROM media_content WHERE status = ? AND userId = ? ORDER BY created_at DESC`,
@@ -325,7 +328,7 @@ export async function getMediaByTypeAndStatus(
 ): Promise<MediaContent[]> {
   const fields = includeContent
     ? "*"
-    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, created_at, updated_at";
+    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, time_spent, created_at, updated_at";
 
   return await query<MediaContent>(
     `SELECT ${fields} FROM media_content
@@ -420,6 +423,10 @@ export async function updateMedia(
   if (data.slug !== undefined) {
     updates.push("slug = ?");
     params.push(data.slug);
+  }
+  if (data.timeSpent !== undefined) {
+    updates.push("time_spent = ?");
+    params.push(data.timeSpent);
   }
 
   if (updates.length === 0) {

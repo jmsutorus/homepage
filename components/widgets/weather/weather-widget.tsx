@@ -317,7 +317,7 @@ export function WeatherWidget() {
             {/* Current Weather */}
             <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/20">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Now</p>
+                <p className="text-sm text-muted-foreground mb-1">High Today</p>
                 <div className="flex items-center gap-3">
                   <span className="text-4xl">
                     {getWeatherEmoji(weather.current.condition)}

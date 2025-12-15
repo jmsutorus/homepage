@@ -146,6 +146,11 @@ const nextConfig: NextConfig = {
         hostname: "cdn.akamai.steamstatic.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "cdn2.steamgriddb.com",
+        pathname: "/**",
+      },
       // Amazon Media (for movie posters etc)
       {
         protocol: "https",

@@ -35,11 +35,11 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
   }, [stravaAccount]);
 
   const handleConnectGithub = () => {
-    signIn("github");
+    signIn("github", { callbackUrl: "/settings" });
   };
 
   const handleConnectStrava = () => {
-    signIn("strava");
+    signIn("strava", { callbackUrl: "/settings" });
   };
 
   return (

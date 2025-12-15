@@ -40,6 +40,7 @@ interface MediaFrontmatter {
   tags?: string[];
   description?: string;
   length?: string;
+  timeSpent?: number; // Time spent in minutes
   featured?: boolean;
   published?: boolean;
 }
@@ -260,6 +261,11 @@ export function MediaEditor({
           case 'duration':
             parsedFrontmatter.length = value;
             break;
+          case 'timespent':
+          case 'time_spent':
+          case 'time-spent':
+            parsedFrontmatter.timeSpent = parseInt(value);
+            break;
           case 'featured':
             parsedFrontmatter.featured = value === 'true' || value === '1' || value === 'yes';
             break;
@@ -443,6 +449,11 @@ export function MediaEditor({
           case 'runtime':
           case 'duration':
             parsedFrontmatter.length = value;
+            break;
+          case 'timespent':
+          case 'time_spent':
+          case 'time-spent':
+            parsedFrontmatter.timeSpent = parseInt(value);
             break;
           case 'featured':
             parsedFrontmatter.featured = value === 'true' || value === '1' || value === 'yes';
@@ -1121,6 +1132,25 @@ export function MediaEditor({
                       frontmatter.type === 'book' ? '350 pages' :
                       '40 hours'
                     }
+                  />
+                </div>
+
+                {/* Time Spent */}
+                <div className="space-y-2">
+                  <Label htmlFor="timeSpent">Time Spent (minutes)</Label>
+                  <Input
+                    id="timeSpent"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={frontmatter.timeSpent || ''}
+                    onChange={(e) =>
+                      setFrontmatter({
+                        ...frontmatter,
+                        timeSpent: e.target.value ? parseInt(e.target.value) : undefined,
+                      })
+                    }
+                    placeholder="Optional"
                   />
                 </div>
 

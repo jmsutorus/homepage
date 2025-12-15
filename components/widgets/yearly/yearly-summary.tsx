@@ -15,6 +15,7 @@ import { ParksTimeline } from "./parks-timeline";
 import { JournalsTimeline } from "./journals-timeline";
 import { ProductivityTimeline } from "./productivity-timeline";
 import { HabitsTimeline } from "./habits-timeline";
+import { TimeSpentChart } from "./time-spent-chart";
 import { getYearlyAchievements, getAchievementStats, getUnlockedAchievements } from "@/lib/data/yearly-achievements";
 import { generateYearlyInsights } from "@/lib/data/yearly-insights";
 import {
@@ -179,6 +180,14 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
           )}
         </div>
       )}
+
+      {/* Time Spent Chart - only show if total time is 100+ minutes */}
+      {(() => {
+        const totalTime = stats.media.totalTimeSpent + stats.exercises.totalDuration;
+        return totalTime >= 100 && (
+          <TimeSpentChart stats={stats} />
+        );
+      })()}
 
       {/* Mood Journey Timeline */}
       {stats.mood.totalEntries > 0 && (
