@@ -51,6 +51,10 @@ export const CalendarColors = {
     bg: "bg-violet-600",
     text: "text-violet-600",
   },
+  duolingo: {
+    bg: "bg-[#58CC02]",
+    text: "text-[#58CC02]",
+  },
   goal: {
     due: {
       bg: "bg-cyan-500",

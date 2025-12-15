@@ -20,6 +20,7 @@ import { DailyMedia } from "../daily/daily-media";
 import { DailyParks } from "../daily/daily-parks";
 import { DailyJournals } from "../daily/daily-journals";
 import { DailyTasks } from "../daily/daily-tasks";
+import { DailyDuolingo } from "../daily/daily-duolingo";
 import { ExternalLink } from "lucide-react";
 
 interface CalendarDayDetailProps {
@@ -154,6 +155,7 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
   const hasParks = (data?.parks.length ?? 0) > 0;
   const hasJournals = (data?.journals.length ?? 0) > 0;
   const hasGithub = (data?.githubEvents.length ?? 0) > 0;
+  const hasDuolingo = data?.duolingoCompleted ?? false;
 
   // Workout activities
   const upcomingWorkoutActivities = data?.workoutActivities.filter((w) => !w.completed) ?? [];
@@ -174,7 +176,7 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
 
   const hasActivities = unlinkedStravaActivities.length > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo;
 
   // Categorize tasks relative to the date being viewed
   const completedTasks = data?.tasks.filter((t) => t.completed) ?? [];
@@ -250,6 +252,11 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
         {/* GitHub Section */}
         {hasGithub && data && (
           <DailyGithub events={data.githubEvents} />
+        )}
+
+        {/* Duolingo Section */}
+        {hasDuolingo && (
+          <DailyDuolingo completed={true} />
         )}
 
         {/* Media Section */}

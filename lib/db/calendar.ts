@@ -11,6 +11,8 @@ import type { GithubEvent } from "@/lib/github";
 import type { HabitCompletion } from "./habits";
 import { getHabitCompletionsForRange } from "./habits";
 import { auth } from "@/auth";
+import type { DuolingoCompletion } from "./duolingo";
+import { getDuolingoCompletionsForRange } from "./duolingo";
 
 // Goal-related calendar types
 export interface CalendarGoal {
@@ -46,6 +48,7 @@ export interface CalendarDayData {
   workoutActivities: WorkoutActivity[];
   githubEvents: GithubEvent[];
   habitCompletions: HabitCompletion[];
+  duolingoCompleted: boolean;
   // Goals: goals with target_date on this day OR completed on this day
   goalsDue: CalendarGoal[];
   goalsCompleted: CalendarGoal[];
@@ -85,6 +88,7 @@ export interface CalendarDaySummary {
     firstCompletedDistance: number | null;
   };
   githubEventCount: number;
+  duolingoCompleted: boolean;
   habitCount: number;
   // Goal counts
   goalCounts: {
@@ -485,7 +489,8 @@ export async function getCalendarDataForRange(
     habitCompletions,
     goals,
     milestones,
-    resolvedGithubEvents
+    resolvedGithubEvents,
+    duolingoCompletions
   ] = await Promise.all([
     getActivitiesInRange(startDate, endDate, userId),
     getMediaCompletedInRange(startDate, endDate, userId),
@@ -497,7 +502,8 @@ export async function getCalendarDataForRange(
     getHabitCompletionsForRange(userId, startDate, endDate),
     getGoalsInRange(userId, startDate, endDate),
     getMilestonesInRange(userId, startDate, endDate),
-    Promise.resolve(githubEvents)
+    Promise.resolve(githubEvents),
+    getDuolingoCompletionsForRange(userId, startDate, endDate)
   ]);
 
   // Create a map of date -> data
@@ -520,12 +526,16 @@ export async function getCalendarDataForRange(
       workoutActivities: [],
       githubEvents: [],
       habitCompletions: [],
+      duolingoCompleted: false,
       goalsDue: [],
       goalsCompleted: [],
       milestonesDue: [],
       milestonesCompleted: [],
     });
   }
+
+  // Create a set of dates with Duolingo completions for quick lookup
+  const duolingoCompletedDates = new Set(duolingoCompletions.map(c => c.date));
 
   // Add moods
   moods.forEach((mood) => {
@@ -654,6 +664,11 @@ export async function getCalendarDataForRange(
     if (dayData) {
       dayData.habitCompletions.push(completion);
     }
+  });
+
+  // Set Duolingo completion status for each day
+  calendarMap.forEach((dayData) => {
+    dayData.duolingoCompleted = duolingoCompletedDates.has(dayData.date);
   });
 
   // Add goals (by target_date and completed_date)
@@ -801,6 +816,7 @@ export function convertToSummary(
       firstCompletedDistance,
     },
     githubEventCount: data.githubEvents.length,
+    duolingoCompleted: data.duolingoCompleted,
     habitCount: data.habitCompletions.length,
     goalCounts: {
       due: data.goalsDue.length,

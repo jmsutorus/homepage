@@ -102,6 +102,12 @@ export interface YearlyStats {
     github: number;
     steam: number;
   }[];
+  duolingo: {
+    totalDays: number;
+    byMonth: Record<number, number>;
+    longestStreak: number;
+    currentStreak: number;
+  };
 }
 
 /**
@@ -542,6 +548,79 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     };
   })();
 
+  // 11. Duolingo
+  const duolingoPromise = (async () => {
+    const duolingoCompletions = await query<{ date: string }>(
+      `SELECT date FROM duolingo_completions 
+       WHERE userId = ? 
+       AND date >= ? 
+       AND date <= ?
+       ORDER BY date ASC`,
+      [userId, startDate, endDate]
+    );
+
+    // Calculate completions by month
+    // Parse month directly from YYYY-MM-DD string to avoid timezone issues
+    const byMonth: Record<number, number> = {};
+    duolingoCompletions.forEach(c => {
+      // c.date is in format YYYY-MM-DD, extract month (0-indexed)
+      const month = parseInt(c.date.split('-')[1], 10) - 1;
+      byMonth[month] = (byMonth[month] || 0) + 1;
+    });
+
+    // Calculate streaks
+    let longestStreak = 0;
+    let currentStreak = 0;
+    let tempStreak = 1;
+    
+    if (duolingoCompletions.length > 0) {
+      const dates = duolingoCompletions.map(c => c.date).sort();
+      
+      for (let i = 1; i < dates.length; i++) {
+        const prevDate = new Date(dates[i - 1]);
+        const currDate = new Date(dates[i]);
+        const diffDays = Math.floor((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+          tempStreak++;
+        } else {
+          longestStreak = Math.max(longestStreak, tempStreak);
+          tempStreak = 1;
+        }
+      }
+      longestStreak = Math.max(longestStreak, tempStreak);
+      
+      // Check current streak (from end of year or today)
+      const today = new Date().toISOString().split('T')[0];
+      const lastDate = dates[dates.length - 1];
+      const todayDate = new Date(today);
+      const lastCompletionDate = new Date(lastDate);
+      const daysSinceLastCompletion = Math.floor((todayDate.getTime() - lastCompletionDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysSinceLastCompletion <= 1) {
+        // Count current streak backwards
+        currentStreak = 1;
+        for (let i = dates.length - 2; i >= 0; i--) {
+          const prevDate = new Date(dates[i]);
+          const currDate = new Date(dates[i + 1]);
+          const diffDays = Math.floor((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays === 1) {
+            currentStreak++;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+
+    return {
+      totalDays: duolingoCompletions.length,
+      byMonth,
+      longestStreak,
+      currentStreak,
+    };
+  })();
+
   // Execute all promises in parallel
   const [
     mediaData,
@@ -553,7 +632,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     steamStats,
     habitStats,
     tasksData,
-    goalsData
+    goalsData,
+    duolingoStats
   ] = await Promise.all([
     mediaPromise,
     parksPromise,
@@ -564,7 +644,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     steamPromise,
     habitsPromise,
     tasksPromise,
-    goalsPromise
+    goalsPromise,
+    duolingoPromise
   ]);
 
   // Process Steam Stats
@@ -664,6 +745,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
       topSteamGames,
     },
     monthlyActivity,
+    duolingo: duolingoStats,
   };
 }
 

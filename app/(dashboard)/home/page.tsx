@@ -31,6 +31,7 @@ import { HomeGoals } from "@/components/widgets/goals/home-goals";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScratchPad } from "@/components/widgets/scratch-pad/scratch-pad";
+import { DuolingoWidget } from "@/components/widgets/duolingo/duolingo-widget";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +68,7 @@ function serializeCalendarData(data: Record<string, any>) {
         workoutActivities: serializeArray(dayData.workoutActivities),
         githubEvents: serializeArray(dayData.githubEvents),
         habitCompletions: serializeArray(dayData.habitCompletions),
+        duolingoCompleted: dayData.duolingoCompleted,
         goalsDue: serializeArray(dayData.goalsDue),
         goalsCompleted: serializeArray(dayData.goalsCompleted),
         milestonesDue: serializeArray(dayData.milestonesDue),
@@ -165,6 +167,28 @@ export default async function DashboardPage({
     getCalendarDataForMonth(currentYear, currentMonth, githubEventsPromise)
   ]);
 
+  // Duolingo Fetch
+  const duolingoData = await (async () => {
+     try {
+       const account = await queryOne<{ accountId: string }>(
+        "SELECT accountId FROM account WHERE userId = ? AND providerId = 'duolingo'",
+        [userId]
+       );
+       if (account?.accountId) {
+          const { getDuolingoProfile } = await import("@/lib/api/duolingo");
+          const { getDuolingoCompletion } = await import("@/lib/db/duolingo");
+          const [profile, completion] = await Promise.all([
+            getDuolingoProfile(userId, account.accountId),
+            getDuolingoCompletion(userId, todayStr)
+          ]);
+          return { profile, isCompletedToday: !!completion };
+       }
+     } catch (e) {
+       console.error("Error fetching Duolingo:", e);
+     }
+     return { profile: null, isCompletedToday: false };
+  })();
+
   // Serialize all data for client components
   const habits = serialize(habitsRaw);
   const habitCompletions = serialize(habitCompletionsRaw);
@@ -176,6 +200,8 @@ export default async function DashboardPage({
   const athlete = serialize(athleteRaw);
   const activeGoals = serialize(activeGoalsRaw.slice(0, 3)); // Only show top 3 goals
   const recentActivities = serialize(recentActivitiesRaw);
+  const duolingoProfileSerialized = serialize(duolingoData.profile);
+  const duolingoIsCompletedToday = duolingoData.isCompletedToday;
 
   const calendarDataRaw = Object.fromEntries(calendarDataMap);
   const calendarData = serializeCalendarData(calendarDataRaw);
@@ -293,6 +319,13 @@ export default async function DashboardPage({
             {isWeatherEnabled && (
               <div className="mb-4">
                 <WeatherWidget />
+              </div>
+            )}
+            
+            {/* Duolingo Widget */}
+            {duolingoProfileSerialized && (
+              <div className="mb-4">
+                 <DuolingoWidget profile={duolingoProfileSerialized} isCompletedToday={duolingoIsCompletedToday} />
               </div>
             )}
 
