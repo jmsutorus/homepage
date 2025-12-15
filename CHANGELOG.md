@@ -1,3 +1,15 @@
+# [1.9.0](https://github.com/jmsutorus/homepage/compare/v1.8.0...v1.9.0) (2025-12-15)
+
+
+### Bug Fixes
+
+* bugs squashed ([#72](https://github.com/jmsutorus/homepage/issues/72)) ([f9c6381](https://github.com/jmsutorus/homepage/commit/f9c6381153d7b352a87c8dca64f89febd7000454))
+
+
+### Features
+
+* language integration added ([#75](https://github.com/jmsutorus/homepage/issues/75)) ([c87d86e](https://github.com/jmsutorus/homepage/commit/c87d86e68a389a2d862ed265364314b5ec6da133))
+
 # [1.8.0](https://github.com/jmsutorus/homepage/compare/v1.7.0...v1.8.0) (2025-12-14)
 
 
