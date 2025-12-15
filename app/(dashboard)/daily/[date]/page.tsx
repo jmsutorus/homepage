@@ -15,6 +15,8 @@ import { queryOne } from "@/lib/db";
 import { DailyActivities } from "@/components/widgets/daily/daily-activities";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { getCalendarColorsObject } from "@/lib/db/calendar-colors";
+import { DuolingoCompletionToggle } from "@/components/widgets/duolingo/duolingo-completion-toggle";
+import { getDuolingoCompletion } from "@/lib/db/duolingo";
 
 interface DailyPageProps {
   params: Promise<{
@@ -110,7 +112,19 @@ export default async function DailyPage({ params }: DailyPageProps) {
         getMilestonesCompletedOnDate(userId, date),
         getCalendarColorsObject(userId)
       ]);
-      return { journal, mood, allRelevantTasks, upcomingGoals, upcomingMilestones, completedGoals, completedMilestones, colors };
+      
+      // Check if user has Duolingo connected
+      const duolingoAccount = await queryOne<{ accountId: string }>(
+        "SELECT accountId FROM account WHERE userId = ? AND providerId = 'duolingo'",
+        [userId]
+      );
+      
+      let duolingoCompletion = null;
+      if (duolingoAccount) {
+        duolingoCompletion = await getDuolingoCompletion(userId, date);
+      }
+      
+      return { journal, mood, allRelevantTasks, upcomingGoals, upcomingMilestones, completedGoals, completedMilestones, colors, hasDuolingo: !!duolingoAccount, duolingoCompleted: !!duolingoCompletion };
     })(),
     allHabitsPromise,
     completionsPromise,
@@ -125,6 +139,8 @@ export default async function DailyPage({ params }: DailyPageProps) {
   const completedGoals = userData?.completedGoals ?? [];
   const completedMilestones = userData?.completedMilestones ?? [];
   const colors = userData?.colors ?? {};
+  const hasDuolingo = userData?.hasDuolingo ?? false;
+  const duolingoCompleted = userData?.duolingoCompleted ?? false;
 
   // Filter habits to only show those created on or before the page date
   const habits = allHabits.filter(habit => {
@@ -274,6 +290,14 @@ export default async function DailyPage({ params }: DailyPageProps) {
             <h2 className="text-xl font-semibold mb-4">Mood</h2>
             <MoodSelector date={date} currentMood={mood} />
           </section>
+
+          {/* Duolingo Section - only show if connected */}
+          {hasDuolingo && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Duolingo</h2>
+              <DuolingoCompletionToggle date={date} isCompleted={duolingoCompleted} />
+            </section>
+          )}
 
           {/* Stats/Summary Section */}
           <section className="rounded-lg border bg-card p-4">

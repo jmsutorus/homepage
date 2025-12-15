@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CalendarDayCellProps {
@@ -59,8 +59,9 @@ function CalendarDayCellComponent({
   const hasGoalsCompleted = (summary?.goalCounts?.completed ?? 0) > 0;
   const hasMilestonesDue = (summary?.milestoneCounts?.due ?? 0) > 0;
   const hasMilestonesCompleted = (summary?.milestoneCounts?.completed ?? 0) > 0;
+  const hasDuolingo = summary?.duolingoCompleted ?? false;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo;
 
   // Get mood icon
   const MoodIcon = hasMood && summary?.moodRating ? MOOD_ICONS[summary.moodRating]?.icon : null;
@@ -256,6 +257,16 @@ function CalendarDayCellComponent({
             </div>
           )}
 
+          {/* Duolingo */}
+          {hasDuolingo && (
+            <div className="flex items-center gap-1">
+              <Languages className={cn("h-3 w-3 flex-shrink-0", colors.duolingo?.text || "text-[#58CC02]")} />
+              <span className={cn("truncate", colors.duolingo?.text || "text-[#58CC02]")}>
+                Duolingo done
+              </span>
+            </div>
+          )}
+
           {/* Goals Due */}
           {hasGoalsDue && (
             <div className="flex items-center gap-1">
@@ -342,6 +353,9 @@ function CalendarDayCellComponent({
           )}
           {hasHabits && (
             <div className={cn("w-2 h-2 rounded-full", colors.habit?.bg || "bg-purple-500")} title="Habits Completed" />
+          )}
+          {hasDuolingo && (
+            <div className={cn("w-2 h-2 rounded-full", colors.duolingo?.bg || "bg-[#58CC02]")} title="Duolingo" />
           )}
           {hasGoalsDue && (
             <div className={cn("w-2 h-2 rounded-full", colors.goal?.due?.bg || "bg-cyan-500")} title="Goals Due" />

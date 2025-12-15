@@ -16,6 +16,7 @@ import {
   Smile,
   ExternalLink,
   Target,
+  Languages,
 } from "lucide-react";
 
 interface MonthSummaryProps {
@@ -55,6 +56,7 @@ export function CalendarMonthSummary({
   let totalHabits = 0;
   let totalTasksCompleted = 0;
   let totalGoalsCompleted = 0;
+  let totalDuolingo = 0;
   let moodSum = 0;
   let moodCount = 0;
 
@@ -71,6 +73,9 @@ export function CalendarMonthSummary({
     totalHabits += daySummary.habitCount;
     totalTasksCompleted += daySummary.taskCounts.completed;
     totalGoalsCompleted += daySummary.goalCounts?.completed ?? 0;
+    if (daySummary.duolingoCompleted) {
+      totalDuolingo += 1;
+    }
 
     // Rough event deduplication based on title
     if (daySummary.eventFirstTitle && !seenEventTitles.has(daySummary.eventFirstTitle)) {
@@ -91,7 +96,7 @@ export function CalendarMonthSummary({
   const hasAnyData = totalMedia > 0 || totalActivities > 0 || totalEvents > 0 ||
     totalParks > 0 || totalJournals > 0 || totalWorkouts > 0 ||
     totalGithubEvents > 0 || totalHabits > 0 || totalTasksCompleted > 0 ||
-    totalGoalsCompleted > 0 || moodCount > 0;
+    totalGoalsCompleted > 0 || totalDuolingo > 0 || moodCount > 0;
 
   if (!hasAnyData) {
     return null;
@@ -269,6 +274,21 @@ export function CalendarMonthSummary({
                   <div>
                     <p className="text-2xl font-bold">{totalHabits}</p>
                     <p className="text-sm text-muted-foreground">Habits</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Duolingo */}
+            {totalDuolingo > 0 && (
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-[#58CC02]/10">
+                    <Languages className="h-5 w-5 text-[#58CC02]" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{totalDuolingo}</p>
+                    <p className="text-sm text-muted-foreground">Duolingo Days</p>
                   </div>
                 </div>
               </div>

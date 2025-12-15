@@ -1,13 +1,23 @@
 "use client";
 
-import { Github } from "lucide-react";
+import { useState } from "react";
+import { Github, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { GithubEvent } from "@/lib/github";
 
 interface DailyGithubProps {
   events: GithubEvent[];
 }
 
+const INITIAL_SHOW_COUNT = 5;
+
 export function DailyGithub({ events }: DailyGithubProps) {
+  const [expanded, setExpanded] = useState(false);
+  
+  const displayedEvents = expanded ? events : events.slice(0, INITIAL_SHOW_COUNT);
+  const hasMore = events.length > INITIAL_SHOW_COUNT;
+  const hiddenCount = events.length - INITIAL_SHOW_COUNT;
+
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -15,7 +25,7 @@ export function DailyGithub({ events }: DailyGithubProps) {
         GitHub Activity ({events.length})
       </h3>
       <div className="space-y-2">
-        {events.map((event) => (
+        {displayedEvents.map((event) => (
           <div key={event.id} className="pl-6 border-l-2 border-zinc-500 dark:border-zinc-400">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -50,6 +60,27 @@ export function DailyGithub({ events }: DailyGithubProps) {
           </div>
         ))}
       </div>
+      
+      {hasMore && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setExpanded(!expanded)}
+          className="w-full text-xs text-muted-foreground h-7"
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="h-3 w-3 mr-1" />
+              Show less
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-3 w-3 mr-1" />
+              Show {hiddenCount} more
+            </>
+          )}
+        </Button>
+      )}
     </div>
   );
 }

@@ -194,6 +194,11 @@ const nextConfig: NextConfig = {
         hostname: "**.local",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "simg-ssl.duolingo.com",
+        pathname: "/**",
+      },
       // Add your custom Tautulli/Home Assistant domains here if needed
       // Example:
       // {

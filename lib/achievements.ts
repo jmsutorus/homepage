@@ -17,7 +17,7 @@ export async function getUserAchievements(userId: string) {
   return map;
 }
 
-export type AchievementCategory = 'mood' | 'media' | 'habits' | 'tasks' | 'parks' | 'journal' | 'exercise' | 'general';
+export type AchievementCategory = 'mood' | 'media' | 'habits' | 'tasks' | 'parks' | 'journal' | 'exercise' | 'duolingo' | 'general';
 
 export interface Achievement {
   id: string;
@@ -405,6 +405,48 @@ export const ACHIEVEMENTS: Achievement[] = [
     points: 30,
     target_value: 50,
   },
+
+  // Duolingo Achievements
+  {
+    id: 'duolingo-1',
+    slug: 'duolingo-1',
+    title: 'Language Learner',
+    description: 'Complete your first Duolingo lesson',
+    icon: 'languages',
+    category: 'duolingo',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'duolingo-7',
+    slug: 'duolingo-7',
+    title: 'Week Streak',
+    description: 'Complete Duolingo lessons for 7 days',
+    icon: 'languages',
+    category: 'duolingo',
+    points: 15,
+    target_value: 7,
+  },
+  {
+    id: 'duolingo-30',
+    slug: 'duolingo-30',
+    title: 'Dedicated Student',
+    description: 'Complete Duolingo lessons for 30 days',
+    icon: 'languages',
+    category: 'duolingo',
+    points: 30,
+    target_value: 30,
+  },
+  {
+    id: 'duolingo-100',
+    slug: 'duolingo-100',
+    title: 'Polyglot',
+    description: 'Complete Duolingo lessons for 100 days',
+    icon: 'languages',
+    category: 'duolingo',
+    points: 50,
+    target_value: 100,
+  },
 ];
 
 export async function initializeAchievements() {
@@ -449,6 +491,9 @@ export async function checkAchievement(userId: string, type: AchievementCategory
       break;
     case 'exercise':
       await checkExerciseAchievements(userId);
+      break;
+    case 'duolingo':
+      await checkDuolingoAchievements(userId);
       break;
   }
 }
@@ -647,4 +692,18 @@ async function checkExerciseAchievements(userId: string) {
   await unlockAchievement(userId, 'fitness-10', totalWorkouts);
   await unlockAchievement(userId, 'fitness-50', totalWorkouts);
   await unlockAchievement(userId, 'fitness-100', totalWorkouts);
+}
+
+async function checkDuolingoAchievements(userId: string) {
+  const completions = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM duolingo_completions WHERE userId = ?`,
+    [userId]
+  );
+
+  const count = completions?.count || 0;
+
+  await unlockAchievement(userId, 'duolingo-1', count);
+  await unlockAchievement(userId, 'duolingo-7', count);
+  await unlockAchievement(userId, 'duolingo-30', count);
+  await unlockAchievement(userId, 'duolingo-100', count);
 }
