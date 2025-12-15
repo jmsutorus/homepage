@@ -20,6 +20,13 @@ export interface YearlyStats {
     topMovieTVGenres: { genre: string; count: number }[];
     topRated: { title: string; type: string; rating: number; completed: string }[];
     topRatedBooks: { title: string; type: string; rating: number; completed: string }[];
+    totalTimeSpent: number; // Total time spent in minutes
+    timeSpentByType: {
+      tv: number;
+      movie: number;
+      book: number;
+      game: number;
+    };
   };
   parks: {
     total: number;
@@ -129,9 +136,33 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     const movieTVGenreCounts: Record<string, number> = {};
     const gameGenreCounts: Record<string, number> = {};
 
+    let totalTimeSpent = 0;
+    const timeSpentByType = {
+      tv: 0,
+      movie: 0,
+      book: 0,
+      game: 0,
+    };
+
     yearMedia.forEach((m) => {
       mediaByType[m.type] = (mediaByType[m.type] || 0) + 1;
       const type = m.type.toLowerCase();
+
+      // Sum up time spent
+      if (m.time_spent) {
+        totalTimeSpent += m.time_spent;
+
+        // Track time by type
+        if (type === 'book') {
+          timeSpentByType.book += m.time_spent;
+        } else if (type === 'movie') {
+          timeSpentByType.movie += m.time_spent;
+        } else if (type === 'tv' || type === 'tv_show' || type === 'show') {
+          timeSpentByType.tv += m.time_spent;
+        } else if (type === 'game') {
+          timeSpentByType.game += m.time_spent;
+        }
+      }
 
       if (m.rating) {
         mediaRatingSum += m.rating;
@@ -239,6 +270,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
         topMovieTVGenres,
         topRated,
         topRatedBooks,
+        totalTimeSpent,
+        timeSpentByType,
       },
       gameStats: {
         dbGamesCount: yearMedia.filter(m => m.type.toLowerCase() === 'game').length,

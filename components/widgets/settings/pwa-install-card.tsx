@@ -19,6 +19,8 @@ import {
   CheckCircle2,
   ExternalLink,
   RefreshCw,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,6 +30,7 @@ export function PWAInstallCard() {
   const { isUpdateAvailable, updateServiceWorker, checkForUpdate } =
     useServiceWorkerUpdate();
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleInstall = async () => {
     const installed = await promptInstall();
@@ -78,11 +81,21 @@ export function PWAInstallCard() {
             <CardDescription>
               Install Homepage as a desktop or mobile app
             </CardDescription>
+            {isStandalone && <PWAStatus />}
           </div>
-          {isStandalone && <PWAStatus />}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      {isExpanded && (
+        <CardContent className="space-y-4">
         {/* Installation Status */}
         {isInstalled || isStandalone ? (
           <div className="rounded-lg border border-green-500/20 bg-green-500/10 p-4">
@@ -252,7 +265,8 @@ export function PWAInstallCard() {
             )}
           </div>
         )}
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 }

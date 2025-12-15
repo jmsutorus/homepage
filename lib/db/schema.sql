@@ -290,6 +290,7 @@ CREATE TABLE IF NOT EXISTS media_content (
   creator TEXT, -- JSON array of creator strings (directors/authors)
   featured BOOLEAN DEFAULT 0, -- Whether to feature on homepage
   published BOOLEAN DEFAULT 1, -- Whether to show publicly
+  time_spent INTEGER NOT NULL DEFAULT 0, -- Time spent in minutes
   content TEXT NOT NULL, -- Markdown content (body)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -305,6 +306,7 @@ CREATE INDEX IF NOT EXISTS idx_media_content_slug ON media_content(slug);
 CREATE INDEX IF NOT EXISTS idx_media_content_completed ON media_content(completed);
 CREATE INDEX IF NOT EXISTS idx_media_content_featured ON media_content(featured);
 CREATE INDEX IF NOT EXISTS idx_media_content_published ON media_content(published);
+CREATE INDEX IF NOT EXISTS idx_media_content_time_spent ON media_content(time_spent);
 
 -- Trigger to update updated_at timestamp on media_content
 CREATE TRIGGER IF NOT EXISTS update_media_content_timestamp

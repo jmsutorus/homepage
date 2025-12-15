@@ -18,7 +18,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const colors = getCalendarColors(session.user.id);
+    const colors = await getCalendarColors(session.user.id);
 
     return NextResponse.json({ colors });
   } catch (error) {

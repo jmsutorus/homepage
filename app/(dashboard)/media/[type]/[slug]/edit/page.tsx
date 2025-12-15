@@ -51,6 +51,7 @@ export default async function EditMediaPage({ params }: EditMediaPageProps) {
     poster: media.poster || undefined,
     tags,
     length: media.length || undefined,
+    timeSpent: media.time_spent || undefined,
     featured: media.featured === 1,
     published: media.published === 1,
   };
