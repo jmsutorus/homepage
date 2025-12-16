@@ -108,6 +108,18 @@ export interface YearlyStats {
     longestStreak: number;
     currentStreak: number;
   };
+  relationship: {
+    totalDates: number;
+    totalIntimacy: number;
+    totalMilestones: number;
+    averageDateRating: number;
+    averageSatisfactionRating: number;
+    perfectDates: number; // 5-star ratings
+    dateTypes: { type: string; count: number }[];
+    topRatedDates: { date: string; type: string; venue?: string; rating: number }[];
+    positions: { name: string; count: number }[];
+    uniquePositions: number;
+  };
 }
 
 /**
@@ -621,6 +633,117 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     };
   })();
 
+  // 12. Relationship
+  const relationshipPromise = (async () => {
+    // Fetch dates
+    const dates = await query<{ date: string; type: string; venue: string | null; rating: number | null }>(
+      `SELECT date, type, venue, rating FROM relationship_dates
+       WHERE userId = ?
+       AND date >= ?
+       AND date <= ?
+       ORDER BY date ASC`,
+      [userId, startDate, endDate]
+    );
+
+    // Fetch intimacy entries
+    const intimacyEntries = await query<{ satisfaction_rating: number | null; positions: string | null }>(
+      `SELECT satisfaction_rating, positions FROM intimacy_entries
+       WHERE userId = ?
+       AND date >= ?
+       AND date <= ?`,
+      [userId, startDate, endDate]
+    );
+
+    // Fetch milestones
+    const milestones = await query<{ date: string }>(
+      `SELECT date FROM relationship_milestones
+       WHERE userId = ?
+       AND date >= ?
+       AND date <= ?`,
+      [userId, startDate, endDate]
+    );
+
+    // Calculate stats
+    const totalDates = dates.length;
+    const totalIntimacy = intimacyEntries.length;
+    const totalMilestones = milestones.length;
+
+    // Average date rating
+    const datesWithRating = dates.filter(d => d.rating !== null);
+    const averageDateRating = datesWithRating.length > 0
+      ? datesWithRating.reduce((sum, d) => sum + (d.rating || 0), 0) / datesWithRating.length
+      : 0;
+
+    // Average satisfaction rating
+    const entriesWithRating = intimacyEntries.filter(e => e.satisfaction_rating !== null);
+    const averageSatisfactionRating = entriesWithRating.length > 0
+      ? entriesWithRating.reduce((sum, e) => sum + (e.satisfaction_rating || 0), 0) / entriesWithRating.length
+      : 0;
+
+    // Perfect dates (5-star)
+    const perfectDates = dates.filter(d => d.rating === 5).length;
+
+    // Date types distribution
+    const dateTypeCounts: Record<string, number> = {};
+    dates.forEach(d => {
+      dateTypeCounts[d.type] = (dateTypeCounts[d.type] || 0) + 1;
+    });
+    const dateTypes = Object.entries(dateTypeCounts)
+      .map(([type, count]) => ({ type, count }))
+      .sort((a, b) => b.count - a.count);
+
+    // Top rated dates
+    const topRatedDates = dates
+      .filter(d => d.rating !== null && d.rating >= 4)
+      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      .slice(0, 5)
+      .map(d => ({
+        date: d.date,
+        type: d.type,
+        venue: d.venue || undefined,
+        rating: d.rating || 0,
+      }));
+
+    // Positions statistics
+    const positionCounts: Record<string, number> = {};
+    let totalPositionEntries = 0;
+
+    intimacyEntries.forEach(e => {
+      if (e.positions) {
+        try {
+          const positionsArray = JSON.parse(e.positions) as string[];
+          if (Array.isArray(positionsArray)) {
+            totalPositionEntries++;
+            positionsArray.forEach(pos => {
+              positionCounts[pos] = (positionCounts[pos] || 0) + 1;
+            });
+          }
+        } catch (err) {
+          // Skip invalid JSON
+        }
+      }
+    });
+
+    const positions = Object.entries(positionCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+    const uniquePositions = positions.length;
+
+    return {
+      totalDates,
+      totalIntimacy,
+      totalMilestones,
+      averageDateRating,
+      averageSatisfactionRating,
+      perfectDates,
+      dateTypes,
+      topRatedDates,
+      positions,
+      uniquePositions,
+    };
+  })();
+
   // Execute all promises in parallel
   const [
     mediaData,
@@ -633,7 +756,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     habitStats,
     tasksData,
     goalsData,
-    duolingoStats
+    duolingoStats,
+    relationshipStats
   ] = await Promise.all([
     mediaPromise,
     parksPromise,
@@ -645,7 +769,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     habitsPromise,
     tasksPromise,
     goalsPromise,
-    duolingoPromise
+    duolingoPromise,
+    relationshipPromise
   ]);
 
   // Process Steam Stats
@@ -746,6 +871,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     },
     monthlyActivity,
     duolingo: duolingoStats,
+    relationship: relationshipStats,
   };
 }
 

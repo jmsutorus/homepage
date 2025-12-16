@@ -39,7 +39,10 @@ type EntityType =
   | "park"
   | "category"
   | "link"
-  | "goal";
+  | "goal"
+  | "date"
+  | "milestone"
+  | "intimacy";
 
 /**
  * Default success messages for each entity type
@@ -56,6 +59,9 @@ const DEFAULT_MESSAGES: Record<EntityType, string> = {
   category: "Category created",
   link: "Link added",
   goal: "Goal created successfully!",
+  date: "Date updated successfully",
+  milestone: "Milestone updated successfully",
+  intimacy: "Private entry saved",
 };
 
 /**

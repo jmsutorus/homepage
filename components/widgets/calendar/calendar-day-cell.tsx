@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CalendarDayCellProps {
@@ -60,8 +60,9 @@ function CalendarDayCellComponent({
   const hasMilestonesDue = (summary?.milestoneCounts?.due ?? 0) > 0;
   const hasMilestonesCompleted = (summary?.milestoneCounts?.completed ?? 0) > 0;
   const hasDuolingo = summary?.duolingoCompleted ?? false;
+  const hasRelationship = (summary?.relationshipCount ?? 0) > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship;
 
   // Get mood icon
   const MoodIcon = hasMood && summary?.moodRating ? MOOD_ICONS[summary.moodRating]?.icon : null;
@@ -308,6 +309,16 @@ function CalendarDayCellComponent({
               </span>
             </div>
           )}
+
+          {/* Relationship */}
+          {hasRelationship && (
+            <div className="flex items-center gap-1">
+              <Heart className={cn("h-3 w-3 flex-shrink-0", colors.relationship?.text || "text-pink-500")} />
+              <span className={cn("truncate", colors.relationship?.text || "text-pink-500")}>
+                {summary!.relationshipCount} {summary!.relationshipCount === 1 ? "moment" : "moments"}
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
@@ -368,6 +379,9 @@ function CalendarDayCellComponent({
           )}
           {hasMilestonesCompleted && (
             <div className={cn("w-2 h-2 rounded-full", colors.milestone?.completed?.bg || "bg-fuchsia-500")} title="Milestones Completed" />
+          )}
+          {hasRelationship && (
+            <div className={cn("w-2 h-2 rounded-full", colors.relationship?.bg || "bg-pink-500")} title="Relationship" />
           )}
         </div>
       )}
