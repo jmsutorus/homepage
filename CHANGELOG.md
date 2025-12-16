@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/jmsutorus/homepage/compare/v1.10.0...v1.11.0) (2025-12-16)
+
+
+### Features
+
+* **calendar:** add event and task categories with year review insights ([#79](https://github.com/jmsutorus/homepage/issues/79)) ([f6e62ef](https://github.com/jmsutorus/homepage/commit/f6e62efc8fb15213f544ff0a6ce297c71cb3278f))
+
 # [1.10.0](https://github.com/jmsutorus/homepage/compare/v1.9.0...v1.10.0) (2025-12-16)
 
 
