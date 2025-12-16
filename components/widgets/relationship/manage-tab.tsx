@@ -9,11 +9,7 @@ import { Plus, Trash2, Lock } from "lucide-react";
 import { toast } from "sonner";
 import type { RelationshipPosition } from "@/lib/db/relationship";
 
-interface ManageTabProps {
-  userId: string;
-}
-
-export function ManageTab({ userId }: ManageTabProps) {
+export function ManageTab() {
   const [positions, setPositions] = useState<RelationshipPosition[]>([]);
   const [newPositionName, setNewPositionName] = useState("");
   const [isLoading, setIsLoading] = useState(true);

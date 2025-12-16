@@ -31,6 +31,11 @@ export function DailyEvents({ events, onEventClick }: DailyEventsProps) {
                   <p className="text-sm text-muted-foreground">{event.description}</p>
                 )}
                 <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  {event.category && (
+                    <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 text-xs">
+                      {event.category}
+                    </Badge>
+                  )}
                   {!event.all_day && event.start_time && (
                     <span className="flex items-center gap-1">
                       <Timer className="h-3 w-3" />

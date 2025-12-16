@@ -234,7 +234,7 @@ export function AchievementCategoryFilter({
           key={category}
           onClick={() => onSelect(category)}
           className={cn(
-            "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize",
+            "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize cursor-pointer",
             selected === category
               ? "bg-primary text-primary-foreground"
               : "bg-muted hover:bg-muted/80"

@@ -1,12 +1,11 @@
 "use client";
 
 import { YearlyStats } from "@/lib/data/yearly-data";
-import { SummaryCard } from "./summary-card";
-import { MonthlyChart } from "./monthly-chart";
 import { ShareYearDialog } from "./share-year-dialog";
 import { StoryMode, StoryModeButton } from "./story-mode";
 import { AchievementGrid, AchievementSummary } from "./achievement-badge";
 import { MoodTimeline } from "./mood-timeline";
+import { EventsTimeline } from "./events-timeline";
 import { ExerciseTimeline } from "./exercise-timeline";
 import { MediaTimeline } from "./media-timeline";
 import { BooksTimeline } from "./books-timeline";
@@ -18,27 +17,14 @@ import { HabitsTimeline } from "./habits-timeline";
 import { DuolingoTimeline } from "./duolingo-timeline";
 import { RelationshipTimeline } from "./relationship-timeline";
 import { TimeSpentChart } from "./time-spent-chart";
-import { getYearlyAchievements, getAchievementStats, getUnlockedAchievements } from "@/lib/data/yearly-achievements";
+import { getAchievementStats, getUnlockedAchievements } from "@/lib/data/yearly-achievements";
 import { generateYearlyInsights } from "@/lib/data/yearly-insights";
 import {
-  Film,
-  TreePine,
-  Dumbbell,
-  Smile,
-  BookOpen,
-  Github,
-  Gamepad2,
-  RefreshCw,
   Calendar,
-  CheckCircle2,
-  ListTodo,
-  Target,
-  Sparkles,
   Trophy,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useTransition, useState } from "react";
-import { syncSteamDataAction } from "@/app/actions/yearly-actions";
+
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
@@ -51,16 +37,8 @@ interface YearlySummaryProps {
 }
 
 export function YearlySummary({ stats, year }: YearlySummaryProps) {
-  const [isPending, startTransition] = useTransition();
   const [showStoryMode, setShowStoryMode] = useState(false);
-  const [showShareDialog, setShowShareDialog] = useState(false);
   const router = useRouter();
-
-  const handleSteamSync = () => {
-    startTransition(async () => {
-      await syncSteamDataAction(year);
-    });
-  };
 
   const handleYearChange = (newYear: string) => {
     router.push(`/year/${newYear}`);
@@ -71,7 +49,6 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
   // Get achievements and insights
-  const achievements = getYearlyAchievements(stats);
   const achievementStats = getAchievementStats(stats);
   const unlockedAchievements = getUnlockedAchievements(stats);
   const insights = generateYearlyInsights(stats);
@@ -97,7 +74,6 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
           onClose={() => setShowStoryMode(false)}
           onShare={() => {
             setShowStoryMode(false);
-            setShowShareDialog(true);
           }}
         />
       )}
@@ -219,6 +195,11 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
       {/* Parks Journey Timeline */}
       {stats.parks.total > 0 && (
         <ParksTimeline stats={stats} />
+      )}
+
+      {/* Events Timeline */}
+      {stats.events.total > 0 && (
+        <EventsTimeline stats={stats} />
       )}
 
       {/* Journals Journey Timeline */}

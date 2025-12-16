@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { X, ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { YearlyStats } from "@/lib/data/yearly-data";
-import { generateYearlyInsights, getYearSummary } from "@/lib/data/yearly-insights";
+import { generateYearlyInsights } from "@/lib/data/yearly-insights";
 import { getYearlyAchievements } from "@/lib/data/yearly-achievements";
 import { storyCompleteConfetti } from "@/lib/confetti";
 
@@ -143,7 +143,7 @@ export function StoryMode({ stats, year, previousYearStats, onClose, onShare }: 
               key={index}
               onClick={() => goToSlide(index)}
               className={cn(
-                "h-1 flex-1 rounded-full transition-all",
+                "h-1 flex-1 rounded-full transition-all cursor-pointer",
                 index <= currentSlide ? "bg-white" : "bg-white/30"
               )}
             />
@@ -271,7 +271,6 @@ function generateSlides(
   });
 
   // 2. Year Summary
-  const summary = getYearSummary(stats);
   slides.push({
     type: "stat",
     title: "Your Year at a Glance",

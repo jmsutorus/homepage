@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  getAllTaskCategories,
-  createTaskCategory,
-  ensureDefaultCategories,
-} from "@/lib/db/tasks";
+  getAllEventCategories,
+  createEventCategory,
+  ensureDefaultEventCategories,
+} from "@/lib/db/events";
 import { getUserId } from "@/lib/auth/server";
 
 /**
- * GET /api/task-categories
- * Returns all task categories for the current user
+ * GET /api/event-categories
+ * Returns all event categories for the current user
  * Auto-initializes default categories if user has none
  */
 export async function GET() {
@@ -16,22 +16,22 @@ export async function GET() {
     const userId = await getUserId();
 
     // Ensure user has default categories if they don't have any
-    await ensureDefaultCategories(userId);
+    await ensureDefaultEventCategories(userId);
 
-    const categories = await getAllTaskCategories();
+    const categories = await getAllEventCategories(userId);
     return NextResponse.json(categories);
   } catch (error) {
-    console.error("Error fetching task categories:", error);
+    console.error("Error fetching event categories:", error);
     return NextResponse.json(
-      { error: "Failed to fetch task categories" },
+      { error: "Failed to fetch event categories" },
       { status: 500 }
     );
   }
 }
 
 /**
- * POST /api/task-categories
- * Creates a new task category
+ * POST /api/event-categories
+ * Creates a new event category
  */
 export async function POST(request: NextRequest) {
   try {
@@ -46,10 +46,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const category = await createTaskCategory(userId, name.trim());
+    const category = await createEventCategory(userId, name.trim());
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
-    console.error("Error creating task category:", error);
+    console.error("Error creating event category:", error);
 
     // Handle unique constraint violation
     if (error instanceof Error && error.message.includes("UNIQUE constraint")) {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "Failed to create task category" },
+      { error: "Failed to create event category" },
       { status: 500 }
     );
   }

@@ -52,7 +52,16 @@ async function migrateTaskCategories() {
     const result = await db.execute("SELECT DISTINCT userId FROM tasks");
     const users = result.rows as unknown as { userId: string }[];
 
-    const defaultCategories = ["House", "Chore", "Work", "Buy"];
+    const defaultCategories = [
+      "Work",
+      "Personal",
+      "Family",
+      "Home",
+      "Shopping",
+      "Finance",
+      "Health",
+      "Travel"
+    ];
 
     for (const user of users) {
       for (const category of defaultCategories) {

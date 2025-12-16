@@ -1,32 +1,22 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceLine } from "recharts";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { YearlyStats } from "@/lib/data/yearly-data";
-import { Heart, TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { Heart, TrendingUp, Calendar } from "lucide-react";
 import { cardEntrance } from "@/lib/animation-variants";
 import { cn } from "@/lib/utils";
 
 interface MoodTimelineProps {
   stats: YearlyStats;
-  moodData?: Array<{ date: string; rating: number; note?: string }>;
 }
 
 /**
  * Mood Journey Timeline Component
  * Visualizes emotional journey through the year
  */
-export function MoodTimeline({ stats, moodData }: MoodTimelineProps) {
-  // Transform monthly activity data for mood visualization
-  const monthlyMoodData = stats.monthlyActivity.map((month, index) => {
-    const monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][index];
-    return {
-      month: monthName,
-      mood: 0, // This will be calculated from actual mood entries
-      count: 0,
-    };
-  });
+export function MoodTimeline({ stats }: MoodTimelineProps) {
 
   // Calculate mood insights
   const moodInsights = calculateMoodInsights(stats);

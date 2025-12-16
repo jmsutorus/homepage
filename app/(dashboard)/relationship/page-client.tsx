@@ -208,7 +208,7 @@ export function RelationshipPageClient({
         </TabsContent>
 
         <TabsContent value="manage" className="space-y-6 mt-6 pb-20 md:pb-0">
-          <ManageTab userId={userId} />
+          <ManageTab/>
         </TabsContent>
       </Tabs>
     </div>

@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Calendar as CalendarIcon } from "lucide-react";
 import type { EventFormData } from "./event-modal";
+import type { EventCategory } from "@/lib/db/events";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 
 interface MobileEventSheetProps {
@@ -28,6 +30,7 @@ export function MobileEventSheet({
     title: "",
     description: "",
     location: "",
+    category: "",
     date: date,
     start_time: "",
     end_time: "",
@@ -35,7 +38,27 @@ export function MobileEventSheet({
     end_date: "",
     notifications: [],
   });
+  const [categories, setCategories] = useState<EventCategory[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/event-categories");
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch event categories:", error);
+      }
+    };
+
+    if (open) {
+      fetchCategories();
+    }
+  }, [open]);
 
   // Update form data when date changes
   useEffect(() => {
@@ -54,6 +77,7 @@ export function MobileEventSheet({
           title: "",
           description: "",
           location: "",
+          category: "",
           date: date,
           start_time: "",
           end_time: "",
@@ -80,6 +104,7 @@ export function MobileEventSheet({
         title: "",
         description: "",
         location: "",
+        category: "",
         date: date,
         start_time: "",
         end_time: "",
@@ -158,6 +183,28 @@ export function MobileEventSheet({
                   disabled={isSaving}
                   className="text-base h-12 border-2 focus-visible:ring-brand"
                 />
+              </div>
+
+              {/* Category */}
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  value={formData.category || "none"}
+                  onValueChange={(value) => handleChange("category", value === "none" ? "" : value)}
+                  disabled={isSaving}
+                >
+                  <SelectTrigger id="category" className="text-base h-12 border-2">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No category</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* All Day Checkbox */}

@@ -437,6 +437,48 @@ export async function renameTaskCategory(id: number, newName: string): Promise<b
   return result.changes > 0;
 }
 
+/**
+ * Initialize default categories for a user if they don't have any
+ * This is idempotent - safe to call multiple times
+ */
+export async function ensureDefaultCategories(userId: string): Promise<void> {
+  // Check if user already has categories
+  const existingCategories = await query<TaskCategory>(
+    "SELECT * FROM task_categories WHERE userId = ? LIMIT 1",
+    [userId]
+  );
+
+  // If user already has categories, don't add defaults
+  if (existingCategories.length > 0) {
+    return;
+  }
+
+  // Default categories to create for new users
+  const defaultCategories = [
+    "Work",
+    "Personal",
+    "Family",
+    "Home",
+    "Shopping",
+    "Finance",
+    "Health",
+    "Travel"
+  ];
+
+  // Create all default categories
+  for (const categoryName of defaultCategories) {
+    try {
+      await execute(
+        "INSERT OR IGNORE INTO task_categories (userId, name) VALUES (?, ?)",
+        [userId, categoryName]
+      );
+    } catch (error) {
+      // Silently ignore errors (e.g., if category already exists)
+      console.error(`Failed to create default category "${categoryName}":`, error);
+    }
+  }
+}
+
 // ==================== Task Velocity ====================
 
 export type VelocityPeriod = "day" | "week" | "month";

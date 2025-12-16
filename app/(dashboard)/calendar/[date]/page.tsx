@@ -3,6 +3,7 @@ import { getCalendarDataForMonth } from "@/lib/db/calendar";
 import { auth } from "@/auth";
 import { getGithubActivity, type GithubEvent } from "@/lib/github";
 import { queryOne } from "@/lib/db";
+import { getAllHabits } from "@/lib/db/habits";
 import { CalendarMonthDetail } from "./calendar-month-detail";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -73,7 +74,18 @@ export default async function CalendarMonthPage({ params }: CalendarMonthPagePro
 
   // Fetch full calendar data for the month
   const calendarDataMap = await getCalendarDataForMonth(year, month, githubEvents);
-  const calendarData = Object.fromEntries(calendarDataMap);
+  // Convert to plain objects for client component serialization
+  const calendarData = JSON.parse(JSON.stringify(Object.fromEntries(calendarDataMap)));
+
+  // Fetch habits to get names for display
+  let habitNames: Record<number, string> = {};
+  if (session?.user?.id) {
+    const habits = await getAllHabits(session.user.id);
+    habitNames = habits.reduce((acc, habit) => {
+      acc[habit.id] = habit.title;
+      return acc;
+    }, {} as Record<number, string>);
+  }
 
   // Calculate previous and next month for navigation
   const prevMonth = month === 1 ? 12 : month - 1;
@@ -120,6 +132,7 @@ export default async function CalendarMonthPage({ params }: CalendarMonthPagePro
         calendarData={calendarData}
         year={year}
         month={month}
+        habitNames={habitNames}
       />
     </div>
   );

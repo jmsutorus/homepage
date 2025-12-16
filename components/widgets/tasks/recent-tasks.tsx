@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Task } from "@/lib/db/tasks";
-import { Calendar, CheckCircle2, ExternalLink } from "lucide-react";
+import { Calendar, CheckCircle2 } from "lucide-react";
 import { format, isPast, isToday } from "date-fns";
-import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
 import { TaskCompletionAnimation, useTaskCompletionAnimation } from "@/components/ui/animations/task-completion-animation";
 

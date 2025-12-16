@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { toast } from "sonner";
 import { Download, X } from "lucide-react";
@@ -12,8 +12,6 @@ const MIN_PAGE_VIEWS = 2;
 
 export function InstallPrompt() {
   const { canInstall, promptInstall, isInstalled } = useInstallPrompt();
-  const [shouldShow, setShouldShow] = useState(false);
-
 
   const showInstallToast = () => {
     toast.custom(
@@ -105,7 +103,6 @@ export function InstallPrompt() {
     if (canInstall && newPageViews >= MIN_PAGE_VIEWS) {
       // Small delay to avoid showing immediately on page load
       const timer = setTimeout(() => {
-        setShouldShow(true);
         showInstallToast();
       }, 2000);
 

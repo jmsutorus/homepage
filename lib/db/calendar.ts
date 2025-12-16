@@ -11,7 +11,6 @@ import type { GithubEvent } from "@/lib/github";
 import type { HabitCompletion } from "./habits";
 import { getHabitCompletionsForRange } from "./habits";
 import { auth } from "@/auth";
-import type { DuolingoCompletion } from "./duolingo";
 import { getDuolingoCompletionsForRange } from "./duolingo";
 import type { RelationshipDate, IntimacyEntry, RelationshipMilestone } from "./relationship";
 

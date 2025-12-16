@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/select";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 import { Send, Repeat, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface MobileHabitSheetProps {
   open: boolean;
