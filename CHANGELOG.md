@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/jmsutorus/homepage/compare/v1.9.0...v1.10.0) (2025-12-16)
+
+
+### Features
+
+* **relationship:** add comprehensive relationship tracking system ([#77](https://github.com/jmsutorus/homepage/issues/77)) ([93218e2](https://github.com/jmsutorus/homepage/commit/93218e2d95917128630fa0c56d6425e0d0e09712))
+
 # [1.9.0](https://github.com/jmsutorus/homepage/compare/v1.8.0...v1.9.0) (2025-12-15)
 
 
