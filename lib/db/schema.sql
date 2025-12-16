@@ -1053,3 +1053,116 @@ CREATE TABLE IF NOT EXISTS duolingo_completions (
 CREATE INDEX IF NOT EXISTS idx_duolingo_completions_userId ON duolingo_completions(userId);
 CREATE INDEX IF NOT EXISTS idx_duolingo_completions_date ON duolingo_completions(date);
 CREATE INDEX IF NOT EXISTS idx_duolingo_completions_user_date ON duolingo_completions(userId, date);
+
+-- Relationship Tracking Tables
+-- Tracks dates, intimacy, and milestones for relationship tracking (per user)
+-- Note: All relationship data is PRIVATE and never shared/published
+
+-- Relationship Dates Table
+-- Tracks date nights and outings with partner
+CREATE TABLE IF NOT EXISTS relationship_dates (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  date TEXT NOT NULL, -- ISO date string (YYYY-MM-DD)
+  time TEXT, -- Time in HH:MM format (optional)
+  type TEXT CHECK(type IN ('dinner', 'movie', 'activity', 'outing', 'concert', 'event', 'other')) DEFAULT 'other',
+  location TEXT,
+  venue TEXT,
+  rating INTEGER CHECK(rating BETWEEN 1 AND 5),
+  cost REAL, -- Cost/budget tracking
+  photos TEXT, -- JSON array of photo URLs
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for relationship_dates
+CREATE INDEX IF NOT EXISTS idx_relationship_dates_userId ON relationship_dates(userId);
+CREATE INDEX IF NOT EXISTS idx_relationship_dates_date ON relationship_dates(date);
+CREATE INDEX IF NOT EXISTS idx_relationship_dates_type ON relationship_dates(type);
+CREATE INDEX IF NOT EXISTS idx_relationship_dates_rating ON relationship_dates(rating);
+
+-- Trigger to update updated_at timestamp on relationship_dates
+CREATE TRIGGER IF NOT EXISTS update_relationship_dates_timestamp
+AFTER UPDATE ON relationship_dates
+BEGIN
+  UPDATE relationship_dates SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Intimacy Entries Table
+-- Private tracking of intimate moments with partner
+CREATE TABLE IF NOT EXISTS intimacy_entries (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  date TEXT NOT NULL, -- ISO date string (YYYY-MM-DD)
+  time TEXT, -- Time in HH:MM format (optional)
+  duration INTEGER, -- Duration in minutes
+  satisfaction_rating INTEGER CHECK(satisfaction_rating BETWEEN 1 AND 5),
+  initiation TEXT CHECK(initiation IN ('me', 'partner', 'mutual')) DEFAULT 'mutual',
+  type TEXT, -- Type/category (flexible text field)
+  location TEXT CHECK(location IN ('home', 'away', 'other')) DEFAULT 'home',
+  mood_before TEXT CHECK(mood_before IN ('excited', 'neutral', 'tired', 'stressed', 'relaxed', 'other')),
+  mood_after TEXT CHECK(mood_after IN ('satisfied', 'neutral', 'energized', 'sleepy', 'connected', 'other')),
+  positions TEXT, -- JSON array of position names
+  notes TEXT, -- Private notes
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for intimacy_entries
+CREATE INDEX IF NOT EXISTS idx_intimacy_entries_userId ON intimacy_entries(userId);
+CREATE INDEX IF NOT EXISTS idx_intimacy_entries_date ON intimacy_entries(date);
+CREATE INDEX IF NOT EXISTS idx_intimacy_entries_satisfaction ON intimacy_entries(satisfaction_rating);
+CREATE INDEX IF NOT EXISTS idx_intimacy_entries_initiation ON intimacy_entries(initiation);
+
+-- Trigger to update updated_at timestamp on intimacy_entries
+CREATE TRIGGER IF NOT EXISTS update_intimacy_entries_timestamp
+AFTER UPDATE ON intimacy_entries
+BEGIN
+  UPDATE intimacy_entries SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Relationship Milestones Table
+-- Tracks special moments and anniversaries
+CREATE TABLE IF NOT EXISTS relationship_milestones (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  title TEXT NOT NULL,
+  date TEXT NOT NULL, -- ISO date string (YYYY-MM-DD)
+  category TEXT CHECK(category IN ('anniversary', 'first', 'achievement', 'special', 'other')) DEFAULT 'special',
+  description TEXT,
+  photos TEXT, -- JSON array of photo URLs
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for relationship_milestones
+CREATE INDEX IF NOT EXISTS idx_relationship_milestones_userId ON relationship_milestones(userId);
+CREATE INDEX IF NOT EXISTS idx_relationship_milestones_date ON relationship_milestones(date);
+CREATE INDEX IF NOT EXISTS idx_relationship_milestones_category ON relationship_milestones(category);
+
+-- Trigger to update updated_at timestamp on relationship_milestones
+CREATE TRIGGER IF NOT EXISTS update_relationship_milestones_timestamp
+AFTER UPDATE ON relationship_milestones
+BEGIN
+  UPDATE relationship_milestones SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Relationship Positions Table
+-- User-defined positions for intimacy tracking
+CREATE TABLE IF NOT EXISTS relationship_positions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  is_default INTEGER DEFAULT 0, -- 1 for default positions, 0 for user-created
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, name) -- Each user can only have one position with a given name
+);
+
+-- Indexes for relationship_positions
+CREATE INDEX IF NOT EXISTS idx_relationship_positions_userId ON relationship_positions(userId);
+CREATE INDEX IF NOT EXISTS idx_relationship_positions_name ON relationship_positions(name);

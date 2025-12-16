@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Target,
   Languages,
+  Heart,
 } from "lucide-react";
 
 interface MonthSummaryProps {
@@ -57,6 +58,7 @@ export function CalendarMonthSummary({
   let totalTasksCompleted = 0;
   let totalGoalsCompleted = 0;
   let totalDuolingo = 0;
+  let totalRelationship = 0;
   let moodSum = 0;
   let moodCount = 0;
 
@@ -73,6 +75,7 @@ export function CalendarMonthSummary({
     totalHabits += daySummary.habitCount;
     totalTasksCompleted += daySummary.taskCounts.completed;
     totalGoalsCompleted += daySummary.goalCounts?.completed ?? 0;
+    totalRelationship += daySummary.relationshipCount ?? 0;
     if (daySummary.duolingoCompleted) {
       totalDuolingo += 1;
     }
@@ -96,7 +99,7 @@ export function CalendarMonthSummary({
   const hasAnyData = totalMedia > 0 || totalActivities > 0 || totalEvents > 0 ||
     totalParks > 0 || totalJournals > 0 || totalWorkouts > 0 ||
     totalGithubEvents > 0 || totalHabits > 0 || totalTasksCompleted > 0 ||
-    totalGoalsCompleted > 0 || totalDuolingo > 0 || moodCount > 0;
+    totalGoalsCompleted > 0 || totalDuolingo > 0 || totalRelationship > 0 || moodCount > 0;
 
   if (!hasAnyData) {
     return null;
@@ -304,6 +307,21 @@ export function CalendarMonthSummary({
                   <div>
                     <p className="text-2xl font-bold">{totalGithubEvents}</p>
                     <p className="text-sm text-muted-foreground">GitHub</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Relationship */}
+            {totalRelationship > 0 && (
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-pink-500/10">
+                    <Heart className="h-5 w-5 text-pink-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{totalRelationship}</p>
+                    <p className="text-sm text-muted-foreground">Relationship</p>
                   </div>
                 </div>
               </div>

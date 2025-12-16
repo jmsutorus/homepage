@@ -16,6 +16,7 @@ import { JournalsTimeline } from "./journals-timeline";
 import { ProductivityTimeline } from "./productivity-timeline";
 import { HabitsTimeline } from "./habits-timeline";
 import { DuolingoTimeline } from "./duolingo-timeline";
+import { RelationshipTimeline } from "./relationship-timeline";
 import { TimeSpentChart } from "./time-spent-chart";
 import { getYearlyAchievements, getAchievementStats, getUnlockedAchievements } from "@/lib/data/yearly-achievements";
 import { generateYearlyInsights } from "@/lib/data/yearly-insights";
@@ -238,6 +239,11 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
       {/* Duolingo Timeline */}
       {stats.duolingo.totalDays > 0 && (
         <DuolingoTimeline stats={stats} />
+      )}
+
+      {/* Relationship Timeline */}
+      {stats.relationship.totalDates > 0 && (
+        <RelationshipTimeline stats={stats} />
       )}
     </div>
     </>

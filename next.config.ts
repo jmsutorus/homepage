@@ -164,6 +164,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "theposterdb.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "images.squarespace-cdn.com",
         pathname: "/**",
       },

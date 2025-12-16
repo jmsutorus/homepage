@@ -17,7 +17,7 @@ export async function getUserAchievements(userId: string) {
   return map;
 }
 
-export type AchievementCategory = 'mood' | 'media' | 'habits' | 'tasks' | 'parks' | 'journal' | 'exercise' | 'duolingo' | 'general';
+export type AchievementCategory = 'mood' | 'media' | 'habits' | 'tasks' | 'parks' | 'journal' | 'exercise' | 'duolingo' | 'relationship' | 'general';
 
 export interface Achievement {
   id: string;
@@ -447,6 +447,138 @@ export const ACHIEVEMENTS: Achievement[] = [
     points: 50,
     target_value: 100,
   },
+
+  // Relationship Achievements
+  {
+    id: 'relationship-first-date',
+    slug: 'relationship-first-date',
+    title: 'Date Night',
+    description: 'Log your first date',
+    icon: 'heart',
+    category: 'relationship',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'relationship-10-dates',
+    slug: 'relationship-10-dates',
+    title: 'Making Memories',
+    description: 'Log 10 dates',
+    icon: 'heart',
+    category: 'relationship',
+    points: 15,
+    target_value: 10,
+  },
+  {
+    id: 'relationship-25-dates',
+    slug: 'relationship-25-dates',
+    title: 'Date Expert',
+    description: 'Log 25 dates',
+    icon: 'heart',
+    category: 'relationship',
+    points: 30,
+    target_value: 25,
+  },
+  {
+    id: 'relationship-50-dates',
+    slug: 'relationship-50-dates',
+    title: 'Date Night Champions',
+    description: 'Log 50 dates',
+    icon: 'heart',
+    category: 'relationship',
+    points: 50,
+    target_value: 50,
+  },
+  {
+    id: 'relationship-first-intimacy',
+    slug: 'relationship-first-intimacy',
+    title: 'Connected',
+    description: 'Log your first intimacy entry',
+    icon: 'heart',
+    category: 'relationship',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'relationship-10-intimacy',
+    slug: 'relationship-10-intimacy',
+    title: 'Passionate',
+    description: 'Log 10 intimacy entries',
+    icon: 'heart',
+    category: 'relationship',
+    points: 15,
+    target_value: 10,
+  },
+  {
+    id: 'relationship-50-intimacy',
+    slug: 'relationship-50-intimacy',
+    title: 'Lovers',
+    description: 'Log 50 intimacy entries',
+    icon: 'heart',
+    category: 'relationship',
+    points: 30,
+    target_value: 50,
+  },
+  {
+    id: 'relationship-perfect-dates-5',
+    slug: 'relationship-perfect-dates-5',
+    title: 'Perfect Nights',
+    description: 'Log 5 dates with 5-star ratings',
+    icon: 'sparkles',
+    category: 'relationship',
+    points: 25,
+    target_value: 5,
+  },
+  {
+    id: 'relationship-variety',
+    slug: 'relationship-variety',
+    title: 'Variety Seeker',
+    description: 'Try at least 5 different date types',
+    icon: 'calendar',
+    category: 'relationship',
+    points: 30,
+    target_value: 5,
+  },
+  {
+    id: 'relationship-first-milestone',
+    slug: 'relationship-first-milestone',
+    title: 'Special Moment',
+    description: 'Record your first milestone',
+    icon: 'star',
+    category: 'relationship',
+    points: 10,
+    target_value: 1,
+  },
+  {
+    id: 'relationship-5-milestones',
+    slug: 'relationship-5-milestones',
+    title: 'Memory Maker',
+    description: 'Record 5 milestones',
+    icon: 'star',
+    category: 'relationship',
+    points: 25,
+    target_value: 5,
+  },
+  {
+    id: 'relationship-10-milestones',
+    slug: 'relationship-10-milestones',
+    title: 'Milestone Master',
+    description: 'Record 10 milestones',
+    icon: 'star',
+    category: 'relationship',
+    points: 40,
+    target_value: 10,
+  },
+  {
+    id: 'relationship-blissful',
+    slug: 'relationship-blissful',
+    title: 'Blissful',
+    description: 'Maintain an average satisfaction rating of 4.5 or higher across 10+ entries',
+    icon: 'sparkles',
+    category: 'relationship',
+    points: 40,
+    target_value: 1,
+  },
 ];
 
 export async function initializeAchievements() {
@@ -494,6 +626,9 @@ export async function checkAchievement(userId: string, type: AchievementCategory
       break;
     case 'duolingo':
       await checkDuolingoAchievements(userId);
+      break;
+    case 'relationship':
+      await checkRelationshipAchievements(userId);
       break;
   }
 }
@@ -706,4 +841,72 @@ async function checkDuolingoAchievements(userId: string) {
   await unlockAchievement(userId, 'duolingo-7', count);
   await unlockAchievement(userId, 'duolingo-30', count);
   await unlockAchievement(userId, 'duolingo-100', count);
+}
+
+async function checkRelationshipAchievements(userId: string) {
+  // Count relationship dates
+  const dates = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM relationship_dates WHERE userId = ?`,
+    [userId]
+  );
+  const dateCount = dates?.count || 0;
+
+  await unlockAchievement(userId, 'relationship-first-date', dateCount);
+  await unlockAchievement(userId, 'relationship-10-dates', dateCount);
+  await unlockAchievement(userId, 'relationship-25-dates', dateCount);
+  await unlockAchievement(userId, 'relationship-50-dates', dateCount);
+
+  // Count intimacy entries
+  const intimacy = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM intimacy_entries WHERE userId = ?`,
+    [userId]
+  );
+  const intimacyCount = intimacy?.count || 0;
+
+  await unlockAchievement(userId, 'relationship-first-intimacy', intimacyCount);
+  await unlockAchievement(userId, 'relationship-10-intimacy', intimacyCount);
+  await unlockAchievement(userId, 'relationship-50-intimacy', intimacyCount);
+
+  // Count perfect dates (5-star ratings)
+  const perfectDates = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM relationship_dates WHERE userId = ? AND rating = 5`,
+    [userId]
+  );
+  const perfectDateCount = perfectDates?.count || 0;
+
+  await unlockAchievement(userId, 'relationship-perfect-dates-5', perfectDateCount);
+
+  // Count variety (distinct date types)
+  const variety = await queryOne<{ count: number }>(
+    `SELECT COUNT(DISTINCT type) as count FROM relationship_dates WHERE userId = ?`,
+    [userId]
+  );
+  const varietyCount = variety?.count || 0;
+
+  await unlockAchievement(userId, 'relationship-variety', varietyCount);
+
+  // Count relationship milestones
+  const milestones = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM relationship_milestones WHERE userId = ?`,
+    [userId]
+  );
+  const milestoneCount = milestones?.count || 0;
+
+  await unlockAchievement(userId, 'relationship-first-milestone', milestoneCount);
+  await unlockAchievement(userId, 'relationship-5-milestones', milestoneCount);
+  await unlockAchievement(userId, 'relationship-10-milestones', milestoneCount);
+
+  // Check for blissful (average satisfaction >= 4.5 with at least 10 entries)
+  const avgSatisfaction = await queryOne<{ avg: number; count: number }>(
+    `SELECT AVG(satisfaction_rating) as avg, COUNT(*) as count
+     FROM intimacy_entries
+     WHERE userId = ? AND satisfaction_rating IS NOT NULL`,
+    [userId]
+  );
+
+  if (avgSatisfaction && avgSatisfaction.count >= 10 && avgSatisfaction.avg >= 4.5) {
+    await unlockAchievement(userId, 'relationship-blissful', 1);
+  } else {
+    await unlockAchievement(userId, 'relationship-blissful', 0);
+  }
 }

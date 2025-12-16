@@ -186,26 +186,58 @@ export function TimeSpentChart({ stats }: TimeSpentChartProps) {
             </div>
 
             {/* Stats Breakdown */}
-            <div className="flex flex-col justify-center gap-3">
-              {data.map((item) => {
-                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : "0";
-                const Icon = item.icon;
+            <div className="flex flex-col justify-center">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  {data.filter(item => 
+                    item.name === "TV Shows" || item.name === "Movies" || item.name === "Books"
+                  ).map((item) => {
+                    const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : "0";
+                    const Icon = item.icon;
 
-                return (
-                  <div key={item.name} className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4" style={{ color: item.color }} />
-                      <h3 className="text-sm font-medium">{item.name}</h3>
-                    </div>
-                    <div className="ml-6 flex items-baseline gap-2">
-                      <p className="text-lg font-bold">{item.hours}</p>
-                      <p className="text-xs text-muted-foreground">
-                        ({percentage}%)
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+                    return (
+                      <div key={item.name} className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" style={{ color: item.color }} />
+                          <h3 className="text-sm font-medium">{item.name}</h3>
+                        </div>
+                        <div className="ml-6 flex items-baseline gap-2">
+                          <p className="text-lg font-bold">{item.hours}</p>
+                          <p className="text-xs text-muted-foreground">
+                            ({percentage}%)
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-4">
+                  {data.filter(item => 
+                    item.name === "Video Games" || item.name === "Exercise"
+                  ).map((item) => {
+                    const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : "0";
+                    const Icon = item.icon;
+
+                    return (
+                      <div key={item.name} className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" style={{ color: item.color }} />
+                          <h3 className="text-sm font-medium">{item.name}</h3>
+                        </div>
+                        <div className="ml-6 flex items-baseline gap-2">
+                          <p className="text-lg font-bold">{item.hours}</p>
+                          <p className="text-xs text-muted-foreground">
+                            ({percentage}%)
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>

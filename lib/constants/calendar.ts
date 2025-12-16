@@ -75,4 +75,8 @@ export const CalendarColors = {
       text: "text-fuchsia-500",
     },
   },
+  relationship: {
+    bg: "bg-pink-500",
+    text: "text-pink-500",
+  },
 };

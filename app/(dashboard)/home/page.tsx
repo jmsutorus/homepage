@@ -73,6 +73,7 @@ function serializeCalendarData(data: Record<string, any>) {
         goalsCompleted: serializeArray(dayData.goalsCompleted),
         milestonesDue: serializeArray(dayData.milestonesDue),
         milestonesCompleted: serializeArray(dayData.milestonesCompleted),
+        relationshipItems: serializeArray(dayData.relationshipItems),
       }
     ])
   );

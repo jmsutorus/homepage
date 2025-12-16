@@ -21,6 +21,7 @@ import { DailyParks } from "../daily/daily-parks";
 import { DailyJournals } from "../daily/daily-journals";
 import { DailyTasks } from "../daily/daily-tasks";
 import { DailyDuolingo } from "../daily/daily-duolingo";
+import { DailyRelationship } from "../daily/daily-relationship";
 import { ExternalLink } from "lucide-react";
 
 interface CalendarDayDetailProps {
@@ -111,6 +112,10 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
     router.push(`/journals/${slug}`);
   };
 
+  const handleRelationshipClick = () => {
+    router.push("/relationship");
+  };
+
   const handleEventUpdated = () => {
     // Call the parent's onDataChange callback to refresh the data
     onDataChange?.();
@@ -156,6 +161,7 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
   const hasJournals = (data?.journals.length ?? 0) > 0;
   const hasGithub = (data?.githubEvents.length ?? 0) > 0;
   const hasDuolingo = data?.duolingoCompleted ?? false;
+  const hasRelationship = (data?.relationshipItems.length ?? 0) > 0;
 
   // Workout activities
   const upcomingWorkoutActivities = data?.workoutActivities.filter((w) => !w.completed) ?? [];
@@ -176,7 +182,7 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
 
   const hasActivities = unlinkedStravaActivities.length > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship;
 
   // Categorize tasks relative to the date being viewed
   const completedTasks = data?.tasks.filter((t) => t.completed) ?? [];
@@ -226,11 +232,19 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
           />
         )}
 
+        {/* Relationship Section */}
+        {hasRelationship && data && (
+          <DailyRelationship
+            items={data.relationshipItems}
+            onItemClick={handleRelationshipClick}
+          />
+        )}
+
         {/* Events Section */}
         {hasEvents && data && (
-          <DailyEvents 
-            events={data.events} 
-            onEventClick={handleEventClick} 
+          <DailyEvents
+            events={data.events}
+            onEventClick={handleEventClick}
           />
         )}
 

@@ -6,7 +6,7 @@ import { MobileNav } from "./mobile-nav";
 import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
-import { Settings, Search, ChevronDown, User, Shield } from "lucide-react";
+import { Settings, Search, ChevronDown, User, Shield, Heart } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,6 +71,11 @@ export function Header() {
                 <DropdownMenuItem asChild>
                   <Link href="/mood" className="w-full cursor-pointer">
                     Mood
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/relationship" className="w-full cursor-pointer flex items-center gap-2">
+                    Relationship
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

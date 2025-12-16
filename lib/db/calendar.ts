@@ -13,6 +13,7 @@ import { getHabitCompletionsForRange } from "./habits";
 import { auth } from "@/auth";
 import type { DuolingoCompletion } from "./duolingo";
 import { getDuolingoCompletionsForRange } from "./duolingo";
+import type { RelationshipDate, IntimacyEntry, RelationshipMilestone } from "./relationship";
 
 // Goal-related calendar types
 export interface CalendarGoal {
@@ -36,6 +37,15 @@ export interface CalendarMilestone {
   completed_date: string | null;
 }
 
+// Relationship-related calendar types
+export interface CalendarRelationshipItem {
+  id: number;
+  type: 'date' | 'intimacy' | 'milestone';
+  date: string;
+  title?: string;
+  description?: string;
+}
+
 export interface CalendarDayData {
   date: string; // YYYY-MM-DD format
   mood: MoodEntry | null;
@@ -55,6 +65,8 @@ export interface CalendarDayData {
   // Milestones: milestones with target_date on this day OR completed on this day
   milestonesDue: CalendarMilestone[];
   milestonesCompleted: CalendarMilestone[];
+  // Relationship: combined dates, intimacy, and milestones
+  relationshipItems: CalendarRelationshipItem[];
 }
 
 /**
@@ -104,6 +116,8 @@ export interface CalendarDaySummary {
     firstDueTitle: string | null;
     firstDueGoalSlug: string | null;
   };
+  // Relationship count
+  relationshipCount: number;
 }
 
 /**
@@ -262,6 +276,66 @@ export async function getWorkoutActivitiesInRange(
      ORDER BY date ASC, time ASC`,
     [startDate, endDate, userId]
   );
+}
+
+/**
+ * Get relationship items (dates, intimacy entries, milestones) in a date range
+ * Returns a unified list of relationship activities
+ */
+export async function getRelationshipItemsInRange(
+  startDate: string,
+  endDate: string,
+  userId: string
+): Promise<CalendarRelationshipItem[]> {
+  const [dates, intimacyEntries, milestones] = await Promise.all([
+    query<RelationshipDate>(
+      `SELECT * FROM relationship_dates
+       WHERE date BETWEEN ? AND ?
+       AND userId = ?
+       ORDER BY date ASC`,
+      [startDate, endDate, userId]
+    ),
+    query<IntimacyEntry>(
+      `SELECT * FROM intimacy_entries
+       WHERE date BETWEEN ? AND ?
+       AND userId = ?
+       ORDER BY date ASC`,
+      [startDate, endDate, userId]
+    ),
+    query<RelationshipMilestone>(
+      `SELECT * FROM relationship_milestones
+       WHERE date BETWEEN ? AND ?
+       AND userId = ?
+       ORDER BY date ASC`,
+      [startDate, endDate, userId]
+    ),
+  ]);
+
+  const items: CalendarRelationshipItem[] = [
+    ...dates.map(d => ({
+      id: d.id,
+      type: 'date' as const,
+      date: d.date,
+      title: d.venue || d.location || 'Date',
+      description: d.notes || undefined,
+    })),
+    ...intimacyEntries.map(e => ({
+      id: e.id,
+      type: 'intimacy' as const,
+      date: e.date,
+      title: 'Intimacy',
+      description: undefined,
+    })),
+    ...milestones.map(m => ({
+      id: m.id,
+      type: 'milestone' as const,
+      date: m.date,
+      title: m.title,
+      description: m.description || undefined,
+    })),
+  ];
+
+  return items;
 }
 
 /**
@@ -490,7 +564,8 @@ export async function getCalendarDataForRange(
     goals,
     milestones,
     resolvedGithubEvents,
-    duolingoCompletions
+    duolingoCompletions,
+    relationshipItems
   ] = await Promise.all([
     getActivitiesInRange(startDate, endDate, userId),
     getMediaCompletedInRange(startDate, endDate, userId),
@@ -503,7 +578,8 @@ export async function getCalendarDataForRange(
     getGoalsInRange(userId, startDate, endDate),
     getMilestonesInRange(userId, startDate, endDate),
     Promise.resolve(githubEvents),
-    getDuolingoCompletionsForRange(userId, startDate, endDate)
+    getDuolingoCompletionsForRange(userId, startDate, endDate),
+    getRelationshipItemsInRange(startDate, endDate, userId)
   ]);
 
   // Create a map of date -> data
@@ -531,6 +607,7 @@ export async function getCalendarDataForRange(
       goalsCompleted: [],
       milestonesDue: [],
       milestonesCompleted: [],
+      relationshipItems: [],
     });
   }
 
@@ -711,6 +788,14 @@ export async function getCalendarDataForRange(
     }
   });
 
+  // Add relationship items
+  relationshipItems.forEach((item) => {
+    const dayData = calendarMap.get(item.date);
+    if (dayData) {
+      dayData.relationshipItems.push(item);
+    }
+  });
+
   return calendarMap;
 }
 
@@ -830,6 +915,7 @@ export function convertToSummary(
       firstDueTitle: data.milestonesDue[0]?.title ?? null,
       firstDueGoalSlug: data.milestonesDue[0]?.goalSlug ?? null,
     },
+    relationshipCount: data.relationshipItems.length,
   };
 }
 
