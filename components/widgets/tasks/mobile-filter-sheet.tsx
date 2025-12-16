@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select";
 import { TaskCategory, TaskStatusRecord } from "@/lib/db/tasks";
-import { FolderKanban, Circle, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { FolderKanban, Circle } from "lucide-react";
 
 interface MobileFilterSheetProps {
   open: boolean;

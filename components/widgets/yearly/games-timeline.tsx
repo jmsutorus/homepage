@@ -49,7 +49,7 @@ export function GamesTimeline({ stats }: GamesTimelineProps) {
       toast.success("Steam data synced!", {
         description: "Your gaming stats have been updated. Refresh the page to see the latest data.",
       });
-    } catch (error) {
+    } catch {
       toast.error("Sync failed", {
         description: "Failed to sync Steam data. Please try again.",
       });

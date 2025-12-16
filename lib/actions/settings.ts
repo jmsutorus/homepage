@@ -59,7 +59,7 @@ export async function connectDuolingo(username: string): Promise<{ success: bool
     // Check if valid username by fetching profile
     // We import dynamically to avoid circular deps if any
     const { getDuolingoProfile } = await import("@/lib/api/duolingo");
-    const profile = await getDuolingoProfile(session.user.id, username);
+    const profile = await getDuolingoProfile(username);
 
     if (!profile) {
       return { success: false, error: "Duolingo user not found" };

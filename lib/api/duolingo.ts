@@ -1,4 +1,4 @@
-import { getCachedValue, setCachedValue } from "@/lib/db/cache";
+
 
 const DUOLINGO_API_BASE = "https://www.duolingo.com/2017-06-30";
 
@@ -47,8 +47,7 @@ interface DuolingoUserResponse {
 /**
  * Get Duolingo user profile
  */
-export async function getDuolingoProfile(userId: string, username: string): Promise<DuolingoProfile | null> {
-  const cacheKey = `duolingo_profile_${username}`;
+export async function getDuolingoProfile(username: string): Promise<DuolingoProfile | null> {
   // const cached = await getCachedValue<DuolingoProfile>(cacheKey, userId);
   // if (cached) return cached;
 
@@ -102,7 +101,7 @@ export async function getDuolingoProfile(userId: string, username: string): Prom
  * Note: The API doesn't seem to expose simple daily history in this endpoint.
  * We'll need a better strategy or just track streak for now.
  */
-export async function getDuolingoCalendar(userId: string, username: string) {
+export async function getDuolingoCalendar() {
     // Placeholder
     return [];
 }

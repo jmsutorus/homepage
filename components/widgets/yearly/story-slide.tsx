@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
-import { AnimatedNumber, AnimatedStat } from "@/components/ui/animations/animated-number";
+import { AnimatedNumber } from "@/components/ui/animations/animated-number";
 import { fadeInUp, statReveal } from "@/lib/animation-variants";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
@@ -228,7 +228,7 @@ function StatSlideContent({ title, value, label, icon, iconColor, subtitle, deci
 /**
  * Achievement Slide
  */
-function AchievementSlideContent({ title, description, icon, iconColor, rarity }: AchievementSlideProps) {
+function AchievementSlideContent({ title, description, icon, rarity }: AchievementSlideProps) {
   const Icon = icon;
   const rarityColors = {
     common: "from-slate-400 to-slate-600",
@@ -311,11 +311,8 @@ function ComparisonSlideContent({
   currentValue,
   previousValue,
   label,
-  icon,
-  iconColor,
   isImprovement,
 }: ComparisonSlideProps) {
-  const Icon = icon;
   const delta = currentValue - previousValue;
   const percentChange = previousValue > 0 ? ((delta / previousValue) * 100).toFixed(0) : "100";
 

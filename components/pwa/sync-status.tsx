@@ -11,11 +11,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Cloud,
   CloudOff,
   RefreshCw,
   WifiOff,
-  CheckCircle2,
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";

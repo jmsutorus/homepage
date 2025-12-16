@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { Event } from "@/lib/db/events";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Event, EventCategory } from "@/lib/db/events";
 import { Trash2 } from "lucide-react";
 
 interface EventEditDialogProps {
@@ -31,16 +32,37 @@ export function EventEditDialog({
 }: EventEditDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [categories, setCategories] = useState<EventCategory[]>([]);
   const [formData, setFormData] = useState({
     title: event.title,
     description: event.description || "",
     location: event.location || "",
+    category: event.category || "",
     date: event.date,
     start_time: event.start_time || "",
     end_time: event.end_time || "",
     all_day: event.all_day,
     end_date: event.end_date || "",
   });
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/event-categories");
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch event categories:", error);
+      }
+    };
+
+    if (open) {
+      fetchCategories();
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +78,7 @@ export function EventEditDialog({
           ...formData,
           description: formData.description || null,
           location: formData.location || null,
+          category: formData.category || null,
           start_time: formData.start_time || null,
           end_time: formData.end_time || null,
           end_date: formData.end_date || null,
@@ -146,6 +169,28 @@ export function EventEditDialog({
                 setFormData({ ...formData, location: e.target.value })
               }
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Select
+              value={formData.category || "none"}
+              onValueChange={(value) =>
+                setFormData({ ...formData, category: value === "none" ? "" : value })
+              }
+            >
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No category</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

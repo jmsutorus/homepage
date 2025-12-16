@@ -1,5 +1,5 @@
 import { getCalendarSummaryForMonth } from "@/lib/db/calendar";
-import { CalendarView } from "@/components/widgets/calendar/calendar-view";
+import { CalendarPageClient } from "./page-client";
 import { auth } from "@/auth";
 import { getGithubActivity } from "@/lib/github";
 import { queryOne } from "@/lib/db";
@@ -60,15 +60,17 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   ]);
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Calendar</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
-          View your daily activities, moods, media, parks, journals, and tasks
-        </p>
+    <div className="md:space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Calendar</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            View your daily activities, moods, media, parks, journals, and tasks
+          </p>
+        </div>
       </div>
 
-      <CalendarView
+      <CalendarPageClient
         year={currentYear}
         month={currentMonth}
         summaryData={summaryData}

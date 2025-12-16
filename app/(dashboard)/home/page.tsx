@@ -20,7 +20,7 @@ import { getHabits, getHabitCompletions } from "@/lib/db/habits";
 import { getMoodEntry, getMoodEntriesInRange } from "@/lib/db/mood";
 import { getAllParks } from "@/lib/db/parks";
 import { getAllJournals } from "@/lib/db/journals";
-import { getAthleteByUserId, getActivities } from "@/lib/db/strava";
+import { getAthleteByUserId } from "@/lib/db/strava";
 import { getGoalsWithProgress } from "@/lib/db/goals";
 import { DailyHabits } from "@/components/widgets/habits/daily-habits";
 import { MoodSummary } from "@/components/widgets/mood/mood-summary";
@@ -179,7 +179,7 @@ export default async function DashboardPage({
           const { getDuolingoProfile } = await import("@/lib/api/duolingo");
           const { getDuolingoCompletion } = await import("@/lib/db/duolingo");
           const [profile, completion] = await Promise.all([
-            getDuolingoProfile(userId, account.accountId),
+            getDuolingoProfile(userId),
             getDuolingoCompletion(userId, todayStr)
           ]);
           return { profile, isCompletedToday: !!completion };
@@ -198,7 +198,6 @@ export default async function DashboardPage({
   const allParks = serialize(allParksRaw);
   const latestJournal = serialize(latestJournalRaw);
   const recentMedia = serialize(recentMediaRaw);
-  const athlete = serialize(athleteRaw);
   const activeGoals = serialize(activeGoalsRaw.slice(0, 3)); // Only show top 3 goals
   const recentActivities = serialize(recentActivitiesRaw);
   const duolingoProfileSerialized = serialize(duolingoData.profile);

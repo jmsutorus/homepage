@@ -5,7 +5,7 @@ import { CheckCircle2, Monitor, Smartphone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function PWAStatus() {
-  const { isInstalled, isStandalone } = useInstallPrompt();
+  const { isStandalone } = useInstallPrompt();
 
   if (!isStandalone) {
     return null;

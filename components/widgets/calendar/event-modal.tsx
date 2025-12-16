@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Event, EventNotification } from "@/lib/db/events";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Event, EventNotification, EventCategory } from "@/lib/db/events";
 import { SuccessCheck } from "@/components/ui/animations/success-check";
 import { useSuccessDialog } from "@/hooks/use-success-dialog";
 import { showCreationError } from "@/lib/success-toasts";
@@ -24,6 +25,7 @@ export interface EventFormData {
   title: string;
   description: string;
   location: string;
+  category: string;
   date: string;
   start_time: string;
   end_time: string;
@@ -43,6 +45,7 @@ export function EventModal({
     title: "",
     description: "",
     location: "",
+    category: "",
     date: date,
     start_time: "",
     end_time: "",
@@ -50,6 +53,7 @@ export function EventModal({
     end_date: "",
     notifications: [],
   });
+  const [categories, setCategories] = useState<EventCategory[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   // Success dialog state
@@ -58,6 +62,25 @@ export function EventModal({
     onClose: () => onOpenChange(false),
   });
 
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/event-categories");
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch event categories:", error);
+      }
+    };
+
+    if (open) {
+      fetchCategories();
+    }
+  }, [open]);
+
   // Update form data when event or date changes
   useEffect(() => {
     if (event) {
@@ -65,6 +88,7 @@ export function EventModal({
         title: event.title,
         description: event.description || "",
         location: event.location || "",
+        category: event.category || "",
         date: event.date,
         start_time: event.start_time || "",
         end_time: event.end_time || "",
@@ -77,6 +101,7 @@ export function EventModal({
         title: "",
         description: "",
         location: "",
+        category: "",
         date: date,
         start_time: "",
         end_time: "",
@@ -176,6 +201,27 @@ export function EventModal({
               value={formData.location}
               onChange={(e) => handleChange("location", e.target.value)}
             />
+          </div>
+
+          {/* Category */}
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Select
+              value={formData.category || "none"}
+              onValueChange={(value) => handleChange("category", value === "none" ? "" : value)}
+            >
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No category</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* All Day Checkbox */}

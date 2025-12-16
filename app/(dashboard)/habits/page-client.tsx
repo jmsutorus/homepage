@@ -20,15 +20,6 @@ interface HabitsPageClientProps {
 export function HabitsPageClient({ habits, chartData }: HabitsPageClientProps) {
   const [viewTab, setViewTab] = useState<ViewTab>("habits");
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Simple mobile detection for action button logic
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   return (
     <div className="container mx-auto py-6 sm:py-8 px-4 max-w-4xl">

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { YearlyStats } from "@/lib/data/yearly-data";
 import { Dumbbell, TrendingUp, Zap, Calendar, Award } from "lucide-react";
@@ -29,14 +29,7 @@ export function ExerciseTimeline({ stats }: ExerciseTimelineProps) {
   // Calculate exercise insights
   const exerciseInsights = calculateExerciseInsights(stats);
 
-  // Prepare workout type distribution data
-  const workoutTypeData = stats.exercises.byType
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5)
-    .map((type) => ({
-      name: type.type,
-      count: type.count,
-    }));
+
 
   return (
     <motion.div variants={cardEntrance} initial="hidden" animate="show">
@@ -245,7 +238,6 @@ function calculateExerciseInsights(stats: YearlyStats) {
   const totalHours = Math.round(stats.exercises.totalDuration / 60);
   const avgWorkoutsPerWeek = (stats.exercises.total / 52).toFixed(1);
   const totalMiles = (stats.exercises.totalDistance / 1609.34).toFixed(1);
-  const totalKm = (stats.exercises.totalDistance / 1000).toFixed(1);
 
   // Distance-based insights (with fun comparisons)
   if (stats.exercises.totalDistance > 0) {

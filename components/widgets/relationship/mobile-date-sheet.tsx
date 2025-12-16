@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Send, Calendar as CalendarIcon, MapPin, DollarSign } from "lucide-react";
+import { Star, Send, MapPin, DollarSign } from "lucide-react";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 
 interface MobileDateSheetProps {

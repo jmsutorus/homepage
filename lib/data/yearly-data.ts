@@ -4,6 +4,7 @@ import { getMoodEntriesForYear } from "@/lib/db/mood";
 import { getAllJournals } from "@/lib/db/journals";
 import { getAllTasks } from "@/lib/db/tasks";
 import { getGoals } from "@/lib/db/goals";
+import { getEventsInRange } from "@/lib/db/events";
 import { getGithubActivity } from "@/lib/github";
 import { execute, query, queryOne } from "@/lib/db";
 
@@ -101,7 +102,16 @@ export interface YearlyStats {
     journals: number;
     github: number;
     steam: number;
+    events: number;
   }[];
+  events: {
+    total: number;
+    allDayCount: number;
+    timedCount: number;
+    multiDayCount: number;
+    byCategory: Record<string, number>;
+    topCategories: { category: string; count: number }[];
+  };
   duolingo: {
     totalDays: number;
     byMonth: Record<number, number>;
@@ -706,19 +716,17 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
 
     // Positions statistics
     const positionCounts: Record<string, number> = {};
-    let totalPositionEntries = 0;
 
     intimacyEntries.forEach(e => {
       if (e.positions) {
         try {
           const positionsArray = JSON.parse(e.positions) as string[];
           if (Array.isArray(positionsArray)) {
-            totalPositionEntries++;
             positionsArray.forEach(pos => {
               positionCounts[pos] = (positionCounts[pos] || 0) + 1;
             });
           }
-        } catch (err) {
+        } catch {
           // Skip invalid JSON
         }
       }
@@ -744,6 +752,41 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     };
   })();
 
+  // 13. Events
+  const eventsPromise = (async () => {
+    const yearEvents = await getEventsInRange(startDate, endDate, userId);
+
+    // Calculate stats
+    const allDayCount = yearEvents.filter(e => e.all_day).length;
+    const timedCount = yearEvents.filter(e => !e.all_day).length;
+    const multiDayCount = yearEvents.filter(e => e.end_date && e.end_date !== e.date).length;
+
+    // Calculate category breakdown
+    const eventsByCategory: Record<string, number> = {};
+    yearEvents.forEach(e => {
+      if (e.category) {
+        eventsByCategory[e.category] = (eventsByCategory[e.category] || 0) + 1;
+      }
+    });
+
+    const topCategories = Object.entries(eventsByCategory)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([category, count]) => ({ category, count }));
+
+    return {
+      yearEvents,
+      stats: {
+        total: yearEvents.length,
+        allDayCount,
+        timedCount,
+        multiDayCount,
+        byCategory: eventsByCategory,
+        topCategories,
+      }
+    };
+  })();
+
   // Execute all promises in parallel
   const [
     mediaData,
@@ -757,7 +800,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     tasksData,
     goalsData,
     duolingoStats,
-    relationshipStats
+    relationshipStats,
+    eventsData
   ] = await Promise.all([
     mediaPromise,
     parksPromise,
@@ -770,7 +814,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     tasksPromise,
     goalsPromise,
     duolingoPromise,
-    relationshipPromise
+    relationshipPromise,
+    eventsPromise
   ]);
 
   // Process Steam Stats
@@ -797,6 +842,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     journals: 0,
     github: githubData.stats.contributionsByMonth[i] || 0,
     steam: 0,
+    events: 0,
   }));
 
   mediaData.yearMedia.forEach(m => {
@@ -840,6 +886,12 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     monthlyActivity[month].journals++;
   });
 
+  eventsData.yearEvents.forEach(e => {
+    // Parse month directly from YYYY-MM-DD string to avoid timezone issues
+    const month = parseInt(e.date.split('-')[1], 10) - 1;
+    monthlyActivity[month].events++;
+  });
+
   return {
     year,
     media: mediaData.stats,
@@ -872,6 +924,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     monthlyActivity,
     duolingo: duolingoStats,
     relationship: relationshipStats,
+    events: eventsData.stats,
   };
 }
 

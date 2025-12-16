@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Star, Calendar, Trash2, Edit } from "lucide-react";
+import { Plus, Star, Trash2, Edit } from "lucide-react";
 import { CreateMilestoneDialog } from "./create-milestone-dialog";
 import { MobileMilestoneSheet } from "./mobile-milestone-sheet";
 import { EditMilestoneDialog } from "./edit-milestone-dialog";
@@ -130,7 +130,7 @@ export function MilestonesTab({
 
           {/* Milestone items */}
           <div className="space-y-8">
-            {milestones.map((milestone, index) => (
+            {milestones.map((milestone) => (
               <div key={milestone.id} className="relative pl-20">
                 {/* Timeline dot */}
                 <div className={`absolute left-6 top-3 w-5 h-5 rounded-full border-4 border-background ${getCategoryColor(milestone.category)}`} />

@@ -139,6 +139,7 @@ export async function POST(request: NextRequest) {
       end_time: body.end_time,
       all_day: body.all_day || false,
       end_date: body.end_date,
+      category: body.category,
       notifications: body.notifications || [],
     };
 
@@ -187,6 +188,7 @@ export async function PATCH(request: NextRequest) {
     if (body.end_time !== undefined) updates.end_time = body.end_time;
     if (body.all_day !== undefined) updates.all_day = body.all_day;
     if (body.end_date !== undefined) updates.end_date = body.end_date;
+    if (body.category !== undefined) updates.category = body.category;
     if (body.notifications !== undefined) updates.notifications = body.notifications;
 
     const success = await updateEvent(parseInt(id, 10), userId, updates);

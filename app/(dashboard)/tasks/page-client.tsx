@@ -8,11 +8,11 @@ import { CategoryManager } from "@/components/widgets/tasks/category-manager";
 import { StatusManager } from "@/components/widgets/tasks/status-manager";
 import { TaskTemplateManager } from "@/components/widgets/tasks/task-template-manager";
 import { TaskVelocityChart } from "@/components/widgets/tasks/task-velocity-chart";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, Plus, ListTodo, Settings, TrendingUp, ChevronDown, MoreHorizontal } from "lucide-react";
+import { Plus, ListTodo, Settings, TrendingUp, ChevronDown, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +35,7 @@ interface TasksPageClientProps {
 
 export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPageClientProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [filter] = useState<FilterType>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categories, setCategories] = useState<TaskCategory[]>([]);
@@ -50,8 +50,6 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
   const [showDetails, setShowDetails] = useState(true);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  // Track if it's the first render to avoid double fetching
-  const isFirstRender = useState(true)[0]; // We can't use useRef here because we need to trigger re-renders? No, useRef is fine for logic.
   // Actually, useRef is better for this pattern.
   const isMounted = useRef(false);
 

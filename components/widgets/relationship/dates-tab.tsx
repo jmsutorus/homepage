@@ -10,7 +10,6 @@ import { MobileDateSheet } from "./mobile-date-sheet";
 import { EditDateDialog } from "./edit-date-dialog";
 import type { RelationshipDate } from "@/lib/db/relationship";
 import { formatDateLongSafe } from "@/lib/utils";
-import { showCreationSuccess } from "@/lib/success-toasts";
 import { toast } from "sonner";
 
 interface DatesTabProps {

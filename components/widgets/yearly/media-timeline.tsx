@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { YearlyStats } from "@/lib/data/yearly-data";
 import { Film, TrendingUp, Star, Calendar, Sparkles } from "lucide-react";
 import { cardEntrance } from "@/lib/animation-variants";
-import { cn } from "@/lib/utils";
 
 interface MediaTimelineProps {
   stats: YearlyStats;

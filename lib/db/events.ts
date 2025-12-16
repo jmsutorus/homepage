@@ -6,6 +6,13 @@ export interface EventNotification {
   timeObject: string; // e.g., 'minutes', 'hours', 'days', 'weeks'
 }
 
+export interface EventCategory {
+  id: number;
+  userId: string;
+  name: string;
+  created_at: string;
+}
+
 export interface Event {
   id: number;
   userId: string;
@@ -17,6 +24,7 @@ export interface Event {
   end_time: string | null; // HH:MM format
   all_day: boolean;
   end_date: string | null; // YYYY-MM-DD format - for multi-day events
+  category: string | null;
   notifications: EventNotification[];
   created_at: string;
   updated_at: string;
@@ -31,6 +39,7 @@ export interface CreateEventInput {
   end_time?: string;
   all_day?: boolean;
   end_date?: string;
+  category?: string;
   notifications?: EventNotification[];
 }
 
@@ -43,6 +52,7 @@ export interface UpdateEventInput {
   end_time?: string;
   all_day?: boolean;
   end_date?: string;
+  category?: string;
   notifications?: EventNotification[];
 }
 
@@ -72,6 +82,7 @@ interface DBEvent {
   end_time: string | null;
   all_day: number;
   end_date: string | null;
+  category: string | null;
   notifications: string | null;
   created_at: string;
   updated_at: string;
@@ -91,8 +102,8 @@ function transformEvent(row: DBEvent): Event {
 export async function createEvent(input: CreateEventInput, userId: string): Promise<Event> {
   const result = await execute(
     `INSERT INTO events (
-      userId, title, description, location, date, start_time, end_time, all_day, end_date, notifications
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      userId, title, description, location, date, start_time, end_time, all_day, end_date, category, notifications
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       input.title,
@@ -103,6 +114,7 @@ export async function createEvent(input: CreateEventInput, userId: string): Prom
       input.end_time || null,
       input.all_day ? 1 : 0,
       input.end_date || null,
+      input.category || null,
       serializeNotifications(input.notifications),
     ]
   );
@@ -216,6 +228,11 @@ export async function updateEvent(id: number, userId: string, updates: UpdateEve
     params.push(updates.end_date || null);
   }
 
+  if (updates.category !== undefined) {
+    fields.push("category = ?");
+    params.push(updates.category || null);
+  }
+
   if (updates.notifications !== undefined) {
     fields.push("notifications = ?");
     params.push(serializeNotifications(updates.notifications));
@@ -263,4 +280,125 @@ export async function getUpcomingEvents(userId: string, limit?: number): Promise
   const params = limit ? [userId, today, today, limit] : [userId, today, today];
   const rows = await query<DBEvent>(sql, params);
   return rows.map(transformEvent);
+}
+
+// ==================== Event Categories ====================
+
+/**
+ * Get all event categories for a specific user
+ */
+export async function getAllEventCategories(userId: string): Promise<EventCategory[]> {
+  return await query<EventCategory>(
+    "SELECT * FROM event_categories WHERE userId = ? ORDER BY name ASC",
+    [userId]
+  );
+}
+
+/**
+ * Create a new event category
+ */
+export async function createEventCategory(userId: string, name: string): Promise<EventCategory> {
+  const result = await execute(
+    "INSERT INTO event_categories (userId, name) VALUES (?, ?)",
+    [userId, name]
+  );
+
+  const category = (await query<EventCategory>(
+    "SELECT * FROM event_categories WHERE id = ?",
+    [result.lastInsertRowid]
+  ))[0];
+
+  if (!category) {
+    throw new Error("Failed to create event category");
+  }
+
+  return category;
+}
+
+/**
+ * Delete an event category
+ * This will set category to NULL for all events using this category
+ */
+export async function deleteEventCategory(id: number, userId: string): Promise<boolean> {
+  // First, get the category to find its name
+  const category = (await query<EventCategory>(
+    "SELECT * FROM event_categories WHERE id = ? AND userId = ?",
+    [id, userId]
+  ))[0];
+
+  if (!category) {
+    return false;
+  }
+
+  // Clear the category from all events using it
+  await execute("UPDATE events SET category = NULL WHERE category = ? AND userId = ?", [category.name, userId]);
+
+  // Then delete the category
+  const result = await execute("DELETE FROM event_categories WHERE id = ? AND userId = ?", [id, userId]);
+  return result.changes > 0;
+}
+
+/**
+ * Rename an event category
+ * This will update all events using the old category name to the new name
+ */
+export async function renameEventCategory(id: number, userId: string, newName: string): Promise<boolean> {
+  const category = (await query<EventCategory>(
+    "SELECT * FROM event_categories WHERE id = ? AND userId = ?",
+    [id, userId]
+  ))[0];
+
+  if (!category) {
+    return false;
+  }
+
+  // Update all events using this category
+  await execute("UPDATE events SET category = ? WHERE category = ? AND userId = ?", [newName, category.name, userId]);
+
+  // Update the category name
+  const result = await execute(
+    "UPDATE event_categories SET name = ? WHERE id = ? AND userId = ?",
+    [newName, id, userId]
+  );
+
+  return result.changes > 0;
+}
+
+/**
+ * Initialize default event categories for a user if they don't have any
+ * This is idempotent - safe to call multiple times
+ */
+export async function ensureDefaultEventCategories(userId: string): Promise<void> {
+  // Check if user already has categories
+  const existingCategories = await query<EventCategory>(
+    "SELECT * FROM event_categories WHERE userId = ? LIMIT 1",
+    [userId]
+  );
+
+  // If user already has categories, don't add defaults
+  if (existingCategories.length > 0) {
+    return;
+  }
+
+  // Default categories for events (activity-based)
+  const defaultCategories = [
+    "Work",
+    "Meeting",
+    "Appointment",
+    "Vacation",
+    "Holiday"
+  ];
+
+  // Create all default categories
+  for (const categoryName of defaultCategories) {
+    try {
+      await execute(
+        "INSERT OR IGNORE INTO event_categories (userId, name) VALUES (?, ?)",
+        [userId, categoryName]
+      );
+    } catch (error) {
+      // Silently ignore errors (e.g., if category already exists)
+      console.error(`Failed to create default event category "${categoryName}":`, error);
+    }
+  }
 }

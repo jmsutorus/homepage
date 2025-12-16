@@ -143,6 +143,7 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
             const hasGithub = (dayData?.githubEvents.length ?? 0) > 0;
             const hasHabits = (dayData?.habitCompletions.length ?? 0) > 0;
             const hasDuolingo = dayData?.duolingoCompleted ?? false;
+            const hasRelationship = (dayData?.relationshipItems.length ?? 0) > 0;
 
             return (
               <button
@@ -192,6 +193,9 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
                   )}
                   {hasDuolingo && (
                     <div className={cn("w-1.5 h-1.5 rounded-full", colors.duolingo?.bg || "bg-[#58CC02]")} title="Duolingo" />
+                  )}
+                  {hasRelationship && (
+                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.relationship?.bg || "bg-rose-500")} title="Relationship" />
                   )}
                 </div>
               </button>
@@ -258,6 +262,10 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
             <div className="flex items-center gap-1">
               <div className={cn("w-2 h-2 rounded-full", colors.duolingo?.bg || "bg-[#58CC02]")} />
               <span>Duolingo</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className={cn("w-2 h-2 rounded-full", colors.relationship?.bg || "bg-rose-500")} />
+              <span>Relationship</span>
             </div>
           </div>
         </div>
