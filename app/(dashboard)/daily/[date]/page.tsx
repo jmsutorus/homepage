@@ -10,7 +10,7 @@ import { MoodSelector } from "@/components/widgets/mood/mood-selector";
 import { getMoodForDate } from "@/lib/db/journals";
 import { getCalendarDataForDate } from "@/lib/db/calendar";
 import { auth } from "@/auth";
-import { getGithubActivity } from "@/lib/github";
+import { getGithubEventsForDate } from "@/lib/db/github";
 import { queryOne } from "@/lib/db";
 import { DailyActivities } from "@/components/widgets/daily/daily-activities";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
@@ -73,16 +73,8 @@ export default async function DailyPage({ params }: DailyPageProps) {
 
   let githubEventsPromise: Promise<any[]> = Promise.resolve([]);
   if (userId) {
-    githubEventsPromise = (async () => {
-      const account = await queryOne<{ accessToken: string; accountId: string }>(
-        "SELECT accessToken, accountId FROM account WHERE userId = ? AND providerId = 'github'",
-        [userId]
-      );
-      if (account?.accessToken) {
-        return getGithubActivity(account.accessToken, date, `${date}T23:59:59`);
-      }
-      return [];
-    })();
+    // Read GitHub events from synced database
+    githubEventsPromise = getGithubEventsForDate(userId, date);
   }
 
   const dailyDataPromise = getCalendarDataForDate(date, githubEventsPromise);

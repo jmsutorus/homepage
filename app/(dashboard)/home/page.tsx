@@ -11,7 +11,7 @@ import { WeatherWidget } from "@/components/widgets/weather/weather-widget";
 import { getUserId } from "@/lib/auth/server";
 import { getCalendarDataForMonth } from "@/lib/db/calendar";
 import { auth } from "@/auth";
-import { getGithubActivity } from "@/lib/github";
+import { getGithubEventsByDateRange } from "@/lib/db/github";
 import { queryOne } from "@/lib/db";
 import { getCalendarColorsForUser } from "@/lib/actions/calendar-colors";
 import { getFeatureFlag } from "@/lib/flags";
@@ -102,26 +102,15 @@ export default async function DashboardPage({
   const isHomeAssistantEnabledPromise = getFeatureFlag("HomeAssistant", false);
   const isWeatherEnabledPromise = getFeatureFlag("Weather", false);
 
-  // GitHub events fetch
+  // GitHub events fetch - from synced database
   const githubEventsPromise = (async () => {
     const session = await sessionPromise;
     if (session?.user?.id) {
-      const account = await queryOne<{ accessToken: string }>(
-        "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
-        [session.user.id]
-      );
+      const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01T00:00:00Z`;
+      const lastDay = new Date(currentYear, currentMonth, 0).getDate();
+      const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}T23:59:59Z`;
 
-      if (account?.accessToken) {
-        const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`;
-        const lastDay = new Date(currentYear, currentMonth, 0).getDate();
-        const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
-
-        return getGithubActivity(
-          account.accessToken,
-          startDate,
-          endDate
-        );
-      }
+      return getGithubEventsByDateRange(session.user.id, startDate, endDate);
     }
     return [];
   })();

@@ -1,8 +1,7 @@
 import { getCalendarSummaryForMonth } from "@/lib/db/calendar";
 import { CalendarPageClient } from "./page-client";
 import { auth } from "@/auth";
-import { getGithubActivity } from "@/lib/github";
-import { queryOne } from "@/lib/db";
+import { getGithubEventsByDateRange } from "@/lib/db/github";
 import { getCalendarColorsForUser } from "@/lib/actions/calendar-colors";
 
 export const dynamic = "force-dynamic";
@@ -26,26 +25,15 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   const sessionPromise = auth();
   const calendarColorsPromise = getCalendarColorsForUser();
 
-  // Define GitHub events promise
+  // Define GitHub events promise - fetch from synced database
   const githubEventsPromise = (async () => {
     const session = await sessionPromise;
     if (session?.user?.id) {
-      const account = await queryOne<{ accessToken: string }>(
-        "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
-        [session.user.id]
-      );
+      const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01T00:00:00Z`;
+      const lastDay = new Date(currentYear, currentMonth, 0).getDate();
+      const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}T23:59:59Z`;
 
-      if (account?.accessToken) {
-        const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`;
-        const lastDay = new Date(currentYear, currentMonth, 0).getDate();
-        const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
-
-        return getGithubActivity(
-          account.accessToken,
-          startDate,
-          endDate
-        );
-      }
+      return getGithubEventsByDateRange(session.user.id, startDate, endDate);
     }
     return [];
   })();
