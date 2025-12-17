@@ -1166,3 +1166,104 @@ CREATE TABLE IF NOT EXISTS relationship_positions (
 -- Indexes for relationship_positions
 CREATE INDEX IF NOT EXISTS idx_relationship_positions_userId ON relationship_positions(userId);
 CREATE INDEX IF NOT EXISTS idx_relationship_positions_name ON relationship_positions(name);
+
+-- ==================== Meal Planning Tables ====================
+
+-- Meals Table
+-- Stores user-created meal recipes with ingredients and preparation steps (per user)
+CREATE TABLE IF NOT EXISTS meals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  steps TEXT, -- JSON array of step strings
+  servings INTEGER DEFAULT 1,
+  prep_time INTEGER, -- Duration in minutes
+  cook_time INTEGER, -- Duration in minutes
+  image_url TEXT,
+  tags TEXT, -- JSON array of tag strings
+  rating INTEGER, -- Recipe rating 1-5
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for meals
+CREATE INDEX IF NOT EXISTS idx_meals_userId ON meals(userId);
+CREATE INDEX IF NOT EXISTS idx_meals_name ON meals(name);
+
+-- Trigger to update updated_at timestamp on meals
+CREATE TRIGGER IF NOT EXISTS update_meals_timestamp
+AFTER UPDATE ON meals
+BEGIN
+  UPDATE meals SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Meal Ingredients Table
+-- Stores ingredients for each meal recipe
+CREATE TABLE IF NOT EXISTS meal_ingredients (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  mealId INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  quantity REAL,
+  unit TEXT, -- cups, tbsp, oz, lbs, etc.
+  category TEXT DEFAULT 'other', -- produce, dairy, meat, pantry, frozen, other
+  notes TEXT,
+  order_index INTEGER DEFAULT 0,
+  FOREIGN KEY (mealId) REFERENCES meals(id) ON DELETE CASCADE
+);
+
+-- Indexes for meal_ingredients
+CREATE INDEX IF NOT EXISTS idx_meal_ingredients_mealId ON meal_ingredients(mealId);
+CREATE INDEX IF NOT EXISTS idx_meal_ingredients_category ON meal_ingredients(category);
+CREATE INDEX IF NOT EXISTS idx_meal_ingredients_order ON meal_ingredients(mealId, order_index);
+
+-- Grocery Items Table
+-- Stores the user's grocery/shopping list items (per user)
+CREATE TABLE IF NOT EXISTS grocery_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  quantity REAL,
+  unit TEXT,
+  category TEXT DEFAULT 'other', -- produce, dairy, meat, pantry, frozen, bakery, beverages, other
+  checked BOOLEAN DEFAULT 0,
+  mealId INTEGER, -- Optional: which meal this ingredient came from
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (mealId) REFERENCES meals(id) ON DELETE SET NULL
+);
+
+-- Indexes for grocery_items
+CREATE INDEX IF NOT EXISTS idx_grocery_items_userId ON grocery_items(userId);
+CREATE INDEX IF NOT EXISTS idx_grocery_items_category ON grocery_items(category);
+CREATE INDEX IF NOT EXISTS idx_grocery_items_checked ON grocery_items(checked);
+CREATE INDEX IF NOT EXISTS idx_grocery_items_mealId ON grocery_items(mealId);
+
+-- Daily Meals Table
+-- Tracks which recipes a user ate on which days (breakfast, lunch, dinner)
+CREATE TABLE IF NOT EXISTS daily_meals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  date TEXT NOT NULL, -- YYYY-MM-DD format
+  meal_type TEXT NOT NULL CHECK(meal_type IN ('breakfast', 'lunch', 'dinner')),
+  mealId INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (mealId) REFERENCES meals(id) ON DELETE CASCADE,
+  UNIQUE(userId, date, meal_type)
+);
+
+-- Indexes for daily_meals
+CREATE INDEX IF NOT EXISTS idx_daily_meals_userId ON daily_meals(userId);
+CREATE INDEX IF NOT EXISTS idx_daily_meals_date ON daily_meals(date);
+CREATE INDEX IF NOT EXISTS idx_daily_meals_userId_date ON daily_meals(userId, date);
+CREATE INDEX IF NOT EXISTS idx_daily_meals_mealId ON daily_meals(mealId);
+
+-- Trigger for daily_meals updated_at
+CREATE TRIGGER IF NOT EXISTS update_daily_meals_timestamp
+AFTER UPDATE ON daily_meals
+BEGIN
+  UPDATE daily_meals SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;

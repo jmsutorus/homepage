@@ -18,6 +18,7 @@ import {
   Target,
   Languages,
   Heart,
+  UtensilsCrossed,
 } from "lucide-react";
 
 interface MonthSummaryProps {
@@ -59,6 +60,7 @@ export function CalendarMonthSummary({
   let totalGoalsCompleted = 0;
   let totalDuolingo = 0;
   let totalRelationship = 0;
+  let totalMeals = 0;
   let moodSum = 0;
   let moodCount = 0;
 
@@ -76,6 +78,7 @@ export function CalendarMonthSummary({
     totalTasksCompleted += daySummary.taskCounts.completed;
     totalGoalsCompleted += daySummary.goalCounts?.completed ?? 0;
     totalRelationship += daySummary.relationshipCount ?? 0;
+    totalMeals += daySummary.mealCount ?? 0;
     if (daySummary.duolingoCompleted) {
       totalDuolingo += 1;
     }
@@ -99,7 +102,7 @@ export function CalendarMonthSummary({
   const hasAnyData = totalMedia > 0 || totalActivities > 0 || totalEvents > 0 ||
     totalParks > 0 || totalJournals > 0 || totalWorkouts > 0 ||
     totalGithubEvents > 0 || totalHabits > 0 || totalTasksCompleted > 0 ||
-    totalGoalsCompleted > 0 || totalDuolingo > 0 || totalRelationship > 0 || moodCount > 0;
+    totalGoalsCompleted > 0 || totalDuolingo > 0 || totalRelationship > 0 || totalMeals > 0 || moodCount > 0;
 
   if (!hasAnyData) {
     return null;
@@ -322,6 +325,21 @@ export function CalendarMonthSummary({
                   <div>
                     <p className="text-2xl font-bold">{totalRelationship}</p>
                     <p className="text-sm text-muted-foreground">Relationship</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Meals */}
+            {totalMeals > 0 && (
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-rose-500/10">
+                    <UtensilsCrossed className="h-5 w-5 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{totalMeals}</p>
+                    <p className="text-sm text-muted-foreground">Meals</p>
                   </div>
                 </div>
               </div>

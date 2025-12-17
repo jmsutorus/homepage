@@ -14,6 +14,7 @@ import type { JournalContent } from "@/lib/db/journals";
 import type { MoodEntry } from "@/lib/db/mood";
 import type { HabitCompletion } from "@/lib/db/habits";
 import type { GithubEvent } from "@/lib/github";
+import type { DailyMeal, MealType } from "@/lib/types/meals";
 import {
   Film,
   Tv,
@@ -40,6 +41,7 @@ import {
   Star,
   ChevronDown,
   ChevronUp,
+  UtensilsCrossed,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -48,6 +50,7 @@ interface CalendarMonthDetailProps {
   year: number;
   month: number;
   habitNames?: Record<number, string>;
+  mealNames?: Record<number, string>;
 }
 
 const MEDIA_ICONS: Record<string, typeof Film> = {
@@ -60,6 +63,7 @@ const MEDIA_ICONS: Record<string, typeof Film> = {
 export function CalendarMonthDetail({
   calendarData,
   habitNames = {},
+  mealNames = {},
 }: CalendarMonthDetailProps) {
   const router = useRouter();
   const [tasksExpanded, setTasksExpanded] = useState(false);
@@ -100,6 +104,14 @@ export function CalendarMonthDetail({
     allGithubEvents.push(...dayData.githubEvents);
     allRelationshipItems.push(...dayData.relationshipItems);
     if (dayData.duolingoCompleted) duolingoDaysCompleted++;
+  });
+
+  // Extract daily meals data
+  const allDailyMeals: DailyMeal[] = [];
+  Object.values(calendarData).forEach((dayData) => {
+    if (dayData.dailyMeals) {
+      allDailyMeals.push(...dayData.dailyMeals);
+    }
   });
 
   // Mood stats
@@ -149,6 +161,29 @@ export function CalendarMonthDetail({
     totalIntimacy: relationshipIntimacy.length,
     totalMilestones: relationshipMilestones.length,
     total: allRelationshipItems.length,
+  };
+
+  // Meals stats - group by meal type and count unique recipes
+  const mealsByType: Record<MealType, DailyMeal[]> = {
+    breakfast: [],
+    lunch: [],
+    dinner: [],
+  };
+  allDailyMeals.forEach((meal) => {
+    if (mealsByType[meal.meal_type]) {
+      mealsByType[meal.meal_type].push(meal);
+    }
+  });
+
+  // Get unique recipes cooked this month
+  const uniqueRecipeIds = new Set(allDailyMeals.map((m) => m.mealId));
+  const mealStats = {
+    total: allDailyMeals.length,
+    breakfast: mealsByType.breakfast.length,
+    lunch: mealsByType.lunch.length,
+    dinner: mealsByType.dinner.length,
+    uniqueRecipes: uniqueRecipeIds.size,
+    daysWithMeals: new Set(allDailyMeals.map((m) => m.date)).size,
   };
 
   // Extract tasks from calendar data
@@ -251,9 +286,10 @@ export function CalendarMonthDetail({
   const hasDuolingo = duolingoStats.daysCompleted > 0;
   const hasGithub = githubStats.totalEvents > 0;
   const hasRelationship = relationshipStats.total > 0;
+  const hasMeals = mealStats.total > 0;
 
   const hasAnyData = hasMedia || hasActivities || hasEvents || hasParks || hasJournals || 
-    hasGoalsCompleted || hasMood || hasHabits || hasDuolingo || hasGithub || hasRelationship || hasTasks;
+    hasGoalsCompleted || hasMood || hasHabits || hasDuolingo || hasGithub || hasRelationship || hasTasks || hasMeals;
 
   if (!hasAnyData) {
     return (
@@ -548,6 +584,92 @@ export function CalendarMonthDetail({
                       {relationshipStats.totalMilestones}
                     </p>
                     <p className="text-sm text-muted-foreground">Milestones</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Meals Summary */}
+      {hasMeals && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <UtensilsCrossed className="h-5 w-5 text-orange-500" />
+                Meals & Recipes
+              </CardTitle>
+              <span className="text-sm text-muted-foreground">
+                {mealStats.total} meals logged
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="p-4 rounded-lg border bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-orange-500/10">
+                    <UtensilsCrossed className="h-5 w-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {mealStats.total}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Total Meals</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg border bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-yellow-500/10">
+                    <Calendar className="h-5 w-5 text-yellow-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                      {mealStats.breakfast}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Breakfasts</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg border bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-green-500/10">
+                    <Calendar className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {mealStats.lunch}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Lunches</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg border bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-blue-500/10">
+                    <Calendar className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {mealStats.dinner}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Dinners</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg border bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-purple-500/10">
+                    <BookOpen className="h-5 w-5 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {mealStats.uniqueRecipes}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Unique Recipes</p>
                   </div>
                 </div>
               </div>
@@ -979,6 +1101,58 @@ export function CalendarMonthDetail({
                   </div>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recipes Logged */}
+      {hasMeals && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UtensilsCrossed className="h-5 w-5" />
+              Recipes Logged ({allDailyMeals.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {/* Sort by date descending */}
+              {[...allDailyMeals]
+                .sort((a, b) => b.date.localeCompare(a.date) || 
+                  (['breakfast', 'lunch', 'dinner'].indexOf(a.meal_type) - ['breakfast', 'lunch', 'dinner'].indexOf(b.meal_type)))
+                .map((meal) => {
+                  const recipeName = mealNames[meal.mealId] || `Recipe #${meal.mealId}`;
+                  const mealTypeColors: Record<string, string> = {
+                    breakfast: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+                    lunch: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+                    dinner: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+                  };
+                  return (
+                    <div
+                      key={`${meal.date}-${meal.meal_type}`}
+                      className="p-3 rounded-lg border bg-card cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => router.push(`/recipes/${meal.mealId}`)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="font-medium text-orange-700 dark:text-orange-400">
+                            {recipeName}
+                          </p>
+                          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs capitalize ${mealTypeColors[meal.meal_type] || ""}`}
+                            >
+                              {meal.meal_type}
+                            </Badge>
+                            <span>{formatDateSafe(meal.date)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           </CardContent>
         </Card>

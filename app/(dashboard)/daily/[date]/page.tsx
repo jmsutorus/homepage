@@ -17,6 +17,9 @@ import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { getCalendarColorsObject } from "@/lib/db/calendar-colors";
 import { DuolingoCompletionToggle } from "@/components/widgets/duolingo/duolingo-completion-toggle";
 import { getDuolingoCompletion } from "@/lib/db/duolingo";
+import { DailyMeals } from "@/components/widgets/daily/daily-meals";
+import { getDailyMealsByDate } from "@/lib/db/daily-meals";
+import { getAllMeals } from "@/lib/db/meals";
 
 interface DailyPageProps {
   params: Promise<{
@@ -101,7 +104,9 @@ export default async function DailyPage({ params }: DailyPageProps) {
         upcomingMilestones,
         completedGoals,
         completedMilestones,
-        colors
+        colors,
+        dailyMeals,
+        availableRecipes
       ] = await Promise.all([
         getDailyJournalByDate(date, userId),
         getMoodForDate(date, userId),
@@ -110,21 +115,23 @@ export default async function DailyPage({ params }: DailyPageProps) {
         getUpcomingMilestones(userId, date, endDateStr),
         getGoalsCompletedOnDate(userId, date),
         getMilestonesCompletedOnDate(userId, date),
-        getCalendarColorsObject(userId)
+        getCalendarColorsObject(userId),
+        getDailyMealsByDate(userId, date),
+        getAllMeals(userId)
       ]);
-      
+
       // Check if user has Duolingo connected
       const duolingoAccount = await queryOne<{ accountId: string }>(
         "SELECT accountId FROM account WHERE userId = ? AND providerId = 'duolingo'",
         [userId]
       );
-      
+
       let duolingoCompletion = null;
       if (duolingoAccount) {
         duolingoCompletion = await getDuolingoCompletion(userId, date);
       }
-      
-      return { journal, mood, allRelevantTasks, upcomingGoals, upcomingMilestones, completedGoals, completedMilestones, colors, hasDuolingo: !!duolingoAccount, duolingoCompleted: !!duolingoCompletion };
+
+      return { journal, mood, allRelevantTasks, upcomingGoals, upcomingMilestones, completedGoals, completedMilestones, colors, hasDuolingo: !!duolingoAccount, duolingoCompleted: !!duolingoCompletion, dailyMeals, availableRecipes };
     })(),
     allHabitsPromise,
     completionsPromise,
@@ -141,6 +148,8 @@ export default async function DailyPage({ params }: DailyPageProps) {
   const colors = userData?.colors ?? {};
   const hasDuolingo = userData?.hasDuolingo ?? false;
   const duolingoCompleted = userData?.duolingoCompleted ?? false;
+  const dailyMeals = userData?.dailyMeals ?? [];
+  const availableRecipes = userData?.availableRecipes ?? [];
 
   // Filter habits to only show those created on or before the page date
   const habits = allHabits.filter(habit => {
@@ -298,6 +307,21 @@ export default async function DailyPage({ params }: DailyPageProps) {
               <DuolingoCompletionToggle date={date} isCompleted={duolingoCompleted} />
             </section>
           )}
+
+          {/* Daily Meals Section */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Meals</h2>
+              <Button variant="ghost" size="sm" asChild className="cursor-pointer">
+                <Link href="/recipes">Recipes</Link>
+              </Button>
+            </div>
+            <DailyMeals
+              date={date}
+              initialDailyMeals={dailyMeals}
+              availableRecipes={availableRecipes}
+            />
+          </section>
 
           {/* Stats/Summary Section */}
           <section className="rounded-lg border bg-card p-4">

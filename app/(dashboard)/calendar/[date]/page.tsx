@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { getGithubActivity, type GithubEvent } from "@/lib/github";
 import { queryOne } from "@/lib/db";
 import { getAllHabits } from "@/lib/db/habits";
+import { getAllMeals } from "@/lib/db/meals";
 import { CalendarMonthDetail } from "./calendar-month-detail";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,10 +80,18 @@ export default async function CalendarMonthPage({ params }: CalendarMonthPagePro
 
   // Fetch habits to get names for display
   let habitNames: Record<number, string> = {};
+  let mealNames: Record<number, string> = {};
   if (session?.user?.id) {
     const habits = await getAllHabits(session.user.id);
     habitNames = habits.reduce((acc, habit) => {
       acc[habit.id] = habit.title;
+      return acc;
+    }, {} as Record<number, string>);
+
+    // Fetch meals to get names for display
+    const meals = await getAllMeals(session.user.id);
+    mealNames = meals.reduce((acc, meal) => {
+      acc[meal.id] = meal.name;
       return acc;
     }, {} as Record<number, string>);
   }
@@ -133,6 +142,7 @@ export default async function CalendarMonthPage({ params }: CalendarMonthPagePro
         year={year}
         month={month}
         habitNames={habitNames}
+        mealNames={mealNames}
       />
     </div>
   );

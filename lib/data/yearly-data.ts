@@ -103,6 +103,7 @@ export interface YearlyStats {
     github: number;
     steam: number;
     events: number;
+    meals: number;
   }[];
   events: {
     total: number;
@@ -129,6 +130,18 @@ export interface YearlyStats {
     topRatedDates: { date: string; type: string; venue?: string; rating: number }[];
     positions: { name: string; count: number }[];
     uniquePositions: number;
+  };
+  meals: {
+    total: number;
+    byType: {
+      breakfast: number;
+      lunch: number;
+      dinner: number;
+    };
+    uniqueRecipes: number;
+    daysWithMeals: number;
+    topRecipes: { name: string; count: number }[];
+    byMonth: Record<number, number>;
   };
 }
 
@@ -787,6 +800,66 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     };
   })();
 
+  // 14. Meals
+  const mealsPromise = (async () => {
+    // Get all daily meals for the year with recipe names
+    const yearMeals = await query<{ 
+      date: string; 
+      meal_type: string; 
+      mealId: number; 
+      mealName: string 
+    }>(
+      `SELECT dm.date, dm.meal_type, dm.mealId, m.name as mealName
+       FROM daily_meals dm
+       JOIN meals m ON dm.mealId = m.id
+       WHERE dm.userId = ?
+       AND dm.date >= ?
+       AND dm.date <= ?
+       ORDER BY dm.date ASC`,
+      [userId, startDate, endDate]
+    );
+
+    // Calculate stats
+    const byType = {
+      breakfast: yearMeals.filter(m => m.meal_type === 'breakfast').length,
+      lunch: yearMeals.filter(m => m.meal_type === 'lunch').length,
+      dinner: yearMeals.filter(m => m.meal_type === 'dinner').length,
+    };
+
+    const uniqueRecipeIds = new Set(yearMeals.map(m => m.mealId));
+    const uniqueDates = new Set(yearMeals.map(m => m.date));
+
+    // Count recipe occurrences
+    const recipeCounts: Record<string, number> = {};
+    yearMeals.forEach(m => {
+      recipeCounts[m.mealName] = (recipeCounts[m.mealName] || 0) + 1;
+    });
+
+    const topRecipes = Object.entries(recipeCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count }));
+
+    // Calculate by month
+    const byMonth: Record<number, number> = {};
+    yearMeals.forEach(m => {
+      const month = parseInt(m.date.split('-')[1], 10) - 1;
+      byMonth[month] = (byMonth[month] || 0) + 1;
+    });
+
+    return {
+      yearMeals,
+      stats: {
+        total: yearMeals.length,
+        byType,
+        uniqueRecipes: uniqueRecipeIds.size,
+        daysWithMeals: uniqueDates.size,
+        topRecipes,
+        byMonth,
+      }
+    };
+  })();
+
   // Execute all promises in parallel
   const [
     mediaData,
@@ -801,7 +874,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     goalsData,
     duolingoStats,
     relationshipStats,
-    eventsData
+    eventsData,
+    mealsData
   ] = await Promise.all([
     mediaPromise,
     parksPromise,
@@ -815,7 +889,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     goalsPromise,
     duolingoPromise,
     relationshipPromise,
-    eventsPromise
+    eventsPromise,
+    mealsPromise
   ]);
 
   // Process Steam Stats
@@ -843,6 +918,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     github: githubData.stats.contributionsByMonth[i] || 0,
     steam: 0,
     events: 0,
+    meals: 0,
   }));
 
   mediaData.yearMedia.forEach(m => {
@@ -892,6 +968,12 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     monthlyActivity[month].events++;
   });
 
+  mealsData.yearMeals.forEach(m => {
+    // Parse month directly from YYYY-MM-DD string to avoid timezone issues
+    const month = parseInt(m.date.split('-')[1], 10) - 1;
+    monthlyActivity[month].meals++;
+  });
+
   return {
     year,
     media: mediaData.stats,
@@ -925,6 +1007,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     duolingo: duolingoStats,
     relationship: relationshipStats,
     events: eventsData.stats,
+    meals: mealsData.stats,
   };
 }
 
