@@ -35,6 +35,7 @@ export async function getDailyMealsByDate(
       m.cook_time as meal_cook_time,
       m.image_url as meal_image_url,
       m.tags as meal_tags,
+      m.rating as meal_rating,
       m.created_at as meal_created_at,
       m.updated_at as meal_updated_at
     FROM daily_meals dm
@@ -71,6 +72,7 @@ export async function getDailyMealsByDate(
       tags: row.meal_tags,
       created_at: row.meal_created_at,
       updated_at: row.meal_updated_at,
+      rating: row.meal_rating,
     }
   }));
 }
