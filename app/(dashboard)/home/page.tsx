@@ -12,6 +12,7 @@ import { getUserId } from "@/lib/auth/server";
 import { getCalendarDataForMonth } from "@/lib/db/calendar";
 import { auth } from "@/auth";
 import { getGithubEventsByDateRange } from "@/lib/db/github";
+import { queryOne } from "@/lib/db";
 import { getCalendarColorsForUser } from "@/lib/actions/calendar-colors";
 import { getFeatureFlag } from "@/lib/flags";
 import { ActionBanner } from "@/components/widgets/action-banner";
