@@ -11,6 +11,7 @@ import {
   toggleHabitCompletion,
   getHabitStats,
   getHabitCompletionsForChart,
+  getHabitCompletionsForRange,
   type Habit,
   type HabitStats,
   type HabitCompletionChartData
@@ -19,6 +20,7 @@ import { revalidatePath } from "next/cache";
 
 export interface HabitWithStats extends Habit {
   stats: HabitStats;
+  completionDates: string[]; // Array of YYYY-MM-DD dates when habit was completed
 }
 
 export type { HabitCompletionChartData };
@@ -34,10 +36,24 @@ export async function getHabitsWithStatsAction(): Promise<HabitWithStats[]> {
   if (!session?.user?.id) return [];
 
   const habits = await getAllHabits(session.user.id);
-  return await Promise.all(habits.map(async (habit) => ({
-    ...habit,
-    stats: await getHabitStats(habit, session.user.id)
-  })));
+  
+  // Fetch completions for the last 365 days for heatmap
+  const today = new Date();
+  const oneYearAgo = new Date(today);
+  oneYearAgo.setFullYear(today.getFullYear() - 1);
+  const startDate = oneYearAgo.toISOString().split('T')[0];
+  const endDate = today.toISOString().split('T')[0];
+  
+  const allCompletions = await getHabitCompletionsForRange(session.user.id, startDate, endDate);
+  
+  return await Promise.all(habits.map(async (habit) => {
+    const habitCompletions = allCompletions.filter(c => c.habit_id === habit.id);
+    return {
+      ...habit,
+      stats: await getHabitStats(habit, session.user.id),
+      completionDates: habitCompletions.map(c => c.date)
+    };
+  }));
 }
 
 export async function getAllHabitsAction() {
@@ -51,6 +67,7 @@ export async function createHabitAction(data: {
   description?: string;
   frequency?: string;
   target?: number;
+  isInfinite?: boolean;
   createdAt?: string; // Optional client-provided timestamp in local time
 }) {
   const session = await auth();
@@ -67,6 +84,7 @@ export async function updateHabitAction(id: number, data: {
   description?: string;
   frequency?: string;
   target?: number;
+  is_infinite?: boolean;
   active?: boolean;
   completed?: boolean;
   order_index?: number;

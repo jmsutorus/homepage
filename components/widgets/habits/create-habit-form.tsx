@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, WifiOff } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, WifiOff, Infinity } from "lucide-react";
 import { useState } from "react";
 import { SuccessCheck } from "@/components/ui/animations/success-check";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -44,6 +45,7 @@ export function CreateHabitForm() {
     const description = formData.get("description") as string;
     const frequency = formData.get("frequency") as string;
     const target = parseInt(formData.get("target") as string) || 1;
+    const isInfinite = formData.get("isInfinite") === "on";
 
     try {
       // Format current time in local timezone (YYYY-MM-DD HH:MM:SS)
@@ -61,6 +63,7 @@ export function CreateHabitForm() {
         description,
         frequency,
         target,
+        isInfinite,
         createdAt: localTimestamp,
       };
 
@@ -161,6 +164,16 @@ export function CreateHabitForm() {
                     required 
                   />
                 </div>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="flex items-center gap-2">
+                  <Infinity className="h-4 w-4 text-muted-foreground" />
+                  <div className="space-y-0.5">
+                    <Label htmlFor="isInfinite" className="text-sm font-medium">Never ending</Label>
+                    <p className="text-xs text-muted-foreground">This habit has no end goal</p>
+                  </div>
+                </div>
+                <Switch id="isInfinite" name="isInfinite" />
               </div>
             </div>
             <DialogFooter>

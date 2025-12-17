@@ -13,6 +13,7 @@ export interface Habit {
   description: string | null;
   frequency: string;
   target: number;
+  is_infinite: boolean;
   active: boolean;
   completed: boolean;
   order_index: number;
@@ -40,6 +41,9 @@ export async function getHabits(userId: string): Promise<Habit[]> {
     );
     return habits.map(habit => ({
       ...habit,
+      is_infinite: Boolean(habit.is_infinite),
+      active: Boolean(habit.active),
+      completed: Boolean(habit.completed),
       created_at: (habit.created_at as unknown) instanceof Date ? (habit.created_at as unknown as Date).toISOString() : String(habit.created_at),
       updated_at: (habit.updated_at as unknown) instanceof Date ? (habit.updated_at as unknown as Date).toISOString() : String(habit.updated_at),
     }));
@@ -60,6 +64,9 @@ export async function getAllHabits(userId: string): Promise<Habit[]> {
     );
     return habits.map(habit => ({
       ...habit,
+      is_infinite: Boolean(habit.is_infinite),
+      active: Boolean(habit.active),
+      completed: Boolean(habit.completed),
       created_at: (habit.created_at as unknown) instanceof Date ? (habit.created_at as unknown as Date).toISOString() : String(habit.created_at),
       updated_at: (habit.updated_at as unknown) instanceof Date ? (habit.updated_at as unknown as Date).toISOString() : String(habit.updated_at),
     }));
@@ -77,6 +84,7 @@ export async function createHabit(userId: string, data: {
   description?: string;
   frequency?: string;
   target?: number;
+  isInfinite?: boolean;
   createdAt?: string; // Optional client-provided timestamp in local time
 }): Promise<Habit> {
   try {
@@ -94,14 +102,15 @@ export async function createHabit(userId: string, data: {
     }
 
     const result = await execute(
-      `INSERT INTO habits (userId, title, description, frequency, target, active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, 1, ?, ?)`,
+      `INSERT INTO habits (userId, title, description, frequency, target, is_infinite, active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)`,
       [
         userId,
         data.title,
         data.description || null,
         data.frequency || 'daily',
         data.target || 1,
+        data.isInfinite ? 1 : 0,
         timestamp,
         timestamp
       ]
@@ -124,6 +133,7 @@ export async function updateHabit(id: number, userId: string, data: {
   description?: string;
   frequency?: string;
   target?: number;
+  is_infinite?: boolean;
   active?: boolean;
   completed?: boolean;
   order_index?: number;
@@ -147,6 +157,10 @@ export async function updateHabit(id: number, userId: string, data: {
     if (data.target !== undefined) {
       updates.push("target = ?");
       values.push(data.target);
+    }
+    if (data.is_infinite !== undefined) {
+      updates.push("is_infinite = ?");
+      values.push(data.is_infinite ? 1 : 0);
     }
     if (data.active !== undefined) {
       updates.push("active = ?");
@@ -269,16 +283,26 @@ export interface HabitStats {
  */
 export async function getHabitStats(habit: Habit, userId: string): Promise<HabitStats> {
   try {
-    const { frequency = 'daily', created_at } = habit;
+    const { frequency = 'daily', created_at, updated_at, completed } = habit;
     
     // Calculate days existed
     const createdAtDateStr = created_at.split('T')[0].split(' ')[0];
     const [year, month, day] = createdAtDateStr.split('-').map(Number);
     const createdDate = new Date(year, month - 1, day);
-    const today = new Date();
+    
+    // For completed habits, use the completion date (updated_at) as the end date
+    let endDate: Date;
+    if (completed) {
+      const completedAtDateStr = updated_at.split('T')[0].split(' ')[0];
+      const [cYear, cMonth, cDay] = completedAtDateStr.split('-').map(Number);
+      endDate = new Date(cYear, cMonth - 1, cDay);
+    } else {
+      endDate = new Date();
+    }
+    
     const createdMidnight = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
-    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const daysExisted = Math.floor((todayMidnight.getTime() - createdMidnight.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const endMidnight = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    const daysExisted = Math.floor((endMidnight.getTime() - createdMidnight.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     // Get all completions (sorted by date descending)
     const completions = await query<HabitCompletion>(
@@ -326,9 +350,9 @@ export async function getHabitStats(habit: Habit, userId: string): Promise<Habit
     // Convert completion dates to Date objects
     const completionDates = completions.map(c => parseISO(c.date));
 
-    // Check if streak is alive (most recent completion is within the window from today)
+    // Check if streak is alive (most recent completion is within the window from end date)
     const mostRecentCompletion = completionDates[0];
-    const daysSinceLastCompletion = differenceInCalendarDays(today, mostRecentCompletion);
+    const daysSinceLastCompletion = differenceInCalendarDays(endDate, mostRecentCompletion);
     const isStreakAlive = daysSinceLastCompletion <= streakAliveWindow;
 
     // Calculate Current Streak

@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, GripVertical, Flame, Calendar, TrendingUp, CheckCircle2, Target } from "lucide-react";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Trash2, GripVertical, Flame, Calendar, TrendingUp, CheckCircle2, Target, Infinity, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { AnimatedProgress } from "@/components/ui/animations/animated-progress";
 import { fireAchievementConfetti } from "@/lib/utils/confetti";
+import { HabitHeatmap } from "./habit-heatmap";
 
 interface HabitsListProps {
   habits: HabitWithStats[];
@@ -23,7 +25,8 @@ function getMotivationalMessage(
   title: string,
   stats: HabitWithStats['stats'],
   target: number,
-  isCompleted: boolean
+  isCompleted: boolean,
+  isInfinite: boolean
 ): string {
   const { currentStreak, totalCompletions } = stats;
 
@@ -42,8 +45,8 @@ function getMotivationalMessage(
     return pickRandom(messages);
   }
 
-  // Check if target is reached (habit can be completed)
-  if (totalCompletions >= target) {
+  // Check if target is reached (habit can be completed) - not applicable for infinite habits
+  if (!isInfinite && totalCompletions >= target) {
     const messages = [
       `🏆 Amazing! You've reached your target of ${target} completions (${totalCompletions} total). Ready to mark this habit as complete?`,
       `🎯 Target achieved! ${totalCompletions}/${target} completions done. Time to celebrate and mark this complete?`,
@@ -52,78 +55,94 @@ function getMotivationalMessage(
     return pickRandom(messages);
   }
 
+  // For infinite habits, use simpler messages without target references
+  const progressSuffix = isInfinite ? `${totalCompletions} total.` : `${totalCompletions}/${target} total.`;
+
   // Progress messages
   if (currentStreak === 0) {
     if (totalCompletions === 0) {
       return `Ready to start your ${title.toLowerCase()} journey? Today's the day!`;
     }
-    return `Time to get back on track with ${title.toLowerCase()}! ${totalCompletions}/${target} completions so far.`;
+    return `Time to get back on track with ${title.toLowerCase()}! ${progressSuffix}`;
   }
 
   if (currentStreak === 1) {
-    return `You've completed ${title.toLowerCase()}! Great work! ${totalCompletions}/${target} completions total. 🌟`;
+    return `You've completed ${title.toLowerCase()}! Great work! ${progressSuffix} 🌟`;
   }
 
   if (currentStreak >= 2 && currentStreak < 5) {
     const messages = [
-      `${currentStreak} completions in a row! You're building momentum! ${totalCompletions}/${target} total. 🚀`,
-      `${currentStreak} straight! The consistency is paying off! ${totalCompletions}/${target} total. ⚡`,
-      `${currentStreak} in the books! You're getting into a rhythm! ${totalCompletions}/${target} total. 🎵`
+      `${currentStreak} completions in a row! You're building momentum! ${progressSuffix} 🚀`,
+      `${currentStreak} straight! The consistency is paying off! ${progressSuffix} ⚡`,
+      `${currentStreak} in the books! You're getting into a rhythm! ${progressSuffix} 🎵`
     ];
     return pickRandom(messages);
   }
 
   if (currentStreak >= 5 && currentStreak < 10) {
     const messages = [
-      `${currentStreak} completions strong! Keep the fire burning! ${totalCompletions}/${target} total. 🔥`,
-      `${currentStreak} in a row! You're on fire! ${totalCompletions}/${target} total. 💥`,
-      `${currentStreak} completions! This is becoming automatic! ${totalCompletions}/${target} total. ✨`
+      `${currentStreak} completions strong! Keep the fire burning! ${progressSuffix} 🔥`,
+      `${currentStreak} in a row! You're on fire! ${progressSuffix} 💥`,
+      `${currentStreak} completions! This is becoming automatic! ${progressSuffix} ✨`
     ];
     return pickRandom(messages);
   }
 
   if (currentStreak >= 10 && currentStreak < 20) {
     const messages = [
-      `${currentStreak} completions! You're on a roll! ${totalCompletions}/${target} total. 💪`,
-      `${currentStreak} straight! Absolutely crushing it! ${totalCompletions}/${target} total. 🚀`,
-      `${currentStreak} completions! Nothing can stop you now! ${totalCompletions}/${target} total. ⚡`
+      `${currentStreak} completions! You're on a roll! ${progressSuffix} 💪`,
+      `${currentStreak} straight! Absolutely crushing it! ${progressSuffix} 🚀`,
+      `${currentStreak} completions! Nothing can stop you now! ${progressSuffix} ⚡`
     ];
     return pickRandom(messages);
   }
 
   if (currentStreak >= 20 && currentStreak < 30) {
     const messages = [
-      `${currentStreak} completions! This is becoming a solid habit! ${totalCompletions}/${target} total. ⭐`,
-      `${currentStreak} in a row! You're in the zone! ${totalCompletions}/${target} total. 🌟`,
-      `${currentStreak} completions! Elite consistency! ${totalCompletions}/${target} total. 👑`
+      `${currentStreak} completions! This is becoming a solid habit! ${progressSuffix} ⭐`,
+      `${currentStreak} in a row! You're in the zone! ${progressSuffix} 🌟`,
+      `${currentStreak} completions! Elite consistency! ${progressSuffix} 👑`
     ];
     return pickRandom(messages);
   }
 
   if (currentStreak >= 30 && currentStreak < 50) {
     const messages = [
-      `${currentStreak} completions! You're unstoppable! ${totalCompletions}/${target} total. 🎯`,
-      `${currentStreak} straight! Legendary dedication! ${totalCompletions}/${target} total. 🏆`,
-      `${currentStreak} completions! You've mastered this habit! ${totalCompletions}/${target} total. 💎`
+      `${currentStreak} completions! You're unstoppable! ${progressSuffix} 🎯`,
+      `${currentStreak} straight! Legendary dedication! ${progressSuffix} 🏆`,
+      `${currentStreak} completions! You've mastered this habit! ${progressSuffix} 💎`
     ];
     return pickRandom(messages);
   }
 
   if (currentStreak >= 50) {
     const messages = [
-      `${currentStreak} completions! Absolutely legendary! ${totalCompletions}/${target} total. 👑`,
-      `${currentStreak} in a row! You're an inspiration! ${totalCompletions}/${target} total. 🌟`,
-      `${currentStreak} completions! Hall of Fame material! ${totalCompletions}/${target} total. 🏅`
+      `${currentStreak} completions! Absolutely legendary! ${progressSuffix} 👑`,
+      `${currentStreak} in a row! You're an inspiration! ${progressSuffix} 🌟`,
+      `${currentStreak} completions! Hall of Fame material! ${progressSuffix} 🏅`
     ];
     return pickRandom(messages);
   }
 
-  return `${currentStreak} completions! Keep going! ${totalCompletions}/${target} total.`;
+  return `${currentStreak} completions! Keep going! ${progressSuffix}`;
 }
 
 export function HabitsList({ habits }: HabitsListProps) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
   const [isCompleting, setIsCompleting] = useState<number | null>(null);
+  const [expandedHeatmaps, setExpandedHeatmaps] = useState<Set<number>>(new Set());
+
+  const toggleHeatmap = (habitId: number) => {
+    setExpandedHeatmaps(prev => {
+      const next = new Set(prev);
+      if (next.has(habitId)) {
+        next.delete(habitId);
+      } else {
+        next.add(habitId);
+      }
+      return next;
+    });
+  };
 
   const handleToggleActive = async (habit: HabitWithStats) => {
     await updateHabitAction(habit.id, { active: !habit.active });
@@ -167,12 +186,14 @@ export function HabitsList({ habits }: HabitsListProps) {
     <div className="space-y-4">
       <AnimatePresence mode="popLayout">
         {habits.map((habit) => {
-          const canBeCompleted = habit.stats.totalCompletions >= habit.target && !habit.completed;
+          // Infinite habits never show "can be completed" UI
+          const canBeCompleted = !habit.is_infinite && habit.stats.totalCompletions >= habit.target && !habit.completed;
           const motivationalMessage = getMotivationalMessage(
             habit.title,
             habit.stats,
             habit.target,
-            habit.completed
+            habit.completed,
+            habit.is_infinite
           );
 
           return (
@@ -204,6 +225,12 @@ export function HabitsList({ habits }: HabitsListProps) {
                             <h3 className={cn("font-medium text-lg", !habit.active && "line-through")}>
                               {habit.title}
                             </h3>
+                            {habit.is_infinite && (
+                              <Badge variant="outline" className="border-purple-500 text-purple-700 dark:text-purple-400">
+                                <Infinity className="h-3 w-3 mr-1" />
+                                Never ending
+                              </Badge>
+                            )}
                             {canBeCompleted && (
                               <Badge variant="outline" className="border-yellow-500 text-yellow-700 dark:text-yellow-400">
                                 🎯 Target Reached!
@@ -246,42 +273,48 @@ export function HabitsList({ habits }: HabitsListProps) {
                           </div>
                         </div>
 
-                        {/* Progress Bar */}
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-1.5 text-muted-foreground">
-                              <Target className="h-3.5 w-3.5" />
-                              <span>Progress to target</span>
+                        {/* Progress Bar - only show for non-infinite habits */}
+                        {!habit.is_infinite && (
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-1.5 text-muted-foreground">
+                                <Target className="h-3.5 w-3.5" />
+                                <span>Progress to target</span>
+                              </div>
+                              <span className="font-medium">
+                                {habit.stats.totalCompletions}/{habit.target}
+                              </span>
                             </div>
-                            <span className="font-medium">
-                              {habit.stats.totalCompletions}/{habit.target}
-                            </span>
+                            <AnimatedProgress
+                              value={habit.stats.totalCompletions}
+                              max={habit.target}
+                              size="md"
+                              color={
+                                habit.completed
+                                  ? "success"
+                                  : habit.stats.totalCompletions >= habit.target
+                                    ? "warning"
+                                    : "primary"
+                              }
+                            />
                           </div>
-                          <AnimatedProgress
-                            value={habit.stats.totalCompletions}
-                            max={habit.target}
-                            size="md"
-                            color={
-                              habit.completed
-                                ? "success"
-                                : habit.stats.totalCompletions >= habit.target
-                                  ? "warning"
-                                  : "primary"
-                            }
-                          />
-                        </div>
+                        )}
 
                         {/* Frequency and Target */}
                         <div className="flex gap-2 text-xs text-muted-foreground">
                           <span className="capitalize">{habit.frequency.replaceAll("_", " ")}</span>
-                          <span>•</span>
-                          <span>Target: {habit.target}x</span>
+                          {!habit.is_infinite && (
+                            <>
+                              <span>•</span>
+                              <span>Target: {habit.target}x</span>
+                            </>
+                          )}
                         </div>
                       </div>
 
                       <div className="flex flex-col items-end gap-3 pt-1">
-                        {/* Mark Complete Button */}
-                        {canBeCompleted && (
+                        {/* Mark Complete Button - show for target-reached OR infinite habits */}
+                        {(canBeCompleted || (habit.is_infinite && !habit.completed)) && (
                           <Button
                             variant="default"
                             size="sm"
@@ -321,6 +354,31 @@ export function HabitsList({ habits }: HabitsListProps) {
                         </div>
                       </div>
                     </div>
+
+                    {/* Collapsible Heatmap */}
+                    <Collapsible open={expandedHeatmaps.has(habit.id)} onOpenChange={() => toggleHeatmap(habit.id)}>
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-between text-muted-foreground hover:text-foreground mt-2 cursor-pointer"
+                        >
+                          <span className="text-xs">Completion History</span>
+                          <ChevronDown className={cn(
+                            "h-4 w-4 transition-transform",
+                            expandedHeatmaps.has(habit.id) && "rotate-180"
+                          )} />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="pt-3">
+                        <HabitHeatmap
+                          completionDates={habit.completionDates}
+                          createdAt={habit.created_at}
+                          completedAt={habit.updated_at}
+                          isCompleted={habit.completed}
+                        />
+                      </CollapsibleContent>
+                    </Collapsible>
                   </CardContent>
                 </Card>
               </div>
@@ -332,12 +390,19 @@ export function HabitsList({ habits }: HabitsListProps) {
                 habit.completed && "border-green-500/30 bg-green-50/30 dark:bg-green-950/20"
               )}>
                 {/* Checkbox for quick completion (if not already completed for the day) */}
-                 {canBeCompleted ? (
+                {canBeCompleted ? (
                    <div 
                       className="h-6 w-6 rounded-full border-2 border-green-500 flex items-center justify-center bg-green-500 text-white shadow-sm cursor-pointer"
                       onClick={() => handleComplete(habit.id)}
                    >
                       <CheckCircle2 className="h-4 w-4" />
+                   </div>
+                 ) : habit.is_infinite && !habit.completed ? (
+                   <div 
+                     className="h-6 w-6 rounded-full border-2 border-green-500 flex items-center justify-center bg-green-500 text-white shadow-sm cursor-pointer"
+                     onClick={() => handleComplete(habit.id)}
+                   >
+                     <Infinity className="h-3.5 w-3.5" />
                    </div>
                  ) : (
                     <div className="h-6 w-6 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center">
@@ -350,6 +415,11 @@ export function HabitsList({ habits }: HabitsListProps) {
                     <span className={cn("font-medium truncate", !habit.active && "line-through text-muted-foreground")}>
                       {habit.title}
                     </span>
+                    {habit.is_infinite && (
+                      <Badge variant="outline" className="h-5 px-1.5 text-[10px] border-purple-500 text-purple-700 dark:text-purple-400">
+                        ∞
+                      </Badge>
+                    )}
                     {canBeCompleted && (
                       <Badge variant="outline" className="h-5 px-1.5 text-[10px] border-yellow-500 text-yellow-700 dark:text-yellow-400">
                         Target!
@@ -364,11 +434,22 @@ export function HabitsList({ habits }: HabitsListProps) {
                     </div>
                     <span>•</span>
                     <div className="flex items-center gap-1">
-                       <Target className="h-3 w-3" />
-                       <span>{habit.stats.totalCompletions}/{habit.target}</span>
+                       {habit.is_infinite ? (
+                         <>
+                           <TrendingUp className="h-3 w-3" />
+                           <span>{habit.stats.totalCompletions} total</span>
+                         </>
+                       ) : (
+                         <>
+                           <Target className="h-3 w-3" />
+                           <span>{habit.stats.totalCompletions}/{habit.target}</span>
+                         </>
+                       )}
                     </div>
                   </div>
-                   <div className="mt-2 h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                  {/* Progress bar - only show for non-infinite habits */}
+                  {!habit.is_infinite && (
+                    <div className="mt-2 h-1.5 w-full bg-secondary rounded-full overflow-hidden">
                       <div 
                         className={cn("h-full rounded-full transition-all duration-500", 
                           habit.completed ? "bg-green-500" : 
@@ -376,7 +457,8 @@ export function HabitsList({ habits }: HabitsListProps) {
                         )}
                         style={{ width: `${Math.min(100, (habit.stats.totalCompletions / habit.target) * 100)}%` }}
                       />
-                   </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-start">

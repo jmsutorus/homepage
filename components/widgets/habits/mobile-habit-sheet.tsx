@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
-import { Send, Repeat, Target } from "lucide-react";
+import { Send, Repeat, Target, Infinity } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface MobileHabitSheetProps {
   open: boolean;
@@ -27,6 +28,7 @@ export function MobileHabitSheet({ open, onOpenChange }: MobileHabitSheetProps) 
   const [description, setDescription] = useState("");
   const [frequency, setFrequency] = useState("daily");
   const [target, setTarget] = useState("1");
+  const [isInfinite, setIsInfinite] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
   // Reset form when sheet closes
@@ -37,6 +39,7 @@ export function MobileHabitSheet({ open, onOpenChange }: MobileHabitSheetProps) 
         setDescription("");
         setFrequency("daily");
         setTarget("1");
+        setIsInfinite(false);
       }, 300);
     }
     onOpenChange(newOpen);
@@ -63,6 +66,7 @@ export function MobileHabitSheet({ open, onOpenChange }: MobileHabitSheetProps) 
         description,
         frequency,
         target: parseInt(target) || 1,
+        isInfinite,
         createdAt: localTimestamp,
       });
 
@@ -155,6 +159,22 @@ export function MobileHabitSheet({ open, onOpenChange }: MobileHabitSheetProps) 
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Never Ending Switch */}
+              <div className="flex items-center justify-between rounded-lg border-2 p-4">
+                <div className="flex items-center gap-3">
+                  <Infinity className="h-5 w-5 text-muted-foreground" />
+                  <div className="space-y-0.5">
+                    <Label htmlFor="isInfinite" className="text-sm font-medium">Never ending</Label>
+                    <p className="text-xs text-muted-foreground">This habit has no end goal</p>
+                  </div>
+                </div>
+                <Switch
+                  id="isInfinite"
+                  checked={isInfinite}
+                  onCheckedChange={setIsInfinite}
+                />
               </div>
             </div>
 
