@@ -1,3 +1,11 @@
+# [1.12.0](https://github.com/jmsutorus/homepage/compare/v1.11.0...v1.12.0) (2025-12-17)
+
+
+### Features
+
+* **meals:** add comprehensive meal planning and grocery system ([#80](https://github.com/jmsutorus/homepage/issues/80)) ([2472fc9](https://github.com/jmsutorus/homepage/commit/2472fc94e0fd548aeb0b263f94e59226b3a1317b))
+* **meals:** add comprehensive meal planning and grocery system ([#81](https://github.com/jmsutorus/homepage/issues/81)) ([e3b2bc9](https://github.com/jmsutorus/homepage/commit/e3b2bc951673bd415bfca0ffea0683e9d2883a8d))
+
 # [1.11.0](https://github.com/jmsutorus/homepage/compare/v1.10.0...v1.11.0) (2025-12-16)
 
 
