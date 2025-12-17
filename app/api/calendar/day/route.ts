@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getCalendarDataForDate } from "@/lib/db/calendar";
-import { getGithubActivity, type GithubEvent } from "@/lib/github";
-import { queryOne } from "@/lib/db";
+import { getGithubEventsForDate } from "@/lib/db/github";
+import type { GithubEvent } from "@/lib/github";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -24,24 +24,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Fetch GitHub events if user is authenticated and has linked account
+    // Fetch GitHub events from synced database
     const session = await auth();
     let githubEvents: GithubEvent[] = [];
 
     if (session?.user?.id) {
-      const account = await queryOne<{ accessToken: string }>(
-        "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
-        [session.user.id]
-      );
-
-      if (account?.accessToken) {
-        // Fetch GitHub events for the specific date
-        githubEvents = await getGithubActivity(
-          account.accessToken,
-          date,
-          date
-        );
-      }
+      githubEvents = await getGithubEventsForDate(session.user.id, date);
     }
 
     const dayData = await getCalendarDataForDate(date, githubEvents);

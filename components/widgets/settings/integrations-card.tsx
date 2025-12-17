@@ -5,13 +5,12 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Github, Activity } from "lucide-react";
+import { Github, Activity, RefreshCw, Languages } from "lucide-react";
 import { signIn } from "next-auth/react";
 import type { ConnectedAccount } from "@/lib/actions/settings";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Languages } from "lucide-react";
 
 interface IntegrationsCardProps {
   connectedAccounts: ConnectedAccount[];
@@ -30,6 +29,10 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
   // Check if token is expired (with 5 minute buffer)
   const [isStravaExpired, setIsStravaExpired] = useState(false);
 
+  // GitHub sync state
+  const [isGithubSyncing, setIsGithubSyncing] = useState(false);
+  const [githubSyncResult, setGithubSyncResult] = useState<{ success: boolean; message: string } | null>(null);
+
    
   useEffect(() => {
     if (stravaAccount?.accessTokenExpiresAt) {
@@ -44,6 +47,38 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
 
   const handleConnectStrava = () => {
     signIn("strava", { callbackUrl: "/settings" });
+  };
+
+  const handleSyncGithub = async () => {
+    setIsGithubSyncing(true);
+    setGithubSyncResult(null);
+    try {
+      const response = await fetch("/api/github/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ full: false }),
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        setGithubSyncResult({ 
+          success: true, 
+          message: `Synced ${data.eventsSynced} events` 
+        });
+      } else {
+        setGithubSyncResult({ 
+          success: false, 
+          message: data.error || "Sync failed" 
+        });
+      }
+    } catch (error) {
+      setGithubSyncResult({ 
+        success: false, 
+        message: "Failed to sync" 
+      });
+    } finally {
+      setIsGithubSyncing(false);
+    }
   };
 
   // Duolingo Logic
@@ -103,13 +138,30 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
               <p className="text-sm text-muted-foreground">
                 Connect to sync your coding activity.
               </p>
+              {githubSyncResult && (
+                <p className={`text-xs mt-1 ${githubSyncResult.success ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                  {githubSyncResult.message}
+                </p>
+              )}
             </div>
           </div>
-          <div>
+          <div className="flex items-center gap-2">
             {isGithubConnected ? (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
-                Connected
-              </Badge>
+              <>
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
+                  Connected
+                </Badge>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleSyncGithub}
+                  disabled={isGithubSyncing}
+                  className="h-7 text-xs"
+                >
+                  <RefreshCw className={`h-3 w-3 mr-1 ${isGithubSyncing ? "animate-spin" : ""}`} />
+                  {isGithubSyncing ? "Syncing..." : "Sync"}
+                </Button>
+              </>
             ) : (
               <Button variant="outline" size="sm" onClick={handleConnectGithub}>
                 Connect
@@ -215,3 +267,4 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
     </Card>
   );
 }
+

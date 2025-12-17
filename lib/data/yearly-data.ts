@@ -5,7 +5,7 @@ import { getAllJournals } from "@/lib/db/journals";
 import { getAllTasks } from "@/lib/db/tasks";
 import { getGoals } from "@/lib/db/goals";
 import { getEventsInRange } from "@/lib/db/events";
-import { getGithubActivity } from "@/lib/github";
+import { getGithubEventsByDateRange } from "@/lib/db/github";
 import { execute, query, queryOne } from "@/lib/db";
 
 export interface YearlyStats {
@@ -442,20 +442,14 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     };
   })();
 
-  // 6. GitHub
+  // 6. GitHub (from synced database)
   const githubPromise = (async () => {
     let githubEvents: any[] = [];
     try {
-      const account = await queryOne<{ accessToken: string }>(
-        "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
-        [userId]
-      );
-
-      if (account?.accessToken) {
-        githubEvents = await getGithubActivity(account.accessToken, startDate, endDate);
-      }
+      // Read from synced database instead of API
+      githubEvents = await getGithubEventsByDateRange(userId, startDate, endDate);
     } catch (e) {
-      console.error("Failed to fetch GitHub activity", e);
+      console.error("Failed to fetch GitHub activity from database", e);
     }
 
     return {

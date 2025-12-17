@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { getCalendarDataForMonth } from "@/lib/db/calendar";
 import { auth } from "@/auth";
-import { getGithubActivity, type GithubEvent } from "@/lib/github";
+import { getGithubEventsByDateRange } from "@/lib/db/github";
+import type { GithubEvent } from "@/lib/github";
 import { queryOne } from "@/lib/db";
 import { getAllHabits } from "@/lib/db/habits";
 import { getAllMeals } from "@/lib/db/meals";
@@ -50,27 +51,16 @@ export default async function CalendarMonthPage({ params }: CalendarMonthPagePro
     notFound();
   }
 
-  // Fetch GitHub activity if user is authenticated and has linked account
+  // Fetch GitHub events from synced database if user is authenticated
   const session = await auth();
   let githubEvents: GithubEvent[] = [];
 
   if (session?.user?.id) {
-    const account = await queryOne<{ accessToken: string }>(
-      "SELECT accessToken FROM account WHERE userId = ? AND providerId = 'github'",
-      [session.user.id]
-    );
+    const startDate = `${year}-${String(month).padStart(2, "0")}-01T00:00:00Z`;
+    const lastDay = new Date(year, month, 0).getDate();
+    const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}T23:59:59Z`;
 
-    if (account?.accessToken) {
-      const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-      const lastDay = new Date(year, month, 0).getDate();
-      const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
-
-      githubEvents = await getGithubActivity(
-        account.accessToken,
-        startDate,
-        endDate
-      );
-    }
+    githubEvents = await getGithubEventsByDateRange(session.user.id, startDate, endDate);
   }
 
   // Fetch full calendar data for the month
