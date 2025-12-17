@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CalendarDayCellProps {
@@ -61,8 +61,9 @@ function CalendarDayCellComponent({
   const hasMilestonesCompleted = (summary?.milestoneCounts?.completed ?? 0) > 0;
   const hasDuolingo = summary?.duolingoCompleted ?? false;
   const hasRelationship = (summary?.relationshipCount ?? 0) > 0;
+  const hasMeals = (summary?.mealCount ?? 0) > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship || hasMeals;
 
   // Get mood icon
   const MoodIcon = hasMood && summary?.moodRating ? MOOD_ICONS[summary.moodRating]?.icon : null;
@@ -319,6 +320,16 @@ function CalendarDayCellComponent({
               </span>
             </div>
           )}
+
+          {/* Meals */}
+          {hasMeals && (
+            <div className="flex items-center gap-1">
+              <Utensils className={cn("h-3 w-3 flex-shrink-0", colors.meal?.text || "text-amber-500")} />
+              <span className={cn("truncate", colors.meal?.text || "text-amber-500")}>
+                {summary!.mealCount} {summary!.mealCount === 1 ? "meal" : "meals"}
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
@@ -382,6 +393,9 @@ function CalendarDayCellComponent({
           )}
           {hasRelationship && (
             <div className={cn("w-2 h-2 rounded-full", colors.relationship?.bg || "bg-pink-500")} title="Relationship" />
+          )}
+          {hasMeals && (
+            <div className={cn("w-2 h-2 rounded-full", colors.meal?.bg || "bg-amber-500")} title="Meals" />
           )}
         </div>
       )}

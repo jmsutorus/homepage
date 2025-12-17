@@ -28,17 +28,24 @@ interface NavSection {
 export function MobileNav() {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
-
-  // Format today's date as YYYY-MM-DD
-  const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  
+  // Use stable date values to prevent hydration mismatch
+  // These are computed once on mount to ensure consistency
+  const [todayStr, setTodayStr] = React.useState<string>("");
+  const [currentYear, setCurrentYear] = React.useState<number>(new Date().getFullYear());
+  
+  React.useEffect(() => {
+    const today = new Date();
+    setTodayStr(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+    setCurrentYear(today.getFullYear());
+  }, []);
 
   const navSections: NavSection[] = [
     {
       title: "Calendar",
       links: [
         { href: "/calendar", label: "Calendar", icon: <Calendar className="h-5 w-5" /> },
-        { href: `/daily/${todayStr}`, label: "Today", icon: <CalendarDays className="h-5 w-5" /> },
+        { href: todayStr ? `/daily/${todayStr}` : "/calendar", label: "Today", icon: <CalendarDays className="h-5 w-5" /> },
       ],
     },
     {
@@ -65,9 +72,9 @@ export function MobileNav() {
       links: [
         { href: "/achievements", label: "Achievements", icon: <Trophy className="h-5 w-5" /> },
         {
-          href: `/year/${new Date().getFullYear()}`,
+          href: `/year/${currentYear}`,
           label: "Year in Review",
-          icon: <TrendingUp className="h-5 w-5" />
+          icon: <TrendingUp className="h-5 w-5" />,
         },
       ],
     },

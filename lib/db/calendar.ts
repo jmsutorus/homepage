@@ -13,6 +13,8 @@ import { getHabitCompletionsForRange } from "./habits";
 import { auth } from "@/auth";
 import { getDuolingoCompletionsForRange } from "./duolingo";
 import type { RelationshipDate, IntimacyEntry, RelationshipMilestone } from "./relationship";
+import type { DailyMeal } from "./daily-meals";
+import { getDailyMealsForRange } from "./daily-meals";
 
 // Goal-related calendar types
 export interface CalendarGoal {
@@ -66,6 +68,8 @@ export interface CalendarDayData {
   milestonesCompleted: CalendarMilestone[];
   // Relationship: combined dates, intimacy, and milestones
   relationshipItems: CalendarRelationshipItem[];
+  // Daily meals: recipes logged for this day
+  dailyMeals: DailyMeal[];
 }
 
 /**
@@ -117,6 +121,8 @@ export interface CalendarDaySummary {
   };
   // Relationship count
   relationshipCount: number;
+  // Meal count (number of meal types logged for the day)
+  mealCount: number;
 }
 
 /**
@@ -564,7 +570,8 @@ export async function getCalendarDataForRange(
     milestones,
     resolvedGithubEvents,
     duolingoCompletions,
-    relationshipItems
+    relationshipItems,
+    dailyMeals
   ] = await Promise.all([
     getActivitiesInRange(startDate, endDate, userId),
     getMediaCompletedInRange(startDate, endDate, userId),
@@ -578,7 +585,8 @@ export async function getCalendarDataForRange(
     getMilestonesInRange(userId, startDate, endDate),
     Promise.resolve(githubEvents),
     getDuolingoCompletionsForRange(userId, startDate, endDate),
-    getRelationshipItemsInRange(startDate, endDate, userId)
+    getRelationshipItemsInRange(startDate, endDate, userId),
+    getDailyMealsForRange(userId, startDate, endDate)
   ]);
 
   // Create a map of date -> data
@@ -607,6 +615,7 @@ export async function getCalendarDataForRange(
       milestonesDue: [],
       milestonesCompleted: [],
       relationshipItems: [],
+      dailyMeals: [],
     });
   }
 
@@ -795,6 +804,14 @@ export async function getCalendarDataForRange(
     }
   });
 
+  // Add daily meals
+  dailyMeals.forEach((meal) => {
+    const dayData = calendarMap.get(meal.date);
+    if (dayData) {
+      dayData.dailyMeals.push(meal);
+    }
+  });
+
   return calendarMap;
 }
 
@@ -824,7 +841,11 @@ export async function getCalendarDataForDate(
   tomorrowDate.setDate(tomorrowDate.getDate() + 2);
   const tomorrowDateFromDateString = tomorrowDate.toISOString().split("T")[0];
   const map = await getCalendarDataForRange(date, tomorrowDateFromDateString, githubEvents);
-  return map.get(date);
+  const data = map.get(date);
+  if (!data) return undefined;
+  
+  // Ensure serializable object for Next.js client components
+  return JSON.parse(JSON.stringify(data));
 }
 
 /**
@@ -915,6 +936,7 @@ export function convertToSummary(
       firstDueGoalSlug: data.milestonesDue[0]?.goalSlug ?? null,
     },
     relationshipCount: data.relationshipItems.length,
+    mealCount: data.dailyMeals.length,
   };
 }
 
