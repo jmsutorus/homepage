@@ -1,3 +1,11 @@
+# [1.13.0](https://github.com/jmsutorus/homepage/compare/v1.12.0...v1.13.0) (2025-12-18)
+
+
+### Features
+
+* **habits:** add infinite habits and completion history heatmap ([#82](https://github.com/jmsutorus/homepage/issues/82)) ([1f3e237](https://github.com/jmsutorus/homepage/commit/1f3e237248adc1d39734d03451d62a9b9f4aeb45))
+* **media:** add album media type with year timeline widget ([#83](https://github.com/jmsutorus/homepage/issues/83)) ([8f152bf](https://github.com/jmsutorus/homepage/commit/8f152bf3b326ee5b397276774859aa272cf28699))
+
 # [1.12.0](https://github.com/jmsutorus/homepage/compare/v1.11.0...v1.12.0) (2025-12-17)
 
 
