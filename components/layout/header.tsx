@@ -106,6 +106,11 @@ export function Header() {
                     Recipes
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/vacations" className="w-full cursor-pointer">
+                    Vacations
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 

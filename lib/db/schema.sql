@@ -1267,3 +1267,136 @@ AFTER UPDATE ON daily_meals
 BEGIN
   UPDATE daily_meals SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+-- ==================== VACATION PLANNING ====================
+-- Tables for planning and tracking vacations with itineraries and bookings
+
+-- Vacations Table
+-- Main vacation metadata with dates, budget, and destination
+CREATE TABLE IF NOT EXISTS vacations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  slug TEXT NOT NULL,
+  title TEXT NOT NULL,
+  destination TEXT NOT NULL,
+  type TEXT DEFAULT 'other',
+  start_date TEXT NOT NULL, -- YYYY-MM-DD
+  end_date TEXT NOT NULL,   -- YYYY-MM-DD
+  description TEXT,
+  poster TEXT,
+  status TEXT CHECK(status IN ('planning', 'booked', 'in-progress', 'completed', 'cancelled')) DEFAULT 'planning',
+  budget_planned REAL,
+  budget_actual REAL,
+  budget_currency TEXT DEFAULT 'USD',
+  tags TEXT, -- JSON array
+  rating REAL CHECK(rating >= 0 AND rating <= 10),
+  featured INTEGER DEFAULT 0,
+  published INTEGER DEFAULT 1,
+  content TEXT, -- Markdown trip notes
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, slug)
+);
+
+-- Indexes for vacations
+CREATE INDEX IF NOT EXISTS idx_vacations_userId ON vacations(userId);
+CREATE INDEX IF NOT EXISTS idx_vacations_slug ON vacations(slug);
+CREATE INDEX IF NOT EXISTS idx_vacations_start_date ON vacations(start_date);
+CREATE INDEX IF NOT EXISTS idx_vacations_status ON vacations(status);
+
+-- Trigger for vacations updated_at
+CREATE TRIGGER IF NOT EXISTS update_vacations_timestamp
+AFTER UPDATE ON vacations
+BEGIN
+  UPDATE vacations SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Vacation Itinerary Days Table
+-- Day-by-day planning with activities and locations
+CREATE TABLE IF NOT EXISTS vacation_itinerary_days (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vacationId INTEGER NOT NULL,
+  date TEXT NOT NULL, -- YYYY-MM-DD
+  day_number INTEGER NOT NULL, -- 1, 2, 3... (computed from start_date)
+  title TEXT,
+  location TEXT,
+  activities TEXT, -- JSON array of activity strings
+  notes TEXT, -- Markdown
+  budget_planned REAL,
+  budget_actual REAL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (vacationId) REFERENCES vacations(id) ON DELETE CASCADE,
+  UNIQUE(vacationId, date)
+);
+
+-- Indexes for vacation_itinerary_days
+CREATE INDEX IF NOT EXISTS idx_vacation_itinerary_days_vacationId ON vacation_itinerary_days(vacationId);
+CREATE INDEX IF NOT EXISTS idx_vacation_itinerary_days_date ON vacation_itinerary_days(date);
+
+-- Trigger for vacation_itinerary_days updated_at
+CREATE TRIGGER IF NOT EXISTS update_vacation_itinerary_days_timestamp
+AFTER UPDATE ON vacation_itinerary_days
+BEGIN
+  UPDATE vacation_itinerary_days SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Vacation Bookings Table
+-- Flights, hotels, activities, and other reservations
+CREATE TABLE IF NOT EXISTS vacation_bookings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vacationId INTEGER NOT NULL,
+  type TEXT CHECK(type IN ('flight', 'hotel', 'activity', 'car', 'train', 'other')) NOT NULL,
+  title TEXT NOT NULL,
+  date TEXT, -- YYYY-MM-DD
+  start_time TEXT, -- HH:MM
+  end_time TEXT, -- HH:MM
+  confirmation_number TEXT,
+  provider TEXT, -- Airline, hotel name, tour company
+  location TEXT,
+  cost REAL,
+  status TEXT CHECK(status IN ('pending', 'confirmed', 'cancelled')) DEFAULT 'pending',
+  notes TEXT,
+  url TEXT, -- Link to confirmation
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (vacationId) REFERENCES vacations(id) ON DELETE CASCADE
+);
+
+-- Indexes for vacation_bookings
+CREATE INDEX IF NOT EXISTS idx_vacation_bookings_vacationId ON vacation_bookings(vacationId);
+CREATE INDEX IF NOT EXISTS idx_vacation_bookings_type ON vacation_bookings(type);
+CREATE INDEX IF NOT EXISTS idx_vacation_bookings_date ON vacation_bookings(date);
+
+-- Trigger for vacation_bookings updated_at
+CREATE TRIGGER IF NOT EXISTS update_vacation_bookings_timestamp
+AFTER UPDATE ON vacation_bookings
+BEGIN
+  UPDATE vacation_bookings SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Vacation Photos Table
+-- Stores external image URLs for vacation photo galleries
+CREATE TABLE IF NOT EXISTS vacation_photos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vacationId INTEGER NOT NULL,
+  url TEXT NOT NULL,
+  caption TEXT,
+  date_taken TEXT, -- YYYY-MM-DD (optional)
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (vacationId) REFERENCES vacations(id) ON DELETE CASCADE
+);
+
+-- Indexes for vacation_photos
+CREATE INDEX IF NOT EXISTS idx_vacation_photos_vacationId ON vacation_photos(vacationId);
+CREATE INDEX IF NOT EXISTS idx_vacation_photos_order ON vacation_photos(vacationId, order_index);
+
+-- Trigger for vacation_photos updated_at
+CREATE TRIGGER IF NOT EXISTS update_vacation_photos_timestamp
+AFTER UPDATE ON vacation_photos
+BEGIN
+  UPDATE vacation_photos SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;

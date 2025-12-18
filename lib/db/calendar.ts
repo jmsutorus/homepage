@@ -15,6 +15,8 @@ import { getDuolingoCompletionsForRange } from "./duolingo";
 import type { RelationshipDate, IntimacyEntry, RelationshipMilestone } from "./relationship";
 import type { DailyMeal } from "./daily-meals";
 import { getDailyMealsForRange } from "./daily-meals";
+import type { Vacation, ItineraryDay, Booking } from "@/lib/types/vacations";
+import { parseLocalDate } from "@/lib/types/vacations";
 
 // Goal-related calendar types
 export interface CalendarGoal {
@@ -47,6 +49,15 @@ export interface CalendarRelationshipItem {
   description?: string;
 }
 
+// Vacation-related calendar types
+export interface CalendarVacation {
+  vacation: Vacation;
+  isStartDate: boolean;
+  isEndDate: boolean;
+  itineraryItems: ItineraryDay[];
+  bookings: Booking[];
+}
+
 export interface CalendarDayData {
   date: string; // YYYY-MM-DD format
   mood: MoodEntry | null;
@@ -70,6 +81,8 @@ export interface CalendarDayData {
   relationshipItems: CalendarRelationshipItem[];
   // Daily meals: recipes logged for this day
   dailyMeals: DailyMeal[];
+  // Vacations: vacation spans, itinerary, and bookings for this day
+  vacations: CalendarVacation[];
 }
 
 /**
@@ -123,6 +136,13 @@ export interface CalendarDaySummary {
   relationshipCount: number;
   // Meal count (number of meal types logged for the day)
   mealCount: number;
+  // Vacation counts
+  vacationCounts: {
+    starting: number; // Vacations starting on this day
+    itineraryItems: number; // Number of itinerary items
+    bookings: number; // Number of bookings
+    firstStartingVacationType: string | null; // Type of first vacation starting
+  };
 }
 
 /**
@@ -533,6 +553,76 @@ export async function getMilestonesCompletedOnDate(
 }
 
 /**
+ * Get vacations that overlap with the date range
+ * Returns vacations where the vacation dates overlap with the range
+ */
+export async function getVacationsInRange(
+  userId: string,
+  startDate: string,
+  endDate: string
+): Promise<Vacation[]> {
+  const rows = await query<any>(
+    `SELECT * FROM vacations
+     WHERE userId = ?
+       AND (
+         (start_date <= ? AND end_date >= ?)
+         OR (start_date BETWEEN ? AND ?)
+         OR (end_date BETWEEN ? AND ?)
+       )
+     ORDER BY start_date ASC`,
+    [userId, endDate, startDate, startDate, endDate, startDate, endDate]
+  );
+
+  // Parse JSON fields
+  return rows.map((row) => ({
+    ...row,
+    tags: row.tags ? JSON.parse(row.tags) : [],
+    featured: row.featured === 1,
+    published: row.published === 1,
+  }));
+}
+
+/**
+ * Get itinerary days for multiple vacations
+ */
+export async function getItineraryDaysForVacations(
+  vacationIds: number[]
+): Promise<ItineraryDay[]> {
+  if (vacationIds.length === 0) return [];
+
+  const placeholders = vacationIds.map(() => '?').join(',');
+  const rows = await query<any>(
+    `SELECT * FROM vacation_itinerary_days
+     WHERE vacationId IN (${placeholders})
+     ORDER BY date ASC`,
+    vacationIds
+  );
+
+  // Parse JSON fields
+  return rows.map((row) => ({
+    ...row,
+    activities: row.activities ? JSON.parse(row.activities) : [],
+  }));
+}
+
+/**
+ * Get bookings for multiple vacations
+ */
+export async function getBookingsForVacations(
+  vacationIds: number[]
+): Promise<Booking[]> {
+  if (vacationIds.length === 0) return [];
+
+  const placeholders = vacationIds.map(() => '?').join(',');
+  return await query<Booking>(
+    `SELECT * FROM vacation_bookings
+     WHERE vacationId IN (${placeholders})
+     ORDER BY date ASC, start_time ASC`,
+    vacationIds
+  );
+}
+
+/**
  * Get all calendar data for a date range, grouped by day
  */
 /**
@@ -571,7 +661,8 @@ export async function getCalendarDataForRange(
     resolvedGithubEvents,
     duolingoCompletions,
     relationshipItems,
-    dailyMeals
+    dailyMeals,
+    vacations
   ] = await Promise.all([
     getActivitiesInRange(startDate, endDate, userId),
     getMediaCompletedInRange(startDate, endDate, userId),
@@ -586,17 +677,43 @@ export async function getCalendarDataForRange(
     Promise.resolve(githubEvents),
     getDuolingoCompletionsForRange(userId, startDate, endDate),
     getRelationshipItemsInRange(startDate, endDate, userId),
-    getDailyMealsForRange(userId, startDate, endDate)
+    getDailyMealsForRange(userId, startDate, endDate),
+    getVacationsInRange(userId, startDate, endDate)
   ]);
+
+  // Fetch itinerary and bookings for all vacations
+  const vacationIds = vacations.map(v => v.id);
+  const [allItineraryDays, allBookings] = await Promise.all([
+    getItineraryDaysForVacations(vacationIds),
+    getBookingsForVacations(vacationIds)
+  ]);
+
+  // Group itinerary and bookings by vacation ID
+  const itineraryByVacation = new Map<number, ItineraryDay[]>();
+  const bookingsByVacation = new Map<number, Booking[]>();
+
+  allItineraryDays.forEach(item => {
+    if (!itineraryByVacation.has(item.vacationId)) {
+      itineraryByVacation.set(item.vacationId, []);
+    }
+    itineraryByVacation.get(item.vacationId)!.push(item);
+  });
+
+  allBookings.forEach(booking => {
+    if (!bookingsByVacation.has(booking.vacationId)) {
+      bookingsByVacation.set(booking.vacationId, []);
+    }
+    bookingsByVacation.get(booking.vacationId)!.push(booking);
+  });
 
   // Create a map of date -> data
   const calendarMap = new Map<string, CalendarDayData>();
 
   // Initialize all dates in range with empty data
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  const start = parseLocalDate(startDate);
+  const end = parseLocalDate(endDate);
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    const dateStr = d.toISOString().split("T")[0];
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     calendarMap.set(dateStr, {
       date: dateStr,
       mood: null,
@@ -616,6 +733,7 @@ export async function getCalendarDataForRange(
       milestonesCompleted: [],
       relationshipItems: [],
       dailyMeals: [],
+      vacations: [],
     });
   }
 
@@ -680,11 +798,11 @@ export async function getCalendarDataForRange(
       }
     } else {
       // Multi-day event - add to all days between start and end date
-      const eventStart = new Date(event.date);
-      const eventEnd = new Date(event.end_date);
+      const eventStart = parseLocalDate(event.date);
+      const eventEnd = parseLocalDate(event.end_date);
 
       for (let d = new Date(eventStart); d <= eventEnd; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split("T")[0];
+        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const dayData = calendarMap.get(dateStr);
         if (dayData) {
           dayData.events.push(event);
@@ -809,6 +927,51 @@ export async function getCalendarDataForRange(
     const dayData = calendarMap.get(meal.date);
     if (dayData) {
       dayData.dailyMeals.push(meal);
+    }
+  });
+
+  // Add vacations (span all days of the vacation)
+  vacations.forEach((vacation) => {
+    const vacationStart = parseLocalDate(vacation.start_date);
+    const vacationEnd = parseLocalDate(vacation.end_date);
+
+    // Get itinerary and bookings for this vacation
+    const itineraryItems = itineraryByVacation.get(vacation.id) || [];
+    const bookings = bookingsByVacation.get(vacation.id) || [];
+
+    // Group itinerary items by date
+    const itineraryByDate = new Map<string, ItineraryDay[]>();
+    itineraryItems.forEach(item => {
+      if (!itineraryByDate.has(item.date)) {
+        itineraryByDate.set(item.date, []);
+      }
+      itineraryByDate.get(item.date)!.push(item);
+    });
+
+    // Group bookings by date
+    const bookingsByDate = new Map<string, Booking[]>();
+    bookings.forEach(booking => {
+      if (booking.date) {
+        if (!bookingsByDate.has(booking.date)) {
+          bookingsByDate.set(booking.date, []);
+        }
+        bookingsByDate.get(booking.date)!.push(booking);
+      }
+    });
+
+    // Add vacation to all days it spans
+    for (let d = new Date(vacationStart); d <= vacationEnd; d.setDate(d.getDate() + 1)) {
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const dayData = calendarMap.get(dateStr);
+      if (dayData) {
+        dayData.vacations.push({
+          vacation,
+          isStartDate: dateStr === vacation.start_date,
+          isEndDate: dateStr === vacation.end_date,
+          itineraryItems: itineraryByDate.get(dateStr) || [],
+          bookings: bookingsByDate.get(dateStr) || [],
+        });
+      }
     }
   });
 
@@ -937,6 +1100,12 @@ export function convertToSummary(
     },
     relationshipCount: data.relationshipItems.length,
     mealCount: data.dailyMeals.length,
+    vacationCounts: {
+      starting: data.vacations.filter(v => v.isStartDate).length,
+      itineraryItems: data.vacations.reduce((sum, v) => sum + v.itineraryItems.length, 0),
+      bookings: data.vacations.reduce((sum, v) => sum + v.bookings.length, 0),
+      firstStartingVacationType: data.vacations.find(v => v.isStartDate)?.vacation.type ?? null,
+    },
   };
 }
 

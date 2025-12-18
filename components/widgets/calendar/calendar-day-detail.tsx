@@ -22,6 +22,7 @@ import { DailyJournals } from "../daily/daily-journals";
 import { DailyTasks } from "../daily/daily-tasks";
 import { DailyDuolingo } from "../daily/daily-duolingo";
 import { DailyRelationship } from "../daily/daily-relationship";
+import { DailyVacations } from "../daily/daily-vacations";
 import { ExternalLink } from "lucide-react";
 
 interface CalendarDayDetailProps {
@@ -162,6 +163,7 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
   const hasGithub = (data?.githubEvents.length ?? 0) > 0;
   const hasDuolingo = data?.duolingoCompleted ?? false;
   const hasRelationship = (data?.relationshipItems.length ?? 0) > 0;
+  const hasVacations = (data?.vacations.length ?? 0) > 0;
 
   // Workout activities
   const upcomingWorkoutActivities = data?.workoutActivities.filter((w) => !w.completed) ?? [];
@@ -182,7 +184,7 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
 
   const hasActivities = unlinkedStravaActivities.length > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship || hasVacations;
 
   // Categorize tasks relative to the date being viewed
   const completedTasks = data?.tasks.filter((t) => t.completed) ?? [];
@@ -238,6 +240,11 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
             items={data.relationshipItems}
             onItemClick={handleRelationshipClick}
           />
+        )}
+
+        {/* Vacations Section */}
+        {hasVacations && data && (
+          <DailyVacations vacations={data.vacations} />
         )}
 
         {/* Events Section */}

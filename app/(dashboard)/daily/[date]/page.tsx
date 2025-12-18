@@ -9,6 +9,7 @@ import { DailyJournalPreview } from "@/components/widgets/journal/daily-journal-
 import { MoodSelector } from "@/components/widgets/mood/mood-selector";
 import { getMoodForDate } from "@/lib/db/journals";
 import { getCalendarDataForDate } from "@/lib/db/calendar";
+import type { CalendarVacation } from "@/lib/db/calendar";
 import { auth } from "@/auth";
 import { getGithubEventsForDate } from "@/lib/db/github";
 import { queryOne } from "@/lib/db";
@@ -20,6 +21,7 @@ import { getDuolingoCompletion } from "@/lib/db/duolingo";
 import { DailyMeals } from "@/components/widgets/daily/daily-meals";
 import { getDailyMealsByDate } from "@/lib/db/daily-meals";
 import { getAllMeals } from "@/lib/db/meals";
+import { DailyVacations } from "@/components/widgets/daily/daily-vacations";
 
 interface DailyPageProps {
   params: Promise<{
@@ -129,6 +131,9 @@ export default async function DailyPage({ params }: DailyPageProps) {
     completionsPromise,
     dailyDataPromise
   ]);
+
+  // Extract vacation data from dailyData
+  const vacations: CalendarVacation[] = dailyData?.vacations ?? [];
 
   const journal = userData?.journal ?? null;
   const mood = userData?.mood ?? null;
@@ -267,6 +272,21 @@ export default async function DailyPage({ params }: DailyPageProps) {
                 No journal entry for this day.
               </div>
             )}
+          </section>
+
+          <section>
+            {/* Vacations Section */}
+          {vacations.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Vacations</h2>
+                <Button variant="ghost" size="sm" asChild className="cursor-pointer">
+                  <Link href="/vacations">All Vacations</Link>
+                </Button>
+              </div>
+              <DailyVacations vacations={vacations} />
+            </section>
+          )}
           </section>
 
           <DailyActivities

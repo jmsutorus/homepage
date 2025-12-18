@@ -6,6 +6,8 @@ import { getAllTasks } from "@/lib/db/tasks";
 import { getGoals } from "@/lib/db/goals";
 import { getEventsInRange } from "@/lib/db/events";
 import { getGithubEventsByDateRange } from "@/lib/db/github";
+import { getVacationsByYear } from "@/lib/db/vacations";
+import { calculateDurationDays } from "@/lib/types/vacations";
 import { execute, query, queryOne } from "@/lib/db";
 
 export interface YearlyStats {
@@ -115,6 +117,7 @@ export interface YearlyStats {
     steam: number;
     events: number;
     meals: number;
+    vacations: number;
   }[];
   events: {
     total: number;
@@ -152,6 +155,21 @@ export interface YearlyStats {
     uniqueRecipes: number;
     daysWithMeals: number;
     topRecipes: { name: string; count: number }[];
+    byMonth: Record<number, number>;
+  };
+  vacations: {
+    total: number;
+    completed: number;
+    totalDays: number;
+    avgDuration: number;
+    avgRating: number;
+    totalBudgetSpent: number;
+    avgBudgetPerDay: number;
+    byType: Record<string, number>;
+    byStatus: Record<string, number>;
+    topDestinations: { destination: string; count: number }[];
+    topRatedVacations: { title: string; destination: string; rating: number; type: string }[];
+    longestTrip: { title: string; destination: string; days: number } | null;
     byMonth: Record<number, number>;
   };
 }
@@ -934,6 +952,99 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     };
   })();
 
+  // 14. Vacations
+  const vacationsPromise = (async () => {
+    const yearVacations = await getVacationsByYear(year, userId);
+
+    // Calculate vacation statistics
+    const completedVacations = yearVacations.filter(v => v.status === 'completed');
+    const byType: Record<string, number> = {};
+    const byStatus: Record<string, number> = {};
+    const destinationCounts: Record<string, number> = {};
+    const byMonth: Record<number, number> = {};
+
+    let totalDays = 0;
+    let totalBudgetSpent = 0;
+    let ratingSum = 0;
+    let ratingCount = 0;
+    let longestTrip: { title: string; destination: string; days: number } | null = null;
+
+    yearVacations.forEach(v => {
+      // Duration calculation
+      const duration = calculateDurationDays(v.start_date, v.end_date);
+      totalDays += duration;
+
+      if (!longestTrip || duration > longestTrip.days) {
+        longestTrip = { title: v.title, destination: v.destination, days: duration };
+      }
+
+      // Type distribution
+      byType[v.type] = (byType[v.type] || 0) + 1;
+
+      // Status distribution
+      byStatus[v.status] = (byStatus[v.status] || 0) + 1;
+
+      // Destination counts
+      destinationCounts[v.destination] = (destinationCounts[v.destination] || 0) + 1;
+
+      // Monthly distribution (by start date)
+      const month = parseInt(v.start_date.split('-')[1], 10) - 1;
+      byMonth[month] = (byMonth[month] || 0) + 1;
+
+      // Budget (actual spent)
+      if (v.budget_actual) {
+        totalBudgetSpent += v.budget_actual;
+      }
+
+      // Ratings
+      if (v.rating) {
+        ratingSum += v.rating;
+        ratingCount++;
+      }
+    });
+
+    // Top destinations
+    const topDestinations = Object.entries(destinationCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([destination, count]) => ({ destination, count }));
+
+    // Top rated vacations
+    const topRatedVacations = yearVacations
+      .filter(v => v.rating && v.rating > 0)
+      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      .slice(0, 3)
+      .map(v => ({
+        title: v.title,
+        destination: v.destination,
+        rating: v.rating || 0,
+        type: v.type,
+      }));
+
+    const avgDuration = yearVacations.length > 0 ? totalDays / yearVacations.length : 0;
+    const avgRating = ratingCount > 0 ? ratingSum / ratingCount : 0;
+    const avgBudgetPerDay = totalDays > 0 ? totalBudgetSpent / totalDays : 0;
+
+    return {
+      yearVacations,
+      stats: {
+        total: yearVacations.length,
+        completed: completedVacations.length,
+        totalDays,
+        avgDuration,
+        avgRating,
+        totalBudgetSpent,
+        avgBudgetPerDay,
+        byType,
+        byStatus,
+        topDestinations,
+        topRatedVacations,
+        longestTrip,
+        byMonth,
+      }
+    };
+  })();
+
   // Execute all promises in parallel
   const [
     mediaData,
@@ -949,7 +1060,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     duolingoStats,
     relationshipStats,
     eventsData,
-    mealsData
+    mealsData,
+    vacationsData
   ] = await Promise.all([
     mediaPromise,
     parksPromise,
@@ -964,7 +1076,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     duolingoPromise,
     relationshipPromise,
     eventsPromise,
-    mealsPromise
+    mealsPromise,
+    vacationsPromise
   ]);
 
   // Process Steam Stats
@@ -994,6 +1107,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     steam: 0,
     events: 0,
     meals: 0,
+    vacations: 0,
   }));
 
   mediaData.yearMedia.forEach(m => {
@@ -1051,6 +1165,12 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     monthlyActivity[month].meals++;
   });
 
+  vacationsData.yearVacations.forEach(v => {
+    // Parse month directly from YYYY-MM-DD string to avoid timezone issues
+    const month = parseInt(v.start_date.split('-')[1], 10) - 1;
+    monthlyActivity[month].vacations++;
+  });
+
   return {
     year,
     media: mediaData.stats,
@@ -1094,6 +1214,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     relationship: relationshipStats,
     events: eventsData.stats,
     meals: mealsData.stats,
+    vacations: vacationsData.stats,
   };
 }
 
