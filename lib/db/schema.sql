@@ -276,7 +276,7 @@ CREATE TABLE IF NOT EXISTS media_content (
   userId TEXT NOT NULL,
   slug TEXT NOT NULL, -- URL-friendly identifier (e.g., 'the-matrix')
   title TEXT NOT NULL,
-  type TEXT CHECK(type IN ('movie', 'tv', 'book', 'game')) NOT NULL,
+  type TEXT CHECK(type IN ('movie', 'tv', 'book', 'game', 'album')) NOT NULL,
   status TEXT CHECK(status IN ('in-progress', 'completed', 'planned')) NOT NULL,
   rating INTEGER CHECK(rating BETWEEN 0 AND 10),
   started TEXT, -- ISO date string (YYYY-MM-DD)

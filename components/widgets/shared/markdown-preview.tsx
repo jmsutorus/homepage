@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 
 interface MediaFrontmatter {
   title: string;
-  type: 'movie' | 'tv' | 'book' | 'game';
+  type: 'movie' | 'tv' | 'book' | 'game' | 'album';
   status: 'in-progress' | 'completed' | 'planned';
   rating?: number;
   started?: string;

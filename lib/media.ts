@@ -10,7 +10,7 @@ import {
 // Updated MediaFrontmatter interface with all new fields
 export interface MediaFrontmatter {
   title: string;
-  type: "movie" | "tv" | "book" | "game";
+  type: "movie" | "tv" | "book" | "game" | "album";
   status: "in-progress" | "completed" | "planned";
   rating?: number;
   started?: string;
@@ -21,6 +21,7 @@ export interface MediaFrontmatter {
   tags?: string[];
   description?: string;
   length?: string;
+  creator?: string | string[]; // Directors, Authors, Artists, etc.
   featured?: boolean;
   published?: boolean;
   timeSpent?: number; // Time spent in minutes
@@ -37,6 +38,16 @@ export interface MediaItem {
  * Convert database MediaContent to MediaItem format
  */
 function dbToMediaItem(dbMedia: MediaContent): MediaItem {
+  // Parse creator from JSON string
+  let creator: string | string[] | undefined;
+  if (dbMedia.creator) {
+    try {
+      creator = JSON.parse(dbMedia.creator);
+    } catch {
+      creator = dbMedia.creator;
+    }
+  }
+
   return {
     slug: dbMedia.slug,
     frontmatter: {
@@ -52,6 +63,7 @@ function dbToMediaItem(dbMedia: MediaContent): MediaItem {
       tags: parseTags(dbMedia.tags),
       description: dbMedia.description ?? undefined,
       length: dbMedia.length ?? undefined,
+      creator,
       featured: dbMedia.featured === 1,
       published: dbMedia.published === 1,
       timeSpent: dbMedia.time_spent,
@@ -89,7 +101,7 @@ export async function getMediaBySlug(directory: string, slug: string, userId: st
 export async function getAllMedia(directory: string, userId: string, includeContent: boolean = false): Promise<MediaItem[]> {
   try {
     // Extract type from directory path
-    let type: "movie" | "tv" | "book" | "game" | null = null;
+    let type: "movie" | "tv" | "book" | "game" | "album" | null = null;
 
     if (directory.includes("movies")) {
       type = "movie";
@@ -97,6 +109,8 @@ export async function getAllMedia(directory: string, userId: string, includeCont
       type = "tv";
     } else if (directory.includes("books")) {
       type = "book";
+    } else if (directory.includes("albums")) {
+      type = "album";
     } else if (directory.includes("games")) {
       type = "game";
     }

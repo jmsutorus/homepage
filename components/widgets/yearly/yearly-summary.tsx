@@ -10,6 +10,7 @@ import { ExerciseTimeline } from "./exercise-timeline";
 import { MediaTimeline } from "./media-timeline";
 import { BooksTimeline } from "./books-timeline";
 import { GamesTimeline } from "./games-timeline";
+import { AlbumsTimeline } from "./albums-timeline";
 import { ParksTimeline } from "./parks-timeline";
 import { JournalsTimeline } from "./journals-timeline";
 import { ProductivityTimeline } from "./productivity-timeline";
@@ -191,6 +192,11 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
       {/* Games Journey Timeline */}
       {stats.games.total > 0 && (
         <GamesTimeline stats={stats} />
+      )}
+
+      {/* Albums Journey Timeline */}
+      {(stats.media.byType['album'] || 0) > 0 && (
+        <AlbumsTimeline stats={stats} />
       )}
 
       {/* Parks Journey Timeline */}

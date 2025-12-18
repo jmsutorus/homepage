@@ -20,6 +20,7 @@ import {
   Tv,
   Book,
   Gamepad2,
+  Music,
   Activity,
   Calendar,
   MapPin,
@@ -58,6 +59,7 @@ const MEDIA_ICONS: Record<string, typeof Film> = {
   tv: Tv,
   book: Book,
   game: Gamepad2,
+  album: Music,
 };
 
 export function CalendarMonthDetail({
@@ -230,6 +232,7 @@ export function CalendarMonthDetail({
     tv: [],
     book: [],
     game: [],
+    album: [],
   };
 
   allMedia.forEach((item) => {
@@ -245,6 +248,7 @@ export function CalendarMonthDetail({
     tv: mediaByType.tv?.length || 0,
     books: mediaByType.book?.length || 0,
     games: mediaByType.game?.length || 0,
+    albums: mediaByType.album?.length || 0,
     averageRating: allMedia.length > 0 
       ? allMedia.filter(m => m.rating).reduce((sum, m) => sum + (m.rating || 0), 0) / allMedia.filter(m => m.rating).length
       : 0,
@@ -772,22 +776,22 @@ export function CalendarMonthDetail({
         </Card>
       )}
 
-      {/* Media Summary */}
-      {hasMedia && (
+      {/* Movies */}
+      {mediaStats.movies > 0 && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Film className="h-5 w-5 text-indigo-500" />
-                Media Summary
+                Movies
               </CardTitle>
               <span className="text-sm text-muted-foreground">
-                {mediaStats.total} items
+                {mediaStats.movies} watched
               </span>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="p-4 rounded-lg border bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-indigo-500/10">
@@ -797,10 +801,46 @@ export function CalendarMonthDetail({
                     <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                       {mediaStats.movies}
                     </p>
-                    <p className="text-sm text-muted-foreground">Movies</p>
+                    <p className="text-sm text-muted-foreground">Movies Watched</p>
                   </div>
                 </div>
               </div>
+              {mediaByType.movie.filter(m => m.rating).length > 0 && (
+                <div className="p-4 rounded-lg border bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-yellow-500/10">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                        {(mediaByType.movie.filter(m => m.rating).reduce((sum, m) => sum + (m.rating || 0), 0) / mediaByType.movie.filter(m => m.rating).length).toFixed(1)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Avg Rating</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* TV Shows */}
+      {mediaStats.tv > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Tv className="h-5 w-5 text-blue-500" />
+                TV Shows
+              </CardTitle>
+              <span className="text-sm text-muted-foreground">
+                {mediaStats.tv} watched
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
               <div className="p-4 rounded-lg border bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-blue-500/10">
@@ -810,10 +850,46 @@ export function CalendarMonthDetail({
                     <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {mediaStats.tv}
                     </p>
-                    <p className="text-sm text-muted-foreground">TV Shows</p>
+                    <p className="text-sm text-muted-foreground">Shows Watched</p>
                   </div>
                 </div>
               </div>
+              {mediaByType.tv.filter(m => m.rating).length > 0 && (
+                <div className="p-4 rounded-lg border bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-yellow-500/10">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                        {(mediaByType.tv.filter(m => m.rating).reduce((sum, m) => sum + (m.rating || 0), 0) / mediaByType.tv.filter(m => m.rating).length).toFixed(1)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Avg Rating</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Books */}
+      {mediaStats.books > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Book className="h-5 w-5 text-amber-500" />
+                Books
+              </CardTitle>
+              <span className="text-sm text-muted-foreground">
+                {mediaStats.books} read
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
               <div className="p-4 rounded-lg border bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-amber-500/10">
@@ -823,10 +899,46 @@ export function CalendarMonthDetail({
                     <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                       {mediaStats.books}
                     </p>
-                    <p className="text-sm text-muted-foreground">Books</p>
+                    <p className="text-sm text-muted-foreground">Books Read</p>
                   </div>
                 </div>
               </div>
+              {mediaByType.book.filter(m => m.rating).length > 0 && (
+                <div className="p-4 rounded-lg border bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-yellow-500/10">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                        {(mediaByType.book.filter(m => m.rating).reduce((sum, m) => sum + (m.rating || 0), 0) / mediaByType.book.filter(m => m.rating).length).toFixed(1)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Avg Rating</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Games */}
+      {mediaStats.games > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Gamepad2 className="h-5 w-5 text-purple-500" />
+                Games
+              </CardTitle>
+              <span className="text-sm text-muted-foreground">
+                {mediaStats.games} played
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
               <div className="p-4 rounded-lg border bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-purple-500/10">
@@ -836,11 +948,11 @@ export function CalendarMonthDetail({
                     <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                       {mediaStats.games}
                     </p>
-                    <p className="text-sm text-muted-foreground">Games</p>
+                    <p className="text-sm text-muted-foreground">Games Played</p>
                   </div>
                 </div>
               </div>
-              {mediaStats.averageRating > 0 && (
+              {mediaByType.game.filter(m => m.rating).length > 0 && (
                 <div className="p-4 rounded-lg border bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-full bg-yellow-500/10">
@@ -848,7 +960,56 @@ export function CalendarMonthDetail({
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                        {mediaStats.averageRating.toFixed(1)}
+                        {(mediaByType.game.filter(m => m.rating).reduce((sum, m) => sum + (m.rating || 0), 0) / mediaByType.game.filter(m => m.rating).length).toFixed(1)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Avg Rating</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Albums */}
+      {mediaStats.albums > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Music className="h-5 w-5 text-pink-500" />
+                Albums
+              </CardTitle>
+              <span className="text-sm text-muted-foreground">
+                {mediaStats.albums} listened
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-lg border bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-pink-500/10">
+                    <Music className="h-5 w-5 text-pink-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-pink-600 dark:text-pink-400">
+                      {mediaStats.albums}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Albums Listened</p>
+                  </div>
+                </div>
+              </div>
+              {mediaByType.album.filter(m => m.rating).length > 0 && (
+                <div className="p-4 rounded-lg border bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-yellow-500/10">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                        {(mediaByType.album.filter(m => m.rating).reduce((sum, m) => sum + (m.rating || 0), 0) / mediaByType.album.filter(m => m.rating).length).toFixed(1)}
                       </p>
                       <p className="text-sm text-muted-foreground">Avg Rating</p>
                     </div>

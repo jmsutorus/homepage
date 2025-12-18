@@ -13,12 +13,13 @@ function sanitizeSlug(title: string): string {
 }
 
 // Helper function to map singular type to plural directory name (for URL paths)
-function getDirectoryName(type: "movie" | "tv" | "book" | "game"): string {
+function getDirectoryName(type: "movie" | "tv" | "book" | "game" | "album"): string {
   const dirMap = {
     movie: "movies",
     tv: "tv",
     book: "books",
     game: "games",
+    album: "albums",
   };
   return dirMap[type];
 }
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
       // Paginated response
       const page = parseInt(searchParams.get("page") || "1");
       const pageSize = parseInt(searchParams.get("pageSize") || "25");
-      const type = searchParams.get("type") as "movie" | "tv" | "book" | "game" | null;
+      const type = searchParams.get("type") as "movie" | "tv" | "book" | "game" | "album" | null;
       const status = searchParams.get("status") as "in-progress" | "completed" | "planned" | null;
       const search = searchParams.get("search");
       const genresParam = searchParams.get("genres");
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest) {
         | null;
 
       const filters: {
-        type?: "movie" | "tv" | "book" | "game";
+        type?: "movie" | "tv" | "book" | "game" | "album";
         status?: "in-progress" | "completed" | "planned";
         search?: string;
         genres?: string[];
@@ -152,10 +153,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate type
-    const validTypes = ["movie", "tv", "book", "game"];
+    const validTypes = ["movie", "tv", "book", "game", "album"];
     if (!validTypes.includes(frontmatter.type)) {
       return NextResponse.json(
-        { error: "Invalid type. Must be movie, tv, book, or game" },
+        { error: "Invalid type. Must be movie, tv, book, game, or album" },
         { status: 400 }
       );
     }
@@ -186,6 +187,7 @@ export async function POST(request: NextRequest) {
       tags: frontmatter.tags,
       description: frontmatter.description,
       length: frontmatter.length,
+      creator: frontmatter.creator,
       featured: frontmatter.featured,
       published: frontmatter.published,
       timeSpent: frontmatter.timeSpent,

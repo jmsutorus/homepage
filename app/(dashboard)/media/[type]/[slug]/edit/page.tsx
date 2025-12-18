@@ -18,6 +18,7 @@ function getApiType(type: string): string {
     tv: "tv",
     books: "book",
     games: "game",
+    albums: "album",
   };
   return typeMap[type] || type;
 }
@@ -34,9 +35,10 @@ export default async function EditMediaPage({ params }: EditMediaPageProps) {
     notFound();
   }
 
-  // Parse genres and tags from JSON strings
+  // Parse genres, tags, and creator from JSON strings
   const genres = media.genres ? JSON.parse(media.genres) : [];
   const tags = media.tags ? JSON.parse(media.tags) : [];
+  const creator = media.creator ? JSON.parse(media.creator) : [];
 
   // Prepare frontmatter for editor
   const frontmatter = {
@@ -50,6 +52,7 @@ export default async function EditMediaPage({ params }: EditMediaPageProps) {
     genres,
     poster: media.poster || undefined,
     tags,
+    creator,
     length: media.length || undefined,
     timeSpent: media.time_spent || undefined,
     featured: media.featured === 1,

@@ -37,6 +37,7 @@ import {
   Tv,
   BookOpen,
   Gamepad2,
+  Music,
   TrendingUp,
   TrendingDown,
   Trophy,
@@ -58,6 +59,7 @@ const TYPE_ICONS = {
   tv: Tv,
   book: BookOpen,
   game: Gamepad2,
+  album: Music,
 };
 
 const TYPE_LABELS: Record<string, string> = {

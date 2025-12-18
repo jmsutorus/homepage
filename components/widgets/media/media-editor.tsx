@@ -24,12 +24,13 @@ import { Upload, FileText, CheckCircle2, XCircle, AlertCircle, Film, BookOpen } 
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { TagInput } from '@/components/search/tag-input';
 import { GenreInput } from '@/components/search/genre-input';
+import { CreatorInput } from '@/components/search/creator-input';
 import { TemplatePicker } from '@/components/widgets/shared/template-picker';
 import { Template } from '@/lib/constants/templates';
 
 interface MediaFrontmatter {
   title: string;
-  type: 'movie' | 'tv' | 'book' | 'game';
+  type: 'movie' | 'tv' | 'book' | 'game' | 'album';
   status: 'in-progress' | 'completed' | 'planned';
   rating?: number;
   started?: string;
@@ -43,6 +44,7 @@ interface MediaFrontmatter {
   timeSpent?: number; // Time spent in minutes
   featured?: boolean;
   published?: boolean;
+  creator?: string[]; // Directors, Authors, Artists, etc.
 }
 
 interface MediaEditorProps {
@@ -78,6 +80,7 @@ export function MediaEditor({
       status: 'planned',
       genres: [],
       tags: [],
+      creator: [],
       featured: false,
       published: true,
     }
@@ -216,7 +219,7 @@ export function MediaEditor({
             break;
           case 'type':
             const lowerValue = value.toLowerCase();
-            if (['movie', 'tv', 'book', 'game'].includes(lowerValue)) {
+            if (['movie', 'tv', 'book', 'game', 'album'].includes(lowerValue)) {
               parsedFrontmatter.type = lowerValue as any;
             }
             break;
@@ -403,7 +406,7 @@ export function MediaEditor({
             break;
           case 'type':
             const lowerValue = value.toLowerCase();
-            if (['movie', 'tv', 'book', 'game'].includes(lowerValue)) {
+            if (['movie', 'tv', 'book', 'game', 'album'].includes(lowerValue)) {
               parsedFrontmatter.type = lowerValue as any;
             }
             break;
@@ -483,7 +486,7 @@ export function MediaEditor({
       if (!parsedFrontmatter.type && categoryValue) {
         const normalizedCategory = categoryValue.toLowerCase().trim();
         // Map category values to valid types
-        if (['movie', 'tv', 'book', 'game'].includes(normalizedCategory)) {
+        if (['movie', 'tv', 'book', 'game', 'album'].includes(normalizedCategory)) {
           parsedFrontmatter.type = normalizedCategory as any;
         } else if (normalizedCategory === 'television' || normalizedCategory === 'series' || normalizedCategory === 'show') {
           parsedFrontmatter.type = 'tv';
@@ -1063,6 +1066,7 @@ export function MediaEditor({
                       <SelectItem value="tv" className="cursor-pointer">TV Show</SelectItem>
                       <SelectItem value="book" className="cursor-pointer">Book</SelectItem>
                       <SelectItem value="game" className="cursor-pointer">Video Game</SelectItem>
+                      <SelectItem value="album" className="cursor-pointer">Album</SelectItem>
                     </SelectContent>
                   </Select>
                   {mode === 'edit' && frontmatter.type !== existingType && (
@@ -1118,7 +1122,7 @@ export function MediaEditor({
                     {frontmatter.type === 'movie' ? 'Runtime' :
                      frontmatter.type === 'tv' ? 'Episodes' :
                      frontmatter.type === 'book' ? 'Pages' :
-                     'Playtime'}
+                     frontmatter.type === 'album' ? 'Duration' : 'Playtime'}
                   </Label>
                   <Input
                     id="length"
@@ -1130,7 +1134,9 @@ export function MediaEditor({
                       frontmatter.type === 'movie' ? '2h 30m' :
                       frontmatter.type === 'tv' ? '24 episodes' :
                       frontmatter.type === 'book' ? '350 pages' :
-                      '40 hours'
+                      frontmatter.type === 'game' ? '40 hours' :
+                      frontmatter.type === 'album' ? '45 minutes' :
+                      'Enter length'
                     }
                   />
                 </div>
@@ -1207,7 +1213,6 @@ export function MediaEditor({
                   />
                 </div>
 
-                {/* Description */}
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="description">Description</Label>
                   <Textarea
@@ -1218,6 +1223,29 @@ export function MediaEditor({
                     }
                     placeholder="Short description or plot summary..."
                     className="min-h-[100px]"
+                  />
+                </div>
+
+                {/* Creator (Directors/Authors/Artists) */}
+                <div className="md:col-span-2">
+                  <CreatorInput
+                    selectedCreators={frontmatter.creator || []}
+                    onCreatorsChange={(creator) =>
+                      setFrontmatter({ ...frontmatter, creator })
+                    }
+                    label={
+                      frontmatter.type === 'movie' ? 'Director(s)' :
+                      frontmatter.type === 'tv' ? 'Creator(s)' :
+                      frontmatter.type === 'book' ? 'Author(s)' :
+                      frontmatter.type === 'album' ? 'Artist(s)' : 'Developer(s)'
+                    }
+                    placeholder={
+                      frontmatter.type === 'movie' ? 'Enter director name...' :
+                      frontmatter.type === 'tv' ? 'Enter creator name...' :
+                      frontmatter.type === 'book' ? 'Enter author name...' :
+                      frontmatter.type === 'album' ? 'Enter artist name...' :
+                      'Enter developer name...'
+                    }
                   />
                 </div>
 

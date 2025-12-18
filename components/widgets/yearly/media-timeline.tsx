@@ -15,13 +15,13 @@ interface MediaTimelineProps {
  * Filter stats to only include movies and TV shows
  */
 function filterMoviesAndTV(stats: YearlyStats) {
-  // Filter media types to only movies and TV shows
+  // Filter media types to only movies and TV shows (explicitly exclude books, games, and albums)
   const movieTVTypes = Object.entries(stats.media.byType).filter(([type]) => {
     const normalizedType = type.toLowerCase();
-    return normalizedType === 'movie' ||
-           normalizedType === 'tv' ||
-           normalizedType === 'tv_show' ||
-           normalizedType === 'show';
+    return (normalizedType === 'movie' ||
+            normalizedType === 'tv' ||
+            normalizedType === 'tv_show' ||
+            normalizedType === 'show');
   });
 
   const filteredByType = Object.fromEntries(movieTVTypes);
@@ -218,6 +218,47 @@ export function MediaTimeline({ stats }: MediaTimelineProps) {
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                         <span className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+                          {item.rating.toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
+                    <h5 className="font-semibold text-base line-clamp-2 mb-1">
+                      {item.title}
+                    </h5>
+                    <p className="text-xs text-muted-foreground">
+                      Completed {new Date(item.completed).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Lowest Rated TV Shows */}
+          {filteredStats.media.lowestRatedTV && filteredStats.media.lowestRatedTV.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold mb-3">Lowest Rated TV Shows</h4>
+              <div className="grid gap-3 md:grid-cols-3">
+                {filteredStats.media.lowestRatedTV.map((item, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="p-4 rounded-lg bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-950/20 dark:to-gray-950/20 border border-slate-200 dark:border-slate-800"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-500 text-white font-bold text-sm">
+                          #{index + 1}
+                        </div>
+                        <span className="text-xs font-medium text-muted-foreground uppercase">
+                          {item.type}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 text-slate-400" />
+                        <span className="text-lg font-bold text-slate-600 dark:text-slate-400">
                           {item.rating.toFixed(1)}
                         </span>
                       </div>
