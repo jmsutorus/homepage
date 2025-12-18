@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/jmsutorus/homepage/compare/v1.13.0...v1.14.0) (2025-12-18)
+
+
+### Features
+
+* vacations feature added ([#84](https://github.com/jmsutorus/homepage/issues/84)) ([5b88180](https://github.com/jmsutorus/homepage/commit/5b88180b5aef2376dfe0822ec85713105dcaae5e))
+
 # [1.13.0](https://github.com/jmsutorus/homepage/compare/v1.12.0...v1.13.0) (2025-12-18)
 
 
