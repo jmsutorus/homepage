@@ -20,7 +20,7 @@ type SortOption =
 interface PaginatedMediaGridProps {
   initialItems: MediaItem[];
   filters?: {
-    type?: "movie" | "tv" | "book" | "game";
+    type?: "movie" | "tv" | "book" | "game" | "album";
     status?: "in-progress" | "completed" | "planned";
     search?: string;
     genres?: string[];

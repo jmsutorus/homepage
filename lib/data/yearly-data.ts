@@ -20,6 +20,7 @@ export interface YearlyStats {
     topBookGenres: { genre: string; count: number }[];
     topMovieTVGenres: { genre: string; count: number }[];
     topRated: { title: string; type: string; rating: number; completed: string }[];
+    lowestRatedTV: { title: string; type: string; rating: number; completed: string }[];
     topRatedBooks: { title: string; type: string; rating: number; completed: string }[];
     totalTimeSpent: number; // Total time spent in minutes
     timeSpentByType: {
@@ -90,6 +91,15 @@ export interface YearlyStats {
     topGenres: { genre: string; count: number }[];
     topSteamGames: { name: string; achievements: number; playtime: number }[];
   };
+  albums: {
+    total: number;
+    averageRating: number;
+    uniqueGenres: number;
+    uniqueArtists: number;
+    topGenres: { genre: string; count: number }[];
+    topRatedAlbums: { title: string; rating: number; completed: string; creator?: string }[];
+    topCreators: { creator: string; count: number }[];
+  };
   monthlyActivity: {
     month: number; // 0-11
     media: number;
@@ -97,6 +107,7 @@ export interface YearlyStats {
     movies: number;
     tv: number;
     games: number;
+    albums: number;
     parks: number;
     exercises: number;
     journals: number;
@@ -172,10 +183,14 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     let movieTVRatingCount = 0;
     let gameRatingSum = 0;
     let gameRatingCount = 0;
+    let albumRatingSum = 0;
+    let albumRatingCount = 0;
     const genreCounts: Record<string, number> = {};
     const bookGenreCounts: Record<string, number> = {};
     const movieTVGenreCounts: Record<string, number> = {};
     const gameGenreCounts: Record<string, number> = {};
+    const albumGenreCounts: Record<string, number> = {};
+    const albumCreatorCounts: Record<string, number> = {};
 
     let totalTimeSpent = 0;
     const timeSpentByType = {
@@ -218,6 +233,9 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
         } else if (type === 'game') {
           gameRatingSum += m.rating;
           gameRatingCount++;
+        } else if (type === 'album') {
+          albumRatingSum += m.rating;
+          albumRatingCount++;
         }
       }
       if (m.genres) {
@@ -231,7 +249,18 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
               movieTVGenreCounts[g] = (movieTVGenreCounts[g] || 0) + 1;
             } else if (type === 'game') {
               gameGenreCounts[g] = (gameGenreCounts[g] || 0) + 1;
+            } else if (type === 'album') {
+              albumGenreCounts[g] = (albumGenreCounts[g] || 0) + 1;
             }
+          });
+        } catch {}
+      }
+      // Track creators for albums
+      if (type === 'album' && m.creator) {
+        try {
+          const creators = JSON.parse(m.creator) as string[];
+          creators.forEach((c) => {
+            albumCreatorCounts[c] = (albumCreatorCounts[c] || 0) + 1;
           });
         } catch {}
       }
@@ -257,12 +286,39 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
       .slice(0, 5)
       .map(([genre, count]) => ({ genre, count }));
 
-    const topRated = yearMedia
+    const topAlbumGenres = Object.entries(albumGenreCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([genre, count]) => ({ genre, count }));
+
+    const topAlbumCreators = Object.entries(albumCreatorCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([creator, count]) => ({ creator, count }));
+
+    const ratedMoviesTV = yearMedia
       .filter((m) => {
         const type = m.type.toLowerCase();
         return (type === 'movie' || type === 'tv' || type === 'tv_show' || type === 'show') && m.rating && m.rating > 0;
-      })
+      });
+
+    const topRated = ratedMoviesTV
       .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      .slice(0, 3)
+      .map((m) => ({
+        title: m.title,
+        type: m.type,
+        rating: m.rating || 0,
+        completed: m.completed || '',
+      }));
+
+    // Get lowest rated TV shows only
+    const lowestRatedTV = yearMedia
+      .filter((m) => {
+        const type = m.type.toLowerCase();
+        return (type === 'tv' || type === 'tv_show' || type === 'show') && m.rating && m.rating > 0;
+      })
+      .sort((a, b) => (a.rating || 0) - (b.rating || 0))
       .slice(0, 3)
       .map((m) => ({
         title: m.title,
@@ -298,6 +354,20 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
         completed: m.completed || '',
       }));
 
+    const topRatedAlbums = yearMedia
+      .filter((m) => {
+        const type = m.type.toLowerCase();
+        return type === 'album' && m.rating && m.rating > 0;
+      })
+      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      .slice(0, 3)
+      .map((m) => ({
+        title: m.title,
+        rating: m.rating || 0,
+        completed: m.completed || '',
+        creator: m.creator || undefined,
+      }));
+
     return {
       yearMedia,
       stats: {
@@ -310,6 +380,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
         topBookGenres,
         topMovieTVGenres,
         topRated,
+        lowestRatedTV,
         topRatedBooks,
         totalTimeSpent,
         timeSpentByType,
@@ -319,6 +390,15 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
         averageRating: gameRatingCount > 0 ? gameRatingSum / gameRatingCount : 0,
         topRatedGames,
         topGenres: topGameGenres,
+      },
+      albumStats: {
+        total: yearMedia.filter(m => m.type.toLowerCase() === 'album').length,
+        averageRating: albumRatingCount > 0 ? albumRatingSum / albumRatingCount : 0,
+        uniqueGenres: Object.keys(albumGenreCounts).length,
+        uniqueArtists: Object.keys(albumCreatorCounts).length,
+        topRatedAlbums,
+        topGenres: topAlbumGenres,
+        topCreators: topAlbumCreators,
       }
     };
   })();
@@ -906,6 +986,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     movies: 0,
     tv: 0,
     games: 0,
+    albums: 0,
     parks: 0,
     exercises: 0,
     journals: 0,
@@ -929,6 +1010,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
         monthlyActivity[month].tv++;
       } else if (type === 'game') {
         monthlyActivity[month].games++;
+      } else if (type === 'album') {
+        monthlyActivity[month].albums++;
       }
     }
   });
@@ -996,6 +1079,15 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
       topRatedGames: mediaData.gameStats.topRatedGames,
       topGenres: mediaData.gameStats.topGenres,
       topSteamGames,
+    },
+    albums: {
+      total: mediaData.albumStats.total,
+      averageRating: mediaData.albumStats.averageRating,
+      uniqueGenres: mediaData.albumStats.uniqueGenres,
+      uniqueArtists: mediaData.albumStats.uniqueArtists,
+      topGenres: mediaData.albumStats.topGenres,
+      topRatedAlbums: mediaData.albumStats.topRatedAlbums,
+      topCreators: mediaData.albumStats.topCreators,
     },
     monthlyActivity,
     duolingo: duolingoStats,

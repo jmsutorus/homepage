@@ -204,6 +204,12 @@ const nextConfig: NextConfig = {
         hostname: "simg-ssl.duolingo.com",
         pathname: "/**",
       },
+      // Wikipedia media (album covers, etc)
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+        pathname: "/**",
+      },
       // Add your custom Tautulli/Home Assistant domains here if needed
       // Example:
       // {

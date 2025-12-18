@@ -20,7 +20,8 @@
       "Bash(find:*)",
       "Bash(npm run lint)",
       "Bash(npm run lint:*)",
-      "Bash(npx shadcn@latest add:*)"
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

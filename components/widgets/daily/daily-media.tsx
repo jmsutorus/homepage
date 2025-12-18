@@ -1,6 +1,6 @@
 "use client";
 
-import { Film, Tv, Book, Gamepad2 } from "lucide-react";
+import { Film, Tv, Book, Gamepad2, Music } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { MediaContent } from "@/lib/db/media";
 
@@ -15,6 +15,7 @@ const MEDIA_ICONS: Record<string, typeof Film> = {
   tv: Tv,
   book: Book,
   game: Gamepad2,
+  album: Music,
 };
 
 export function DailyMedia({ media, onMediaClick }: DailyMediaProps) {

@@ -96,6 +96,37 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
         <div className="space-y-3 sm:space-y-4">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">{frontmatter.title.replace(/-/g, ' ')}</h1>
 
+          {/* Creator/Artist/Director */}
+          {frontmatter.creator && (() => {
+            // Parse creator - could be JSON string or already an array
+            let creators: string[] = [];
+            try {
+              if (typeof frontmatter.creator === 'string') {
+                creators = JSON.parse(frontmatter.creator);
+              } else if (Array.isArray(frontmatter.creator)) {
+                creators = frontmatter.creator;
+              }
+            } catch {
+              // If parsing fails, treat as single creator
+              if (typeof frontmatter.creator === 'string') {
+                creators = [frontmatter.creator];
+              }
+            }
+            
+            if (creators.length === 0) return null;
+            
+            // Get label based on type
+            const label = frontmatter.type === 'movie' ? 'Director' :
+                         frontmatter.type === 'tv' ? 'Creator' :
+                         frontmatter.type === 'book' ? 'Author' :
+                         frontmatter.type === 'album' ? 'Artist' : 'Developer';
+            
+            return (
+              <p className="text-lg text-muted-foreground">
+                {label}: <span className="font-medium text-foreground">{creators.join(', ')}</span>
+              </p>
+            );
+          })()}
           <div className="flex items-center gap-3 flex-wrap">
             {/* Type Badge */}
             <Badge variant="outline" className="capitalize">
@@ -164,7 +195,7 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
       <hr className="border-border" />
 
       {/* Content */}
-      {content && content.trim() ? (
+      {content && typeof content === 'string' && content.trim() ? (
         <article className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-base prose-p:leading-7 prose-a:text-blue-500 hover:prose-a:text-blue-600 prose-strong:font-semibold prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-img:rounded-lg">
           <MDXRemote source={content} />
         </article>

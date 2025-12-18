@@ -6,17 +6,19 @@ import {
   deleteMedia,
   parseGenres,
   parseTags,
+  parseCreator,
 } from "@/lib/db/media";
 import type { MediaContentInput } from "@/lib/db/media";
 import { requireAuthApi } from "@/lib/auth/server";
 
 // Helper function to map singular type to plural directory name (for URL paths)
-function getDirectoryName(type: "movie" | "tv" | "book" | "game"): string {
+function getDirectoryName(type: "movie" | "tv" | "book" | "game" | "album"): string {
   const dirMap = {
     movie: "movies",
     tv: "tv",
     book: "books",
     game: "games",
+    album: "albums",
   };
   return dirMap[type];
 }
@@ -35,7 +37,7 @@ export async function GET(
     const userId = session.user.id;
 
     // Validate type
-    const validTypes = ["movie", "tv", "book", "game"];
+    const validTypes = ["movie", "tv", "book", "game", "album"];
     if (!validTypes.includes(type)) {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
@@ -64,6 +66,7 @@ export async function GET(
         tags: parseTags(media.tags),
         description: media.description,
         length: media.length,
+        creator: parseCreator(media.creator),
         featured: media.featured === 1,
         published: media.published === 1,
         timeSpent: media.time_spent,
@@ -97,7 +100,7 @@ export async function PATCH(
     const { frontmatter, content } = body;
 
     // Validate type
-    const validTypes = ["movie", "tv", "book", "game"];
+    const validTypes = ["movie", "tv", "book", "game", "album"];
     if (!validTypes.includes(type)) {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
@@ -133,6 +136,7 @@ export async function PATCH(
       tags: frontmatter.tags || undefined,
       description: frontmatter.description || undefined,
       length: frontmatter.length || undefined,
+      creator: frontmatter.creator || undefined,
       featured: frontmatter.featured,
       published: frontmatter.published,
       timeSpent: frontmatter.timeSpent !== undefined ? frontmatter.timeSpent : undefined,
@@ -149,9 +153,9 @@ export async function PATCH(
     }
 
     // Use the NEW type from frontmatter for the redirect path (in case type changed)
-    const newType = frontmatter.type as "movie" | "tv" | "book" | "game";
+    const newType = frontmatter.type as "movie" | "tv" | "book" | "game" | "album";
     const dirName = getDirectoryName(newType);
-    const oldDirName = getDirectoryName(type as "movie" | "tv" | "book" | "game");
+    const oldDirName = getDirectoryName(type as "movie" | "tv" | "book" | "game" | "album");
 
     // Revalidate both old and new paths (in case type changed)
     revalidatePath("/media");
@@ -188,7 +192,7 @@ export async function DELETE(
     const userId = session.user.id;
 
     // Validate type
-    const validTypes = ["movie", "tv", "book", "game"];
+    const validTypes = ["movie", "tv", "book", "game", "album"];
     if (!validTypes.includes(type)) {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }

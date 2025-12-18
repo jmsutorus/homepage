@@ -6,7 +6,7 @@ export interface MediaContent {
   userId: string;
   slug: string;
   title: string;
-  type: "movie" | "tv" | "book" | "game";
+  type: "movie" | "tv" | "book" | "game" | "album";
   status: "in-progress" | "completed" | "planned";
   rating: number | null;
   started: string | null; // YYYY-MM-DD format
@@ -29,7 +29,7 @@ export interface MediaContent {
 export interface MediaContentInput {
   slug: string;
   title: string;
-  type: "movie" | "tv" | "book" | "game";
+  type: "movie" | "tv" | "book" | "game" | "album";
   status: "in-progress" | "completed" | "planned";
   rating?: number;
   started?: string;
@@ -159,7 +159,7 @@ export async function getPaginatedMedia(
   page: number = 1,
   pageSize: number = 25,
   filters?: {
-    type?: "movie" | "tv" | "book" | "game";
+    type?: "movie" | "tv" | "book" | "game" | "album";
     status?: "in-progress" | "completed" | "planned";
     search?: string;
     genres?: string[];
@@ -278,7 +278,7 @@ export async function getPaginatedMedia(
  * @param includeContent - Whether to include the content field (default: false for performance)
  */
 export async function getMediaByType(
-  type: "movie" | "tv" | "book" | "game",
+  type: "movie" | "tv" | "book" | "game" | "album",
   userId: string,
   includeContent: boolean = false
 ): Promise<MediaContent[]> {
@@ -321,7 +321,7 @@ export async function getMediaByStatus(
  * @param includeContent - Whether to include the content field (default: false for performance)
  */
 export async function getMediaByTypeAndStatus(
-  type: "movie" | "tv" | "book" | "game",
+  type: "movie" | "tv" | "book" | "game" | "album",
   status: "in-progress" | "completed" | "planned",
   userId: string,
   includeContent: boolean = false
@@ -476,7 +476,7 @@ export async function getMediaStatistics(userId: string): Promise<{
   const entries = await getAllMedia(userId);
   const total = entries.length;
 
-  const byType: Record<string, number> = { movie: 0, tv: 0, book: 0, game: 0 };
+  const byType: Record<string, number> = { movie: 0, tv: 0, book: 0, game: 0, album: 0 };
   const byStatus: Record<string, number> = {
     "in-progress": 0,
     completed: 0,
@@ -674,7 +674,7 @@ export type TimelinePeriod = "week" | "month" | "year";
 export interface MediaTimelineItem {
   id: number;
   title: string;
-  type: "movie" | "tv" | "book" | "game";
+  type: "movie" | "tv" | "book" | "game" | "album";
   rating: number | null;
   completed: string;
   poster: string | null;

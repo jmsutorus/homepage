@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CalendarDayCellProps {
@@ -32,6 +32,7 @@ const MEDIA_ICONS: Record<string, typeof Film> = {
   tv: Tv,
   book: Book,
   game: Gamepad2,
+  album: Music,
 };
 
 function CalendarDayCellComponent({

@@ -75,7 +75,7 @@ export function MediaPageClient({
   const searchParams = useSearchParams();
   const router = useRouter();
   const [viewTab, setViewTab] = useState<ViewTab>("media");
-  const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game" | "album">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showPlanned, setShowPlanned] = useState(false);
   const [activeGenres, setActiveGenres] = useState<string[]>([]);
@@ -212,7 +212,7 @@ export function MediaPageClient({
   // Build filters for paginated completed media
   const completedFilters = useMemo(() => {
     const filters: {
-      type?: "movie" | "tv" | "book" | "game";
+      type?: "movie" | "tv" | "book" | "game" | "album";
       status: "completed";
       search?: string;
       genres?: string[];
@@ -314,6 +314,7 @@ export function MediaPageClient({
     tv: allMedia.filter((item) => item.frontmatter.type === "tv").length,
     book: allMedia.filter((item) => item.frontmatter.type === "book").length,
     game: allMedia.filter((item) => item.frontmatter.type === "game").length,
+    album: allMedia.filter((item) => item.frontmatter.type === "album").length,
   };
 
   // Toggle genre selection
@@ -432,6 +433,13 @@ export function MediaPageClient({
             onClick={() => setActiveTab("game")}
           >
             Games ({stats.game})
+          </Button>
+          <Button
+            variant={activeTab === "album" ? "default" : "ghost"}
+            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+            onClick={() => setActiveTab("album")}
+          >
+            Albums ({stats.album})
           </Button>
         </div>
 
