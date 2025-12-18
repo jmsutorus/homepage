@@ -37,6 +37,7 @@ type EntityType =
   | "journal"
   | "media"
   | "park"
+  | "vacation"
   | "category"
   | "link"
   | "goal"
@@ -56,6 +57,7 @@ const DEFAULT_MESSAGES: Record<EntityType, string> = {
   journal: "Journal entry saved",
   media: "Media entry added to collection",
   park: "Park visit recorded",
+  vacation: "Vacation planned successfully!",
   category: "Category created",
   link: "Link added",
   goal: "Goal created successfully!",

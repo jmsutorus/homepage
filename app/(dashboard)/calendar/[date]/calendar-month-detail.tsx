@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateSafe } from "@/lib/utils";
-import type { CalendarDayData, CalendarGoal, CalendarRelationshipItem } from "@/lib/db/calendar";
+import type { CalendarDayData, CalendarGoal, CalendarRelationshipItem, CalendarVacation } from "@/lib/db/calendar";
 import type { MediaContent } from "@/lib/db/media";
 import type { DBStravaActivity } from "@/lib/db/strava";
 import type { Event } from "@/lib/db/events";
@@ -15,6 +15,7 @@ import type { MoodEntry } from "@/lib/db/mood";
 import type { HabitCompletion } from "@/lib/db/habits";
 import type { GithubEvent } from "@/lib/github";
 import type { DailyMeal, MealType } from "@/lib/types/meals";
+import { calculateDurationDays, VACATION_STATUS_NAMES } from "@/lib/types/vacations";
 import {
   Film,
   Tv,
@@ -43,6 +44,7 @@ import {
   ChevronDown,
   ChevronUp,
   UtensilsCrossed,
+  Plane,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -70,13 +72,14 @@ export function CalendarMonthDetail({
   const router = useRouter();
   const [tasksExpanded, setTasksExpanded] = useState(false);
 
-  // Extract all media, activities, events, parks, journals, and goals from the calendar data
+  // Extract all media, activities, events, parks, journals, goals, and vacations from the calendar data
   const allMedia: MediaContent[] = [];
   const allActivities: DBStravaActivity[] = [];
   const allEvents: Event[] = [];
   const allParks: ParkContent[] = [];
   const allJournals: JournalContent[] = [];
   const allGoalsCompleted: CalendarGoal[] = [];
+  const allVacations: CalendarVacation[] = [];
 
   Object.values(calendarData).forEach((dayData) => {
     allMedia.push(...dayData.media);
@@ -85,11 +88,17 @@ export function CalendarMonthDetail({
     allParks.push(...dayData.parks);
     allJournals.push(...dayData.journals);
     allGoalsCompleted.push(...dayData.goalsCompleted);
+    allVacations.push(...dayData.vacations);
   });
 
   // Deduplicate goals (same goal might appear in multiple days if completed date spans)
   const uniqueGoalsCompleted = Array.from(
     new Map(allGoalsCompleted.map((goal) => [goal.id, goal])).values()
+  );
+
+  // Deduplicate vacations (same vacation appears on multiple days)
+  const uniqueVacations = Array.from(
+    new Map(allVacations.map((v) => [v.vacation.id, v])).values()
   );
 
   // Extract mood, habits, duolingo, github, and relationship data
@@ -259,6 +268,21 @@ export function CalendarMonthDetail({
     new Map(allEvents.map((event) => [event.id, event])).values()
   );
 
+  // Vacation stats
+  const vacationStats = {
+    total: uniqueVacations.length,
+    totalDays: uniqueVacations.reduce((sum, v) => {
+      return sum + calculateDurationDays(v.vacation.start_date, v.vacation.end_date);
+    }, 0),
+    averageRating: uniqueVacations.filter(v => v.vacation.rating).length > 0
+      ? uniqueVacations.filter(v => v.vacation.rating).reduce((sum, v) => sum + (v.vacation.rating || 0), 0) / uniqueVacations.filter(v => v.vacation.rating).length
+      : 0,
+    byStatus: uniqueVacations.reduce((acc, v) => {
+      acc[v.vacation.status] = (acc[v.vacation.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>),
+  };
+
   const handleMediaClick = (type: string, slug: string) => {
     router.push(`/media/${type}/${slug}`);
   };
@@ -279,6 +303,10 @@ export function CalendarMonthDetail({
     router.push(`/goals/${slug}`);
   };
 
+  const handleVacationClick = (slug: string) => {
+    router.push(`/vacations/${slug}`);
+  };
+
   const hasMedia = allMedia.length > 0;
   const hasActivities = allActivities.length > 0;
   const hasEvents = uniqueEvents.length > 0;
@@ -291,9 +319,10 @@ export function CalendarMonthDetail({
   const hasGithub = githubStats.totalEvents > 0;
   const hasRelationship = relationshipStats.total > 0;
   const hasMeals = mealStats.total > 0;
+  const hasVacations = vacationStats.total > 0;
 
   const hasAnyData = hasMedia || hasActivities || hasEvents || hasParks || hasJournals || 
-    hasGoalsCompleted || hasMood || hasHabits || hasDuolingo || hasGithub || hasRelationship || hasTasks || hasMeals;
+    hasGoalsCompleted || hasMood || hasHabits || hasDuolingo || hasGithub || hasRelationship || hasTasks || hasMeals || hasVacations;
 
   if (!hasAnyData) {
     return (
@@ -677,6 +706,68 @@ export function CalendarMonthDetail({
                   </div>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Vacations Summary */}
+      {hasVacations && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Plane className="h-5 w-5 text-sky-500" />
+                Vacations
+              </CardTitle>
+              <span className="text-sm text-muted-foreground">
+                {vacationStats.total} {vacationStats.total === 1 ? 'vacation' : 'vacations'}
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="p-4 rounded-lg border bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-950/20 dark:to-blue-950/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-sky-500/10">
+                    <Plane className="h-5 w-5 text-sky-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-sky-600 dark:text-sky-400">
+                      {vacationStats.total}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Total Vacations</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg border bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-indigo-500/10">
+                    <Calendar className="h-5 w-5 text-indigo-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                      {vacationStats.totalDays}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Vacation Days</p>
+                  </div>
+                </div>
+              </div>
+              {vacationStats.averageRating > 0 && (
+                <div className="p-4 rounded-lg border bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-yellow-500/10">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                        {vacationStats.averageRating.toFixed(1)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Avg Rating</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -1724,6 +1815,80 @@ export function CalendarMonthDetail({
                     </div>
                   </div>
                 ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Vacations List */}
+      {hasVacations && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plane className="h-5 w-5 text-sky-500" />
+              Vacations ({uniqueVacations.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {uniqueVacations
+                .sort((a, b) => a.vacation.start_date.localeCompare(b.vacation.start_date))
+                .map((vacationData) => {
+                  const { vacation } = vacationData;
+                  const duration = calculateDurationDays(vacation.start_date, vacation.end_date);
+                  
+                  // Status color mapping
+                  const statusColors: Record<string, string> = {
+                    'completed': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+                    'in-progress': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+                    'booked': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+                    'planning': 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+                    'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+                  };
+                  
+                  return (
+                    <div
+                      key={vacation.id}
+                      className="p-3 rounded-lg border bg-card cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => handleVacationClick(vacation.slug)}
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-sky-700 dark:text-sky-400">
+                              {vacation.title}
+                            </p>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {vacation.destination}
+                            </p>
+                          </div>
+                          <Badge 
+                            variant="secondary" 
+                            className={`text-xs ${statusColors[vacation.status] || statusColors.planning}`}
+                          >
+                            {VACATION_STATUS_NAMES[vacation.status as keyof typeof VACATION_STATUS_NAMES] || vacation.status}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {formatDateSafe(vacation.start_date)} - {formatDateSafe(vacation.end_date)}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {duration} {duration === 1 ? 'day' : 'days'}
+                          </Badge>
+                          {vacation.rating && (
+                            <span className="flex items-center gap-1">
+                              <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                              {vacation.rating}/5
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           </CardContent>
         </Card>

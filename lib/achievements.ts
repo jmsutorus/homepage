@@ -17,7 +17,7 @@ export async function getUserAchievements(userId: string) {
   return map;
 }
 
-export type AchievementCategory = 'mood' | 'media' | 'habits' | 'tasks' | 'parks' | 'journal' | 'exercise' | 'duolingo' | 'relationship' | 'general';
+export type AchievementCategory = 'mood' | 'media' | 'habits' | 'tasks' | 'parks' | 'journal' | 'exercise' | 'duolingo' | 'relationship' | 'vacations' | 'general';
 
 export interface Achievement {
   id: string;
@@ -579,6 +579,268 @@ export const ACHIEVEMENTS: Achievement[] = [
     points: 40,
     target_value: 1,
   },
+
+  // Vacation Achievements
+  {
+    id: 'vacation-first',
+    slug: 'vacation-first',
+    title: 'Wanderlust',
+    description: 'Plan your first vacation',
+    icon: 'plane',
+    category: 'vacations',
+    points: 5,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-5',
+    slug: 'vacation-5',
+    title: 'Travel Enthusiast',
+    description: 'Plan 5 vacations',
+    icon: 'plane',
+    category: 'vacations',
+    points: 15,
+    target_value: 5,
+  },
+  {
+    id: 'vacation-10',
+    slug: 'vacation-10',
+    title: 'Frequent Traveler',
+    description: 'Plan 10 vacations',
+    icon: 'plane',
+    category: 'vacations',
+    points: 30,
+    target_value: 10,
+  },
+  {
+    id: 'vacation-25',
+    slug: 'vacation-25',
+    title: 'Globetrotter',
+    description: 'Plan 25 vacations',
+    icon: 'plane',
+    category: 'vacations',
+    points: 40,
+    target_value: 25,
+  },
+  {
+    id: 'vacation-50',
+    slug: 'vacation-50',
+    title: 'World Traveler',
+    description: 'Plan 50 vacations',
+    icon: 'plane',
+    category: 'vacations',
+    points: 50,
+    target_value: 50,
+  },
+  {
+    id: 'vacation-completed-1',
+    slug: 'vacation-completed-1',
+    title: 'Trip Complete',
+    description: 'Complete your first vacation',
+    icon: 'luggage',
+    category: 'vacations',
+    points: 10,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-completed-5',
+    slug: 'vacation-completed-5',
+    title: 'Seasoned Traveler',
+    description: 'Complete 5 vacations',
+    icon: 'luggage',
+    category: 'vacations',
+    points: 20,
+    target_value: 5,
+  },
+  {
+    id: 'vacation-completed-10',
+    slug: 'vacation-completed-10',
+    title: 'Travel Veteran',
+    description: 'Complete 10 vacations',
+    icon: 'luggage',
+    category: 'vacations',
+    points: 35,
+    target_value: 10,
+  },
+  {
+    id: 'vacation-perfect-trip',
+    slug: 'vacation-perfect-trip',
+    title: 'Perfect Getaway',
+    description: 'Complete a vacation with a 10/10 rating',
+    icon: 'star',
+    category: 'vacations',
+    points: 25,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-perfect-5',
+    slug: 'vacation-perfect-5',
+    title: 'Five Star Traveler',
+    description: 'Complete 5 vacations with 9+ ratings',
+    icon: 'sparkles',
+    category: 'vacations',
+    points: 40,
+    target_value: 5,
+  },
+  {
+    id: 'vacation-detailed-planner',
+    slug: 'vacation-detailed-planner',
+    title: 'Meticulous Planner',
+    description: 'Create a vacation with a complete day-by-day itinerary',
+    icon: 'calendar-check',
+    category: 'vacations',
+    points: 20,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-organized',
+    slug: 'vacation-organized',
+    title: 'Booking Master',
+    description: 'Complete a vacation with 5+ confirmed bookings',
+    icon: 'check-circle',
+    category: 'vacations',
+    points: 20,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-budget-keeper',
+    slug: 'vacation-budget-keeper',
+    title: 'Budget Keeper',
+    description: 'Complete a vacation staying within budget',
+    icon: 'piggy-bank',
+    category: 'vacations',
+    points: 30,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-budget-master',
+    slug: 'vacation-budget-master',
+    title: 'Budget Master',
+    description: 'Complete 3 vacations staying within budget',
+    icon: 'wallet',
+    category: 'vacations',
+    points: 45,
+    target_value: 3,
+  },
+  {
+    id: 'vacation-weekend-warrior',
+    slug: 'vacation-weekend-warrior',
+    title: 'Weekend Warrior',
+    description: 'Complete 5 short trips (3 days or less)',
+    icon: 'sunrise',
+    category: 'vacations',
+    points: 25,
+    target_value: 5,
+  },
+  {
+    id: 'vacation-long-haul',
+    slug: 'vacation-long-haul',
+    title: 'Long Haul Explorer',
+    description: 'Complete a vacation lasting 14+ days',
+    icon: 'compass',
+    category: 'vacations',
+    points: 30,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-epic-journey',
+    slug: 'vacation-epic-journey',
+    title: 'Epic Journey',
+    description: 'Complete a vacation lasting 30+ days',
+    icon: 'globe',
+    category: 'vacations',
+    points: 50,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-destination-collector',
+    slug: 'vacation-destination-collector',
+    title: 'Destination Collector',
+    description: 'Visit 10 unique destinations',
+    icon: 'map-pin',
+    category: 'vacations',
+    points: 35,
+    target_value: 10,
+  },
+  {
+    id: 'vacation-activity-seeker',
+    slug: 'vacation-activity-seeker',
+    title: 'Activity Seeker',
+    description: 'Plan a vacation with 20+ activities in the itinerary',
+    icon: 'activity',
+    category: 'vacations',
+    points: 25,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-spontaneous',
+    slug: 'vacation-spontaneous',
+    title: 'Spontaneous Adventurer',
+    description: 'Go on a trip from planning to completion within 7 days',
+    icon: 'zap',
+    category: 'vacations',
+    points: 30,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-early-bird',
+    slug: 'vacation-early-bird',
+    title: 'Early Planner',
+    description: 'Plan a vacation 90+ days in advance',
+    icon: 'calendar-clock',
+    category: 'vacations',
+    points: 20,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-jet-setter',
+    slug: 'vacation-jet-setter',
+    title: 'Jet Setter',
+    description: 'Book 10+ flights across all vacations',
+    icon: 'plane-takeoff',
+    category: 'vacations',
+    points: 30,
+    target_value: 10,
+  },
+  {
+    id: 'vacation-luxury-traveler',
+    slug: 'vacation-luxury-traveler',
+    title: 'Luxury Traveler',
+    description: 'Complete a vacation with a budget of $5000+',
+    icon: 'gem',
+    category: 'vacations',
+    points: 35,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-budget-backpacker',
+    slug: 'vacation-budget-backpacker',
+    title: 'Budget Backpacker',
+    description: 'Complete a vacation spending under $500',
+    icon: 'backpack',
+    category: 'vacations',
+    points: 30,
+    target_value: 1,
+  },
+  {
+    id: 'vacation-memory-keeper',
+    slug: 'vacation-memory-keeper',
+    title: 'Memory Keeper',
+    description: 'Add photos to 5 vacations',
+    icon: 'camera',
+    category: 'vacations',
+    points: 20,
+    target_value: 5,
+  },
+  {
+    id: 'vacation-travel-writer',
+    slug: 'vacation-travel-writer',
+    title: 'Travel Writer',
+    description: 'Write trip notes for 10 vacations',
+    icon: 'pen-tool',
+    category: 'vacations',
+    points: 25,
+    target_value: 10,
+  },
 ];
 
 export async function initializeAchievements() {
@@ -629,6 +891,9 @@ export async function checkAchievement(userId: string, type: AchievementCategory
       break;
     case 'relationship':
       await checkRelationshipAchievements(userId);
+      break;
+    case 'vacations':
+      await checkVacationAchievements(userId);
       break;
   }
 }
@@ -909,4 +1174,212 @@ async function checkRelationshipAchievements(userId: string) {
   } else {
     await unlockAchievement(userId, 'relationship-blissful', 0);
   }
+}
+
+async function checkVacationAchievements(userId: string) {
+  // Count total vacations planned
+  const totalVacations = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM vacations WHERE userId = ?`,
+    [userId]
+  );
+  const vacationCount = totalVacations?.count || 0;
+
+  await unlockAchievement(userId, 'vacation-first', vacationCount);
+  await unlockAchievement(userId, 'vacation-5', vacationCount);
+  await unlockAchievement(userId, 'vacation-10', vacationCount);
+  await unlockAchievement(userId, 'vacation-25', vacationCount);
+  await unlockAchievement(userId, 'vacation-50', vacationCount);
+
+  // Count completed vacations
+  const completedVacations = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM vacations WHERE userId = ? AND status = 'completed'`,
+    [userId]
+  );
+  const completedCount = completedVacations?.count || 0;
+
+  await unlockAchievement(userId, 'vacation-completed-1', completedCount);
+  await unlockAchievement(userId, 'vacation-completed-5', completedCount);
+  await unlockAchievement(userId, 'vacation-completed-10', completedCount);
+
+  // Check perfect trip (10/10 rating)
+  const perfectTrip = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM vacations WHERE userId = ? AND status = 'completed' AND rating = 10`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-perfect-trip', perfectTrip?.count || 0);
+
+  // Check five star traveler (5 trips with 9+ rating)
+  const fiveStarTrips = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM vacations WHERE userId = ? AND status = 'completed' AND rating >= 9`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-perfect-5', fiveStarTrips?.count || 0);
+
+  // Check detailed planner (vacation with complete itinerary)
+  const detailedPlan = await queryOne<{ count: number }>(
+    `SELECT COUNT(DISTINCT v.id) as count
+     FROM vacations v
+     WHERE v.userId = ?
+     AND (julianday(v.end_date) - julianday(v.start_date) + 1) <=
+         (SELECT COUNT(DISTINCT i.date) FROM vacation_itinerary_days i WHERE i.vacationId = v.id)`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-detailed-planner', detailedPlan?.count || 0);
+
+  // Check booking master (vacation with 5+ confirmed bookings)
+  const organizedVacations = await queryOne<{ count: number }>(
+    `SELECT COUNT(DISTINCT v.id) as count
+     FROM vacations v
+     WHERE v.userId = ?
+     AND (SELECT COUNT(*) FROM vacation_bookings b
+          WHERE b.vacationId = v.id AND b.status = 'confirmed') >= 5`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-organized', organizedVacations?.count || 0);
+
+  // Check budget keeper (stayed within budget)
+  const budgetKept = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacations
+     WHERE userId = ?
+     AND status = 'completed'
+     AND budget_planned IS NOT NULL
+     AND budget_actual IS NOT NULL
+     AND budget_actual <= budget_planned`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-budget-keeper', budgetKept?.count || 0);
+  await unlockAchievement(userId, 'vacation-budget-master', budgetKept?.count || 0);
+
+  // Check weekend warrior (5 short trips of 3 days or less)
+  const weekendTrips = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacations
+     WHERE userId = ?
+     AND status = 'completed'
+     AND (julianday(end_date) - julianday(start_date) + 1) <= 3`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-weekend-warrior', weekendTrips?.count || 0);
+
+  // Check long haul (14+ days)
+  const longHaul = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacations
+     WHERE userId = ?
+     AND status = 'completed'
+     AND (julianday(end_date) - julianday(start_date) + 1) >= 14`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-long-haul', longHaul?.count || 0);
+
+  // Check epic journey (30+ days)
+  const epicJourney = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacations
+     WHERE userId = ?
+     AND status = 'completed'
+     AND (julianday(end_date) - julianday(start_date) + 1) >= 30`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-epic-journey', epicJourney?.count || 0);
+
+  // Check destination collector (10 unique destinations)
+  const uniqueDestinations = await queryOne<{ count: number }>(
+    `SELECT COUNT(DISTINCT destination) as count
+     FROM vacations
+     WHERE userId = ?
+     AND status = 'completed'`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-destination-collector', uniqueDestinations?.count || 0);
+
+  // Check activity seeker (20+ activities in itinerary)
+  const activitySeeker = await queryOne<{ count: number }>(
+    `SELECT COUNT(DISTINCT v.id) as count
+     FROM vacations v
+     WHERE v.userId = ?
+     AND (SELECT SUM(json_array_length(i.activities))
+          FROM vacation_itinerary_days i
+          WHERE i.vacationId = v.id) >= 20`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-activity-seeker', activitySeeker?.count || 0);
+
+  // Check spontaneous adventurer (planning to completion within 7 days)
+  const spontaneous = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacations
+     WHERE userId = ?
+     AND status = 'completed'
+     AND (julianday(start_date) - julianday(created_at)) <= 7`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-spontaneous', spontaneous?.count || 0);
+
+  // Check early planner (planned 90+ days in advance)
+  const earlyPlanner = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacations
+     WHERE userId = ?
+     AND (julianday(start_date) - julianday(created_at)) >= 90`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-early-bird', earlyPlanner?.count || 0);
+
+  // Check jet setter (10+ flights)
+  const flights = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacation_bookings b
+     JOIN vacations v ON b.vacationId = v.id
+     WHERE v.userId = ?
+     AND b.type = 'flight'`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-jet-setter', flights?.count || 0);
+
+  // Check luxury traveler ($5000+ budget)
+  const luxuryTravel = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacations
+     WHERE userId = ?
+     AND status = 'completed'
+     AND budget_actual >= 5000`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-luxury-traveler', luxuryTravel?.count || 0);
+
+  // Check budget backpacker (under $500)
+  const budgetBackpacker = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacations
+     WHERE userId = ?
+     AND status = 'completed'
+     AND budget_actual < 500
+     AND budget_actual > 0`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-budget-backpacker', budgetBackpacker?.count || 0);
+
+  // Check memory keeper (photos on 5 vacations)
+  const withPhotos = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacations
+     WHERE userId = ?
+     AND poster IS NOT NULL
+     AND poster != ''`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-memory-keeper', withPhotos?.count || 0);
+
+  // Check travel writer (trip notes for 10 vacations)
+  const withNotes = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM vacations
+     WHERE userId = ?
+     AND content IS NOT NULL
+     AND content != ''`,
+    [userId]
+  );
+  await unlockAchievement(userId, 'vacation-travel-writer', withNotes?.count || 0);
 }

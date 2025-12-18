@@ -32,6 +32,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScratchPad } from "@/components/widgets/scratch-pad/scratch-pad";
 import { DuolingoWidget } from "@/components/widgets/duolingo/duolingo-widget";
+import { VacationModeBanner } from "@/components/widgets/vacations/vacation-mode-banner";
+import { UpcomingVacations } from "@/components/widgets/vacations/upcoming-vacations";
+import { getActiveVacation, getUpcomingVacations } from "@/lib/db/vacations";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +78,7 @@ function serializeCalendarData(data: Record<string, any>) {
         milestonesCompleted: serializeArray(dayData.milestonesCompleted),
         relationshipItems: serializeArray(dayData.relationshipItems),
         dailyMeals: serializeArray(dayData.dailyMeals),
+        vacations: serializeArray(dayData.vacations),
       }
     ])
   );
@@ -132,7 +136,9 @@ export default async function DashboardPage({
     isSteamEnabled,
     isHomeAssistantEnabled,
     isWeatherEnabled,
-    calendarDataMap
+    calendarDataMap,
+    activeVacationRaw,
+    upcomingVacationsRaw
   ] = await Promise.all([
     getHabits(userId),
     getHabitCompletions(userId, todayStr),
@@ -155,7 +161,10 @@ export default async function DashboardPage({
     isHomeAssistantEnabledPromise,
     isWeatherEnabledPromise,
     // Pass the github events promise directly
-    getCalendarDataForMonth(currentYear, currentMonth, githubEventsPromise)
+    getCalendarDataForMonth(currentYear, currentMonth, githubEventsPromise),
+    // Vacation data
+    getActiveVacation(userId, todayStr),
+    getUpcomingVacations(userId, todayStr, 30)
   ]);
 
   // Duolingo Fetch
@@ -196,6 +205,10 @@ export default async function DashboardPage({
   const calendarDataRaw = Object.fromEntries(calendarDataMap);
   const calendarData = serializeCalendarData(calendarDataRaw);
 
+  // Vacation data
+  const activeVacation = serialize(activeVacationRaw);
+  const upcomingVacations = serialize(upcomingVacationsRaw);
+
   // Pick featured park or first park
   const featuredParkRaw = allParks.find(p => p.featured) ||
                        (allParks.length > 0 ? allParks[0] : null);
@@ -203,6 +216,11 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-6">
+      {/* Vacation Mode Banner - shows when user is currently on vacation */}
+      {activeVacation && (
+        <VacationModeBanner vacation={activeVacation} todayDate={todayStr} />
+      )}
+
       <ActionBanner />
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -222,6 +240,11 @@ export default async function DashboardPage({
 
       {/* Quick Links */}
       <QuickLinks />
+
+      {/* Upcoming Vacations - shows vacations within next 30 days */}
+      {upcomingVacations.length > 0 && (
+        <UpcomingVacations vacations={upcomingVacations} todayDate={todayStr} />
+      )}
 
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

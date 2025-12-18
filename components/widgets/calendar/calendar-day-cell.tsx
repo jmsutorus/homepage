@@ -3,8 +3,9 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils, Plane, Palmtree, Map } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getVacationTypeIcon } from "@/lib/utils/vacation-icons";
 
 interface CalendarDayCellProps {
   day: number;
@@ -63,8 +64,9 @@ function CalendarDayCellComponent({
   const hasDuolingo = summary?.duolingoCompleted ?? false;
   const hasRelationship = (summary?.relationshipCount ?? 0) > 0;
   const hasMeals = (summary?.mealCount ?? 0) > 0;
+  const hasVacations = (summary?.vacationCounts.starting ?? 0) > 0 || (summary?.vacationCounts.itineraryItems ?? 0) > 0 || (summary?.vacationCounts.bookings ?? 0) > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship || hasMeals;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship || hasMeals || hasVacations;
 
   // Get mood icon
   const MoodIcon = hasMood && summary?.moodRating ? MOOD_ICONS[summary.moodRating]?.icon : null;
@@ -331,6 +333,42 @@ function CalendarDayCellComponent({
               </span>
             </div>
           )}
+
+          {/* Vacations */}
+          {hasVacations && (
+            <>
+              {summary!.vacationCounts.starting > 0 && (
+                <div className="flex items-center gap-1">
+                  {summary!.vacationCounts.firstStartingVacationType 
+                    ? getVacationTypeIcon(
+                        summary!.vacationCounts.firstStartingVacationType as any,
+                        cn("h-3 w-3 flex-shrink-0", colors.vacation?.text || "text-sky-500")
+                      )
+                    : <Palmtree className={cn("h-3 w-3 flex-shrink-0", colors.vacation?.text || "text-sky-500")} />
+                  }
+                  <span className={cn("truncate", colors.vacation?.text || "text-sky-500")}>
+                    Vacation Starting
+                  </span>
+                </div>
+              )}
+              {summary!.vacationCounts.itineraryItems > 0 && (
+                <div className="flex items-center gap-1">
+                  <Map className={cn("h-3 w-3 flex-shrink-0", colors.vacation?.text || "text-sky-500")} />
+                  <span className={cn("truncate", colors.vacation?.text || "text-sky-500")}>
+                    {summary!.vacationCounts.itineraryItems} Itinerary
+                  </span>
+                </div>
+              )}
+              {summary!.vacationCounts.bookings > 0 && (
+                <div className="flex items-center gap-1">
+                  <Plane className={cn("h-3 w-3 flex-shrink-0", colors.vacation?.text || "text-sky-500")} />
+                  <span className={cn("truncate", colors.vacation?.text || "text-sky-500")}>
+                    {summary!.vacationCounts.bookings} Booking{summary!.vacationCounts.bookings !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
@@ -397,6 +435,9 @@ function CalendarDayCellComponent({
           )}
           {hasMeals && (
             <div className={cn("w-2 h-2 rounded-full", colors.meal?.bg || "bg-amber-500")} title="Meals" />
+          )}
+          {hasVacations && (
+            <div className={cn("w-2 h-2 rounded-full", colors.vacation?.bg || "bg-sky-500")} title="Vacation" />
           )}
         </div>
       )}
