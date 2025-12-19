@@ -8,6 +8,8 @@ import { Plus, Star, Trash2, Edit } from "lucide-react";
 import { CreateMilestoneDialog } from "./create-milestone-dialog";
 import { MobileMilestoneSheet } from "./mobile-milestone-sheet";
 import { EditMilestoneDialog } from "./edit-milestone-dialog";
+import { MilestoneTypeIcon } from "./milestone-type-icon";
+import { MilestoneCardBackground } from "./milestone-card-background";
 import type { RelationshipMilestone } from "@/lib/db/relationship";
 import { formatDateLongSafe } from "@/lib/utils";
 import { toast } from "sonner";
@@ -114,7 +116,7 @@ export function MilestonesTab({
         </Button>
       </div>
 
-      {/* Timeline */}
+      {/* Milestones List */}
       {milestones.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
@@ -124,62 +126,53 @@ export function MilestonesTab({
           </CardContent>
         </Card>
       ) : (
-        <div className="relative">
-          {/* Timeline line */}
-          <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-border" />
-
-          {/* Milestone items */}
-          <div className="space-y-8">
-            {milestones.map((milestone) => (
-              <div key={milestone.id} className="relative pl-20">
-                {/* Timeline dot */}
-                <div className={`absolute left-6 top-3 w-5 h-5 rounded-full border-4 border-background ${getCategoryColor(milestone.category)}`} />
-
-                <Card className="hover:border-primary/50 transition-colors">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge className={`${getCategoryColor(milestone.category)} text-white`}>
-                            {getCategoryLabel(milestone.category)}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {formatDateLongSafe(milestone.date, "en-US")}
-                          </span>
-                        </div>
-                        <CardTitle className="text-xl">{milestone.title}</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setEditingMilestone(milestone)}
-                          className="cursor-pointer"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(milestone.id)}
-                          className="cursor-pointer text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+        <div className="grid gap-4">
+          {milestones.map((milestone) => (
+            <Card key={milestone.id} className="hover:border-primary/50 transition-colors relative overflow-hidden group">
+              <MilestoneCardBackground category={milestone.category} />
+              <CardHeader className="pb-3 relative z-10">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className={`${getCategoryColor(milestone.category)} text-white`}>
+                        {getCategoryLabel(milestone.category)}
+                      </Badge>
+                      <MilestoneTypeIcon category={milestone.category} className="h-5 w-5 text-muted-foreground/70" />
+                      <span className="text-sm text-muted-foreground ml-1">
+                        {formatDateLongSafe(milestone.date, "en-US")}
+                      </span>
                     </div>
-                  </CardHeader>
-                  {milestone.description && (
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {milestone.description}
-                      </p>
-                    </CardContent>
-                  )}
-                </Card>
-              </div>
-            ))}
-          </div>
+                    <CardTitle className="text-xl">{milestone.title}</CardTitle>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingMilestone(milestone)}
+                      className="cursor-pointer"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(milestone.id)}
+                      className="cursor-pointer text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              {milestone.description && (
+                <CardContent className="relative z-10">
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {milestone.description}
+                  </p>
+                </CardContent>
+              )}
+            </Card>
+          ))}
         </div>
       )}
 

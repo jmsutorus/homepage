@@ -8,9 +8,58 @@ import { Plus, Heart, Lock, Clock, Star, Trash2, Edit, ShieldAlert } from "lucid
 import { CreateIntimacyDialog } from "./create-intimacy-dialog";
 import { MobileIntimacySheet } from "./mobile-intimacy-sheet";
 import { EditIntimacyDialog } from "./edit-intimacy-dialog";
+import { IntimacyCardBackground } from "./intimacy-card-background";
+import { CowgirlIcon } from "./positions/cowgirl-icon";
+import { DoggyIcon } from "./positions/doggy-icon";
+import { MissionaryIcon } from "./positions/missionary-icon";
+import { ReverseCowgirlIcon } from "./positions/reverse-cowgirl-icon";
+import { SpooningIcon } from "./positions/spooning-icon";
+import { StandingIcon } from "./positions/standing-icon";
+import { WheelbarrowIcon } from "./positions/wheelbarrow-icon";
+import { FaceSitterIcon } from "./positions/face-sitter-icon";
+import { HotSeatIcon } from "./positions/hot-seat-icon";
+import { LapDanceIcon } from "./positions/lap-dance-icon";
+import { BeesKneesIcon } from "./positions/bees-knees-icon";
+import { MountainClimberIcon } from "./positions/mountain-climber-icon";
+import { PretzelIcon } from "./positions/pretzel-icon";
+import { StandingDragonIcon } from "./positions/standing-dragon-icon";
+import { BicycleIcon } from "./positions/bicycle-icon";
+import { ButterChurnerIcon } from "./positions/butter-churner-icon";
+import { CaptainIcon } from "./positions/captain-icon";
+import { BalletDancerIcon } from "./positions/ballet-dancer-icon";
+import { DownwardDogIcon } from "./positions/downward-dog-icon";
+import { LoveSeatIcon } from "./positions/love-seat-icon";
+import { LazyManIcon } from "./positions/lazy-man-icon";
+import { AnvilIcon } from "./positions/anvil-icon";
 import type { IntimacyEntry } from "@/lib/db/relationship";
 import { formatDateLongSafe } from "@/lib/utils";
 import { toast } from "sonner";
+
+const POSITION_ICONS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
+  "Cowgirl": CowgirlIcon,
+  "Doggy": DoggyIcon,
+  "Doggy Style": DoggyIcon,
+  "Missionary": MissionaryIcon,
+  "Reverse Cowgirl": ReverseCowgirlIcon,
+  "Spooning": SpooningIcon,
+  "Standing": StandingIcon,
+  "Wheelbarrow": WheelbarrowIcon,
+  "Face Sitter": FaceSitterIcon,
+  "Hot Seat": HotSeatIcon,
+  "Lap Dance": LapDanceIcon,
+  "Bees Knees": BeesKneesIcon,
+  "Mountain Climber": MountainClimberIcon,
+  "Pretzel": PretzelIcon,
+  "Standing Dragon": StandingDragonIcon,
+  "Bicycle": BicycleIcon,
+  "Butter Churner": ButterChurnerIcon,
+  "Captain": CaptainIcon,
+  "Ballet Dancer": BalletDancerIcon,
+  "Downward Dog": DownwardDogIcon,
+  "Love Seat": LoveSeatIcon,
+  "Lazy Man": LazyManIcon,
+  "Anvil": AnvilIcon,
+};
 
 interface IntimacyTabProps {
   initialData: IntimacyEntry[];
@@ -122,9 +171,23 @@ export function IntimacyTab({
         </Card>
       ) : (
         <div className="grid gap-4">
-          {entries.map((entry) => (
-            <Card key={entry.id} className="hover:border-primary/50 transition-colors">
-              <CardHeader className="pb-3">
+          {entries.map((entry) => {
+            // Parse positions if it's a string
+            let positions: string[] = [];
+            try {
+              if (entry.positions) {
+                positions = typeof entry.positions === 'string' 
+                  ? JSON.parse(entry.positions) 
+                  : entry.positions;
+              }
+            } catch (e) {
+              console.error("Failed to parse positions", e);
+            }
+
+            return (
+            <Card key={entry.id} className="hover:border-primary/50 transition-colors relative overflow-hidden group">
+              <IntimacyCardBackground rating={entry.satisfaction_rating} type={entry.type} location={entry.location} />
+              <CardHeader className="pb-3 relative z-10">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -176,7 +239,7 @@ export function IntimacyTab({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-4 relative z-10">
                 <div className="flex flex-wrap gap-2">
                   {entry.duration && (
                     <Badge variant="outline" className="flex items-center gap-1">
@@ -194,7 +257,24 @@ export function IntimacyTab({
                       {entry.location.charAt(0).toUpperCase() + entry.location.slice(1)}
                     </Badge>
                   )}
+                  {positions.map((pos) => {
+                    const Icon = POSITION_ICONS[pos];
+                    if (Icon) {
+                      return (
+                         <div key={pos} className="inline-flex items-center gap-2 px-3 py-1 bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800/30 rounded-full text-pink-700 dark:text-pink-300">
+                            <Icon className="h-6 w-6" strokeWidth={4} />
+                            <span className="text-sm font-medium">{pos}</span>
+                         </div>
+                      );
+                    }
+                    return (
+                      <Badge key={pos} variant="secondary" className="bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300">
+                        {pos}
+                      </Badge>
+                    );
+                  })}
                 </div>
+
                 {entry.type && (
                   <p className="text-sm text-muted-foreground">Type: {entry.type}</p>
                 )}
@@ -211,7 +291,7 @@ export function IntimacyTab({
                 )}
               </CardContent>
             </Card>
-          ))}
+          )})}
         </div>
       )}
 

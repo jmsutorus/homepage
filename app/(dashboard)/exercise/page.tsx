@@ -6,25 +6,21 @@ export const dynamic = "force-dynamic";
 
 import { 
   getUpcomingWorkoutActivities, 
-  getWorkoutActivitiesByDateRange 
+  getRecentWorkoutActivities, 
 } from "@/lib/db/workout-activities";
 import { 
   getActivitiesByUserId, 
   getActivityStatsByUserId, 
   getYTDStatsByUserId 
 } from "@/lib/db/strava";
-import { startOfMonth, endOfMonth, format } from "date-fns";
 
 export default async function ExercisePage() {
   const currentUserId = await getUserId();
-  const now = new Date();
-  const startOfMonthStr = format(startOfMonth(now), "yyyy-MM-dd");
-  const endOfMonthStr = format(endOfMonth(now), "yyyy-MM-dd");
 
   const [
     athlete,
     upcomingActivities,
-    calendarActivities,
+    recentActivities,
     stravaActivities,
     activityStats,
     ytdStats
@@ -34,7 +30,7 @@ export default async function ExercisePage() {
       [currentUserId]
     ),
     getUpcomingWorkoutActivities(currentUserId, 3),
-    getWorkoutActivitiesByDateRange(startOfMonthStr, endOfMonthStr, currentUserId),
+    getRecentWorkoutActivities(currentUserId, 5),
     getActivitiesByUserId(currentUserId, 200),
     getActivityStatsByUserId(currentUserId),
     getYTDStatsByUserId(currentUserId)
@@ -45,14 +41,21 @@ export default async function ExercisePage() {
     yearToDate: ytdStats
   };
 
+  // Sanitize data to ensure plain objects are passed to Client Component
+  const sanitizedAthlete = athlete ? JSON.parse(JSON.stringify(athlete)) : undefined;
+  const sanitizedUpcoming = JSON.parse(JSON.stringify(upcomingActivities));
+  const sanitizedRecent = JSON.parse(JSON.stringify(recentActivities));
+  const sanitizedStrava = JSON.parse(JSON.stringify(stravaActivities));
+  const sanitizedStats = JSON.parse(JSON.stringify(initialStats));
+
   return (
     <ExercisePageClient 
-      athleteId={athlete?.id} 
-      lastSync={athlete?.last_sync}
-      initialUpcomingActivities={upcomingActivities}
-      initialCalendarActivities={calendarActivities}
-      initialStravaActivities={stravaActivities}
-      initialStats={initialStats}
+      athleteId={sanitizedAthlete?.id} 
+      lastSync={sanitizedAthlete?.last_sync}
+      initialUpcomingActivities={sanitizedUpcoming}
+      initialRecentActivities={sanitizedRecent}
+      initialStravaActivities={sanitizedStrava}
+      initialStats={sanitizedStats}
     />
   );
 }

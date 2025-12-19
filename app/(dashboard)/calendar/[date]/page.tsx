@@ -3,7 +3,6 @@ import { getCalendarDataForMonth } from "@/lib/db/calendar";
 import { auth } from "@/auth";
 import { getGithubEventsByDateRange } from "@/lib/db/github";
 import type { GithubEvent } from "@/lib/github";
-import { queryOne } from "@/lib/db";
 import { getAllHabits } from "@/lib/db/habits";
 import { getAllMeals } from "@/lib/db/meals";
 import { CalendarMonthDetail } from "./calendar-month-detail";

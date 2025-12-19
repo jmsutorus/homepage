@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { HabitWithStats, HabitCompletionChartData } from "@/lib/actions/habits";
 import { HabitsList } from "@/components/widgets/habits/habits-list";
 import { CreateHabitForm } from "@/components/widgets/habits/create-habit-form";

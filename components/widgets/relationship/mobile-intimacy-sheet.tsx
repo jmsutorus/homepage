@@ -215,6 +215,14 @@ export function MobileIntimacySheet({ open, onOpenChange, onEntryAdded }: Mobile
                     <SelectContent>
                       <SelectItem value="home">Home</SelectItem>
                       <SelectItem value="away">Away</SelectItem>
+                      <SelectItem value="shower">Shower</SelectItem>
+                      <SelectItem value="bed">Bed</SelectItem>
+                      <SelectItem value="car">Car</SelectItem>
+                      <SelectItem value="outdoor">Outdoor</SelectItem>
+                      <SelectItem value="bath">Bath</SelectItem>
+                      <SelectItem value="pool">Pool</SelectItem>
+                      <SelectItem value="kitchen">Kitchen</SelectItem>
+                      <SelectItem value="vacation">Vacation</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>

@@ -30,7 +30,6 @@ export function RelationshipPageClient({
   initialIntimacy,
   initialMilestones,
   stats: initialStats,
-  userId,
 }: RelationshipPageClientProps) {
   const [dates, setDates] = useState(initialDates);
   const [intimacyEntries, setIntimacyEntries] = useState(initialIntimacy);

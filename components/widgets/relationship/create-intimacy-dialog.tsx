@@ -278,8 +278,16 @@ export function CreateIntimacyDialog({ open, onOpenChange, onEntryAdded }: Creat
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="home">Home</SelectItem>
-                    <SelectItem value="away">Away</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="away">Away</SelectItem>
+                <SelectItem value="shower">Shower</SelectItem>
+                <SelectItem value="bed">Bed</SelectItem>
+                <SelectItem value="car">Car</SelectItem>
+                <SelectItem value="outdoor">Outdoor</SelectItem>
+                <SelectItem value="bath">Bath</SelectItem>
+                <SelectItem value="pool">Pool</SelectItem>
+                <SelectItem value="kitchen">Kitchen</SelectItem>
+                <SelectItem value="vacation">Vacation</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

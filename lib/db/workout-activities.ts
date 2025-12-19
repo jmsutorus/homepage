@@ -114,6 +114,20 @@ export async function getUpcomingWorkoutActivities(userId: string, limit: number
   return result.rows as unknown as WorkoutActivity[];
 }
 
+export async function getRecentWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
+  const db = getDatabase();
+  const today = new Date().toISOString().split("T")[0];
+
+  const result = await db.execute({
+    sql: `SELECT * FROM workout_activities
+          WHERE userId = ? AND date < ? AND completed = 0
+          ORDER BY date DESC, time DESC
+          LIMIT ?`,
+    args: [userId, today, limit]
+  });
+  return result.rows as unknown as WorkoutActivity[];
+}
+
 export async function getCompletedWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
   const db = getDatabase();
 

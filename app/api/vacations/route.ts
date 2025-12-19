@@ -6,8 +6,6 @@ import {
   createItineraryDay,
   createBooking,
   type VacationInput,
-  type ItineraryDayInput,
-  type BookingInput,
 } from "@/lib/db/vacations";
 import { requireAuthApi } from "@/lib/auth/server";
 import { checkAchievement } from "@/lib/achievements";
@@ -16,7 +14,7 @@ import { checkAchievement } from "@/lib/achievements";
  * GET /api/vacations
  * Get all vacations for the current user
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await requireAuthApi();
     if (!session?.user?.id) {

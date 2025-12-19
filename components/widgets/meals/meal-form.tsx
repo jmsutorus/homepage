@@ -234,7 +234,7 @@ export function MealForm({
                     key={star}
                     type="button"
                     onClick={() => setRating(rating === star ? 0 : star)}
-                    className="p-1 hover:scale-110 transition-transform"
+                    className="cursor-pointer p-1 hover:scale-110 transition-transform"
                   >
                     <Star
                       className={`h-6 w-6 ${
@@ -303,7 +303,7 @@ export function MealForm({
                       <button
                         type="button"
                         onClick={() => setTags(tags.filter((t) => t !== tag))}
-                        className="ml-1 hover:text-destructive"
+                        className="cursor-pointer ml-1 hover:text-destructive"
                       >
                         <X className="h-3 w-3" />
                       </button>
