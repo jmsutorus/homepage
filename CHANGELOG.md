@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/jmsutorus/homepage/compare/v1.14.1...v1.15.0) (2025-12-19)
+
+
+### Features
+
+* events page added ([#86](https://github.com/jmsutorus/homepage/issues/86)) ([a282e81](https://github.com/jmsutorus/homepage/commit/a282e81155a41cc7a45c207b66d65f172b3d07eb))
+
 ## [1.14.1](https://github.com/jmsutorus/homepage/compare/v1.14.0...v1.14.1) (2025-12-19)
 
 
