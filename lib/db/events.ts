@@ -16,6 +16,7 @@ export interface EventCategory {
 export interface Event {
   id: number;
   userId: string;
+  slug: string;
   title: string;
   description: string | null;
   location: string | null;
@@ -26,11 +27,13 @@ export interface Event {
   end_date: string | null; // YYYY-MM-DD format - for multi-day events
   category: string | null;
   notifications: EventNotification[];
+  content: string | null; // Markdown content
   created_at: string;
   updated_at: string;
 }
 
 export interface CreateEventInput {
+  slug: string;
   title: string;
   description?: string;
   location?: string;
@@ -41,9 +44,11 @@ export interface CreateEventInput {
   end_date?: string;
   category?: string;
   notifications?: EventNotification[];
+  content?: string;
 }
 
 export interface UpdateEventInput {
+  slug?: string;
   title?: string;
   description?: string;
   location?: string;
@@ -54,6 +59,32 @@ export interface UpdateEventInput {
   end_date?: string;
   category?: string;
   notifications?: EventNotification[];
+  content?: string;
+}
+
+// Event Photo types
+export interface EventPhoto {
+  id: number;
+  eventId: number;
+  url: string;
+  caption: string | null;
+  date_taken: string | null; // YYYY-MM-DD
+  order_index: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EventPhotoInput {
+  url: string;
+  caption?: string;
+  date_taken?: string;
+  order_index?: number;
+}
+
+// Composite type with event and photos
+export interface EventWithDetails {
+  event: Event;
+  photos: EventPhoto[];
 }
 
 // Helper to serialize notifications to JSON string
@@ -74,6 +105,7 @@ function deserializeNotifications(notificationsJson: string): EventNotification[
 interface DBEvent {
   id: number;
   userId: string;
+  slug: string;
   title: string;
   description: string | null;
   location: string | null;
@@ -84,6 +116,7 @@ interface DBEvent {
   end_date: string | null;
   category: string | null;
   notifications: string | null;
+  content: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -102,10 +135,11 @@ function transformEvent(row: DBEvent): Event {
 export async function createEvent(input: CreateEventInput, userId: string): Promise<Event> {
   const result = await execute(
     `INSERT INTO events (
-      userId, title, description, location, date, start_time, end_time, all_day, end_date, category, notifications
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      userId, slug, title, description, location, date, start_time, end_time, all_day, end_date, category, notifications, content
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
+      input.slug,
       input.title,
       input.description || null,
       input.location || null,
@@ -116,6 +150,7 @@ export async function createEvent(input: CreateEventInput, userId: string): Prom
       input.end_date || null,
       input.category || null,
       serializeNotifications(input.notifications),
+      input.content || null,
     ]
   );
 
@@ -236,6 +271,16 @@ export async function updateEvent(id: number, userId: string, updates: UpdateEve
   if (updates.notifications !== undefined) {
     fields.push("notifications = ?");
     params.push(serializeNotifications(updates.notifications));
+  }
+
+  if (updates.slug !== undefined) {
+    fields.push("slug = ?");
+    params.push(updates.slug);
+  }
+
+  if (updates.content !== undefined) {
+    fields.push("content = ?");
+    params.push(updates.content || null);
   }
 
   if (fields.length === 0) {
@@ -401,4 +446,174 @@ export async function ensureDefaultEventCategories(userId: string): Promise<void
       console.error(`Failed to create default event category "${categoryName}":`, error);
     }
   }
+}
+
+// ==================== Slug-based Event Queries ====================
+
+/**
+ * Get event by slug for a specific user
+ */
+export async function getEventBySlug(slug: string, userId: string): Promise<Event | undefined> {
+  const row = await queryOne<DBEvent>("SELECT * FROM events WHERE slug = ? AND userId = ?", [slug, userId]);
+  return row ? transformEvent(row) : undefined;
+}
+
+/**
+ * Get event with all photos
+ */
+export async function getEventWithDetails(slug: string, userId: string): Promise<EventWithDetails | undefined> {
+  const event = await getEventBySlug(slug, userId);
+  if (!event) return undefined;
+
+  const photos = await getEventPhotos(event.id);
+
+  return {
+    event,
+    photos,
+  };
+}
+
+/**
+ * Check if a slug already exists for a user
+ */
+export async function eventSlugExists(
+  slug: string,
+  userId: string,
+  excludeId?: number
+): Promise<boolean> {
+  let sql = "SELECT COUNT(*) as count FROM events WHERE slug = ? AND userId = ?";
+  const params: (string | number)[] = [slug, userId];
+
+  if (excludeId !== undefined) {
+    sql += " AND id != ?";
+    params.push(excludeId);
+  }
+
+  const result = await queryOne<{ count: number }>(sql, params);
+  return (result?.count || 0) > 0;
+}
+
+// ==================== Event Photo CRUD ====================
+
+/**
+ * Create a new event photo
+ */
+export async function createEventPhoto(
+  eventId: number,
+  data: EventPhotoInput
+): Promise<EventPhoto> {
+  // Get the next order index
+  const maxOrder = await queryOne<{ max_order: number | null }>(
+    "SELECT MAX(order_index) as max_order FROM event_photos WHERE eventId = ?",
+    [eventId]
+  );
+  const orderIndex = data.order_index ?? ((maxOrder?.max_order ?? -1) + 1);
+
+  const result = await execute(
+    `INSERT INTO event_photos (
+      eventId, url, caption, date_taken, order_index
+    ) VALUES (?, ?, ?, ?, ?)`,
+    [
+      eventId,
+      data.url,
+      data.caption || null,
+      data.date_taken || null,
+      orderIndex,
+    ]
+  );
+
+  const photo = await getEventPhoto(result.lastInsertRowid as number, eventId);
+  if (!photo) {
+    throw new Error("Failed to create event photo");
+  }
+  return photo;
+}
+
+/**
+ * Get all photos for an event, ordered by order_index
+ */
+export async function getEventPhotos(eventId: number): Promise<EventPhoto[]> {
+  return query<EventPhoto>(
+    "SELECT * FROM event_photos WHERE eventId = ? ORDER BY order_index ASC",
+    [eventId]
+  );
+}
+
+/**
+ * Get a single event photo
+ */
+export async function getEventPhoto(
+  id: number,
+  eventId: number
+): Promise<EventPhoto | undefined> {
+  return queryOne<EventPhoto>(
+    "SELECT * FROM event_photos WHERE id = ? AND eventId = ?",
+    [id, eventId]
+  );
+}
+
+/**
+ * Update an event photo
+ */
+export async function updateEventPhoto(
+  id: number,
+  eventId: number,
+  data: Partial<EventPhotoInput>
+): Promise<boolean> {
+  const photo = await getEventPhoto(id, eventId);
+  if (!photo) return false;
+
+  const updates: string[] = [];
+  const values: (string | number | null)[] = [];
+
+  if (data.url !== undefined) {
+    updates.push("url = ?");
+    values.push(data.url);
+  }
+  if (data.caption !== undefined) {
+    updates.push("caption = ?");
+    values.push(data.caption || null);
+  }
+  if (data.date_taken !== undefined) {
+    updates.push("date_taken = ?");
+    values.push(data.date_taken || null);
+  }
+  if (data.order_index !== undefined) {
+    updates.push("order_index = ?");
+    values.push(data.order_index);
+  }
+
+  if (updates.length === 0) return true;
+
+  values.push(id, eventId);
+  await execute(
+    `UPDATE event_photos SET ${updates.join(", ")} WHERE id = ? AND eventId = ?`,
+    values
+  );
+  return true;
+}
+
+/**
+ * Delete an event photo
+ */
+export async function deleteEventPhoto(
+  id: number,
+  eventId: number
+): Promise<boolean> {
+  const result = await execute(
+    "DELETE FROM event_photos WHERE id = ? AND eventId = ?",
+    [id, eventId]
+  );
+  return result.changes > 0;
+}
+
+/**
+ * Delete all photos for an event
+ */
+export async function deleteAllEventPhotos(eventId: number): Promise<number> {
+  const result = await execute(
+    "DELETE FROM event_photos WHERE eventId = ?",
+    [eventId]
+  );
+  return result.changes;
 }

@@ -49,8 +49,7 @@ export function DailyActivities({
   const [, startTransition] = useTransition();
 
   const handleEventClick = (event: Event) => {
-    // Could open an edit dialog or navigate to event detail
-    console.log("Event clicked:", event);
+    router.push(`/events/${event.slug}`);
   };
 
   const handleMediaClick = (type: string, slug: string) => {

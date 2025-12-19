@@ -111,6 +111,11 @@ export function Header() {
                     Vacations
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/events" className="w-full cursor-pointer">
+                    Events
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
