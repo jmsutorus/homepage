@@ -11,7 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Calendar, CalendarDays, CheckSquare, Heart, Dumbbell, Smile, BookOpen, Image as ImageIcon, MapPin, Target, Trophy, TrendingUp, UtensilsCrossed, Plane } from "lucide-react";
+import { Menu, Calendar, CalendarDays, CalendarCheck, CheckSquare, Heart, Dumbbell, Smile, BookOpen, Image as ImageIcon, MapPin, Target, Trophy, TrendingUp, UtensilsCrossed, Plane } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavLink {
@@ -46,6 +46,7 @@ export function MobileNav() {
       links: [
         { href: "/calendar", label: "Calendar", icon: <Calendar className="h-5 w-5" /> },
         { href: todayStr ? `/daily/${todayStr}` : "/calendar", label: "Today", icon: <CalendarDays className="h-5 w-5" /> },
+        { href: "/events", label: "Events", icon: <CalendarCheck className="h-5 w-5" /> },
       ],
     },
     {

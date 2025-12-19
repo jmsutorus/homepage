@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils, Plane, Palmtree, Map } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils, Plane, Palmtree, Map, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getVacationTypeIcon } from "@/lib/utils/vacation-icons";
 
@@ -65,8 +65,19 @@ function CalendarDayCellComponent({
   const hasRelationship = (summary?.relationshipCount ?? 0) > 0;
   const hasMeals = (summary?.mealCount ?? 0) > 0;
   const hasVacations = (summary?.vacationCounts.starting ?? 0) > 0 || (summary?.vacationCounts.itineraryItems ?? 0) > 0 || (summary?.vacationCounts.bookings ?? 0) > 0;
+  const hasHoliday = !!summary?.holidayName;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship || hasMeals || hasVacations;
+  // Check if the first event is a holiday event (matches "${holidayName} ${year}" format)
+  // If so, we should hide it from the regular events display since it's shown in the holiday section
+  const year = date.split('-')[0];
+  const expectedHolidayEventTitle = summary?.holidayName ? `${summary.holidayName} ${year}` : null;
+  const firstEventIsHolidayEvent = expectedHolidayEventTitle && summary?.eventFirstTitle === expectedHolidayEventTitle;
+  
+  // Adjust event count and display - subtract 1 if first event is the holiday event
+  const adjustedEventCount = firstEventIsHolidayEvent ? (summary?.eventCount ?? 0) - 1 : (summary?.eventCount ?? 0);
+  const hasNonHolidayEvents = adjustedEventCount > 0;
+
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship || hasMeals || hasVacations || hasHoliday;
 
   // Get mood icon
   const MoodIcon = hasMood && summary?.moodRating ? MOOD_ICONS[summary.moodRating]?.icon : null;
@@ -201,13 +212,22 @@ function CalendarDayCellComponent({
             </div>
           )}
 
-          {/* Events */}
-          {hasEvents && (
+          {/* Events (excluding holiday events) */}
+          {hasNonHolidayEvents && (
             <div className="flex items-center gap-1">
               <Calendar className={cn("h-3 w-3 flex-shrink-0", colors.event?.text)} />
               <span className={cn("truncate", colors.event?.text)}>
-                {summary!.eventFirstTitle}
-                {summary!.eventCount > 1 && ` +${summary!.eventCount - 1}`}
+                {firstEventIsHolidayEvent 
+                  ? (adjustedEventCount === 1 
+                      ? "1 event" 
+                      : `${adjustedEventCount} events`)
+                  : (
+                    <>
+                      {summary!.eventFirstTitle}
+                      {summary!.eventCount > 1 && ` +${summary!.eventCount - 1}`}
+                    </>
+                  )
+                }
               </span>
             </div>
           )}
@@ -369,6 +389,16 @@ function CalendarDayCellComponent({
               )}
             </>
           )}
+
+          {/* Holidays */}
+          {hasHoliday && (
+            <div className="flex items-center gap-1">
+              <Star className={cn("h-3 w-3 flex-shrink-0", colors.holiday?.text || "text-amber-500")} />
+              <span className={cn("truncate font-medium", colors.holiday?.text || "text-amber-500")}>
+                {summary!.holidayName}
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
@@ -397,7 +427,7 @@ function CalendarDayCellComponent({
           {hasJournals && (
             <div className={cn("w-2 h-2 rounded-full", colors.journal?.bg)} title="Journals" />
           )}
-          {hasEvents && (
+          {hasNonHolidayEvents && (
             <div className={cn("w-2 h-2 rounded-full", colors.event?.bg)} title="Events" />
           )}
           {overdueTasksCount > 0 && (
@@ -438,6 +468,9 @@ function CalendarDayCellComponent({
           )}
           {hasVacations && (
             <div className={cn("w-2 h-2 rounded-full", colors.vacation?.bg || "bg-sky-500")} title="Vacation" />
+          )}
+          {hasHoliday && (
+            <div className={cn("w-2 h-2 rounded-full", colors.holiday?.bg || "bg-amber-500")} title={summary?.holidayName || "Holiday"} />
           )}
         </div>
       )}

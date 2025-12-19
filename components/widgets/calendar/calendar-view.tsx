@@ -309,6 +309,7 @@ export function CalendarView({ year, month, summaryData, colors }: CalendarViewP
           data={dayDetailData}
           isLoading={isLoadingDayDetail}
           error={dayDetailError}
+          holidayName={summaryData.get(selectedDayForDetail)?.holidayName || null}
           onDataChange={() => {
             // Invalidate cache and refresh
             dayDetailCache.current.delete(selectedDayForDetail);

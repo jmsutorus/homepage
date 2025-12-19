@@ -17,6 +17,7 @@ import type { DailyMeal } from "./daily-meals";
 import { getDailyMealsForRange } from "./daily-meals";
 import type { Vacation, ItineraryDay, Booking } from "@/lib/types/vacations";
 import { parseLocalDate } from "@/lib/types/vacations";
+import { getHolidaysForMonthComputed } from "./holidays";
 
 // Goal-related calendar types
 export interface CalendarGoal {
@@ -143,6 +144,8 @@ export interface CalendarDaySummary {
     bookings: number; // Number of bookings
     firstStartingVacationType: string | null; // Type of first vacation starting
   };
+  // Holiday name (null if no holiday on this day)
+  holidayName: string | null;
 }
 
 /**
@@ -1106,6 +1109,7 @@ export function convertToSummary(
       bookings: data.vacations.reduce((sum, v) => sum + v.bookings.length, 0),
       firstStartingVacationType: data.vacations.find(v => v.isStartDate)?.vacation.type ?? null,
     },
+    holidayName: null, // Will be set by getCalendarSummaryForMonth
   };
 }
 
@@ -1117,13 +1121,29 @@ export async function getCalendarSummaryForMonth(
   month: number,
   githubEvents: GithubEvent[] | Promise<GithubEvent[]> = []
 ): Promise<Map<string, CalendarDaySummary>> {
-  const fullData = await getCalendarDataForMonth(year, month, githubEvents);
+  // Fetch full data and holidays in parallel
+  const [fullData, holidays] = await Promise.all([
+    getCalendarDataForMonth(year, month, githubEvents),
+    getHolidaysForMonthComputed(month, year),
+  ]);
+  
   const today = new Date().toISOString().split("T")[0];
+
+  // Create a map of day -> holiday name for quick lookup
+  // Uses computedDay (which accounts for variable holidays like Thanksgiving)
+  const holidaysByDay = new Map<number, string>();
+  holidays.forEach((holiday) => {
+    holidaysByDay.set(holiday.computedDay, holiday.name);
+  });
 
   const summaryMap = new Map<string, CalendarDaySummary>();
 
   fullData.forEach((data, date) => {
-    summaryMap.set(date, convertToSummary(data, today));
+    const summary = convertToSummary(data, today);
+    // Check if there's a holiday on this day
+    const dayOfMonth = parseInt(date.split('-')[2], 10);
+    summary.holidayName = holidaysByDay.get(dayOfMonth) ?? null;
+    summaryMap.set(date, summary);
   });
 
   return summaryMap;

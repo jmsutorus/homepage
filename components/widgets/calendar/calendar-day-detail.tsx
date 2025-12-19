@@ -23,24 +23,27 @@ import { DailyTasks } from "../daily/daily-tasks";
 import { DailyDuolingo } from "../daily/daily-duolingo";
 import { DailyRelationship } from "../daily/daily-relationship";
 import { DailyVacations } from "../daily/daily-vacations";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Star, Loader2, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface CalendarDayDetailProps {
   date: string;
   data?: CalendarDayData | null;
   isLoading?: boolean;
   error?: string | null;
+  holidayName?: string | null;
   onDataChange?: () => void;
 }
 
 
 
-export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }: CalendarDayDetailProps) {
+export function CalendarDayDetail({ date, data, isLoading, error, holidayName, onDataChange }: CalendarDayDetailProps) {
   const router = useRouter();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [completingActivity, setCompletingActivity] = useState<WorkoutActivity | null>(null);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [isCreatingHolidayEvent, setIsCreatingHolidayEvent] = useState(false);
 
   const formattedDate = formatDateLongSafe(date, "en-US");
 
@@ -97,8 +100,7 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
   }
 
   const handleEventClick = (event: Event) => {
-    setSelectedEvent(event);
-    setIsEditDialogOpen(true);
+    router.push(`/events/${event.slug}`);
   };
 
   const handleMediaClick = (type: string, slug: string) => {
@@ -184,7 +186,55 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
 
   const hasActivities = unlinkedStravaActivities.length > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship || hasVacations;
+  // Find existing holiday event (matches "${holidayName} ${year}" format)
+  const year = date.split('-')[0];
+  const expectedHolidayEventTitle = holidayName ? `${holidayName} ${year}` : null;
+  const existingHolidayEvent = expectedHolidayEventTitle
+    ? data?.events.find((e) => e.title === expectedHolidayEventTitle)
+    : null;
+
+  // Filter out holiday event from regular events display
+  const nonHolidayEvents = existingHolidayEvent
+    ? data?.events.filter((e) => e.id !== existingHolidayEvent.id) ?? []
+    : data?.events ?? [];
+  const hasNonHolidayEvents = nonHolidayEvents.length > 0;
+
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship || hasVacations || !!holidayName;
+
+  // Handler to create an event from a holiday
+  const handleCreateHolidayEvent = async () => {
+    if (!holidayName) return;
+    
+    setIsCreatingHolidayEvent(true);
+    try {
+      const year = date.split('-')[0];
+      const eventTitle = `${holidayName} ${year}`;
+      const slug = eventTitle.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
+      
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: eventTitle,
+          date: date,
+          all_day: true,
+          category: 'Holiday',
+          slug: slug,
+        }),
+      });
+      
+      if (response.ok) {
+        const createdEvent = await response.json();
+        router.push(`/events/${createdEvent.slug}`);
+      } else {
+        console.error('Failed to create holiday event');
+      }
+    } catch (error) {
+      console.error('Error creating holiday event:', error);
+    } finally {
+      setIsCreatingHolidayEvent(false);
+    }
+  };
 
   // Categorize tasks relative to the date being viewed
   const completedTasks = data?.tasks.filter((t) => t.completed) ?? [];
@@ -225,6 +275,47 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
         </Button>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Holiday Section */}
+        {holidayName && (
+          <div className="flex items-center justify-between p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+            <div className="flex items-center gap-3">
+              <Star className="h-5 w-5 text-amber-500" />
+              <div>
+                <p className="font-medium text-amber-700 dark:text-amber-400">{holidayName}</p>
+                <p className="text-sm text-muted-foreground">Federal Holiday</p>
+              </div>
+            </div>
+            {existingHolidayEvent ? (
+              <Button
+                size="sm"
+                variant="outline"
+                asChild
+                className="border-amber-500/30 hover:bg-amber-500/10"
+              >
+                <Link href={`/events/${existingHolidayEvent.slug}`}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View Event
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleCreateHolidayEvent}
+                disabled={isCreatingHolidayEvent}
+                className="border-amber-500/30 hover:bg-amber-500/10"
+              >
+                {isCreatingHolidayEvent ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
+                Create Event
+              </Button>
+            )}
+          </div>
+        )}
+
         {/* Mood Section */}
         {hasMood && data.mood && (
           <DailyMood
@@ -248,9 +339,9 @@ export function CalendarDayDetail({ date, data, isLoading, error, onDataChange }
         )}
 
         {/* Events Section */}
-        {hasEvents && data && (
+        {hasNonHolidayEvents && data && (
           <DailyEvents
-            events={data.events}
+            events={nonHolidayEvents}
             onEventClick={handleEventClick}
           />
         )}
