@@ -360,14 +360,11 @@ export function CalendarMonthDetail({
                 <div className="space-y-2">
                   {[5, 4, 3, 2, 1].map((rating) => {
                     const count = moodStats.distribution[rating] || 0;
-                    const percentage = moodStats.totalEntries > 0 
-                      ? (count / moodStats.totalEntries) * 100 
+                    const percentage = moodStats.totalEntries > 0
+                      ? (count / moodStats.totalEntries) * 100
                       : 0;
-                    const moodLabels: Record<number, string> = {
-                      5: "Great", 4: "Good", 3: "Neutral", 2: "Bad", 1: "Very Bad"
-                    };
                     const moodColors: Record<number, string> = {
-                      5: "bg-emerald-500", 4: "bg-green-500", 3: "bg-yellow-500", 
+                      5: "bg-emerald-500", 4: "bg-green-500", 3: "bg-yellow-500",
                       2: "bg-orange-500", 1: "bg-red-500"
                     };
                     return (

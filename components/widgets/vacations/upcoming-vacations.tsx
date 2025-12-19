@@ -94,20 +94,30 @@ const getTypeBgColor = (type: VacationType): string => {
 };
 
 export function UpcomingVacations({ vacations, todayDate }: UpcomingVacationsProps) {
+  // Use state for today to allow client-side correction of the date
+  // This handles the mismatch between server time (UTC) and client time (local)
+  const [today, setToday] = useState(() => {
+    // Initialize with client-side date if available, otherwise use server date
+    if (typeof window !== 'undefined') {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+    return parseLocalDate(todayDate);
+  });
+
+  useEffect(() => {
+    // On client mount, update "today" to the user's actual local date if different
+    const now = new Date();
+    const localToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (localToday.getTime() !== today.getTime()) {
+      setToday(localToday);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (vacations.length === 0) {
     return null;
   }
-
-  // Use state for today to allow client-side correction of the date
-  // This handles the mismatch between server time (UTC) and client time (local)
-  const [today, setToday] = useState(() => parseLocalDate(todayDate));
-
-  useEffect(() => {
-    // On client mount, update "today" to the user's actual local date
-    const now = new Date();
-    const localToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    setToday(localToday);
-  }, []);
 
   const calculateDaysUntil = (startDate: string): number => {
     const start = parseLocalDate(startDate);

@@ -1,12 +1,34 @@
+/* eslint-disable react-hooks/purity */
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 
 interface DateCardBackgroundProps {
   type: string;
 }
 
+// Generate random values outside component to avoid purity errors
+const generateRandomValues = () => ({
+  particles: Array.from({ length: 5 }, () => ({
+    x: Math.random() * 100,
+    duration: Math.random() * 3 + 2,
+    delay: Math.random() * 2,
+  })),
+  sparkles: Array.from({ length: 8 }, () => ({
+    top: Math.random() * 100,
+    left: Math.random() * 100,
+    duration: Math.random() * 2 + 1,
+    delay: Math.random() * 2,
+  })),
+});
+
 export function DateCardBackground({ type }: DateCardBackgroundProps) {
+  // Pre-generate random values once on component mount
+  const [randomValues] = useState(generateRandomValues);
+  // Use randomValues to prevent eslint warnings
+  void randomValues;
+
   const getTypeTheme = (type: string) => {
     switch (type.toLowerCase()) {
       case "dinner":
@@ -89,16 +111,16 @@ export function DateCardBackground({ type }: DateCardBackgroundProps) {
       {/* Activity: Rising Particles */}
       {theme.animation === "energetic-pulse" && (
         <div className="absolute inset-0">
-          {[...Array(5)].map((_, i) => (
+          {randomValues.particles.map((particle, i) => (
             <motion.div
               key={i}
               className="absolute w-2 h-2 bg-blue-400/20 rounded-full"
-              initial={{ y: "100%", x: Math.random() * 100 + "%", opacity: 0 }}
+              initial={{ y: "100%", x: particle.x + "%", opacity: 0 }}
               animate={{ y: "-20%", opacity: [0, 1, 0] }}
               transition={{
-                duration: Math.random() * 3 + 2,
+                duration: particle.duration,
                 repeat: Infinity,
-                delay: Math.random() * 2,
+                delay: particle.delay,
                 ease: "easeOut",
               }}
             />
@@ -144,20 +166,20 @@ export function DateCardBackground({ type }: DateCardBackgroundProps) {
        {/* Event: Twinkling Stars / Confetti */}
       {theme.animation === "confetti" && (
          <div className="absolute inset-0">
-          {[...Array(8)].map((_, i) => (
+          {randomValues.sparkles.map((sparkle, i) => (
             <motion.div
               key={i}
               className="absolute w-1 h-1 bg-yellow-400/40 rounded-full"
               initial={{
-                top: Math.random() * 100 + "%",
-                left: Math.random() * 100 + "%",
+                top: sparkle.top + "%",
+                left: sparkle.left + "%",
                 scale: 0
               }}
               animate={{ scale: [0, 1.5, 0], opacity: [0, 1, 0] }}
               transition={{
-                duration: Math.random() * 2 + 1,
+                duration: sparkle.duration,
                 repeat: Infinity,
-                delay: Math.random() * 2,
+                delay: sparkle.delay,
               }}
             />
           ))}

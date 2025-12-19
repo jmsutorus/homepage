@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/purity */
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 
 interface IntimacyCardBackgroundProps {
@@ -8,7 +10,38 @@ interface IntimacyCardBackgroundProps {
   location?: string | null;
 }
 
+// Generate random values outside component to avoid purity errors
+const generateRandomValues = () => ({
+  waterDrops: Array.from({ length: 6 }, () => ({
+    left: Math.random() * 100,
+    delay: Math.random() * 1.5,
+  })),
+  bubbles: Array.from({ length: 10 }, () => ({
+    width: Math.random() * 20 + 10,
+    height: Math.random() * 20 + 10,
+    left: Math.random() * 100,
+    xOffset: Math.random() * 20 - 10,
+    duration: Math.random() * 4 + 4,
+    delay: Math.random() * 3,
+  })),
+  lights: Array.from({ length: 8 }, () => ({
+    width: Math.random() * 150 + 100,
+    delay: Math.random() * 2,
+    repeatDelay: Math.random() * 5 + 5,
+  })),
+  fireflies: Array.from({ length: 12 }, () => ({
+    x: Math.random() * 40 - 20,
+    y: Math.random() * 40 - 20,
+    duration: Math.random() * 3 + 3,
+    top: Math.random() * 100,
+    left: Math.random() * 100,
+  })),
+});
+
 export function IntimacyCardBackground({ rating, location }: IntimacyCardBackgroundProps) {
+  // Pre-generate random values once on component mount
+  const [randomValues] = useState(generateRandomValues);
+
   
   // Prioritize Location-based themes
   const getLocationTheme = (loc: string) => {

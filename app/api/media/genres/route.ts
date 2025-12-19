@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getAllUniqueGenres } from "@/lib/db/media";
 import { requireAuthApi } from "@/lib/auth/server";
 
@@ -6,7 +6,7 @@ import { requireAuthApi } from "@/lib/auth/server";
  * GET /api/media/genres
  * Get all unique genres across all media
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await requireAuthApi();
     if (!session) {

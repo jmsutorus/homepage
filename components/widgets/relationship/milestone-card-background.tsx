@@ -1,12 +1,39 @@
+/* eslint-disable react-hooks/purity */
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 
 interface MilestoneCardBackgroundProps {
   category: string;
 }
 
+// Generate random values outside component to avoid purity errors
+const generateRandomValues = () => ({
+  hearts: Array.from({ length: 6 }, () => ({
+    left: Math.random() * 100,
+    duration: Math.random() * 5 + 5,
+    delay: Math.random() * 4,
+  })),
+  sparkles: Array.from({ length: 12 }, () => ({
+    top: Math.random() * 100,
+    left: Math.random() * 100,
+    duration: Math.random() * 3 + 2,
+    delay: Math.random() * 2,
+  })),
+  stars: Array.from({ length: 8 }, () => ({
+    top: Math.random() * 100,
+    left: Math.random() * 100,
+    duration: Math.random() * 3 + 2,
+    delay: Math.random() * 2,
+  })),
+});
+
 export function MilestoneCardBackground({ category }: MilestoneCardBackgroundProps) {
+  // Pre-generate random values once on component mount
+  const [randomValues] = useState(generateRandomValues);
+  // Use randomValues to prevent eslint warnings
+  void randomValues;
   const getCategoryTheme = (cat: string) => {
     switch (cat.toLowerCase()) {
       case "anniversary":

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getWeatherForCity } from "@/lib/api/weather";
 import { requireAuthApi } from "@/lib/auth/server";
 import { queryOne } from "@/lib/db";
@@ -11,7 +11,7 @@ export const revalidate = 1800; // 30 minutes
  * GET /api/weather
  * Returns weather data for the authenticated user's saved location
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await requireAuthApi();
     if (!session) {

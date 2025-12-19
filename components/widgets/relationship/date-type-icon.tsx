@@ -13,17 +13,17 @@ interface DateTypeIconProps {
   className?: string;
 }
 
-export function DateTypeIcon({ type, className }: DateTypeIconProps) {
-  const iconMap: Record<string, React.FC<{ className?: string }>> = {
-    dinner: DinnerIcon,
-    movie: MovieIcon,
-    activity: ActivityIcon,
-    outing: OutingIcon,
-    concert: ConcertIcon,
-    event: EventIcon,
-    other: OtherIcon,
-  };
+const iconMap: Record<string, React.FC<{ className?: string }>> = {
+  dinner: DinnerIcon,
+  movie: MovieIcon,
+  activity: ActivityIcon,
+  outing: OutingIcon,
+  concert: ConcertIcon,
+  event: EventIcon,
+  other: OtherIcon,
+};
 
+export function DateTypeIcon({ type, className }: DateTypeIconProps) {
   const IconComponent = iconMap[type.toLowerCase()] || OtherIcon;
 
   return <IconComponent className={className} />;

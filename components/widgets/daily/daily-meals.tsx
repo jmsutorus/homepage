@@ -10,9 +10,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X, ChefHat, Utensils } from "lucide-react";
+import { X, Utensils } from "lucide-react";
 import { toast } from "sonner";
-import type { Meal, DailyMealWithRecipe, MealType, MEAL_TYPE_DISPLAY_NAMES } from "@/lib/types/meals";
+import type { Meal, DailyMealWithRecipe, MealType } from "@/lib/types/meals";
 import { MEAL_TYPE_DISPLAY_NAMES as DISPLAY_NAMES } from "@/lib/types/meals";
 
 interface DailyMealsProps {
@@ -73,7 +73,7 @@ export function DailyMeals({
 
       setDailyMeals((prev) => ({ ...prev, [mealType]: parseInt(mealId) }));
       toast.success(`${DISPLAY_NAMES[mealType]} updated`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to save meal");
     } finally {
       setLoading((prev) => ({ ...prev, [mealType]: false }));
@@ -95,7 +95,7 @@ export function DailyMeals({
 
       setDailyMeals((prev) => ({ ...prev, [mealType]: null }));
       toast.success(`${DISPLAY_NAMES[mealType]} removed`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to remove meal");
     } finally {
       setLoading((prev) => ({ ...prev, [mealType]: false }));

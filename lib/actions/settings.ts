@@ -71,7 +71,7 @@ export async function connectDuolingo(username: string): Promise<{ success: bool
     // Using explicit SQL with standard quoting to be safe
     // If userId column is missing, the logs above would reveal it (if we could see them).
     // Assuming standard schema from adapter.ts
-    const result = await db.execute(
+    await db.execute(
       `INSERT INTO account (id, userId, accountId, providerId, createdAt, updatedAt)
        VALUES (?, ?, ?, 'duolingo', ?, ?)
        ON CONFLICT(userId, providerId) DO UPDATE SET
@@ -103,7 +103,7 @@ export async function disconnectDuolingo(): Promise<{ success: boolean; error?: 
 
   try {
     const db = getDatabase();
-    const result = await db.execute({
+    await db.execute({
       sql: "DELETE FROM account WHERE userId = ? AND providerId = 'duolingo'",
       args: [session.user.id]
     });

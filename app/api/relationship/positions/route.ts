@@ -6,7 +6,7 @@ import { getPositions, createPosition, ensureDefaultPositions } from "@/lib/db/r
  * GET /api/relationship/positions
  * Get all positions for the authenticated user
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   const session = await requireAuthApi();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

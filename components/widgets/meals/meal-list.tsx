@@ -113,7 +113,7 @@ export function MealList({
               Search: &quot;{searchTerm}&quot;
               <button
                 onClick={() => setSearchTerm("")}
-                className="ml-1 hover:text-destructive"
+                className="cursor-pointer ml-1 hover:text-destructive"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -124,7 +124,7 @@ export function MealList({
               Tag: {selectedTag}
               <button
                 onClick={() => setSelectedTag(null)}
-                className="ml-1 hover:text-destructive"
+                className="cursor-pointer ml-1 hover:text-destructive"
               >
                 <X className="h-3 w-3" />
               </button>

@@ -66,15 +66,15 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
           message: `Synced ${data.eventsSynced} events` 
         });
       } else {
-        setGithubSyncResult({ 
-          success: false, 
-          message: data.error || "Sync failed" 
+        setGithubSyncResult({
+          success: false,
+          message: data.error || "Sync failed"
         });
       }
-    } catch (error) {
-      setGithubSyncResult({ 
-        success: false, 
-        message: "Failed to sync" 
+    } catch {
+      setGithubSyncResult({
+        success: false,
+        message: "Failed to sync"
       });
     } finally {
       setIsGithubSyncing(false);

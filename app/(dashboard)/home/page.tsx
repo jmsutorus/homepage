@@ -131,7 +131,8 @@ export default async function DashboardPage({
     latestJournalRaw,
     recentMediaRaw,
     calendarColors,
-    athleteRaw,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _athleteRaw,
     activeGoalsRaw,
     recentActivitiesRaw,
     isPlexEnabled,
