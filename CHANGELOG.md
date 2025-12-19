@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/jmsutorus/homepage/compare/v1.14.0...v1.14.1) (2025-12-19)
+
+
+### Bug Fixes
+
+* minor ui enhancements ([#85](https://github.com/jmsutorus/homepage/issues/85)) ([dd04476](https://github.com/jmsutorus/homepage/commit/dd0447614e52fcfc819269d00aa613523d6db207))
+
 # [1.14.0](https://github.com/jmsutorus/homepage/compare/v1.13.0...v1.14.0) (2025-12-18)
 
 
