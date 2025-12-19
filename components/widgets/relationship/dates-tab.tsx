@@ -8,6 +8,8 @@ import { Plus, Calendar, MapPin, Star, DollarSign, Trash2, Edit } from "lucide-r
 import { CreateDateDialog } from "./create-date-dialog";
 import { MobileDateSheet } from "./mobile-date-sheet";
 import { EditDateDialog } from "./edit-date-dialog";
+import { DateTypeIcon } from "./date-type-icon";
+import { DateCardBackground } from "./date-card-background";
 import type { RelationshipDate } from "@/lib/db/relationship";
 import { formatDateLongSafe } from "@/lib/utils";
 import { toast } from "sonner";
@@ -128,16 +130,18 @@ export function DatesTab({
       ) : (
         <div className="grid gap-4">
           {dates.map((date) => (
-            <Card key={date.id} className="hover:border-primary/50 transition-colors">
-              <CardHeader className="pb-3">
+            <Card key={date.id} className="hover:border-primary/50 transition-colors relative overflow-hidden group">
+              <DateCardBackground type={date.type} />
+              <CardHeader className="pb-3 relative z-10">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Badge className={`${getTypeColor(date.type)} text-white`}>
                         {getTypeLabel(date.type)}
                       </Badge>
+                      <DateTypeIcon type={date.type} className="h-5 w-5 text-muted-foreground/70" />
                       {date.rating && (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 ml-auto">
                           {Array.from({ length: date.rating }).map((_, i) => (
                             <Star key={i} className="h-4 w-4 fill-yellow-500 text-yellow-500" />
                           ))}
@@ -173,7 +177,7 @@ export function DatesTab({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-2 relative z-10">
                 {date.venue && (
                   <div className="flex items-center gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-muted-foreground" />

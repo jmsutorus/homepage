@@ -35,6 +35,8 @@ import { DuolingoWidget } from "@/components/widgets/duolingo/duolingo-widget";
 import { VacationModeBanner } from "@/components/widgets/vacations/vacation-mode-banner";
 import { UpcomingVacations } from "@/components/widgets/vacations/upcoming-vacations";
 import { getActiveVacation, getUpcomingVacations } from "@/lib/db/vacations";
+import { UpcomingWorkouts } from "@/components/widgets/exercise/upcoming-workouts";
+import { getUpcomingWorkoutActivities } from "@/lib/db/workout-activities";
 
 export const dynamic = "force-dynamic";
 
@@ -138,7 +140,8 @@ export default async function DashboardPage({
     isWeatherEnabled,
     calendarDataMap,
     activeVacationRaw,
-    upcomingVacationsRaw
+    upcomingVacationsRaw,
+    upcomingWorkoutsRaw
   ] = await Promise.all([
     getHabits(userId),
     getHabitCompletions(userId, todayStr),
@@ -164,7 +167,9 @@ export default async function DashboardPage({
     getCalendarDataForMonth(currentYear, currentMonth, githubEventsPromise),
     // Vacation data
     getActiveVacation(userId, todayStr),
-    getUpcomingVacations(userId, todayStr, 30)
+    getUpcomingVacations(userId, todayStr, 30),
+    // Upcoming workouts for today and tomorrow
+    getUpcomingWorkoutActivities(userId, 3)
   ]);
 
   // Duolingo Fetch
@@ -208,6 +213,12 @@ export default async function DashboardPage({
   // Vacation data
   const activeVacation = serialize(activeVacationRaw);
   const upcomingVacations = serialize(upcomingVacationsRaw);
+
+  // Upcoming workouts (filter to only today and tomorrow)
+  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const upcomingWorkouts = serialize(
+    upcomingWorkoutsRaw.filter(w => w.date === todayStr || w.date === tomorrow)
+  );
 
   // Pick featured park or first park
   const featuredParkRaw = allParks.find(p => p.featured) ||
@@ -343,6 +354,11 @@ export default async function DashboardPage({
             )}
 
             <div className="space-y-4">
+              {/* Upcoming Workouts */}
+              {upcomingWorkouts.length > 0 && (
+                <UpcomingWorkouts workouts={upcomingWorkouts} todayDate={todayStr} />
+              )}
+              
               <RecentActivity activities={recentActivities} />
               
               <ParkSummary park={featuredPark} />

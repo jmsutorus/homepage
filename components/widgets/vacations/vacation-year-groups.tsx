@@ -50,7 +50,7 @@ export function VacationYearGroups({ vacations }: VacationYearGroupsProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mb-6">
       {years.map((year) => {
         const yearVacations = vacationsByYear[year];
         const isCollapsed = collapsedYears.has(year);

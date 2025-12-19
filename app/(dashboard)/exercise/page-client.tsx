@@ -6,7 +6,7 @@ import { ExerciseCharts } from "@/components/widgets/exercise/exercise-charts";
 import { StravaSync } from "@/components/widgets/exercise/strava-sync";
 import { AddActivityModal } from "@/components/widgets/exercise/add-activity-modal";
 import { UpcomingActivities } from "@/components/widgets/calendar/upcoming-activities";
-import { ActivityCalendar } from "@/components/widgets/calendar/activity-calendar";
+
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
 
@@ -18,7 +18,7 @@ interface ExercisePageClientProps {
   athleteId?: number;
   lastSync?: string;
   initialUpcomingActivities: WorkoutActivity[];
-  initialCalendarActivities: WorkoutActivity[];
+  initialRecentActivities: WorkoutActivity[];
   initialStravaActivities: any[]; // Using any to avoid importing StravaActivity type from component
   initialStats: any; // Using any to avoid importing Stats type from component
 }
@@ -27,7 +27,7 @@ export function ExercisePageClient({
   athleteId, 
   lastSync,
   initialUpcomingActivities,
-  initialCalendarActivities,
+  initialRecentActivities,
   initialStravaActivities,
   initialStats
 }: ExercisePageClientProps) {
@@ -47,7 +47,14 @@ export function ExercisePageClient({
             Monitor your running progress and schedule workouts
           </p>
         </div>
-        <AddActivityModal onActivityAdded={handleActivityAdded} showButton={true} />
+        <div className="hidden md:block">
+          <AddActivityModal onActivityAdded={handleActivityAdded} showButton={true} />
+        </div>
+      </div>
+
+      {/* Mobile FAB */}
+      <div className="md:hidden">
+          <AddActivityModal onActivityAdded={handleActivityAdded} showButton={true} />
       </div>
 
       <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as ViewTab)}>
@@ -63,12 +70,8 @@ export function ExercisePageClient({
           <UpcomingActivities 
             onRefresh={refreshKey} 
             initialActivities={initialUpcomingActivities}
-          />
-
-          {/* Activity Calendar */}
-          <ActivityCalendar 
-            onRefresh={refreshKey} 
-            initialActivities={initialCalendarActivities}
+            initialRecentActivities={initialRecentActivities}
+            stravaActivities={initialStravaActivities}
           />
 
           {/* Strava Sync Widget */}

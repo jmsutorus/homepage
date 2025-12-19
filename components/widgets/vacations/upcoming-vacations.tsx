@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -97,7 +98,16 @@ export function UpcomingVacations({ vacations, todayDate }: UpcomingVacationsPro
     return null;
   }
 
-  const today = parseLocalDate(todayDate);
+  // Use state for today to allow client-side correction of the date
+  // This handles the mismatch between server time (UTC) and client time (local)
+  const [today, setToday] = useState(() => parseLocalDate(todayDate));
+
+  useEffect(() => {
+    // On client mount, update "today" to the user's actual local date
+    const now = new Date();
+    const localToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    setToday(localToday);
+  }, []);
 
   const calculateDaysUntil = (startDate: string): number => {
     const start = parseLocalDate(startDate);
