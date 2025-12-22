@@ -23,6 +23,8 @@ import { DailyTasks } from "../daily/daily-tasks";
 import { DailyDuolingo } from "../daily/daily-duolingo";
 import { DailyRelationship } from "../daily/daily-relationship";
 import { DailyVacations } from "../daily/daily-vacations";
+import { DailyBirthday } from "../daily/daily-birthday";
+import { DailyPeopleBirthdays } from "../daily/daily-people-birthdays";
 import { ExternalLink, Star, Loader2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -32,12 +34,13 @@ interface CalendarDayDetailProps {
   isLoading?: boolean;
   error?: string | null;
   holidayName?: string | null;
+  isBirthday?: boolean;
   onDataChange?: () => void;
 }
 
 
 
-export function CalendarDayDetail({ date, data, isLoading, error, holidayName, onDataChange }: CalendarDayDetailProps) {
+export function CalendarDayDetail({ date, data, isLoading, error, holidayName, isBirthday, onDataChange }: CalendarDayDetailProps) {
   const router = useRouter();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -199,7 +202,10 @@ export function CalendarDayDetail({ date, data, isLoading, error, holidayName, o
     : data?.events ?? [];
   const hasNonHolidayEvents = nonHolidayEvents.length > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship || hasVacations || !!holidayName;
+  // People events (birthdays and anniversaries)
+  const hasPeopleEvents = (data?.peopleEvents.length ?? 0) > 0;
+
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship || hasVacations || !!holidayName || isBirthday || hasPeopleEvents;
 
   // Handler to create an event from a holiday
   const handleCreateHolidayEvent = async () => {
@@ -323,6 +329,14 @@ export function CalendarDayDetail({ date, data, isLoading, error, holidayName, o
             date={date}
             onMoodUpdated={onDataChange}
           />
+        )}
+
+        {/* Birthday Section */}
+        {isBirthday && <DailyBirthday />}
+
+        {/* People Birthdays and Anniversaries */}
+        {hasPeopleEvents && data && (
+          <DailyPeopleBirthdays events={data.peopleEvents} />
         )}
 
         {/* Relationship Section */}

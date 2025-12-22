@@ -36,7 +36,11 @@ import { VacationModeBanner } from "@/components/widgets/vacations/vacation-mode
 import { UpcomingVacations } from "@/components/widgets/vacations/upcoming-vacations";
 import { getActiveVacation, getUpcomingVacations } from "@/lib/db/vacations";
 import { UpcomingWorkouts } from "@/components/widgets/exercise/upcoming-workouts";
+import { getUpcomingBirthdays, getUpcomingAnniversaries } from "@/lib/db/people";
+import { UpcomingBirthdays } from "@/components/widgets/people/upcoming-birthdays";
+import { UpcomingAnniversaries } from "@/components/widgets/people/upcoming-anniversaries";
 import { getUpcomingWorkoutActivities } from "@/lib/db/workout-activities";
+import { BirthdayBanner } from "@/components/birthday/birthday-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +85,7 @@ function serializeCalendarData(data: Record<string, any>) {
         relationshipItems: serializeArray(dayData.relationshipItems),
         dailyMeals: serializeArray(dayData.dailyMeals),
         vacations: serializeArray(dayData.vacations),
+        peopleEvents: serializeArray(dayData.peopleEvents),
       }
     ])
   );
@@ -142,7 +147,11 @@ export default async function DashboardPage({
     calendarDataMap,
     activeVacationRaw,
     upcomingVacationsRaw,
-    upcomingWorkoutsRaw
+    upcomingWorkoutsRaw,
+    userBirthdayRaw,
+    session,
+    upcomingBirthdaysRaw,
+    upcomingAnniversariesRaw
   ] = await Promise.all([
     getHabits(userId),
     getHabitCompletions(userId, todayStr),
@@ -170,7 +179,18 @@ export default async function DashboardPage({
     getActiveVacation(userId, todayStr),
     getUpcomingVacations(userId, todayStr, 30),
     // Upcoming workouts for today and tomorrow
-    getUpcomingWorkoutActivities(userId, 3)
+    getUpcomingWorkoutActivities(userId, 3),
+    // User birthday
+    queryOne<{ birthday: string | null }>(
+      "SELECT birthday FROM user WHERE id = ?",
+      [userId]
+    ),
+    // Session for user info
+    sessionPromise,
+    // Upcoming birthdays (next 30 days)
+    getUpcomingBirthdays(userId, 30),
+    // Upcoming anniversaries (next 30 days)
+    getUpcomingAnniversaries(userId, 30)
   ]);
 
   // Duolingo Fetch
@@ -215,11 +235,25 @@ export default async function DashboardPage({
   const activeVacation = serialize(activeVacationRaw);
   const upcomingVacations = serialize(upcomingVacationsRaw);
 
+  // Upcoming birthdays
+  const upcomingBirthdays = serialize(upcomingBirthdaysRaw);
+
+  // Upcoming anniversaries
+  const upcomingAnniversaries = serialize(upcomingAnniversariesRaw);
+
   // Upcoming workouts (filter to only today and tomorrow)
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const upcomingWorkouts = serialize(
     upcomingWorkoutsRaw.filter(w => w.date === todayStr || w.date === tomorrow)
   );
+
+  // Birthday check
+  const userBirthday = serialize(userBirthdayRaw);
+  const isBirthday = userBirthday?.birthday ? (() => {
+    const [, birthMonth, birthDay] = userBirthday.birthday.split('-');
+    const [, todayMonth, todayDay] = todayStr.split('-');
+    return birthMonth === todayMonth && birthDay === todayDay;
+  })() : false;
 
   // Pick featured park or first park
   const featuredParkRaw = allParks.find(p => p.featured) ||
@@ -228,6 +262,9 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-6">
+      {/* Birthday Banner - shows on user's birthday */}
+      {isBirthday && <BirthdayBanner userName={session?.user?.name} />}
+
       {/* Vacation Mode Banner - shows when user is currently on vacation */}
       {activeVacation && (
         <VacationModeBanner vacation={activeVacation} todayDate={todayStr} />
@@ -256,6 +293,16 @@ export default async function DashboardPage({
       {/* Upcoming Vacations - shows vacations within next 30 days */}
       {upcomingVacations.length > 0 && (
         <UpcomingVacations vacations={upcomingVacations} todayDate={todayStr} />
+      )}
+
+      {/* Upcoming Birthdays - shows birthdays within next 30 days */}
+      {upcomingBirthdays.length > 0 && (
+        <UpcomingBirthdays birthdays={upcomingBirthdays} todayDate={todayStr} />
+      )}
+
+      {/* Upcoming Anniversaries - shows anniversaries within next 30 days */}
+      {upcomingAnniversaries.length > 0 && (
+        <UpcomingAnniversaries anniversaries={upcomingAnniversaries} todayDate={todayStr} />
       )}
 
       {/* Main Grid Layout */}

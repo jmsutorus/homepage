@@ -79,4 +79,8 @@ export const CalendarColors = {
     bg: "bg-pink-500",
     text: "text-pink-500",
   },
+  birthday: {
+    bg: "bg-pink-500",
+    text: "text-pink-500",
+  },
 };
