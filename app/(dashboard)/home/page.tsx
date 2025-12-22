@@ -297,12 +297,12 @@ export default async function DashboardPage({
 
       {/* Upcoming Birthdays - shows birthdays within next 30 days */}
       {upcomingBirthdays.length > 0 && (
-        <UpcomingBirthdays birthdays={upcomingBirthdays} todayDate={todayStr} />
+        <UpcomingBirthdays birthdays={upcomingBirthdays} />
       )}
 
       {/* Upcoming Anniversaries - shows anniversaries within next 30 days */}
       {upcomingAnniversaries.length > 0 && (
-        <UpcomingAnniversaries anniversaries={upcomingAnniversaries} todayDate={todayStr} />
+        <UpcomingAnniversaries anniversaries={upcomingAnniversaries} />
       )}
 
       {/* Main Grid Layout */}

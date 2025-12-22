@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -57,6 +58,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
 
   // Set isClient to true after hydration to prevent hydration mismatch with date calculations
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
   }, []);
 

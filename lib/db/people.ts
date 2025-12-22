@@ -70,7 +70,7 @@ export function calculateAge(birthday: string): number | null {
 export function calculateNextBirthday(birthday: string): string {
   if (!birthday) return '';
 
-  const [year, month, day] = birthday.split('-');
+  const [, month, day] = birthday.split('-');
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const currentYear = today.getFullYear();
@@ -186,8 +186,8 @@ export function calculateDaysUntilAnniversary(anniversary: string): number {
  */
 function isDateInRange(dateMMDD: string, startDate: string, endDate: string): boolean {
   const [month, day] = dateMMDD.split('-');
-  const [startYear, startMonth, startDay] = startDate.split('-');
-  const [endYear, endMonth, endDay] = endDate.split('-');
+  const [, startMonth, startDay] = startDate.split('-');
+  const [, endMonth, endDay] = endDate.split('-');
 
   // Create dates for comparison (using a common year to compare just month/day)
   const checkDate = new Date(2024, parseInt(month) - 1, parseInt(day));

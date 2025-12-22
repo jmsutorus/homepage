@@ -9,7 +9,6 @@ import { type PersonWithAge } from "@/lib/db/people";
 
 interface UpcomingBirthdaysProps {
   birthdays: PersonWithAge[];
-  todayDate: string;
 }
 
 const RELATIONSHIP_CONFIG = {
@@ -39,7 +38,7 @@ const RELATIONSHIP_CONFIG = {
   }
 };
 
-export function UpcomingBirthdays({ birthdays, todayDate }: UpcomingBirthdaysProps) {
+export function UpcomingBirthdays({ birthdays }: UpcomingBirthdaysProps) {
   // Show top 5 upcoming birthdays
   const displayBirthdays = birthdays.slice(0, 5);
 

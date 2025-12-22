@@ -292,7 +292,7 @@ export async function seedDefaultHolidays(): Promise<number> {
       if (result.changes > 0) {
         created++;
       }
-    } catch (error) {
+    } catch {
       // Ignore duplicate errors
       console.log(`Holiday ${holiday.name} already exists, skipping`);
     }

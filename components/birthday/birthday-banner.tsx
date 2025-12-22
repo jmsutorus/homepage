@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,6 +20,7 @@ export function BirthdayBanner({ userName }: BirthdayBannerProps) {
     // Check if overlay was already shown this session
     const overlayShown = sessionStorage.getItem("birthday-overlay-shown");
     if (!overlayShown) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowOverlay(true);
       sessionStorage.setItem("birthday-overlay-shown", "true");
     }
@@ -27,6 +29,7 @@ export function BirthdayBanner({ userName }: BirthdayBannerProps) {
     const year = new Date().getFullYear();
     const bannerDismissed = localStorage.getItem(`birthday-banner-dismissed-${year}`);
     if (bannerDismissed === "true") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDismissed(true);
     }
   }, []);

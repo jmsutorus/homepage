@@ -9,7 +9,6 @@ import { type PersonWithAnniversary } from "@/lib/db/people";
 
 interface UpcomingAnniversariesProps {
   anniversaries: PersonWithAnniversary[];
-  todayDate: string;
 }
 
 const RELATIONSHIP_CONFIG = {
@@ -39,7 +38,7 @@ const RELATIONSHIP_CONFIG = {
   }
 };
 
-export function UpcomingAnniversaries({ anniversaries, todayDate }: UpcomingAnniversariesProps) {
+export function UpcomingAnniversaries({ anniversaries }: UpcomingAnniversariesProps) {
   // Show top 5 upcoming anniversaries
   const displayAnniversaries = anniversaries.slice(0, 5);
 
