@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Send } from "lucide-react";
+import { Plus, X, Send, Trash2 } from "lucide-react";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Exercise {
   description: string;
@@ -23,11 +24,13 @@ interface ActivityFormProps {
   editActivity?: WorkoutActivity | null;
   onSuccess: () => void;
   onCancel: () => void;
+  onDelete?: () => void;
   isDesktop?: boolean;
 }
 
-export function ActivityForm({ editActivity, onSuccess, onCancel, isDesktop = true }: ActivityFormProps) {
+export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDesktop = true }: ActivityFormProps) {
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [activityId, setActivityId] = useState<number | null>(null);
   
   // Form state
@@ -148,6 +151,33 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, isDesktop = tr
       alert(`Failed to ${activityId ? "update" : "create"} activity. Please try again.`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!activityId || !onDelete) return;
+    
+    if (!confirm("Are you sure you want to delete this activity? This action cannot be undone.")) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/activities/${activityId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete activity");
+      }
+
+      toast.success("Activity deleted successfully");
+      onDelete();
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      toast.error("Failed to delete activity. Please try again.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -338,31 +368,65 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, isDesktop = tr
       {/* Actions */}
       <div className={cn(
           isDesktop 
-            ? "flex justify-end gap-2 text-right" 
+            ? "flex justify-between gap-2" 
             : "border-t px-6 py-4 mt-auto bg-background"
         )}>
         {isDesktop ? (
             <>
-                <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-                Cancel
+              {/* Delete button - only show when editing */}
+              {isEditing && onDelete && (
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  onClick={handleDelete} 
+                  disabled={loading || deleting}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {deleting ? "Deleting..." : "Delete"}
                 </Button>
-                <Button type="submit" disabled={loading}>
-                {loading
+              )}
+              
+              {/* Spacer when not editing */}
+              {!isEditing && <div />}
+              
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={onCancel} disabled={loading || deleting}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading || deleting}>
+                  {loading
                     ? (isEditing ? "Updating..." : "Creating...")
                     : (isEditing ? "Update Activity" : "Create Activity")}
                 </Button>
+              </div>
             </>
         ) : (
-             <Button type="submit" disabled={loading} className="w-full h-12 text-base bg-brand hover:bg-brand/90 text-brand-foreground">
-                {loading
-                    ? (isEditing ? "Updating..." : "Creating...")
-                    : (
-                        <>
-                            <Send className="h-5 w-5 mr-2" />
-                            {isEditing ? "Update Activity" : "Create Activity"}
-                        </>
-                    )}
-             </Button>
+          <div className="space-y-3">
+            <Button type="submit" disabled={loading || deleting} className="w-full h-12 text-base bg-brand hover:bg-brand/90 text-brand-foreground">
+              {loading
+                ? (isEditing ? "Updating..." : "Creating...")
+                : (
+                    <>
+                      <Send className="h-5 w-5 mr-2" />
+                      {isEditing ? "Update Activity" : "Create Activity"}
+                    </>
+                )}
+            </Button>
+            
+            {/* Delete button for mobile - only show when editing */}
+            {isEditing && onDelete && (
+              <Button 
+                type="button" 
+                variant="destructive" 
+                onClick={handleDelete} 
+                disabled={loading || deleting}
+                className="w-full h-12 text-base"
+              >
+                <Trash2 className="h-5 w-5 mr-2" />
+                {deleting ? "Deleting..." : "Delete Activity"}
+              </Button>
+            )}
+          </div>
         )}
       </div>
     </form>

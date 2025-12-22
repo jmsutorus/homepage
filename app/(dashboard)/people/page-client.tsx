@@ -5,12 +5,15 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, User, Users, UserPlus, Briefcase, Mail, Phone, Trash2, Edit, Cake } from "lucide-react";
+import { Plus, User, Users, UserPlus, Briefcase, Mail, Phone, Trash2, Edit, Cake, Heart, Settings, ListTodo } from "lucide-react";
 import { type Person, type RelationshipCategory } from "@/lib/db/people";
 import { PersonFormDialog } from "@/components/widgets/people/person-form-dialog";
 import { DeletePersonDialog } from "@/components/widgets/people/delete-person-dialog";
+import { RelationshipTypeManager } from "@/components/widgets/people/relationship-type-manager";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { PageTabsList } from "@/components/ui/page-tabs-list";
 
 interface PeoplePageClientProps {
   initialPeople: Person[];
@@ -55,6 +58,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [deletingPerson, setDeletingPerson] = useState<Person | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [viewTab, setViewTab] = useState<"people" | "manage">("people");
 
   // Set isClient to true after hydration to prevent hydration mismatch with date calculations
   useEffect(() => {
@@ -160,11 +164,28 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
           <h1 className="text-3xl font-bold tracking-tight">People</h1>
           <p className="text-muted-foreground">Track birthdays and important dates for family and friends</p>
         </div>
-        <Button onClick={openAddDialog} className="w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Person
-        </Button>
+        {viewTab === "people" && (
+          <Button onClick={openAddDialog} className="w-full sm:w-auto hidden md:flex">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Person
+          </Button>
+        )}
       </div>
+
+      <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as "people" | "manage")}>
+        <PageTabsList
+          tabs={[
+            { value: "people", label: "People", icon: ListTodo, showLabel: false },
+            { value: "manage", label: "Manage", icon: Settings, showLabel: false },
+          ]}
+          actionButton={viewTab === "people" ? {
+            label: "Add Person",
+            onClick: openAddDialog,
+            icon: Plus,
+          } : undefined}
+        />
+
+        <TabsContent value="people" className="space-y-6 mt-6 pb-20 md:pb-0">
 
       {/* Filters and Sort */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -240,16 +261,21 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
             const isToday = isClient && daysUntil === 0;
 
             return (
-              <Card key={person.id} className={isToday ? "border-pink-500 border-2" : ""}>
+              <Card key={person.id} className={`${isToday ? "border-pink-500 border-2" : ""} ${person.is_partner ? "border-rose-400/50 bg-rose-500/5" : ""}`}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1 min-w-0">
                       {/* Avatar */}
-                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <div className="relative h-12 w-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                         {person.photo ? (
                           <img src={person.photo} alt={person.name} className="h-12 w-12 rounded-full object-cover" />
                         ) : (
                           <User className="h-6 w-6 text-muted-foreground" />
+                        )}
+                        {person.is_partner && (
+                          <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-rose-500 flex items-center justify-center">
+                            <Heart className="h-3 w-3 text-white fill-white" />
+                          </div>
                         )}
                       </div>
 
@@ -257,6 +283,11 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <CardTitle className="text-lg">{person.name}</CardTitle>
+                          {person.relationshipTypeName && (
+                            <Badge variant="outline" className="bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300">
+                              {person.relationshipTypeName}
+                            </Badge>
+                          )}
                           <Badge variant="outline" className={config.bgClass}>
                             <Icon className="mr-1 h-3 w-3" />
                             {config.label}
@@ -330,6 +361,12 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
           })}
         </div>
       )}
+        </TabsContent>
+
+        <TabsContent value="manage" className="space-y-6 mt-6 pb-20 md:pb-0">
+          <RelationshipTypeManager onTypesChanged={refreshPeople} />
+        </TabsContent>
+      </Tabs>
 
       {/* Add/Edit Dialog */}
       <PersonFormDialog

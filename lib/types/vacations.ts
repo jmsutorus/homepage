@@ -205,6 +205,20 @@ export interface VacationPhotoInput {
 }
 
 /**
+ * Person associated with a vacation (from vacation_people junction)
+ */
+export interface VacationPerson {
+  id: number;           // vacation_people.id
+  vacationId: number;
+  personId: number;
+  name: string;         // Joined from people table
+  photo: string | null; // Joined from people table
+  relationship: 'family' | 'friends' | 'work' | 'other';
+  relationshipTypeName?: string | null;
+  created_at: string;
+}
+
+/**
  * Composite type with vacation and all related data
  */
 export interface VacationWithDetails {
@@ -212,6 +226,7 @@ export interface VacationWithDetails {
   itinerary: ItineraryDay[];
   bookings: Booking[];
   photos: VacationPhoto[];
+  people: VacationPerson[];
 }
 
 /**

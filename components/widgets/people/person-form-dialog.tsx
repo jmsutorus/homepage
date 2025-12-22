@@ -8,8 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { type Person, type RelationshipCategory } from "@/lib/db/people";
+import { type Person, type RelationshipCategory, type RelationshipType } from "@/lib/db/people";
 import { toast } from "sonner";
+import { Heart } from "lucide-react";
 
 interface PersonFormDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ const RELATIONSHIP_OPTIONS: { value: RelationshipCategory; label: string }[] = [
 
 export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess }: PersonFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [relationshipTypes, setRelationshipTypes] = useState<RelationshipType[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     birthday: "",
@@ -36,8 +38,20 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
     email: "",
     phone: "",
     notes: "",
-    anniversary: ""
+    anniversary: "",
+    relationship_type_id: null as number | null,
+    is_partner: false
   });
+
+  // Fetch relationship types when dialog opens
+  useEffect(() => {
+    if (open) {
+      fetch("/api/relationship-types")
+        .then(res => res.json())
+        .then(data => setRelationshipTypes(data))
+        .catch(err => console.error("Failed to fetch relationship types:", err));
+    }
+  }, [open]);
 
   // Update form when dialog opens or editingPerson changes
   useEffect(() => {
@@ -53,7 +67,9 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
           email: editingPerson.email || "",
           phone: editingPerson.phone || "",
           notes: editingPerson.notes || "",
-          anniversary: editingPerson.anniversary || ""
+          anniversary: editingPerson.anniversary || "",
+          relationship_type_id: editingPerson.relationship_type_id || null,
+          is_partner: editingPerson.is_partner || false
         });
       } else {
         // Reset to empty form for adding new person
@@ -66,7 +82,9 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
           email: "",
           phone: "",
           notes: "",
-          anniversary: ""
+          anniversary: "",
+          relationship_type_id: null,
+          is_partner: false
         });
       }
     }
@@ -92,7 +110,9 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
         email: formData.email || undefined,
         phone: formData.phone || undefined,
         notes: formData.notes || undefined,
-        anniversary: formData.anniversary || undefined
+        anniversary: formData.anniversary || undefined,
+        relationship_type_id: formData.relationship_type_id,
+        is_partner: formData.is_partner
       };
 
       if (editingPerson) {
@@ -185,7 +205,7 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
 
           {/* Relationship */}
           <div className="space-y-2">
-            <Label htmlFor="relationship">Relationship</Label>
+            <Label htmlFor="relationship">Category</Label>
             <Select
               value={formData.relationship}
               onValueChange={(value) => setFormData({ ...formData, relationship: value as RelationshipCategory })}
@@ -201,6 +221,45 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Relationship Type */}
+          <div className="space-y-2">
+            <Label htmlFor="relationship_type">Relationship Type</Label>
+            <Select
+              value={formData.relationship_type_id?.toString() || "none"}
+              onValueChange={(value) => setFormData({ ...formData, relationship_type_id: value === "none" ? null : parseInt(value, 10) })}
+            >
+              <SelectTrigger id="relationship_type">
+                <SelectValue placeholder="Select a type..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {relationshipTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.id.toString()}>
+                    {type.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              e.g., Father, Mother, Partner, etc.
+            </p>
+          </div>
+
+          {/* Is Partner */}
+          <div className="flex items-center space-x-2 p-3 rounded-lg border bg-rose-500/5 border-rose-500/20">
+            <Checkbox
+              id="is_partner"
+              checked={formData.is_partner}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_partner: checked === true })}
+            />
+            <div className="flex items-center gap-2">
+              <Heart className="h-4 w-4 text-rose-500" />
+              <Label htmlFor="is_partner" className="text-sm font-normal cursor-pointer">
+                Mark as Current Romantic Partner
+              </Label>
+            </div>
           </div>
 
           {/* Photo URL */}

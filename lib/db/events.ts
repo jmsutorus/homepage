@@ -81,10 +81,25 @@ export interface EventPhotoInput {
   order_index?: number;
 }
 
+/**
+ * Person associated with an event (from event_people junction)
+ */
+export interface EventPerson {
+  id: number;           // event_people.id
+  eventId: number;
+  personId: number;
+  name: string;         // Joined from people table
+  photo: string | null; // Joined from people table
+  relationship: 'family' | 'friends' | 'work' | 'other';
+  relationshipTypeName?: string | null;
+  created_at: string;
+}
+
 // Composite type with event and photos
 export interface EventWithDetails {
   event: Event;
   photos: EventPhoto[];
+  people: EventPerson[];
 }
 
 // Helper to serialize notifications to JSON string
@@ -465,11 +480,15 @@ export async function getEventWithDetails(slug: string, userId: string): Promise
   const event = await getEventBySlug(slug, userId);
   if (!event) return undefined;
 
-  const photos = await getEventPhotos(event.id);
+  const [photos, people] = await Promise.all([
+    getEventPhotos(event.id),
+    getEventPeople(event.id),
+  ]);
 
   return {
     event,
     photos,
+    people,
   };
 }
 
@@ -616,4 +635,146 @@ export async function deleteAllEventPhotos(eventId: number): Promise<number> {
     [eventId]
   );
   return result.changes;
+}
+
+/**
+ * Add a person to an event
+ */
+export async function addPersonToEvent(
+  eventId: number,
+  personId: number,
+  userId: string
+): Promise<EventPerson> {
+  const result = await execute(
+    `INSERT INTO event_people (userId, eventId, personId) VALUES (?, ?, ?)`,
+    [userId, eventId, personId]
+  );
+
+  const person = await queryOne<EventPerson>(
+    `SELECT
+      ep.id,
+      ep.eventId,
+      ep.personId,
+      p.name,
+      p.photo,
+      p.relationship,
+      rt.name as relationshipTypeName,
+      ep.created_at
+    FROM event_people ep
+    JOIN people p ON p.id = ep.personId
+    LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
+    WHERE ep.id = ?`,
+    [Number(result.lastInsertRowid)]
+  );
+
+  if (!person) {
+    throw new Error('Failed to retrieve added person');
+  }
+
+  return person;
+}
+
+/**
+ * Get all people associated with an event
+ */
+export async function getEventPeople(eventId: number): Promise<EventPerson[]> {
+  const people = await query<EventPerson>(
+    `SELECT
+      ep.id,
+      ep.eventId,
+      ep.personId,
+      p.name,
+      p.photo,
+      p.relationship,
+      rt.name as relationshipTypeName,
+      ep.created_at
+    FROM event_people ep
+    JOIN people p ON p.id = ep.personId
+    LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
+    WHERE ep.eventId = ?
+    ORDER BY p.name ASC`,
+    [eventId]
+  );
+
+  return people;
+}
+
+/**
+ * Get a single event-person association
+ */
+export async function getEventPerson(
+  id: number,
+  eventId: number
+): Promise<EventPerson | undefined> {
+  return await queryOne<EventPerson>(
+    `SELECT
+      ep.id,
+      ep.eventId,
+      ep.personId,
+      p.name,
+      p.photo,
+      p.relationship,
+      rt.name as relationshipTypeName,
+      ep.created_at
+    FROM event_people ep
+    JOIN people p ON p.id = ep.personId
+    LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
+    WHERE ep.id = ? AND ep.eventId = ?`,
+    [id, eventId]
+  );
+}
+
+/**
+ * Remove a person from an event by association ID
+ */
+export async function removePersonFromEvent(
+  id: number,
+  eventId: number,
+  userId: string
+): Promise<boolean> {
+  const result = await execute(
+    "DELETE FROM event_people WHERE id = ? AND eventId = ? AND userId = ?",
+    [id, eventId, userId]
+  );
+  return result.changes > 0;
+}
+
+/**
+ * Remove a person from an event by person ID
+ */
+export async function removePersonFromEventByPersonId(
+  eventId: number,
+  personId: number,
+  userId: string
+): Promise<boolean> {
+  const result = await execute(
+    "DELETE FROM event_people WHERE eventId = ? AND personId = ? AND userId = ?",
+    [eventId, personId, userId]
+  );
+  return result.changes > 0;
+}
+
+/**
+ * Delete all people associations for an event
+ */
+export async function deleteAllEventPeople(eventId: number): Promise<number> {
+  const result = await execute(
+    "DELETE FROM event_people WHERE eventId = ?",
+    [eventId]
+  );
+  return result.changes;
+}
+
+/**
+ * Check if a person is already associated with an event
+ */
+export async function isPersonOnEvent(
+  eventId: number,
+  personId: number
+): Promise<boolean> {
+  const result = await queryOne<{ count: number }>(
+    "SELECT COUNT(*) as count FROM event_people WHERE eventId = ? AND personId = ?",
+    [eventId, personId]
+  );
+  return (result?.count || 0) > 0;
 }

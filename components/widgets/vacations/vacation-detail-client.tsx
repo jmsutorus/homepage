@@ -14,6 +14,7 @@ import { BudgetTracker } from './budget-tracker';
 import { ItinerarySection } from './itinerary-section';
 import { BookingSection } from './booking-section';
 import { PhotoGallery } from './photo-gallery';
+import { VacationPeopleSection } from './vacation-people-section';
 
 interface VacationDetailClientProps {
   vacationData: VacationWithDetails;
@@ -25,7 +26,7 @@ export function VacationDetailClient({ vacationData: initialData }: VacationDeta
   const router = useRouter();
   const [vacationData, setVacationData] = useState(initialData);
   const [viewTab, setViewTab] = useState<ViewTab>('overview');
-  const { vacation, itinerary, bookings, photos } = vacationData;
+  const { vacation, itinerary, bookings, photos, people } = vacationData;
 
   const duration = calculateDurationDays(vacation.start_date, vacation.end_date);
 
@@ -205,6 +206,13 @@ export function VacationDetailClient({ vacationData: initialData }: VacationDeta
 
           {/* Budget Tracker */}
           <BudgetTracker vacation={vacation} itinerary={itinerary} bookings={bookings} />
+
+          {/* Travel Companions */}
+          <VacationPeopleSection
+            vacationSlug={vacation.slug}
+            people={people}
+            onUpdate={handleUpdate}
+          />
 
           {/* Description */}
           {vacation.description && (

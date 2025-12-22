@@ -258,12 +258,23 @@ export function UpcomingActivities({
     router.refresh();
   };
 
+  const handleActivityDeleted = () => {
+    setEditingActivity(null);
+    // Remove from local state
+    if (editingActivity) {
+      setActivities(prev => prev.filter(a => a.id !== editingActivity.id));
+      setRecentActivities(prev => prev.filter(a => a.id !== editingActivity.id));
+    }
+    router.refresh();
+  };
+
   const editModal = (
     <AddActivityModal
       editActivity={editingActivity}
       isOpen={!!editingActivity}
       onOpenChange={(open) => !open && setEditingActivity(null)}
       onActivityAdded={handleActivityEdited}
+      onActivityDeleted={handleActivityDeleted}
     />
   );
 

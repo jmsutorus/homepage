@@ -11,6 +11,7 @@ import { getRelatedParks } from "@/lib/actions/related-content";
 import { RelatedParks } from "@/components/widgets/shared/related-content";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { getUserId } from "@/lib/auth/server";
+import { ParkPeopleSection } from "@/components/widgets/parks/park-people-section";
 
 interface ParkDetailPageProps {
   params: Promise<{
@@ -134,6 +135,12 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
           <MDXRemote source={park.content} />
         </article>
       )}
+
+      {/* Divider */}
+      <div className="my-8 border-t" />
+
+      {/* Visitors */}
+      <ParkPeopleSection parkId={park.id} parkSlug={slug} />
 
       {/* Related Parks */}
       {relatedParks.length > 0 && (
