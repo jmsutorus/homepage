@@ -78,6 +78,11 @@ export function Header() {
                     Relationship
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/people" className="w-full cursor-pointer">
+                    People
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 

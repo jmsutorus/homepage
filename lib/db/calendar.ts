@@ -1,4 +1,4 @@
-import { query } from "./index";
+import { query, queryOne } from "./index";
 import type { MoodEntry } from "./mood";
 import type { DBStravaActivity } from "./strava";
 import type { MediaContent } from "./media";
@@ -13,6 +13,7 @@ import { getHabitCompletionsForRange } from "./habits";
 import { auth } from "@/auth";
 import { getDuolingoCompletionsForRange } from "./duolingo";
 import type { RelationshipDate, IntimacyEntry, RelationshipMilestone } from "./relationship";
+import { getPeople, calculateAge } from "./people";
 import type { DailyMeal } from "./daily-meals";
 import { getDailyMealsForRange } from "./daily-meals";
 import type { Vacation, ItineraryDay, Booking } from "@/lib/types/vacations";
@@ -59,6 +60,17 @@ export interface CalendarVacation {
   bookings: Booking[];
 }
 
+// People-related calendar types
+export interface CalendarPersonEvent {
+  id: number;
+  personId: number;
+  name: string;
+  eventType: 'birthday' | 'anniversary';
+  age: number | null; // null if year unknown
+  relationship: 'family' | 'friends' | 'work' | 'other';
+  date: string; // YYYY-MM-DD - the actual calendar date for this occurrence
+}
+
 export interface CalendarDayData {
   date: string; // YYYY-MM-DD format
   mood: MoodEntry | null;
@@ -84,6 +96,8 @@ export interface CalendarDayData {
   dailyMeals: DailyMeal[];
   // Vacations: vacation spans, itinerary, and bookings for this day
   vacations: CalendarVacation[];
+  // People: birthdays and anniversaries for this day
+  peopleEvents: CalendarPersonEvent[];
 }
 
 /**
@@ -146,6 +160,13 @@ export interface CalendarDaySummary {
   };
   // Holiday name (null if no holiday on this day)
   holidayName: string | null;
+  // Birthday flag (true if user's birthday is on this day)
+  isBirthday: boolean;
+  // People events count (birthdays and anniversaries)
+  peopleEventCount: number;
+  // Separate counts for birthdays and anniversaries
+  birthdayCount: number;
+  anniversaryCount: number;
 }
 
 /**
@@ -364,6 +385,130 @@ export async function getRelationshipItemsInRange(
   ];
 
   return items;
+}
+
+/**
+ * Get people events (birthdays and anniversaries) in a date range
+ * Returns events for people whose birthday or anniversary falls within the range
+ * Note: Matches by month/day only, not year (recurring events)
+ */
+export async function getPeopleEventsInRange(
+  startDate: string,
+  endDate: string,
+  userId: string
+): Promise<CalendarPersonEvent[]> {
+  const people = await getPeople(userId);
+  const events: CalendarPersonEvent[] = [];
+
+  // Parse date range
+  const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+  const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+
+  for (const person of people) {
+    // Check birthday
+    if (person.birthday) {
+      const [, birthMonth, birthDay] = person.birthday.split('-').map(Number);
+
+      // Check if birthday month/day falls in range
+      let isInRange = false;
+
+      // Same year range
+      if (startYear === endYear) {
+        const birthMonthDay = birthMonth * 100 + birthDay;
+        const startMonthDay = startMonth * 100 + startDay;
+        const endMonthDay = endMonth * 100 + endDay;
+
+        // Handle year wrapping (e.g., Dec 25 to Jan 5)
+        if (endMonthDay < startMonthDay) {
+          isInRange = birthMonthDay >= startMonthDay || birthMonthDay <= endMonthDay;
+        } else {
+          isInRange = birthMonthDay >= startMonthDay && birthMonthDay <= endMonthDay;
+        }
+      }
+      // Different years (handle cross-year range)
+      else {
+        const birthMonthDay = birthMonth * 100 + birthDay;
+        const startMonthDay = startMonth * 100 + startDay;
+        const endMonthDay = endMonth * 100 + endDay;
+        isInRange = birthMonthDay >= startMonthDay || birthMonthDay <= endMonthDay;
+      }
+
+      if (isInRange) {
+        // Determine which date to use (could be current year or next year)
+        let eventDate = `${startYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
+        const eventDateTime = new Date(eventDate);
+        const startDateTime = new Date(startDate);
+
+        // If event date is before start date, use next year
+        if (eventDateTime < startDateTime) {
+          eventDate = `${endYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
+        }
+
+        events.push({
+          id: person.id * 100, // Multiply by 100 to avoid collision with anniversary IDs
+          personId: person.id,
+          name: person.name,
+          eventType: 'birthday',
+          age: calculateAge(person.birthday),
+          relationship: person.relationship,
+          date: eventDate
+        });
+      }
+    }
+
+    // Check anniversary
+    if (person.anniversary) {
+      const [, annMonth, annDay] = person.anniversary.split('-').map(Number);
+
+      // Check if anniversary month/day falls in range
+      let isInRange = false;
+
+      // Same year range
+      if (startYear === endYear) {
+        const annMonthDay = annMonth * 100 + annDay;
+        const startMonthDay = startMonth * 100 + startDay;
+        const endMonthDay = endMonth * 100 + endDay;
+
+        // Handle year wrapping
+        if (endMonthDay < startMonthDay) {
+          isInRange = annMonthDay >= startMonthDay || annMonthDay <= endMonthDay;
+        } else {
+          isInRange = annMonthDay >= startMonthDay && annMonthDay <= endMonthDay;
+        }
+      }
+      // Different years (handle cross-year range)
+      else {
+        const annMonthDay = annMonth * 100 + annDay;
+        const startMonthDay = startMonth * 100 + startDay;
+        const endMonthDay = endMonth * 100 + endDay;
+        isInRange = annMonthDay >= startMonthDay || annMonthDay <= endMonthDay;
+      }
+
+      if (isInRange) {
+        // Determine which date to use (could be current year or next year)
+        let eventDate = `${startYear}-${String(annMonth).padStart(2, '0')}-${String(annDay).padStart(2, '0')}`;
+        const eventDateTime = new Date(eventDate);
+        const startDateTime = new Date(startDate);
+
+        // If event date is before start date, use next year
+        if (eventDateTime < startDateTime) {
+          eventDate = `${endYear}-${String(annMonth).padStart(2, '0')}-${String(annDay).padStart(2, '0')}`;
+        }
+
+        events.push({
+          id: person.id * 100 + 1, // Add 1 to differentiate from birthday
+          personId: person.id,
+          name: person.name,
+          eventType: 'anniversary',
+          age: calculateAge(person.anniversary),
+          relationship: person.relationship,
+          date: eventDate
+        });
+      }
+    }
+  }
+
+  return events;
 }
 
 /**
@@ -665,7 +810,8 @@ export async function getCalendarDataForRange(
     duolingoCompletions,
     relationshipItems,
     dailyMeals,
-    vacations
+    vacations,
+    peopleEvents
   ] = await Promise.all([
     getActivitiesInRange(startDate, endDate, userId),
     getMediaCompletedInRange(startDate, endDate, userId),
@@ -681,7 +827,8 @@ export async function getCalendarDataForRange(
     getDuolingoCompletionsForRange(userId, startDate, endDate),
     getRelationshipItemsInRange(startDate, endDate, userId),
     getDailyMealsForRange(userId, startDate, endDate),
-    getVacationsInRange(userId, startDate, endDate)
+    getVacationsInRange(userId, startDate, endDate),
+    getPeopleEventsInRange(startDate, endDate, userId)
   ]);
 
   // Fetch itinerary and bookings for all vacations
@@ -737,6 +884,7 @@ export async function getCalendarDataForRange(
       relationshipItems: [],
       dailyMeals: [],
       vacations: [],
+      peopleEvents: [],
     });
   }
 
@@ -933,6 +1081,14 @@ export async function getCalendarDataForRange(
     }
   });
 
+  // Add people events (birthdays and anniversaries)
+  peopleEvents.forEach((event) => {
+    const dayData = calendarMap.get(event.date);
+    if (dayData) {
+      dayData.peopleEvents.push(event);
+    }
+  });
+
   // Add vacations (span all days of the vacation)
   vacations.forEach((vacation) => {
     const vacationStart = parseLocalDate(vacation.start_date);
@@ -1110,6 +1266,10 @@ export function convertToSummary(
       firstStartingVacationType: data.vacations.find(v => v.isStartDate)?.vacation.type ?? null,
     },
     holidayName: null, // Will be set by getCalendarSummaryForMonth
+    isBirthday: false, // Will be set by getCalendarSummaryForMonth
+    peopleEventCount: data.peopleEvents.length,
+    birthdayCount: data.peopleEvents.filter(e => e.eventType === 'birthday').length,
+    anniversaryCount: data.peopleEvents.filter(e => e.eventType === 'anniversary').length,
   };
 }
 
@@ -1121,12 +1281,20 @@ export async function getCalendarSummaryForMonth(
   month: number,
   githubEvents: GithubEvent[] | Promise<GithubEvent[]> = []
 ): Promise<Map<string, CalendarDaySummary>> {
-  // Fetch full data and holidays in parallel
-  const [fullData, holidays] = await Promise.all([
+  // Get user session for birthday check
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  // Fetch full data, holidays, and user birthday in parallel
+  const [fullData, holidays, user] = await Promise.all([
     getCalendarDataForMonth(year, month, githubEvents),
     getHolidaysForMonthComputed(month, year),
+    userId ? queryOne<{ birthday: string | null }>(
+      "SELECT birthday FROM user WHERE id = ?",
+      [userId]
+    ) : Promise.resolve(null),
   ]);
-  
+
   const today = new Date().toISOString().split("T")[0];
 
   // Create a map of day -> holiday name for quick lookup
@@ -1143,6 +1311,16 @@ export async function getCalendarSummaryForMonth(
     // Check if there's a holiday on this day
     const dayOfMonth = parseInt(date.split('-')[2], 10);
     summary.holidayName = holidaysByDay.get(dayOfMonth) ?? null;
+
+    // Check if it's the user's birthday (match month and day)
+    let isBirthday = false;
+    if (user?.birthday) {
+      const [, birthMonth, birthDay] = user.birthday.split('-');
+      const [, dateMonth, dateDay] = date.split('-');
+      isBirthday = birthMonth === dateMonth && birthDay === dateDay;
+    }
+    summary.isBirthday = isBirthday;
+
     summaryMap.set(date, summary);
   });
 

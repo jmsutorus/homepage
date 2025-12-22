@@ -3,9 +3,10 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils, Plane, Palmtree, Map, Star } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils, Plane, Palmtree, Map, Star, Cake } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getVacationTypeIcon } from "@/lib/utils/vacation-icons";
+import { BirthdayCardBackground } from "./birthday-card-background";
 
 interface CalendarDayCellProps {
   day: number;
@@ -66,18 +67,20 @@ function CalendarDayCellComponent({
   const hasMeals = (summary?.mealCount ?? 0) > 0;
   const hasVacations = (summary?.vacationCounts.starting ?? 0) > 0 || (summary?.vacationCounts.itineraryItems ?? 0) > 0 || (summary?.vacationCounts.bookings ?? 0) > 0;
   const hasHoliday = !!summary?.holidayName;
+  const isBirthday = summary?.isBirthday ?? false;
+  const hasPeopleEvents = (summary?.peopleEventCount ?? 0) > 0;
 
   // Check if the first event is a holiday event (matches "${holidayName} ${year}" format)
   // If so, we should hide it from the regular events display since it's shown in the holiday section
   const year = date.split('-')[0];
   const expectedHolidayEventTitle = summary?.holidayName ? `${summary.holidayName} ${year}` : null;
   const firstEventIsHolidayEvent = expectedHolidayEventTitle && summary?.eventFirstTitle === expectedHolidayEventTitle;
-  
+
   // Adjust event count and display - subtract 1 if first event is the holiday event
   const adjustedEventCount = firstEventIsHolidayEvent ? (summary?.eventCount ?? 0) - 1 : (summary?.eventCount ?? 0);
   const hasNonHolidayEvents = adjustedEventCount > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship || hasMeals || hasVacations || hasHoliday;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship || hasMeals || hasVacations || hasHoliday || isBirthday || hasPeopleEvents;
 
   // Get mood icon
   const MoodIcon = hasMood && summary?.moodRating ? MOOD_ICONS[summary.moodRating]?.icon : null;
@@ -99,11 +102,13 @@ function CalendarDayCellComponent({
     <Card
       onClick={() => onDayClick(date)}
       className={cn(
-        "min-h-[50px] sm:min-h-[100px] md:min-h-[120px] p-2 flex flex-col hover:shadow-md transition-all cursor-pointer",
+        "min-h-[50px] sm:min-h-[100px] md:min-h-[120px] p-2 flex flex-col hover:shadow-md transition-all cursor-pointer relative overflow-hidden",
         isToday && "ring-2 ring-primary",
-        isSelected && "ring-2 ring-blue-500 shadow-lg"
+        isSelected && "ring-2 ring-blue-500 shadow-lg",
+        isBirthday && "birthday-border"
       )}
     >
+      {isBirthday && <BirthdayCardBackground />}
       {/* Day number and mood/journal button */}
       <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-1 sm:gap-0 sm:mb-1">
         <span
@@ -399,6 +404,35 @@ function CalendarDayCellComponent({
               </span>
             </div>
           )}
+
+          {/* People Birthdays & Anniversaries */}
+          {hasPeopleEvents && (
+            <div className="flex items-center gap-1">
+              <Cake className={cn("h-3 w-3 flex-shrink-0", "text-pink-500")} />
+              <span className={cn("truncate", "text-pink-500")}>
+                {(() => {
+                  const parts: string[] = [];
+                  if (summary!.birthdayCount > 0) {
+                    parts.push(summary!.birthdayCount === 1 ? "1 birthday" : `${summary!.birthdayCount} birthdays`);
+                  }
+                  if (summary!.anniversaryCount > 0) {
+                    parts.push(summary!.anniversaryCount === 1 ? "1 anniversary" : `${summary!.anniversaryCount} anniversaries`);
+                  }
+                  return parts.join(", ");
+                })()}
+              </span>
+            </div>
+          )}
+
+          {/* Birthday */}
+          {isBirthday && (
+            <div className="flex items-center gap-1">
+              <Cake className={cn("h-3 w-3 flex-shrink-0", colors.birthday?.text)} />
+              <span className={cn("truncate font-semibold", colors.birthday?.text)}>
+                🎂 Happy Birthday!
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
@@ -472,7 +506,74 @@ function CalendarDayCellComponent({
           {hasHoliday && (
             <div className={cn("w-2 h-2 rounded-full", colors.holiday?.bg || "bg-amber-500")} title={summary?.holidayName || "Holiday"} />
           )}
+          {isBirthday && (
+            <div className={cn("w-2 h-2 rounded-full", colors.birthday?.bg || "bg-pink-500")} title="Birthday" />
+          )}
         </div>
+      )}
+
+      {isBirthday && (
+        <style jsx>{`
+          .birthday-border {
+            border: 3px solid;
+            border-image: linear-gradient(
+              45deg,
+              rgba(236, 72, 153, 0.8),
+              rgba(168, 85, 247, 0.8),
+              rgba(234, 179, 8, 0.8),
+              rgba(236, 72, 153, 0.8)
+            ) 1;
+            animation: rainbow-border 6s linear infinite;
+          }
+
+          @keyframes rainbow-border {
+            0% {
+              border-image-source: linear-gradient(
+                45deg,
+                rgba(236, 72, 153, 0.8),
+                rgba(168, 85, 247, 0.8),
+                rgba(234, 179, 8, 0.8),
+                rgba(236, 72, 153, 0.8)
+              );
+            }
+            25% {
+              border-image-source: linear-gradient(
+                45deg,
+                rgba(234, 179, 8, 0.8),
+                rgba(236, 72, 153, 0.8),
+                rgba(168, 85, 247, 0.8),
+                rgba(234, 179, 8, 0.8)
+              );
+            }
+            50% {
+              border-image-source: linear-gradient(
+                45deg,
+                rgba(168, 85, 247, 0.8),
+                rgba(234, 179, 8, 0.8),
+                rgba(236, 72, 153, 0.8),
+                rgba(168, 85, 247, 0.8)
+              );
+            }
+            75% {
+              border-image-source: linear-gradient(
+                45deg,
+                rgba(234, 179, 8, 0.8),
+                rgba(168, 85, 247, 0.8),
+                rgba(236, 72, 153, 0.8),
+                rgba(234, 179, 8, 0.8)
+              );
+            }
+            100% {
+              border-image-source: linear-gradient(
+                45deg,
+                rgba(236, 72, 153, 0.8),
+                rgba(168, 85, 247, 0.8),
+                rgba(234, 179, 8, 0.8),
+                rgba(236, 72, 153, 0.8)
+              );
+            }
+          }
+        `}</style>
       )}
     </Card>
   );

@@ -12,6 +12,7 @@ import { IntegrationsCard } from "@/components/widgets/settings/integrations-car
 import { MediaTagsGenresManager } from "@/components/widgets/settings/media-tags-genres-manager";
 import { CalendarColorsManager } from "@/components/widgets/settings/calendar-colors-manager";
 import { WeatherLocationManager } from "@/components/widgets/settings/weather-location-manager";
+import { BirthdayManager } from "@/components/widgets/settings/birthday-manager";
 import { SignOutButton } from "@/components/widgets/settings/sign-out-button";
 import { ThemeSettings } from "@/components/widgets/settings/theme-settings";
 import { PWAInstallCard } from "@/components/widgets/settings/pwa-install-card";
@@ -36,6 +37,8 @@ export default async function SettingsPage() {
         <CalendarColorsManager />
 
         <WeatherLocationManager />
+
+        <BirthdayManager />
 
         <MediaTagsGenresManager />
 
