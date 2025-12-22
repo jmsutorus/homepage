@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/jmsutorus/homepage/compare/v1.15.0...v1.16.0) (2025-12-22)
+
+
+### Features
+
+* people tracking added ([#87](https://github.com/jmsutorus/homepage/issues/87)) ([5d8b4bd](https://github.com/jmsutorus/homepage/commit/5d8b4bdf9d29b33facc469ba8911a04d5fa2ae9a))
+
 # [1.15.0](https://github.com/jmsutorus/homepage/compare/v1.14.1...v1.15.0) (2025-12-19)
 
 
