@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 
 import { 
   getUpcomingWorkoutActivities, 
-  getRecentWorkoutActivities, 
+  getRecentWorkoutActivities,
+  getCompletedWorkoutActivities,
 } from "@/lib/db/workout-activities";
 import { 
   getActivitiesByUserId, 
@@ -21,6 +22,7 @@ export default async function ExercisePage() {
     athlete,
     upcomingActivities,
     recentActivities,
+    completedActivities,
     stravaActivities,
     activityStats,
     ytdStats
@@ -31,6 +33,7 @@ export default async function ExercisePage() {
     ),
     getUpcomingWorkoutActivities(currentUserId, 3),
     getRecentWorkoutActivities(currentUserId, 5),
+    getCompletedWorkoutActivities(currentUserId, 20),
     getActivitiesByUserId(currentUserId, 200),
     getActivityStatsByUserId(currentUserId),
     getYTDStatsByUserId(currentUserId)
@@ -45,6 +48,7 @@ export default async function ExercisePage() {
   const sanitizedAthlete = athlete ? JSON.parse(JSON.stringify(athlete)) : undefined;
   const sanitizedUpcoming = JSON.parse(JSON.stringify(upcomingActivities));
   const sanitizedRecent = JSON.parse(JSON.stringify(recentActivities));
+  const sanitizedCompleted = JSON.parse(JSON.stringify(completedActivities));
   const sanitizedStrava = JSON.parse(JSON.stringify(stravaActivities));
   const sanitizedStats = JSON.parse(JSON.stringify(initialStats));
 
@@ -54,8 +58,10 @@ export default async function ExercisePage() {
       lastSync={sanitizedAthlete?.last_sync}
       initialUpcomingActivities={sanitizedUpcoming}
       initialRecentActivities={sanitizedRecent}
+      initialCompletedActivities={sanitizedCompleted}
       initialStravaActivities={sanitizedStrava}
       initialStats={sanitizedStats}
     />
   );
 }
+

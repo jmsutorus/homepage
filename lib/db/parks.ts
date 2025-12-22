@@ -389,3 +389,202 @@ export async function parkSlugExists(slug: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Person associated with a park (from park_people junction)
+ */
+export interface ParkPerson {
+  id: number;           // park_people.id
+  parkId: number;
+  personId: number;
+  name: string;         // Joined from people table
+  photo: string | null; // Joined from people table
+  relationship: 'family' | 'friends' | 'work' | 'other';
+  relationshipTypeName?: string | null;
+  created_at: string;
+}
+
+/**
+ * Add a person to a park
+ */
+export async function addPersonToPark(
+  parkId: number,
+  personId: number,
+  userId: string
+): Promise<ParkPerson | null> {
+  try {
+    const db = getDatabase();
+    const insertResult = await db.execute({
+      sql: `INSERT INTO park_people (userId, parkId, personId) VALUES (?, ?, ?)`,
+      args: [userId, parkId, personId]
+    });
+
+    const personResult = await db.execute({
+      sql: `SELECT
+        pp.id,
+        pp.parkId,
+        pp.personId,
+        p.name,
+        p.photo,
+        p.relationship,
+        rt.name as relationshipTypeName,
+        pp.created_at
+      FROM park_people pp
+      JOIN people p ON p.id = pp.personId
+      LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
+      WHERE pp.id = ?`,
+      args: [Number(insertResult.lastInsertRowid)]
+    });
+
+    const person = personResult.rows[0] as unknown as ParkPerson | undefined;
+    return person || null;
+  } catch (error) {
+    console.error("Error adding person to park:", error);
+    return null;
+  }
+}
+
+/**
+ * Get all people associated with a park
+ */
+export async function getParkPeople(parkId: number): Promise<ParkPerson[]> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT
+        pp.id,
+        pp.parkId,
+        pp.personId,
+        p.name,
+        p.photo,
+        p.relationship,
+        rt.name as relationshipTypeName,
+        pp.created_at
+      FROM park_people pp
+      JOIN people p ON p.id = pp.personId
+      LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
+      WHERE pp.parkId = ?
+      ORDER BY p.name ASC`,
+      args: [parkId]
+    });
+
+    return result.rows as unknown as ParkPerson[];
+  } catch (error) {
+    console.error("Error getting park people:", error);
+    return [];
+  }
+}
+
+/**
+ * Get a single park-person association
+ */
+export async function getParkPerson(
+  id: number,
+  parkId: number
+): Promise<ParkPerson | null> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: `SELECT
+        pp.id,
+        pp.parkId,
+        pp.personId,
+        p.name,
+        p.photo,
+        p.relationship,
+        rt.name as relationshipTypeName,
+        pp.created_at
+      FROM park_people pp
+      JOIN people p ON p.id = pp.personId
+      LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
+      WHERE pp.id = ? AND pp.parkId = ?`,
+      args: [id, parkId]
+    });
+
+    const person = result.rows[0] as unknown as ParkPerson | undefined;
+    return person || null;
+  } catch (error) {
+    console.error("Error getting park person:", error);
+    return null;
+  }
+}
+
+/**
+ * Remove a person from a park by association ID
+ */
+export async function removePersonFromPark(
+  id: number,
+  parkId: number,
+  userId: string
+): Promise<boolean> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "DELETE FROM park_people WHERE id = ? AND parkId = ? AND userId = ?",
+      args: [id, parkId, userId]
+    });
+    return (result.rowsAffected ?? 0) > 0;
+  } catch (error) {
+    console.error("Error removing person from park:", error);
+    return false;
+  }
+}
+
+/**
+ * Remove a person from a park by person ID
+ */
+export async function removePersonFromParkByPersonId(
+  parkId: number,
+  personId: number,
+  userId: string
+): Promise<boolean> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "DELETE FROM park_people WHERE parkId = ? AND personId = ? AND userId = ?",
+      args: [parkId, personId, userId]
+    });
+    return (result.rowsAffected ?? 0) > 0;
+  } catch (error) {
+    console.error("Error removing person from park by person ID:", error);
+    return false;
+  }
+}
+
+/**
+ * Delete all people associations for a park
+ */
+export async function deleteAllParkPeople(parkId: number): Promise<number> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "DELETE FROM park_people WHERE parkId = ?",
+      args: [parkId]
+    });
+    return result.rowsAffected ?? 0;
+  } catch (error) {
+    console.error("Error deleting all park people:", error);
+    return 0;
+  }
+}
+
+/**
+ * Check if a person is already associated with a park
+ */
+export async function isPersonOnPark(
+  parkId: number,
+  personId: number
+): Promise<boolean> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT COUNT(*) as count FROM park_people WHERE parkId = ? AND personId = ?",
+      args: [parkId, personId]
+    });
+    const row = result.rows[0] as unknown as { count: number };
+    return row.count > 0;
+  } catch (error) {
+    console.error("Error checking if person is on park:", error);
+    return false;
+  }
+}

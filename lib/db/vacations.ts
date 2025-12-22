@@ -42,6 +42,7 @@ import type {
   BookingInput,
   VacationPhoto,
   VacationPhotoInput,
+  VacationPerson,
   VacationWithDetails
 } from "@/lib/types/vacations";
 
@@ -183,15 +184,20 @@ export async function getVacationWithDetails(
   const vacation = await getVacationBySlug(slug, userId);
   if (!vacation) return undefined;
 
-  const itinerary = await getItineraryDays(vacation.id);
-  const bookings = await getBookings(vacation.id);
-  const photos = await getVacationPhotos(vacation.id);
+  // Fetch all related data in parallel
+  const [itinerary, bookings, photos, people] = await Promise.all([
+    getItineraryDays(vacation.id),
+    getBookings(vacation.id),
+    getVacationPhotos(vacation.id),
+    getVacationPeople(vacation.id),
+  ]);
 
   return {
     vacation,
     itinerary,
     bookings,
     photos,
+    people,
   };
 }
 
@@ -804,4 +810,136 @@ export async function deleteAllVacationPhotos(vacationId: number): Promise<numbe
     [vacationId]
   );
   return result.changes;
+}
+
+// ==================== Vacation People Junction ====================
+
+/**
+ * Add a person to a vacation
+ */
+export async function addPersonToVacation(
+  vacationId: number,
+  personId: number,
+  userId: string
+): Promise<VacationPerson> {
+  const result = await execute(
+    `INSERT INTO vacation_people (userId, vacationId, personId)
+     VALUES (?, ?, ?)`,
+    [userId, vacationId, personId]
+  );
+
+  const vacationPerson = await getVacationPerson(
+    result.lastInsertRowid as number,
+    vacationId
+  );
+
+  if (!vacationPerson) {
+    throw new Error("Failed to add person to vacation");
+  }
+
+  return vacationPerson;
+}
+
+/**
+ * Get all people associated with a vacation
+ * Joins with people table to get person details
+ */
+export async function getVacationPeople(vacationId: number): Promise<VacationPerson[]> {
+  return query<VacationPerson>(
+    `SELECT
+      vp.id,
+      vp.vacationId,
+      vp.personId,
+      vp.created_at,
+      p.name,
+      p.photo,
+      p.relationship,
+      rt.name as relationshipTypeName
+     FROM vacation_people vp
+     JOIN people p ON vp.personId = p.id
+     LEFT JOIN relationship_types rt ON p.relationship_type_id = rt.id
+     WHERE vp.vacationId = ?
+     ORDER BY p.name ASC`,
+    [vacationId]
+  );
+}
+
+/**
+ * Get a single vacation-person association
+ */
+export async function getVacationPerson(
+  id: number,
+  vacationId: number
+): Promise<VacationPerson | undefined> {
+  return queryOne<VacationPerson>(
+    `SELECT
+      vp.id,
+      vp.vacationId,
+      vp.personId,
+      vp.created_at,
+      p.name,
+      p.photo,
+      p.relationship,
+      rt.name as relationshipTypeName
+     FROM vacation_people vp
+     JOIN people p ON vp.personId = p.id
+     LEFT JOIN relationship_types rt ON p.relationship_type_id = rt.id
+     WHERE vp.id = ? AND vp.vacationId = ?`,
+    [id, vacationId]
+  );
+}
+
+/**
+ * Remove a person from a vacation
+ */
+export async function removePersonFromVacation(
+  id: number,
+  vacationId: number,
+  userId: string
+): Promise<boolean> {
+  const result = await execute(
+    "DELETE FROM vacation_people WHERE id = ? AND vacationId = ? AND userId = ?",
+    [id, vacationId, userId]
+  );
+  return result.changes > 0;
+}
+
+/**
+ * Remove a person from a vacation by personId (alternative approach)
+ */
+export async function removePersonFromVacationByPersonId(
+  vacationId: number,
+  personId: number,
+  userId: string
+): Promise<boolean> {
+  const result = await execute(
+    "DELETE FROM vacation_people WHERE vacationId = ? AND personId = ? AND userId = ?",
+    [vacationId, personId, userId]
+  );
+  return result.changes > 0;
+}
+
+/**
+ * Delete all person associations for a vacation
+ */
+export async function deleteAllVacationPeople(vacationId: number): Promise<number> {
+  const result = await execute(
+    "DELETE FROM vacation_people WHERE vacationId = ?",
+    [vacationId]
+  );
+  return result.changes;
+}
+
+/**
+ * Check if a person is already associated with a vacation
+ */
+export async function isPersonOnVacation(
+  vacationId: number,
+  personId: number
+): Promise<boolean> {
+  const result = await queryOne<{ count: number }>(
+    "SELECT COUNT(*) as count FROM vacation_people WHERE vacationId = ? AND personId = ?",
+    [vacationId, personId]
+  );
+  return (result?.count || 0) > 0;
 }

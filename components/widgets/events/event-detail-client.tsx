@@ -30,6 +30,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { EventPhotoGallery } from './event-photo-gallery';
+import { EventPeopleSection } from './event-people-section';
 import type { Event, EventPhoto, EventWithDetails, EventCategory } from '@/lib/db/events';
 
 interface EventDetailClientProps {
@@ -41,7 +42,7 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
   const [data, setData] = useState<EventWithDetails>(initialData);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const { event, photos } = data;
+  const { event, photos, people } = data;
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -551,6 +552,13 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
               </CardContent>
             </Card>
           )}
+
+          {/* Attendees */}
+          <EventPeopleSection
+            eventSlug={event.slug}
+            people={people}
+            onUpdate={handleUpdate}
+          />
 
           {/* Photo Gallery */}
           <EventPhotoGallery event={event} photos={photos} onUpdate={handleUpdate} />

@@ -14,13 +14,14 @@ import { cn } from "@/lib/utils";
 
 interface AddActivityModalProps {
   onActivityAdded?: () => void;
+  onActivityDeleted?: () => void;
   editActivity?: WorkoutActivity | null;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   showButton?: boolean;
 }
 
-export function AddActivityModal({ onActivityAdded, editActivity, isOpen, onOpenChange, showButton }: AddActivityModalProps) {
+export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActivity, isOpen, onOpenChange, showButton }: AddActivityModalProps) {
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -53,6 +54,11 @@ export function AddActivityModal({ onActivityAdded, editActivity, isOpen, onOpen
       // If adding, show success animation
       triggerSuccess();
     }
+  };
+
+  const handleDelete = () => {
+    setIsModalOpen(false);
+    onActivityDeleted?.();
   };
 
   const dialogContent = (
@@ -90,6 +96,7 @@ export function AddActivityModal({ onActivityAdded, editActivity, isOpen, onOpen
             editActivity={editActivity} 
             onSuccess={handleSuccess} 
             onCancel={() => setIsModalOpen(false)} 
+            onDelete={editActivity ? handleDelete : undefined}
             isDesktop={isDesktop}
           />
         )}

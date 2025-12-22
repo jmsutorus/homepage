@@ -15,6 +15,9 @@ export interface Person {
   phone: string | null;
   notes: string | null;
   anniversary: string | null; // YYYY-MM-DD or 0000-MM-DD
+  relationship_type_id: number | null;
+  relationshipTypeName?: string | null; // Joined from relationship_types table
+  is_partner: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -32,6 +35,13 @@ export interface PersonWithAnniversary extends Person {
 }
 
 export type RelationshipCategory = 'family' | 'friends' | 'work' | 'other';
+
+export interface RelationshipType {
+  id: number;
+  userId: string;
+  name: string;
+  created_at: string;
+}
 
 // ============================================================================
 // Utility Functions
@@ -218,11 +228,13 @@ export async function createPerson(
   phone: string | undefined,
   notes: string | undefined,
   anniversary: string | undefined,
-  userId: string
+  userId: string,
+  relationshipTypeId?: number | null,
+  isPartner?: boolean
 ): Promise<Person> {
   const result = await execute(
-    `INSERT INTO people (userId, name, birthday, relationship, photo, email, phone, notes, anniversary)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO people (userId, name, birthday, relationship, photo, email, phone, notes, anniversary, relationship_type_id, is_partner)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       name,
@@ -232,46 +244,57 @@ export async function createPerson(
       email || null,
       phone || null,
       notes || null,
-      anniversary || null
+      anniversary || null,
+      relationshipTypeId ?? null,
+      isPartner ? 1 : 0
     ]
   );
 
-  const created = await queryOne<Person>(
-    "SELECT * FROM people WHERE id = ?",
-    [result.lastInsertRowid]
-  );
+  const created = await getPersonById(Number(result.lastInsertRowid), userId);
 
   if (!created) {
     throw new Error("Failed to create person");
   }
 
-  // TODO: Add achievements for people tracking (future enhancement)
-  // checkAchievement(userId, 'people').catch(console.error);
-
   return created;
 }
 
 /**
- * Get all people for a user
+ * Get all people for a user (with relationship type name joined)
  */
 export async function getPeople(userId: string): Promise<Person[]> {
-  return query<Person>(
-    "SELECT * FROM people WHERE userId = ? ORDER BY name ASC",
+  // DB returns is_partner as 0/1, so we use a raw type and convert
+  type PersonDBRow = Omit<Person, 'is_partner'> & { is_partner: number };
+  const results = await query<PersonDBRow>(
+    `SELECT p.*, rt.name as relationshipTypeName
+     FROM people p
+     LEFT JOIN relationship_types rt ON p.relationship_type_id = rt.id
+     WHERE p.userId = ?
+     ORDER BY p.name ASC`,
     [userId]
   );
+  // Convert is_partner from 0/1 to boolean
+  return results.map(p => ({ ...p, is_partner: Boolean(p.is_partner) }));
 }
 
 /**
- * Get a single person by ID (with ownership verification)
+ * Get a single person by ID (with ownership verification and relationship type name)
  */
 export async function getPersonById(
   id: number,
   userId: string
 ): Promise<Person | undefined> {
-  return queryOne<Person>(
-    "SELECT * FROM people WHERE id = ? AND userId = ?",
+  // DB returns is_partner as 0/1, so we use a raw type and convert
+  type PersonDBRow = Omit<Person, 'is_partner'> & { is_partner: number };
+  const result = await queryOne<PersonDBRow>(
+    `SELECT p.*, rt.name as relationshipTypeName
+     FROM people p
+     LEFT JOIN relationship_types rt ON p.relationship_type_id = rt.id
+     WHERE p.id = ? AND p.userId = ?`,
     [id, userId]
   );
+  if (!result) return undefined;
+  return { ...result, is_partner: Boolean(result.is_partner) };
 }
 
 /**
@@ -287,11 +310,13 @@ export async function updatePerson(
   phone: string | undefined,
   notes: string | undefined,
   anniversary: string | undefined,
-  userId: string
+  userId: string,
+  relationshipTypeId?: number | null,
+  isPartner?: boolean
 ): Promise<boolean> {
   const result = await execute(
     `UPDATE people
-     SET name = ?, birthday = ?, relationship = ?, photo = ?, email = ?, phone = ?, notes = ?, anniversary = ?
+     SET name = ?, birthday = ?, relationship = ?, photo = ?, email = ?, phone = ?, notes = ?, anniversary = ?, relationship_type_id = ?, is_partner = ?
      WHERE id = ? AND userId = ?`,
     [
       name,
@@ -302,6 +327,8 @@ export async function updatePerson(
       phone || null,
       notes || null,
       anniversary || null,
+      relationshipTypeId ?? null,
+      isPartner ? 1 : 0,
       id,
       userId
     ]
@@ -463,3 +490,129 @@ export async function searchPeople(
     [userId, `%${searchTerm}%`]
   );
 }
+
+// ============================================================================
+// Relationship Type Functions
+// ============================================================================
+
+const DEFAULT_RELATIONSHIP_TYPES = [
+  'Partner',
+  'Spouse',
+  'Father',
+  'Mother',
+  'Brother',
+  'Sister',
+  'Son',
+  'Daughter',
+  'Grandparent',
+  'Grandchild',
+  'Uncle',
+  'Aunt',
+  'Cousin',
+  'Friend',
+  'Coworker',
+  'Boss'
+];
+
+/**
+ * Get all relationship types for a user
+ */
+export async function getAllRelationshipTypes(userId: string): Promise<RelationshipType[]> {
+  return query<RelationshipType>(
+    "SELECT * FROM relationship_types WHERE userId = ? ORDER BY name ASC",
+    [userId]
+  );
+}
+
+/**
+ * Create a new relationship type
+ */
+export async function createRelationshipType(
+  userId: string,
+  name: string
+): Promise<RelationshipType> {
+  const result = await execute(
+    "INSERT INTO relationship_types (userId, name) VALUES (?, ?)",
+    [userId, name]
+  );
+
+  const created = await queryOne<RelationshipType>(
+    "SELECT * FROM relationship_types WHERE id = ?",
+    [result.lastInsertRowid]
+  );
+
+  if (!created) {
+    throw new Error("Failed to create relationship type");
+  }
+
+  return created;
+}
+
+/**
+ * Update a relationship type
+ */
+export async function updateRelationshipType(
+  id: number,
+  name: string,
+  userId: string
+): Promise<boolean> {
+  const result = await execute(
+    "UPDATE relationship_types SET name = ? WHERE id = ? AND userId = ?",
+    [name, id, userId]
+  );
+
+  return result.changes > 0;
+}
+
+/**
+ * Delete a relationship type
+ * Note: People with this type will have their relationship_type_id set to NULL (via ON DELETE SET NULL)
+ */
+export async function deleteRelationshipType(
+  id: number,
+  userId: string
+): Promise<boolean> {
+  const result = await execute(
+    "DELETE FROM relationship_types WHERE id = ? AND userId = ?",
+    [id, userId]
+  );
+
+  return result.changes > 0;
+}
+
+/**
+ * Ensure default relationship types exist for a user
+ * Creates defaults if user has no relationship types
+ */
+export async function ensureDefaultRelationshipTypes(userId: string): Promise<void> {
+  const existing = await getAllRelationshipTypes(userId);
+
+  if (existing.length === 0) {
+    // Create default relationship types
+    for (const name of DEFAULT_RELATIONSHIP_TYPES) {
+      try {
+        await createRelationshipType(userId, name);
+      } catch (error) {
+        // Ignore unique constraint errors (shouldn't happen but just in case)
+        console.error(`Failed to create default relationship type "${name}":`, error);
+      }
+    }
+  }
+}
+
+/**
+ * Get the current partner for a user (person marked as is_partner = true)
+ */
+export async function getCurrentPartner(userId: string): Promise<Person | undefined> {
+  type PersonDBRow = Omit<Person, 'is_partner'> & { is_partner: number };
+  const result = await queryOne<PersonDBRow>(
+    `SELECT p.*, rt.name as relationshipTypeName
+     FROM people p
+     LEFT JOIN relationship_types rt ON p.relationship_type_id = rt.id
+     WHERE p.userId = ? AND p.is_partner = 1`,
+    [userId]
+  );
+  if (!result) return undefined;
+  return { ...result, is_partner: Boolean(result.is_partner) };
+}
+

@@ -6,6 +6,7 @@ import { ExerciseCharts } from "@/components/widgets/exercise/exercise-charts";
 import { StravaSync } from "@/components/widgets/exercise/strava-sync";
 import { AddActivityModal } from "@/components/widgets/exercise/add-activity-modal";
 import { UpcomingActivities } from "@/components/widgets/calendar/upcoming-activities";
+import { CompletedActivities } from "@/components/widgets/exercise/completed-activities";
 
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
@@ -19,6 +20,7 @@ interface ExercisePageClientProps {
   lastSync?: string;
   initialUpcomingActivities: WorkoutActivity[];
   initialRecentActivities: WorkoutActivity[];
+  initialCompletedActivities: WorkoutActivity[];
   initialStravaActivities: any[]; // Using any to avoid importing StravaActivity type from component
   initialStats: any; // Using any to avoid importing Stats type from component
 }
@@ -28,6 +30,7 @@ export function ExercisePageClient({
   lastSync,
   initialUpcomingActivities,
   initialRecentActivities,
+  initialCompletedActivities,
   initialStravaActivities,
   initialStats
 }: ExercisePageClientProps) {
@@ -74,6 +77,12 @@ export function ExercisePageClient({
             stravaActivities={initialStravaActivities}
           />
 
+          {/* Completed Activities */}
+          <CompletedActivities 
+            initialActivities={initialCompletedActivities}
+            onRefresh={refreshKey}
+          />
+
           {/* Strava Sync Widget */}
           <StravaSync athleteId={athleteId} lastSync={lastSync} />
         </TabsContent>
@@ -94,3 +103,4 @@ export function ExercisePageClient({
     </div>
   );
 }
+

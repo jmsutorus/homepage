@@ -55,7 +55,9 @@ export async function GET(
  *   email?: string,
  *   phone?: string,
  *   notes?: string,
- *   anniversary?: string (YYYY-MM-DD or 0000-MM-DD)
+ *   anniversary?: string (YYYY-MM-DD or 0000-MM-DD),
+ *   relationship_type_id?: number,
+ *   is_partner?: boolean
  * }
  * Returns: { success: boolean }
  */
@@ -78,7 +80,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, birthday, relationship, photo, email, phone, notes, anniversary } = body;
+    const { name, birthday, relationship, photo, email, phone, notes, anniversary, relationship_type_id, is_partner } = body;
 
     // Validate required fields
     if (!name || !birthday) {
@@ -126,7 +128,9 @@ export async function PUT(
       phone,
       notes,
       anniversary,
-      userId
+      userId,
+      relationship_type_id,
+      is_partner
     );
 
     if (!success) {
