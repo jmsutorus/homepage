@@ -94,7 +94,7 @@ export function VacationDetailClient({ vacationData: initialData }: VacationDeta
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-6">
       {/* Header */}
       <div className="flex flex-col gap-4">
         <Button variant="ghost" asChild className="w-fit">
@@ -165,8 +165,35 @@ export function VacationDetailClient({ vacationData: initialData }: VacationDeta
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6 sm:space-y-8 mt-6">
-          {/* Quick Stats */}
-          <div className="grid gap-4 md:grid-cols-3">
+          {/* Quick Stats - Combined card on mobile, separate cards on desktop */}
+          {/* Mobile: Single combined card */}
+          <Card className="md:hidden">
+            <CardContent className="py-4">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold">{duration}</div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {duration === 1 ? 'Day' : 'Days'}
+                  </p>
+                </div>
+                <div className="border-l border-r border-border">
+                  <div className="text-2xl font-bold">{itinerary.length}</div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Planned
+                  </p>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{bookings.length}</div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Bookings
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Desktop: Separate cards */}
+          <div className="hidden md:grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Duration</CardTitle>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MealList } from "@/components/widgets/meals/meal-list";
 import { MealForm } from "@/components/widgets/meals/meal-form";
+import { MobileRecipeSheet } from "@/components/widgets/meals/mobile-recipe-sheet";
 import { GroceryList } from "@/components/widgets/meals/grocery-list";
 import { ImportIngredientsDialog } from "@/components/widgets/meals/import-ingredients-dialog";
 import { Utensils, ShoppingCart, Settings, Plus } from "lucide-react";
@@ -40,6 +41,15 @@ export function MealsPageClient({
   const [mealToDelete, setMealToDelete] = useState<Meal | null>(null);
   const [editMeal, setEditMeal] = useState<Meal | MealWithIngredients | null>(null);
   const [mobileFormOpen, setMobileFormOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Meal CRUD handlers
   const handleCreateMeal = async (mealData: MealInput, ingredients: IngredientInput[]) => {
@@ -345,13 +355,21 @@ export function MealsPageClient({
         </TabsContent>
       </Tabs>
 
-      {/* Mobile Create Meal Dialog */}
-      <MealForm
-        onSubmit={handleCreateMeal}
-        open={mobileFormOpen}
-        onOpenChange={setMobileFormOpen}
-        title="New Recipe"
-      />
+      {/* Mobile Create Meal - Uses Sheet on mobile, Dialog on desktop */}
+      {isMobile ? (
+        <MobileRecipeSheet
+          open={mobileFormOpen}
+          onOpenChange={setMobileFormOpen}
+          onRecipeAdded={handleCreateMeal}
+        />
+      ) : (
+        <MealForm
+          onSubmit={handleCreateMeal}
+          open={mobileFormOpen}
+          onOpenChange={setMobileFormOpen}
+          title="New Recipe"
+        />
+      )}
 
       {/* Edit Meal Dialog */}
       {editMeal && (

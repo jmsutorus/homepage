@@ -43,7 +43,8 @@ type EntityType =
   | "goal"
   | "date"
   | "milestone"
-  | "intimacy";
+  | "intimacy"
+  | "recipe";
 
 /**
  * Default success messages for each entity type
@@ -64,6 +65,7 @@ const DEFAULT_MESSAGES: Record<EntityType, string> = {
   date: "Date updated successfully",
   milestone: "Milestone updated successfully",
   intimacy: "Private entry saved",
+  recipe: "Recipe created successfully!",
 };
 
 /**

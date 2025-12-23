@@ -5,15 +5,20 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, User, Users, UserPlus, Briefcase, Mail, Phone, Trash2, Edit, Cake, Heart, Settings, ListTodo } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Plus, User, Users, UserPlus, Briefcase, Mail, Phone, Trash2, Edit, Cake, Heart, Settings, ListTodo, Search, X, Copy, Sparkles, Gift } from "lucide-react";
 import { type Person, type RelationshipCategory } from "@/lib/db/people";
 import { PersonFormDialog } from "@/components/widgets/people/person-form-dialog";
 import { DeletePersonDialog } from "@/components/widgets/people/delete-person-dialog";
 import { RelationshipTypeManager } from "@/components/widgets/people/relationship-type-manager";
+import { getZodiacSignFromBirthday, getZodiacElementColor } from "@/lib/zodiac";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
+import { toast } from "sonner";
+import { AnimatedProgressRing } from "@/components/ui/animations/animated-progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PeoplePageClientProps {
   initialPeople: Person[];
@@ -46,6 +51,8 @@ const RELATIONSHIP_CONFIG = {
   }
 };
 
+const MILESTONE_AGES = [18, 21, 25, 30, 40, 50, 60, 75, 100];
+
 type SortOption = "name" | "birthday" | "upcoming";
 
 export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
@@ -53,6 +60,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
   const [filteredPeople, setFilteredPeople] = useState<Person[]>(initialPeople);
   const [selectedFilter, setSelectedFilter] = useState<RelationshipCategory | "all">("all");
   const [sortBy, setSortBy] = useState<SortOption>("name");
+  const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
@@ -100,8 +108,20 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
   };
 
   // Apply filters and sorting
-  const applyFiltersAndSort = (peopleList: Person[], filter: RelationshipCategory | "all", sort: SortOption) => {
+  const applyFiltersAndSort = (peopleList: Person[], filter: RelationshipCategory | "all", sort: SortOption, search: string) => {
     let result = [...peopleList];
+
+    // Filter by search term
+    if (search.trim()) {
+      const searchLower = search.toLowerCase();
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(searchLower) ||
+        p.email?.toLowerCase().includes(searchLower) ||
+        p.phone?.toLowerCase().includes(searchLower) ||
+        p.notes?.toLowerCase().includes(searchLower) ||
+        p.gift_ideas?.toLowerCase().includes(searchLower)
+      );
+    }
 
     // Filter by relationship
     if (filter !== "all") {
@@ -126,12 +146,22 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
 
   const handleFilterChange = (filter: RelationshipCategory | "all") => {
     setSelectedFilter(filter);
-    applyFiltersAndSort(people, filter, sortBy);
+    applyFiltersAndSort(people, filter, sortBy, searchTerm);
   };
 
   const handleSortChange = (sort: SortOption) => {
     setSortBy(sort);
-    applyFiltersAndSort(people, selectedFilter, sort);
+    applyFiltersAndSort(people, selectedFilter, sort, searchTerm);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    applyFiltersAndSort(people, selectedFilter, sortBy, value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    applyFiltersAndSort(people, selectedFilter, sortBy, "");
   };
 
   const openAddDialog = () => {
@@ -148,12 +178,21 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
     const refreshResponse = await fetch("/api/people");
     const updatedPeople = await refreshResponse.json();
     setPeople(updatedPeople);
-    applyFiltersAndSort(updatedPeople, selectedFilter, sortBy);
+    applyFiltersAndSort(updatedPeople, selectedFilter, sortBy, searchTerm);
   };
 
   const openDeleteDialog = (person: Person) => {
     setDeletingPerson(person);
     setIsDeleteDialogOpen(true);
+  };
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied to clipboard`);
+    } catch (error) {
+      toast.error(`Failed to copy ${label}`);
+    }
   };
 
   return (
@@ -186,6 +225,209 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
         />
 
         <TabsContent value="people" className="space-y-6 mt-6 pb-20 md:pb-0">
+
+      {/* Birthday Countdown Widgets */}
+      {people.length > 0 && isClient && (() => {
+        // Get next 3 upcoming birthdays
+        const upcomingBirthdays = [...people]
+          .map(person => ({
+            ...person,
+            daysUntil: calculateDaysUntil(person.birthday)
+          }))
+          .sort((a, b) => a.daysUntil - b.daysUntil)
+          .slice(0, 3);
+
+        if (upcomingBirthdays.length === 0) return null;
+
+        return (
+          <div className="flex flex-wrap justify-center gap-8">
+            {upcomingBirthdays.map((person, index) => {
+              const age = calculateAge(person.birthday);
+              const upcomingAge = age !== null ? age + 1 : null;
+              const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              const [, month, day] = person.birthday.split('-');
+              const birthdayDate = `${monthNames[parseInt(month) - 1]} ${parseInt(day)}`;
+
+              // Calculate progress (ring fills up as birthday approaches)
+              const maxDays = 30;
+              const progress = Math.max(0, maxDays - person.daysUntil);
+
+              return (
+                <TooltipProvider key={person.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center cursor-help">
+                        <div className="relative">
+                          <AnimatedProgressRing
+                            value={progress}
+                            max={maxDays}
+                            size={100}
+                            strokeWidth={10}
+                            color={
+                              person.daysUntil === 0 ? "success" :
+                              person.daysUntil <= 7 ? "warning" :
+                              "primary"
+                            }
+                            showLabel={false}
+                            delay={index * 0.15}
+                          />
+                          {/* Days remaining in center */}
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <div className="text-2xl font-bold">
+                              {person.daysUntil === 0 ? '🎉' : person.daysUntil}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {person.daysUntil === 0 ? 'Today!' : person.daysUntil === 1 ? 'day' : 'days'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-3 text-center">
+                          <div className="font-medium text-sm">{person.name}</div>
+                          <div className="text-xs text-muted-foreground">{birthdayDate}</div>
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="space-y-1">
+                        <p className="font-semibold">{person.name}</p>
+                        <p className="text-sm">Birthday: {birthdayDate}</p>
+                        {upcomingAge && <p className="text-sm">Turning {upcomingAge}</p>}
+                        <p className="text-sm text-muted-foreground">
+                          {person.daysUntil === 0 ? 'Today!' : `${person.daysUntil} day${person.daysUntil !== 1 ? 's' : ''} away`}
+                        </p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* Fun Stats */}
+      {people.length > 0 && isClient && (
+        <Card className="border-dashed border-2">
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap gap-6 text-sm">
+              {(() => {
+                // Calculate zodiac distribution
+                const zodiacCounts = new Map<string, { count: number; emoji: string; element: string }>();
+                people.forEach((p) => {
+                  const sign = getZodiacSignFromBirthday(p.birthday);
+                  if (sign) {
+                    const existing = zodiacCounts.get(sign.name);
+                    if (existing) {
+                      existing.count++;
+                    } else {
+                      zodiacCounts.set(sign.name, { count: 1, emoji: sign.emoji, element: sign.element });
+                    }
+                  }
+                });
+
+                // Find most common zodiac
+                let mostCommonZodiac = { name: '', count: 0, emoji: '', element: '' };
+                zodiacCounts.forEach((data, name) => {
+                  if (data.count > mostCommonZodiac.count) {
+                    mostCommonZodiac = { name, count: data.count, emoji: data.emoji, element: data.element };
+                  }
+                });
+
+                // Calculate most common birth month
+                const monthCounts = new Map<number, number>();
+                people.forEach((p) => {
+                  const [, month] = p.birthday.split('-');
+                  const monthNum = parseInt(month, 10);
+                  monthCounts.set(monthNum, (monthCounts.get(monthNum) || 0) + 1);
+                });
+
+                let mostCommonMonth = { num: 0, count: 0 };
+                monthCounts.forEach((count, monthNum) => {
+                  if (count > mostCommonMonth.count) {
+                    mostCommonMonth = { num: monthNum, count };
+                  }
+                });
+
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+                // Calculate milestone birthdays
+                let milestoneCount = 0;
+                people.forEach((p) => {
+                  const age = calculateAge(p.birthday);
+                  if (age !== null) {
+                    const upcomingAge = age + 1;
+                    if (MILESTONE_AGES.includes(upcomingAge)) {
+                      milestoneCount++;
+                    }
+                  }
+                });
+
+                return (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">👥</span>
+                      <span className="font-medium">{people.length}</span>
+                      <span className="text-muted-foreground">
+                        {people.length === 1 ? 'person tracked' : 'people tracked'}
+                      </span>
+                    </div>
+                    {mostCommonZodiac.count > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Most common:</span>
+                        <Badge variant="outline" className={getZodiacElementColor(mostCommonZodiac.element as any)}>
+                          <span className="mr-1">{mostCommonZodiac.emoji}</span>
+                          {mostCommonZodiac.name}
+                        </Badge>
+                        <span className="text-muted-foreground">
+                          ({mostCommonZodiac.count} {mostCommonZodiac.count === 1 ? 'person' : 'people'})
+                        </span>
+                      </div>
+                    )}
+                    {mostCommonMonth.count > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">🎂 Most birthdays in:</span>
+                        <span className="font-medium">{monthNames[mostCommonMonth.num - 1]}</span>
+                        <span className="text-muted-foreground">
+                          ({mostCommonMonth.count})
+                        </span>
+                      </div>
+                    )}
+                    {milestoneCount > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                        <span className="font-medium text-yellow-900 dark:text-yellow-200">
+                          {milestoneCount} milestone {milestoneCount === 1 ? 'birthday' : 'birthdays'} coming up!
+                        </span>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search by name, email, phone, notes, or gift ideas..."
+          value={searchTerm}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="pl-10 pr-10"
+        />
+        {searchTerm && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+            onClick={clearSearch}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
 
       {/* Filters and Sort */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -238,11 +480,17 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
             <User className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No people found</h3>
             <p className="text-sm text-muted-foreground text-center mb-4">
-              {selectedFilter === "all"
+              {searchTerm
+                ? `No results for "${searchTerm}"`
+                : selectedFilter === "all"
                 ? "Add your first contact to start tracking birthdays"
                 : `No people in the ${RELATIONSHIP_CONFIG[selectedFilter as RelationshipCategory].label} category`}
             </p>
-            {selectedFilter === "all" && (
+            {searchTerm ? (
+              <Button onClick={clearSearch} variant="outline">
+                Clear Search
+              </Button>
+            ) : selectedFilter === "all" && (
               <Button onClick={openAddDialog}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Person
@@ -259,9 +507,14 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
             const daysUntil = isClient ? calculateDaysUntil(person.birthday) : null;
             const age = isClient ? calculateAge(person.birthday) : null;
             const isToday = isClient && daysUntil === 0;
+            const zodiacSign = isClient ? getZodiacSignFromBirthday(person.birthday) : null;
+
+            // Calculate upcoming age and check if it's a milestone
+            const upcomingAge = isClient && age !== null ? age + 1 : null;
+            const isMilestoneBirthday = isClient && upcomingAge !== null && MILESTONE_AGES.includes(upcomingAge);
 
             return (
-              <Card key={person.id} className={`${isToday ? "border-pink-500 border-2" : ""} ${person.is_partner ? "border-rose-400/50 bg-rose-500/5" : ""}`}>
+              <Card key={person.id} className={`${isToday ? "border-pink-500 border-2" : ""} ${person.is_partner ? "border-rose-400/50 bg-rose-500/5" : ""} ${isMilestoneBirthday && !isToday ? "border-yellow-500/50 bg-gradient-to-br from-yellow-500/5 to-amber-500/5" : ""}`}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1 min-w-0">
@@ -298,6 +551,26 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
                               Today!
                             </Badge>
                           )}
+                          {zodiacSign && (
+                            <Badge
+                              variant="outline"
+                              className={getZodiacElementColor(zodiacSign.element)}
+                              title={`${zodiacSign.name} (${zodiacSign.dateRange})`}
+                            >
+                              <span className="mr-1">{zodiacSign.emoji}</span>
+                              {zodiacSign.name}
+                            </Badge>
+                          )}
+                          {isMilestoneBirthday && (
+                            <Badge
+                              variant="outline"
+                              className="bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 text-yellow-900 dark:text-yellow-200"
+                              title={`Turning ${upcomingAge} - Milestone Birthday!`}
+                            >
+                              <Sparkles className="mr-1 h-3 w-3" />
+                              Milestone: {upcomingAge}
+                            </Badge>
+                          )}
                         </div>
 
                         <div className="mt-2 space-y-1 text-sm">
@@ -328,18 +601,56 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
                             {person.email && (
                               <div className="flex items-center gap-1">
                                 <Mail className="h-3 w-3" />
-                                <span>{person.email}</span>
+                                <a
+                                  href={`mailto:${person.email}`}
+                                  className="hover:underline hover:text-primary transition-colors"
+                                >
+                                  {person.email}
+                                </a>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5 ml-1"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    copyToClipboard(person.email!, "Email");
+                                  }}
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
                               </div>
                             )}
                             {person.phone && (
                               <div className="flex items-center gap-1">
                                 <Phone className="h-3 w-3" />
-                                <span>{person.phone}</span>
+                                <a
+                                  href={`tel:${person.phone}`}
+                                  className="hover:underline hover:text-primary transition-colors"
+                                >
+                                  {person.phone}
+                                </a>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5 ml-1"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    copyToClipboard(person.phone!, "Phone");
+                                  }}
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
                               </div>
                             )}
                           </div>
                           {person.notes && (
                             <p className="text-muted-foreground mt-2 line-clamp-2">{person.notes}</p>
+                          )}
+                          {person.gift_ideas && (
+                            <div className="flex items-start gap-2 text-muted-foreground mt-2">
+                              <Gift className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                              <p className="line-clamp-2">{person.gift_ideas}</p>
+                            </div>
                           )}
                         </div>
                       </div>
