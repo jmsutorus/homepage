@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/jmsutorus/homepage/compare/v1.16.0...v1.17.0) (2025-12-23)
+
+
+### Features
+
+* people better ([#90](https://github.com/jmsutorus/homepage/issues/90)) ([e0646e9](https://github.com/jmsutorus/homepage/commit/e0646e97c297cb3426671851a96b010f12ce3914))
+
 # [1.16.0](https://github.com/jmsutorus/homepage/compare/v1.15.0...v1.16.0) (2025-12-22)
 
 
