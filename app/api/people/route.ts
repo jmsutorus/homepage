@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     const userId = session.user.id;
     const body = await request.json();
-    const { name, birthday, relationship, photo, email, phone, notes, anniversary, relationship_type_id, is_partner } = body;
+    const { name, birthday, relationship, photo, email, phone, notes, gift_ideas, anniversary, relationship_type_id, is_partner } = body;
 
     // Validate required fields
     if (!name || !birthday) {
@@ -143,6 +143,7 @@ export async function POST(request: NextRequest) {
       email,
       phone,
       notes,
+      gift_ideas,
       anniversary,
       userId,
       relationship_type_id,

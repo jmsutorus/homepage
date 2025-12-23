@@ -218,6 +218,7 @@ import { AnimatedProgressRing } from "@/components/ui/animations/animated-progre
 |----------|-----------|---------|
 | `habits-list.tsx` | `AnimatedProgress` | Shows habit completion toward target |
 | `daily-habits.tsx` | `AnimatedProgress` | Shows daily habit completion summary |
+| `people/page-client.tsx` | `AnimatedProgressRing` | Birthday countdown widgets for next 3 upcoming birthdays |
 
 ---
 

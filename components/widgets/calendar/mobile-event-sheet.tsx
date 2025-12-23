@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Calendar as CalendarIcon } from "lucide-react";
 import type { EventFormData } from "./event-modal";
 import type { EventCategory } from "@/lib/db/events";
@@ -130,7 +130,7 @@ export function MobileEventSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="h-auto max-h-[90vh] rounded-t-3xl p-0"
+        className="h-auto max-h-[85dvh] rounded-t-3xl p-0"
         onOpenAutoFocus={(e) => {
           e.preventDefault();
         }}
@@ -284,8 +284,8 @@ export function MobileEventSheet({
               )}
             </div>
 
-            {/* Submit Button - Fixed at bottom */}
-            <div className="border-t px-6 py-4">
+            {/* Submit Button - Fixed at bottom with safe area padding */}
+            <SheetFooter className="border-t px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
               <Button
                 type="submit"
                 disabled={isSaving || !formData.title.trim()}
@@ -300,7 +300,7 @@ export function MobileEventSheet({
                   </>
                 )}
               </Button>
-            </div>
+            </SheetFooter>
           </form>
         </div>
       </SheetContent>

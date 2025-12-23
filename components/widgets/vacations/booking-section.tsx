@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Plane, Hotel, MapPin as Activity, Car, Train, MoreHorizontal, Trash2, Edit2, Check, X, DollarSign, Hash, ExternalLink } from 'lucide-react';
+import { Plus, Plane, Hotel, Briefcase, Car, Train, MoreHorizontal, Trash2, Edit2, Check, X, DollarSign, Hash, ExternalLink, MapPin, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 import { Booking, Vacation, BOOKING_TYPES, BOOKING_TYPE_NAMES, BOOKING_STATUSES, BOOKING_STATUS_NAMES, BookingType, BookingStatus, parseLocalDate } from '@/lib/types/vacations';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 
@@ -23,7 +24,7 @@ const BookingIcon = ({ type }: { type: string }) => {
   switch (type) {
     case 'flight': return <Plane {...iconProps} />;
     case 'hotel': return <Hotel {...iconProps} />;
-    case 'activity': return <Activity {...iconProps} />;
+    case 'activity': return <Briefcase {...iconProps} />;
     case 'car': return <Car {...iconProps} />;
     case 'train': return <Train {...iconProps} />;
     default: return <MoreHorizontal {...iconProps} />;
@@ -275,19 +276,19 @@ export function BookingSection({ vacation, bookings, onUpdate }: BookingSectionP
     }
 
     return (
-      <div key={booking.id} className="p-4 border rounded-lg space-y-2">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-2 flex-1">
+      <div key={booking.id} className="p-4 border rounded-lg space-y-2 overflow-hidden">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2 flex-1 min-w-0">
             <BookingIcon type={booking.type} />
-            <div className="space-y-1 flex-1">
+            <div className="space-y-1 flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="font-semibold">{booking.title}</h4>
-                <Badge variant={getStatusVariant(booking.status)}>
+                <h4 className="font-semibold truncate max-w-[200px] sm:max-w-none">{booking.title}</h4>
+                <Badge variant={getStatusVariant(booking.status)} className="hidden sm:inline-flex">
                   {BOOKING_STATUS_NAMES[booking.status]}
                 </Badge>
               </div>
               {booking.provider && (
-                <div className="text-sm text-muted-foreground">{booking.provider}</div>
+                <div className="text-sm text-muted-foreground truncate">{booking.provider}</div>
               )}
               {booking.date && (
                 <div className="text-sm text-muted-foreground">
@@ -296,15 +297,46 @@ export function BookingSection({ vacation, bookings, onUpdate }: BookingSectionP
                 </div>
               )}
               {booking.location && (
-                <div className="text-sm text-muted-foreground">{booking.location}</div>
+                <div className="flex items-center gap-1 text-sm min-w-0">
+                  <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline truncate"
+                    title={booking.location}
+                  >
+                    <span className="sm:hidden">
+                      {booking.location.length > 25 
+                        ? `${booking.location.substring(0, 25)}...` 
+                        : booking.location}
+                    </span>
+                    <span className="hidden sm:inline">
+                      {booking.location.length > 40 
+                        ? `${booking.location.substring(0, 40)}...` 
+                        : booking.location}
+                    </span>
+                  </a>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(booking.location!);
+                      toast.success('Location copied to clipboard');
+                    }}
+                    className="p-1 rounded hover:bg-muted transition-colors shrink-0"
+                    title="Copy location"
+                  >
+                    <Copy className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+                  </button>
+                </div>
               )}
             </div>
           </div>
-          <div className="flex gap-1">
-            <Button onClick={() => handleEdit(booking)} variant="ghost" size="sm">
+          <div className="flex gap-1 shrink-0">
+            <Button onClick={() => handleEdit(booking)} variant="ghost" size="sm" className="h-8 w-8 p-0">
               <Edit2 className="w-4 h-4" />
             </Button>
-            <Button onClick={() => handleDelete(booking.id)} variant="ghost" size="sm">
+            <Button onClick={() => handleDelete(booking.id)} variant="ghost" size="sm" className="h-8 w-8 p-0">
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>

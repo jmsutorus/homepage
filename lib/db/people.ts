@@ -14,6 +14,7 @@ export interface Person {
   email: string | null;
   phone: string | null;
   notes: string | null;
+  gift_ideas: string | null;
   anniversary: string | null; // YYYY-MM-DD or 0000-MM-DD
   relationship_type_id: number | null;
   relationshipTypeName?: string | null; // Joined from relationship_types table
@@ -227,14 +228,15 @@ export async function createPerson(
   email: string | undefined,
   phone: string | undefined,
   notes: string | undefined,
+  giftIdeas: string | undefined,
   anniversary: string | undefined,
   userId: string,
   relationshipTypeId?: number | null,
   isPartner?: boolean
 ): Promise<Person> {
   const result = await execute(
-    `INSERT INTO people (userId, name, birthday, relationship, photo, email, phone, notes, anniversary, relationship_type_id, is_partner)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO people (userId, name, birthday, relationship, photo, email, phone, notes, gift_ideas, anniversary, relationship_type_id, is_partner)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       name,
@@ -244,6 +246,7 @@ export async function createPerson(
       email || null,
       phone || null,
       notes || null,
+      giftIdeas || null,
       anniversary || null,
       relationshipTypeId ?? null,
       isPartner ? 1 : 0
@@ -309,6 +312,7 @@ export async function updatePerson(
   email: string | undefined,
   phone: string | undefined,
   notes: string | undefined,
+  giftIdeas: string | undefined,
   anniversary: string | undefined,
   userId: string,
   relationshipTypeId?: number | null,
@@ -316,7 +320,7 @@ export async function updatePerson(
 ): Promise<boolean> {
   const result = await execute(
     `UPDATE people
-     SET name = ?, birthday = ?, relationship = ?, photo = ?, email = ?, phone = ?, notes = ?, anniversary = ?, relationship_type_id = ?, is_partner = ?
+     SET name = ?, birthday = ?, relationship = ?, photo = ?, email = ?, phone = ?, notes = ?, gift_ideas = ?, anniversary = ?, relationship_type_id = ?, is_partner = ?
      WHERE id = ? AND userId = ?`,
     [
       name,
@@ -326,6 +330,7 @@ export async function updatePerson(
       email || null,
       phone || null,
       notes || null,
+      giftIdeas || null,
       anniversary || null,
       relationshipTypeId ?? null,
       isPartner ? 1 : 0,
