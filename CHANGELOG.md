@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/jmsutorus/homepage/compare/v1.17.0...v1.18.0) (2025-12-31)
+
+
+### Features
+
+* restaurant tracking added ([c11de5f](https://github.com/jmsutorus/homepage/commit/c11de5f9a94290840092b72b10264f425f5d0ec6))
+
 # [1.17.0](https://github.com/jmsutorus/homepage/compare/v1.16.0...v1.17.0) (2025-12-23)
 
 
