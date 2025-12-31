@@ -102,6 +102,11 @@ export interface EventWithDetails {
   people: EventPerson[];
 }
 
+// Event with just the cover photo for card display
+export interface EventWithCoverPhoto extends Event {
+  cover_photo: string | null;
+}
+
 // Helper to serialize notifications to JSON string
 function serializeNotifications(notifications?: EventNotification[]): string {
   return JSON.stringify(notifications || []);
@@ -191,6 +196,32 @@ export async function getEvent(id: number, userId: string): Promise<Event | unde
 export async function getAllEvents(userId: string): Promise<Event[]> {
   const rows = await query<DBEvent>("SELECT * FROM events WHERE userId = ? ORDER BY date ASC, start_time ASC", [userId]);
   return rows.map(transformEvent);
+}
+
+// DB row type for events with cover photo
+interface DBEventWithCoverPhoto extends DBEvent {
+  cover_photo: string | null;
+}
+
+/**
+ * Get all events with their cover photo (first photo) for a specific user
+ * This is optimized for card display to avoid N+1 queries
+ */
+export async function getAllEventsWithCoverPhoto(userId: string): Promise<EventWithCoverPhoto[]> {
+  const rows = await query<DBEventWithCoverPhoto>(
+    `SELECT 
+      e.*,
+      (SELECT url FROM event_photos WHERE eventId = e.id ORDER BY order_index ASC LIMIT 1) as cover_photo
+    FROM events e
+    WHERE e.userId = ?
+    ORDER BY e.date ASC, e.start_time ASC`,
+    [userId]
+  );
+  
+  return rows.map(row => ({
+    ...transformEvent(row),
+    cover_photo: row.cover_photo,
+  }));
 }
 
 /**

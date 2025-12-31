@@ -25,6 +25,7 @@ import { DailyRelationship } from "../daily/daily-relationship";
 import { DailyVacations } from "../daily/daily-vacations";
 import { DailyBirthday } from "../daily/daily-birthday";
 import { DailyPeopleBirthdays } from "../daily/daily-people-birthdays";
+import { DailyRestaurants } from "../daily/daily-restaurants";
 import { ExternalLink, Star, Loader2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -169,6 +170,7 @@ export function CalendarDayDetail({ date, data, isLoading, error, holidayName, i
   const hasDuolingo = data?.duolingoCompleted ?? false;
   const hasRelationship = (data?.relationshipItems.length ?? 0) > 0;
   const hasVacations = (data?.vacations.length ?? 0) > 0;
+  const hasRestaurants = (data?.restaurantVisits.length ?? 0) > 0;
 
   // Workout activities
   const upcomingWorkoutActivities = data?.workoutActivities.filter((w) => !w.completed) ?? [];
@@ -205,7 +207,7 @@ export function CalendarDayDetail({ date, data, isLoading, error, holidayName, i
   // People events (birthdays and anniversaries)
   const hasPeopleEvents = (data?.peopleEvents.length ?? 0) > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship || hasVacations || !!holidayName || isBirthday || hasPeopleEvents;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship || hasVacations || !!holidayName || isBirthday || hasPeopleEvents || hasRestaurants;
 
   // Handler to create an event from a holiday
   const handleCreateHolidayEvent = async () => {
@@ -399,6 +401,11 @@ export function CalendarDayDetail({ date, data, isLoading, error, holidayName, i
             parks={data.parks} 
             onParkClick={handleParkClick} 
           />
+        )}
+
+        {/* Restaurants Section */}
+        {hasRestaurants && data && (
+          <DailyRestaurants visits={data.restaurantVisits} />
         )}
 
         {/* Journals Section */}

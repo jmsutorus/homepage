@@ -93,6 +93,7 @@ export function StorySlide(props: StorySlideProps) {
 
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.confetti, props.type, props.onConfetti]);
 
   return (

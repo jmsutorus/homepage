@@ -35,7 +35,7 @@ interface CompletedActivitiesProps {
 
 export function CompletedActivities({ 
   initialActivities = [],
-  onRefresh 
+
 }: CompletedActivitiesProps) {
   const router = useRouter();
   const [activities, setActivities] = useState<WorkoutActivity[]>(initialActivities);

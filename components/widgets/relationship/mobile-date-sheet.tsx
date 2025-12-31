@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Send, MapPin, DollarSign } from "lucide-react";
+import { Star, Send, MapPin, DollarSign, ImageIcon } from "lucide-react";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 
 interface MobileDateSheetProps {
@@ -25,6 +25,7 @@ export function MobileDateSheet({ open, onOpenChange, onDateAdded }: MobileDateS
   const [rating, setRating] = useState<number | null>(null);
   const [cost, setCost] = useState("");
   const [notes, setNotes] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   // Get today's date in YYYY-MM-DD format
@@ -42,6 +43,7 @@ export function MobileDateSheet({ open, onOpenChange, onDateAdded }: MobileDateS
         setRating(null);
         setCost("");
         setNotes("");
+        setPhotoUrl("");
       }, 300);
     }
   }, [open]);
@@ -66,6 +68,7 @@ export function MobileDateSheet({ open, onOpenChange, onDateAdded }: MobileDateS
           rating: rating || undefined,
           cost: cost ? parseFloat(cost) : undefined,
           notes: notes || undefined,
+          photos: photoUrl.trim() || undefined,
         }),
       });
 
@@ -82,6 +85,7 @@ export function MobileDateSheet({ open, onOpenChange, onDateAdded }: MobileDateS
       setRating(null);
       setCost("");
       setNotes("");
+      setPhotoUrl("");
 
       showCreationSuccess("date");
       onDateAdded();
@@ -257,6 +261,23 @@ export function MobileDateSheet({ open, onOpenChange, onDateAdded }: MobileDateS
                   rows={4}
                   className="resize-none text-base border-2 focus-visible:ring-brand"
                 />
+              </div>
+
+              {/* Photo URL */}
+              <div className="space-y-2">
+                <Label htmlFor="photoUrl" className="text-muted-foreground">
+                  Photo URL (Optional)
+                </Label>
+                <div className="relative">
+                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="photoUrl"
+                    placeholder="https://example.com/image.jpg"
+                    value={photoUrl}
+                    onChange={(e) => setPhotoUrl(e.target.value)}
+                    className="pl-9 h-11 border-2"
+                  />
+                </div>
               </div>
             </div>
 

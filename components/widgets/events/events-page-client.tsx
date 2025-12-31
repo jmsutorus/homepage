@@ -8,11 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Calendar, MapPin, CalendarDays } from 'lucide-react';
-import type { Event } from '@/lib/db/events';
+import type { EventWithCoverPhoto } from '@/lib/db/events';
 import { HolidayIcon, hasHolidayIcon } from './holiday-icons';
 
 interface EventsPageClientProps {
-  events: Event[];
+  events: EventWithCoverPhoto[];
 }
 
 export function EventsPageClient({ events }: EventsPageClientProps) {
@@ -44,7 +44,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
     }
     acc[year].push(event);
     return acc;
-  }, {} as Record<number, Event[]>);
+  }, {} as Record<number, EventWithCoverPhoto[]>);
 
   // Sort years descending
   const sortedYears = Object.keys(eventsByYear)
@@ -137,10 +137,22 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
               <div className="grid gap-4 sm:grid-cols-2">
                 {eventsByYear[year].map((event) => (
                   <Link key={event.id} href={`/events/${event.slug}`}>
-                    <Card className="h-full hover:bg-muted/50 transition-colors cursor-pointer relative overflow-hidden">
+                    <Card className="h-full hover:bg-muted/50 transition-colors cursor-pointer relative overflow-hidden group">
+                      {/* Cover Photo */}
+                      {event.cover_photo && (
+                        <div className="relative h-32 w-full overflow-hidden">
+                          <img
+                            src={event.cover_photo}
+                            alt={event.title}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                          {/* Gradient overlay for text readability */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
+                        </div>
+                      )}
                       {/* Holiday Icon */}
                       {hasHolidayIcon(event.title) && (
-                        <div className="absolute top-3 right-3">
+                        <div className={`absolute ${event.cover_photo ? 'top-2 right-2 bg-background/80 rounded-full p-1' : 'top-3 right-3'}`}>
                           <HolidayIcon type={event.title} className="w-6 h-6" />
                         </div>
                       )}

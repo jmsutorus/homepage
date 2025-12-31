@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, ChevronDown, ChevronRight, X } from "lucide-react";
 import Link from "next/link";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import type { MediaTimelineData, PaginatedMediaResult, MediaContent } from "@/lib/db/media";
 
 // Convert MediaContent to MediaItem
@@ -83,6 +84,9 @@ export function MediaPageClient({
   const [sortBy, setSortBy] = useState<SortOption>("completed-desc");
   const [genreSearch, setGenreSearch] = useState("");
   const [tagSearch, setTagSearch] = useState("");
+  
+  // Detect mobile screen for responsive UI
+  const isMobile = useMediaQuery("(max-width: 639px)");
 
   // Read genres and tags from URL parameters
    
@@ -398,50 +402,67 @@ export function MediaPageClient({
         <TabsContent value="media" className="space-y-4 sm:space-y-6 mt-6">
           {/* Filters and Search */}
           <div className="flex flex-col gap-4">
-        <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground w-full">
-          <Button
-            variant={activeTab === "all" ? "default" : "ghost"}
-            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-            onClick={() => setActiveTab("all")}
-          >
-            All ({stats.all})
-          </Button>
-          <Button
-            variant={activeTab === "movie" ? "default" : "ghost"}
-            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-            onClick={() => setActiveTab("movie")}
-          >
-            Movies ({stats.movie})
-          </Button>
-          <Button
-            variant={activeTab === "tv" ? "default" : "ghost"}
-            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-            onClick={() => setActiveTab("tv")}
-          >
-            TV ({stats.tv})
-          </Button>
-          <Button
-            variant={activeTab === "book" ? "default" : "ghost"}
-            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-            onClick={() => setActiveTab("book")}
-          >
-            Books ({stats.book})
-          </Button>
-          <Button
-            variant={activeTab === "game" ? "default" : "ghost"}
-            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-            onClick={() => setActiveTab("game")}
-          >
-            Games ({stats.game})
-          </Button>
-          <Button
-            variant={activeTab === "album" ? "default" : "ghost"}
-            className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-            onClick={() => setActiveTab("album")}
-          >
-            Albums ({stats.album})
-          </Button>
-        </div>
+        {/* Type Filter - Dropdown on mobile, tabs on desktop */}
+        {isMobile ? (
+          <Select value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Filter by type..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All ({stats.all})</SelectItem>
+              <SelectItem value="movie">Movies ({stats.movie})</SelectItem>
+              <SelectItem value="tv">TV ({stats.tv})</SelectItem>
+              <SelectItem value="book">Books ({stats.book})</SelectItem>
+              <SelectItem value="game">Games ({stats.game})</SelectItem>
+              <SelectItem value="album">Albums ({stats.album})</SelectItem>
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground w-full">
+            <Button
+              variant={activeTab === "all" ? "default" : "ghost"}
+              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+              onClick={() => setActiveTab("all")}
+            >
+              All ({stats.all})
+            </Button>
+            <Button
+              variant={activeTab === "movie" ? "default" : "ghost"}
+              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+              onClick={() => setActiveTab("movie")}
+            >
+              Movies ({stats.movie})
+            </Button>
+            <Button
+              variant={activeTab === "tv" ? "default" : "ghost"}
+              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+              onClick={() => setActiveTab("tv")}
+            >
+              TV ({stats.tv})
+            </Button>
+            <Button
+              variant={activeTab === "book" ? "default" : "ghost"}
+              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+              onClick={() => setActiveTab("book")}
+            >
+              Books ({stats.book})
+            </Button>
+            <Button
+              variant={activeTab === "game" ? "default" : "ghost"}
+              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+              onClick={() => setActiveTab("game")}
+            >
+              Games ({stats.game})
+            </Button>
+            <Button
+              variant={activeTab === "album" ? "default" : "ghost"}
+              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
+              onClick={() => setActiveTab("album")}
+            >
+              Albums ({stats.album})
+            </Button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
           <div className="relative sm:col-span-2">
