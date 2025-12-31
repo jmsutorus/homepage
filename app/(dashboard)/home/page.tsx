@@ -86,6 +86,7 @@ function serializeCalendarData(data: Record<string, any>) {
         dailyMeals: serializeArray(dayData.dailyMeals),
         vacations: serializeArray(dayData.vacations),
         peopleEvents: serializeArray(dayData.peopleEvents),
+        restaurantVisits: serializeArray(dayData.restaurantVisits),
       }
     ])
   );
