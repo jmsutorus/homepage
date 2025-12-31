@@ -20,6 +20,8 @@ import { RelationshipTimeline } from "./relationship-timeline";
 import { MealsTimeline } from "./meals-timeline";
 import { VacationsTimeline } from "./vacations-timeline";
 import { RestaurantsTimeline } from "./restaurants-timeline";
+import { DrinksTimeline } from "./drinks-timeline";
+
 import { TimeSpentChart } from "./time-spent-chart";
 import { getAchievementStats, getUnlockedAchievements } from "@/lib/data/yearly-achievements";
 import { generateYearlyInsights } from "@/lib/data/yearly-insights";
@@ -241,10 +243,15 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
         <MealsTimeline stats={stats} />
       )}
 
-      {/* Restaurants Timeline */}
       {stats.restaurants.totalVisits > 0 && (
         <RestaurantsTimeline stats={stats} />
       )}
+
+      {/* Drinks Timeline */}
+      {stats.drinks.total > 0 && (
+        <DrinksTimeline stats={stats} />
+      )}
+
 
       {/* Vacations Timeline */}
       {stats.vacations.total > 0 && (

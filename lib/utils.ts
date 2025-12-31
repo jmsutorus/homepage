@@ -69,6 +69,19 @@ export function formatDateLongSafe(dateString: string, locale: string = "en-US")
     weekday: "long",
     year: "numeric",
     month: "long",
-    day: "numeric",
   });
 }
+
+/**
+ * Create a URL-friendly slug from a string
+ */
+export function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')     // Replace spaces with -
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+    .replace(/\-\-+/g, '-');  // Replace multiple - with single -
+}
+

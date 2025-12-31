@@ -23,6 +23,8 @@ import { getDailyMealsByDate } from "@/lib/db/daily-meals";
 import { getAllMeals } from "@/lib/db/meals";
 import { DailyVacations } from "@/components/widgets/daily/daily-vacations";
 import { DailyRestaurants } from "@/components/widgets/daily/daily-restaurants";
+import { DailyDrinks } from "@/components/widgets/daily/daily-drinks";
+
 
 interface DailyPageProps {
   params: Promise<{
@@ -136,6 +138,8 @@ export default async function DailyPage({ params }: DailyPageProps) {
   // Extract vacation data from dailyData
   const vacations: CalendarVacation[] = dailyData?.vacations ?? [];
   const restaurantVisits = dailyData?.restaurantVisits ?? [];
+  const drinkLogs = dailyData?.drinkLogs ?? [];
+
 
   const journal = userData?.journal ?? null;
   const mood = userData?.mood ?? null;
@@ -302,6 +306,20 @@ export default async function DailyPage({ params }: DailyPageProps) {
             </section>
           )}
 
+          {/* Drinks Section */}
+          {drinkLogs.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Drinks</h2>
+                <Button variant="ghost" size="sm" asChild className="cursor-pointer">
+                  <Link href="/drinks">All Drinks</Link>
+                </Button>
+              </div>
+              <DailyDrinks logs={drinkLogs} />
+            </section>
+          )}
+
+
           <DailyActivities
             dailyData={dailyData}
             overdueTasks={overdueTasks}
@@ -408,7 +426,16 @@ export default async function DailyPage({ params }: DailyPageProps) {
                     </span>
                   </div>
                   }
+                  { dailyData.drinkLogs.length > 0 &&
+                  <div className="flex justify-between">
+                    <span>Drinks</span>
+                    <span className="font-medium">
+                      {dailyData.drinkLogs.length}
+                    </span>
+                  </div>
+                  }
                   { dailyData.journals.length > 0 &&
+
                   <div className="flex justify-between">
                     <span>Journals</span>
                     <span className="font-medium">
