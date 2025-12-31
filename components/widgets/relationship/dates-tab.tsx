@@ -177,27 +177,45 @@ export function DatesTab({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2 relative z-10">
-                {date.venue && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{date.venue}</span>
-                    {date.location && (
-                      <span className="text-muted-foreground">• {date.location}</span>
+              <CardContent className="relative z-10">
+                <div className={`flex gap-4 ${date.photos ? 'items-start' : ''}`}>
+                  {/* Photo thumbnail - on left */}
+                  {date.photos && (
+                    <div className="flex-shrink-0">
+                      <img
+                        src={date.photos}
+                        alt={`Date on ${date.date}`}
+                        className="h-28 w-28 rounded-lg object-cover shadow-sm transition-transform duration-200 group-hover:scale-105"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  {/* Main content */}
+                  <div className="flex-1 space-y-2">
+                    {date.venue && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{date.venue}</span>
+                        {date.location && (
+                          <span className="text-muted-foreground">• {date.location}</span>
+                        )}
+                      </div>
+                    )}
+                    {date.cost !== null && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <DollarSign className="h-4 w-4" />
+                        <span>${date.cost.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {date.notes && (
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                        {date.notes}
+                      </p>
                     )}
                   </div>
-                )}
-                {date.cost !== null && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <DollarSign className="h-4 w-4" />
-                    <span>${date.cost.toFixed(2)}</span>
-                  </div>
-                )}
-                {date.notes && (
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                    {date.notes}
-                  </p>
-                )}
+                </div>
               </CardContent>
             </Card>
           ))}

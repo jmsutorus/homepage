@@ -22,6 +22,60 @@ interface VacationDetailClientProps {
 
 type ViewTab = 'overview' | 'itinerary' | 'bookings' | 'photos';
 
+/**
+ * VacationBanner - Smart banner component that handles both horizontal and vertical images
+ * - Horizontal images: Displayed full-width with object-cover
+ * - Vertical images: Centered with a blurred background fill for a polished look
+ */
+function VacationBanner({ poster, title }: { poster: string; title: string }) {
+  const [isVertical, setIsVertical] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    // Consider the image vertical if height > width
+    setIsVertical(img.naturalHeight > img.naturalWidth);
+    setLoaded(true);
+  };
+
+  return (
+    <div className="relative w-full h-64 sm:h-80 md:h-96 rounded-xl overflow-hidden bg-muted">
+      {/* Blurred background for vertical images */}
+      {isVertical && loaded && (
+        <div 
+          className="absolute inset-0 scale-110"
+          style={{
+            backgroundImage: `url(${poster})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(30px) brightness(0.7)',
+          }}
+        />
+      )}
+      
+      {/* Main image */}
+      <img
+        src={poster}
+        alt={title}
+        onLoad={handleImageLoad}
+        className={`
+          relative z-10 transition-opacity duration-300
+          ${loaded ? 'opacity-100' : 'opacity-0'}
+          ${isVertical 
+            ? 'h-full w-auto mx-auto object-contain drop-shadow-2xl' 
+            : 'w-full h-full object-cover'
+          }
+        `}
+      />
+      
+      {/* Loading skeleton */}
+      {!loaded && (
+        <div className="absolute inset-0 bg-muted animate-pulse" />
+      )}
+    </div>
+  );
+}
+
 export function VacationDetailClient({ vacationData: initialData }: VacationDetailClientProps) {
   const router = useRouter();
   const [vacationData, setVacationData] = useState(initialData);
@@ -141,15 +195,9 @@ export function VacationDetailClient({ vacationData: initialData }: VacationDeta
         </div>
       </div>
 
-      {/* Poster Image */}
+      {/* Poster Image - Handles both horizontal and vertical images */}
       {vacation.poster && (
-        <div className="relative w-full h-96 rounded-lg overflow-hidden">
-          <img
-            src={vacation.poster}
-            alt={vacation.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
+        <VacationBanner poster={vacation.poster} title={vacation.title} />
       )}
 
       {/* Main Content Tabs */}

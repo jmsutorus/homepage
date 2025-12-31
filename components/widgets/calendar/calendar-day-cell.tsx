@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils, Plane, Palmtree, Map, Star, Cake } from "lucide-react";
+import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils, Plane, Palmtree, Map, Star, Cake, UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getVacationTypeIcon } from "@/lib/utils/vacation-icons";
 import { BirthdayCardBackground } from "./birthday-card-background";
@@ -69,6 +69,7 @@ function CalendarDayCellComponent({
   const hasHoliday = !!summary?.holidayName;
   const isBirthday = summary?.isBirthday ?? false;
   const hasPeopleEvents = (summary?.peopleEventCount ?? 0) > 0;
+  const hasRestaurants = (summary?.restaurantCount ?? 0) > 0;
 
   // Check if the first event is a holiday event (matches "${holidayName} ${year}" format)
   // If so, we should hide it from the regular events display since it's shown in the holiday section
@@ -80,7 +81,7 @@ function CalendarDayCellComponent({
   const adjustedEventCount = firstEventIsHolidayEvent ? (summary?.eventCount ?? 0) - 1 : (summary?.eventCount ?? 0);
   const hasNonHolidayEvents = adjustedEventCount > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship || hasMeals || hasVacations || hasHoliday || isBirthday || hasPeopleEvents;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasHabits || hasGoalsDue || hasGoalsCompleted || hasMilestonesDue || hasMilestonesCompleted || hasDuolingo || hasRelationship || hasMeals || hasVacations || hasHoliday || isBirthday || hasPeopleEvents || hasRestaurants;
 
   // Get mood icon
   const MoodIcon = hasMood && summary?.moodRating ? MOOD_ICONS[summary.moodRating]?.icon : null;
@@ -202,6 +203,17 @@ function CalendarDayCellComponent({
               <span className={cn("truncate", colors.park?.text)}>
                 {summary!.parkFirstTitle}
                 {summary!.parkCount > 1 && ` +${summary!.parkCount - 1}`}
+              </span>
+            </div>
+          )}
+
+          {/* Restaurants */}
+          {hasRestaurants && (
+            <div className="flex items-center gap-1">
+              <UtensilsCrossed className={cn("h-3 w-3 flex-shrink-0", "text-orange-500")} />
+              <span className={cn("truncate", "text-orange-500")}>
+                {summary!.restaurantFirstName}
+                {summary!.restaurantCount > 1 && ` +${summary!.restaurantCount - 1}`}
               </span>
             </div>
           )}
@@ -460,6 +472,9 @@ function CalendarDayCellComponent({
           )}
           {hasJournals && (
             <div className={cn("w-2 h-2 rounded-full", colors.journal?.bg)} title="Journals" />
+          )}
+          {hasRestaurants && (
+            <div className={cn("w-2 h-2 rounded-full", "bg-orange-500")} title="Restaurants" />
           )}
           {hasNonHolidayEvents && (
             <div className={cn("w-2 h-2 rounded-full", colors.event?.bg)} title="Events" />

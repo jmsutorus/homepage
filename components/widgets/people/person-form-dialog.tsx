@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { type Person, type RelationshipCategory, type RelationshipType } from "@/lib/db/people";
 import { toast } from "sonner";
-import { Heart, ChevronDown, Mail, Phone, Image, Calendar, FileText, Gift } from "lucide-react";
+import { Heart, ChevronDown, Mail, Phone, Image as ImageIcon, Calendar, FileText, Gift } from "lucide-react";
 
 interface PersonFormDialogProps {
   open: boolean;
@@ -294,7 +294,7 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
               {/* Photo URL */}
               <div className="space-y-2">
                 <Label htmlFor="photo" className="flex items-center gap-2">
-                  <Image className="h-3 w-3" />
+                  <ImageIcon className="h-3 w-3" />
                   Photo URL
                 </Label>
                 <Input

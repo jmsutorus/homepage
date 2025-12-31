@@ -19,6 +19,7 @@ import { DuolingoTimeline } from "./duolingo-timeline";
 import { RelationshipTimeline } from "./relationship-timeline";
 import { MealsTimeline } from "./meals-timeline";
 import { VacationsTimeline } from "./vacations-timeline";
+import { RestaurantsTimeline } from "./restaurants-timeline";
 import { TimeSpentChart } from "./time-spent-chart";
 import { getAchievementStats, getUnlockedAchievements } from "@/lib/data/yearly-achievements";
 import { generateYearlyInsights } from "@/lib/data/yearly-insights";
@@ -238,6 +239,11 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
       {/* Meals Timeline */}
       {stats.meals.total > 0 && (
         <MealsTimeline stats={stats} />
+      )}
+
+      {/* Restaurants Timeline */}
+      {stats.restaurants.totalVisits > 0 && (
+        <RestaurantsTimeline stats={stats} />
       )}
 
       {/* Vacations Timeline */}

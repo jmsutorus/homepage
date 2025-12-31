@@ -219,7 +219,7 @@ export function VacationCard({ vacation }: VacationCardProps) {
 
         <CardContent className="space-y-4">
           {/* Two-column layout for content and poster */}
-          <div className={`grid gap-4 ${vacation.poster ? 'md:grid-cols-[1fr_200px]' : 'grid-cols-1'}`}>
+          <div className={`grid gap-4 items-start ${vacation.poster ? 'md:grid-cols-[1fr_144px]' : 'grid-cols-1'}`}>
             {/* Left column - Main content */}
             <div className="space-y-3 min-w-0">
               {/* Date and Duration */}
@@ -294,7 +294,7 @@ export function VacationCard({ vacation }: VacationCardProps) {
 
             {/* Right column - Poster */}
             {vacation.poster && (
-              <div className="relative h-48 md:h-full rounded-lg overflow-hidden bg-muted shadow-sm">
+              <div className="relative h-48 aspect-[3/4] rounded-lg overflow-hidden bg-muted shadow-sm">
                 <img
                   src={vacation.poster}
                   alt={vacation.title}

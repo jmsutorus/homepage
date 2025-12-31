@@ -172,6 +172,15 @@ export interface YearlyStats {
     longestTrip: { title: string; destination: string; days: number } | null;
     byMonth: Record<number, number>;
   };
+  restaurants: {
+    totalVisits: number;
+    uniqueRestaurants: number;
+    avgRating: number;
+    byCuisine: Record<string, number>;
+    topRated: { name: string; cuisine: string | null; rating: number; visitDate: string }[];
+    topCuisines: { cuisine: string; count: number }[];
+    byMonth: Record<number, number>;
+  };
 }
 
 /**
@@ -1045,7 +1054,81 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     };
   })();
 
-  // Execute all promises in parallel
+  // 16. Restaurants
+  const restaurantsPromise = (async () => {
+    // Get restaurant visits for the year with restaurant details
+    const yearVisits = await query<{
+      id: number;
+      visit_date: string;
+      rating: number | null;
+      restaurantId: number;
+      restaurantName: string;
+      cuisine: string | null;
+    }>(
+      `SELECT rv.id, rv.visit_date, rv.rating, rv.restaurantId, 
+              r.name as restaurantName, r.cuisine
+       FROM restaurant_visits rv
+       JOIN restaurants r ON r.id = rv.restaurantId
+       WHERE rv.userId = ?
+       AND rv.visit_date >= ?
+       AND rv.visit_date <= ?
+       ORDER BY rv.visit_date ASC`,
+      [userId, startDate, endDate]
+    );
+
+    // Calculate stats
+    const uniqueRestaurantIds = new Set(yearVisits.map(v => v.restaurantId));
+    const visitsWithRating = yearVisits.filter(v => v.rating !== null);
+    const avgRating = visitsWithRating.length > 0
+      ? visitsWithRating.reduce((sum, v) => sum + (v.rating || 0), 0) / visitsWithRating.length
+      : 0;
+
+    // Cuisine breakdown
+    const byCuisine: Record<string, number> = {};
+    yearVisits.forEach(v => {
+      if (v.cuisine) {
+        byCuisine[v.cuisine] = (byCuisine[v.cuisine] || 0) + 1;
+      }
+    });
+
+    const topCuisines = Object.entries(byCuisine)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([cuisine, count]) => ({ cuisine, count }));
+
+    // Top rated visits
+    const topRated = yearVisits
+      .filter(v => v.rating !== null && v.rating > 0)
+      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      .slice(0, 5)
+      .map(v => ({
+        name: v.restaurantName,
+        cuisine: v.cuisine,
+        rating: v.rating || 0,
+        visitDate: v.visit_date,
+      }));
+
+    // By month
+    const byMonth: Record<number, number> = {};
+    yearVisits.forEach(v => {
+      const month = parseInt(v.visit_date.split('-')[1], 10) - 1;
+      byMonth[month] = (byMonth[month] || 0) + 1;
+    });
+
+    return {
+      yearVisits,
+      stats: {
+        totalVisits: yearVisits.length,
+        uniqueRestaurants: uniqueRestaurantIds.size,
+        avgRating,
+        byCuisine,
+        topRated,
+        topCuisines,
+        byMonth,
+      }
+    };
+  })();
+
   const [
     mediaData,
     parksData,
@@ -1061,7 +1144,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     relationshipStats,
     eventsData,
     mealsData,
-    vacationsData
+    vacationsData,
+    restaurantsData
   ] = await Promise.all([
     mediaPromise,
     parksPromise,
@@ -1077,7 +1161,8 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     relationshipPromise,
     eventsPromise,
     mealsPromise,
-    vacationsPromise
+    vacationsPromise,
+    restaurantsPromise
   ]);
 
   // Process Steam Stats
@@ -1215,6 +1300,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     events: eventsData.stats,
     meals: mealsData.stats,
     vacations: vacationsData.stats,
+    restaurants: restaurantsData.stats,
   };
 }
 

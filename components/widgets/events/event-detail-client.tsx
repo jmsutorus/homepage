@@ -31,7 +31,9 @@ import {
 } from 'lucide-react';
 import { EventPhotoGallery } from './event-photo-gallery';
 import { EventPeopleSection } from './event-people-section';
+import { EventRestaurantSection } from '@/components/widgets/restaurants/event-restaurant-section';
 import type { Event, EventPhoto, EventWithDetails, EventCategory } from '@/lib/db/events';
+import type { RestaurantVisit } from '@/lib/db/restaurants';
 
 interface EventDetailClientProps {
   eventData: EventWithDetails;
@@ -60,6 +62,23 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const [categories, setCategories] = useState<EventCategory[]>([]);
+  const [restaurantVisits, setRestaurantVisits] = useState<(RestaurantVisit & { restaurantName: string; restaurantSlug: string })[]>([]);
+
+  // Fetch restaurant visits on mount
+  useEffect(() => {
+    const fetchRestaurantVisits = async () => {
+      try {
+        const response = await fetch(`/api/events/${event.slug}/restaurants`);
+        if (response.ok) {
+          const data = await response.json();
+          setRestaurantVisits(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch restaurant visits:', error);
+      }
+    };
+    fetchRestaurantVisits();
+  }, [event.slug]);
 
   // Fetch categories when entering edit mode
   useEffect(() => {
@@ -81,10 +100,17 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
 
   const handleUpdate = async () => {
     try {
-      const response = await fetch(`/api/events/${event.slug}`);
-      if (response.ok) {
-        const updatedData = await response.json();
+      const [eventResponse, restaurantsResponse] = await Promise.all([
+        fetch(`/api/events/${event.slug}`),
+        fetch(`/api/events/${event.slug}/restaurants`),
+      ]);
+      if (eventResponse.ok) {
+        const updatedData = await eventResponse.json();
         setData(updatedData);
+      }
+      if (restaurantsResponse.ok) {
+        const restaurantsData = await restaurantsResponse.json();
+        setRestaurantVisits(restaurantsData);
       }
     } catch (error) {
       console.error('Error refreshing event data:', error);
@@ -557,6 +583,14 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
           <EventPeopleSection
             eventSlug={event.slug}
             people={people}
+            onUpdate={handleUpdate}
+          />
+
+          {/* Restaurants */}
+          <EventRestaurantSection
+            eventId={event.id}
+            eventDate={event.date}
+            visits={restaurantVisits}
             onUpdate={handleUpdate}
           />
 

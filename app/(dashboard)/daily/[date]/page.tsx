@@ -22,6 +22,7 @@ import { DailyMeals } from "@/components/widgets/daily/daily-meals";
 import { getDailyMealsByDate } from "@/lib/db/daily-meals";
 import { getAllMeals } from "@/lib/db/meals";
 import { DailyVacations } from "@/components/widgets/daily/daily-vacations";
+import { DailyRestaurants } from "@/components/widgets/daily/daily-restaurants";
 
 interface DailyPageProps {
   params: Promise<{
@@ -134,6 +135,7 @@ export default async function DailyPage({ params }: DailyPageProps) {
 
   // Extract vacation data from dailyData
   const vacations: CalendarVacation[] = dailyData?.vacations ?? [];
+  const restaurantVisits = dailyData?.restaurantVisits ?? [];
 
   const journal = userData?.journal ?? null;
   const mood = userData?.mood ?? null;
@@ -274,7 +276,6 @@ export default async function DailyPage({ params }: DailyPageProps) {
             )}
           </section>
 
-          <section>
             {/* Vacations Section */}
           {vacations.length > 0 && (
             <section>
@@ -287,7 +288,19 @@ export default async function DailyPage({ params }: DailyPageProps) {
               <DailyVacations vacations={vacations} />
             </section>
           )}
-          </section>
+
+          {/* Restaurants Section */}
+          {restaurantVisits.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Restaurants</h2>
+                <Button variant="ghost" size="sm" asChild className="cursor-pointer">
+                  <Link href="/restaurants">All Restaurants</Link>
+                </Button>
+              </div>
+              <DailyRestaurants visits={restaurantVisits} />
+            </section>
+          )}
 
           <DailyActivities
             dailyData={dailyData}
@@ -384,6 +397,14 @@ export default async function DailyPage({ params }: DailyPageProps) {
                     <span>Parks</span>
                     <span className="font-medium">
                       {dailyData.parks.length}
+                    </span>
+                  </div>
+                  }
+                  { dailyData.restaurantVisits.length > 0 &&
+                  <div className="flex justify-between">
+                    <span>Restaurants</span>
+                    <span className="font-medium">
+                      {dailyData.restaurantVisits.length}
                     </span>
                   </div>
                   }

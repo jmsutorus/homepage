@@ -117,20 +117,7 @@ export function VacationsTimeline({ stats }: VacationsTimelineProps) {
                 {stats.vacations.avgRating > 0 ? stats.vacations.avgRating.toFixed(1) : '—'}
               </div>
               <div className="text-sm text-muted-foreground mt-1">
-                {stats.vacations.avgRating > 0 ? (
-                  <span className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-3 w-3 ${
-                          i < Math.round(stats.vacations.avgRating)
-                            ? 'fill-amber-400 text-amber-400'
-                            : 'text-muted-foreground/30'
-                        }`}
-                      />
-                    ))}
-                  </span>
-                ) : 'No ratings yet'}
+                {stats.vacations.avgRating > 0 ? 'out of 10' : 'No ratings yet'}
               </div>
             </div>
 
@@ -265,17 +252,9 @@ export function VacationsTimeline({ stats }: VacationsTimelineProps) {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < vacation.rating
-                              ? 'fill-amber-400 text-amber-400'
-                              : 'text-muted-foreground/30'
-                          }`}
-                        />
-                      ))}
+                    <div className="flex items-center gap-1 text-amber-500">
+                      <Star className="h-4 w-4 fill-amber-400" />
+                      <span className="font-medium">{vacation.rating}/10</span>
                     </div>
                   </div>
                 ))}
@@ -402,19 +381,19 @@ function calculateVacationInsights(stats: YearlyStats) {
     });
   }
 
-  // Perfect trips (5-star rated)
-  const perfectTrips = stats.vacations.topRatedVacations.filter(v => v.rating === 5).length;
+  // Perfect trips (10/10 rated)
+  const perfectTrips = stats.vacations.topRatedVacations.filter(v => v.rating === 10).length;
   if (perfectTrips >= 2) {
     insights.push({
       icon: Trophy,
-      text: `You had ${perfectTrips} perfect 5-star trips this year!`,
+      text: `You had ${perfectTrips} perfect 10/10 trips this year!`,
     });
   } else if (perfectTrips === 1) {
-    const trip = stats.vacations.topRatedVacations.find(v => v.rating === 5);
+    const trip = stats.vacations.topRatedVacations.find(v => v.rating === 10);
     if (trip) {
       insights.push({
         icon: Trophy,
-        text: `"${trip.title}" in ${trip.destination} was your perfect 5-star trip!`,
+        text: `"${trip.title}" in ${trip.destination} was your perfect 10/10 trip!`,
       });
     }
   }

@@ -68,6 +68,7 @@ export function MobileNav() {
         { href: "/parks", label: "Parks", icon: <MapPin className="h-5 w-5" /> },
         { href: "/journals", label: "Journals", icon: <BookOpen className="h-5 w-5" /> },
         { href: "/recipes", label: "Recipes", icon: <UtensilsCrossed className="h-5 w-5" /> },
+        { href: "/restaurants", label: "Restaurants", icon: <UtensilsCrossed className="h-5 w-5" /> },
         { href: "/vacations", label: "Vacations", icon: <Plane className="h-5 w-5" /> },
       ],
     },

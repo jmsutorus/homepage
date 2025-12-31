@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star } from "lucide-react";
+import { Star, ImageIcon } from "lucide-react";
 import type { RelationshipDate } from "@/lib/db/relationship";
 import { showCreationSuccess } from "@/lib/success-toasts";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
   const [rating, setRating] = useState<number | null>(initialDate.rating);
   const [cost, setCost] = useState(initialDate.cost?.toString() || "");
   const [notes, setNotes] = useState(initialDate.notes || "");
+  const [photoUrl, setPhotoUrl] = useState(initialDate.photos || "");
   const [isSaving, setIsSaving] = useState(false);
 
   // Update form when date changes
@@ -40,6 +41,7 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
     setRating(initialDate.rating);
     setCost(initialDate.cost?.toString() || "");
     setNotes(initialDate.notes || "");
+    setPhotoUrl(initialDate.photos || "");
   }, [initialDate]);
 
   const handleSave = async () => {
@@ -62,6 +64,7 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
           rating: rating || undefined,
           cost: cost ? parseFloat(cost) : undefined,
           notes: notes || undefined,
+          photos: photoUrl.trim() || undefined,
         }),
       });
 
@@ -215,6 +218,22 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
               rows={4}
               className="resize-none"
             />
+          </div>
+
+          {/* Photo URL */}
+          <div className="space-y-2">
+            <Label htmlFor="photoUrl">Photo URL</Label>
+            <div className="relative">
+              <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="photoUrl"
+                placeholder="https://example.com/image.jpg"
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">Optional: Add a photo URL to display on the date card</p>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,18 +24,15 @@ const getRelationshipVariant = (relationship: string) => {
   }
 };
 
-export function ParkPeopleSection({ parkId, parkSlug }: ParkPeopleSectionProps) {
+export function ParkPeopleSection({ parkSlug }: ParkPeopleSectionProps) {
   const [people, setPeople] = useState<ParkPerson[]>([]);
   const [removingId, setRemovingId] = useState<number | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch people when component mounts
-  useEffect(() => {
-    fetchPeople();
-  }, [parkSlug]);
 
-  const fetchPeople = async () => {
+  const fetchPeople = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/parks/${parkSlug}/people`);
@@ -48,7 +45,12 @@ export function ParkPeopleSection({ parkId, parkSlug }: ParkPeopleSectionProps) 
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [parkSlug]);
+
+  // Fetch people when component mounts
+  useEffect(() => {
+    fetchPeople();
+  }, [fetchPeople]);
 
   const handleRemove = async (personAssociationId: number, personName: string) => {
     if (!confirm(`Remove ${personName} from this park visit?`)) return;
