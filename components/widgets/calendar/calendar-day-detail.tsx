@@ -26,6 +26,8 @@ import { DailyVacations } from "../daily/daily-vacations";
 import { DailyBirthday } from "../daily/daily-birthday";
 import { DailyPeopleBirthdays } from "../daily/daily-people-birthdays";
 import { DailyRestaurants } from "../daily/daily-restaurants";
+import { DailyDrinks } from "../daily/daily-drinks";
+
 import { ExternalLink, Star, Loader2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -171,6 +173,8 @@ export function CalendarDayDetail({ date, data, isLoading, error, holidayName, i
   const hasRelationship = (data?.relationshipItems.length ?? 0) > 0;
   const hasVacations = (data?.vacations.length ?? 0) > 0;
   const hasRestaurants = (data?.restaurantVisits.length ?? 0) > 0;
+  const hasDrinks = (data?.drinkLogs.length ?? 0) > 0;
+
 
   // Workout activities
   const upcomingWorkoutActivities = data?.workoutActivities.filter((w) => !w.completed) ?? [];
@@ -207,7 +211,8 @@ export function CalendarDayDetail({ date, data, isLoading, error, holidayName, i
   // People events (birthdays and anniversaries)
   const hasPeopleEvents = (data?.peopleEvents.length ?? 0) > 0;
 
-  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship || hasVacations || !!holidayName || isBirthday || hasPeopleEvents || hasRestaurants;
+  const hasAnyData = hasMood || hasActivities || hasMedia || hasTasks || hasEvents || hasParks || hasJournals || hasWorkoutActivities || hasGithub || hasDuolingo || hasRelationship || hasVacations || !!holidayName || isBirthday || hasPeopleEvents || hasRestaurants || hasDrinks;
+
 
   // Handler to create an event from a holiday
   const handleCreateHolidayEvent = async () => {
@@ -407,6 +412,12 @@ export function CalendarDayDetail({ date, data, isLoading, error, holidayName, i
         {hasRestaurants && data && (
           <DailyRestaurants visits={data.restaurantVisits} />
         )}
+
+        {/* Drinks Section */}
+        {hasDrinks && data && (
+          <DailyDrinks logs={data.drinkLogs} />
+        )}
+
 
         {/* Journals Section */}
         {hasJournals && data && (

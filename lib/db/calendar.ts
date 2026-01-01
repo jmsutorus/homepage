@@ -20,6 +20,16 @@ import type { Vacation, ItineraryDay, Booking } from "@/lib/types/vacations";
 import { parseLocalDate } from "@/lib/types/vacations";
 import { getHolidaysForMonthComputed } from "./holidays";
 import type { RestaurantVisit } from "./restaurants";
+import type { DrinkLog } from "./drinks";
+
+// Drink log for calendar display
+export interface CalendarDrinkLog extends DrinkLog {
+  drinkName: string;
+  drinkSlug: string;
+  drinkType: string | null;
+  drinkProducer: string | null;
+}
+
 
 // Goal-related calendar types
 export interface CalendarGoal {
@@ -107,8 +117,12 @@ export interface CalendarDayData {
   // People: birthdays and anniversaries for this day
   peopleEvents: CalendarPersonEvent[];
   // Restaurant visits for this day
+  // Restaurant visits for this day
   restaurantVisits: CalendarRestaurantVisit[];
+  // Drink logs for this day
+  drinkLogs: CalendarDrinkLog[];
 }
+
 
 /**
  * Lightweight summary data for calendar grid cells
@@ -180,7 +194,13 @@ export interface CalendarDaySummary {
   // Restaurant visit count
   restaurantCount: number;
   restaurantFirstName: string | null;
+  // Drink log count
+  drinkCount: number;
+  drinkFirstName: string | null;
+  drinkFirstProducer: string | null;
 }
+
+
 
 /**
  * Get Strava activities in a date range (by start_date_local)
@@ -545,6 +565,27 @@ export async function getRestaurantVisitsInRange(
 }
 
 /**
+ * Get drink logs in a date range
+ */
+export async function getDrinkLogsInRange(
+  startDate: string,
+  endDate: string,
+  userId: string
+): Promise<CalendarDrinkLog[]> {
+  const rows = await query<CalendarDrinkLog>(
+    `SELECT dl.*, d.name as drinkName, d.slug as drinkSlug, d.type as drinkType, d.producer as drinkProducer
+    FROM drink_logs dl
+    JOIN drinks d ON d.id = dl.drinkId
+    WHERE dl.date BETWEEN ? AND ?
+    AND dl.userId = ?
+    ORDER BY dl.date ASC`,
+    [startDate, endDate, userId]
+  );
+  return rows;
+}
+
+
+/**
  * Get goals in a date range (by target_date or completed_date)
  */
 export async function getGoalsInRange(
@@ -845,7 +886,8 @@ export async function getCalendarDataForRange(
     dailyMeals,
     vacations,
     peopleEvents,
-    restaurantVisits
+    restaurantVisits,
+    drinkLogs
   ] = await Promise.all([
     getActivitiesInRange(startDate, endDate, userId),
     getMediaCompletedInRange(startDate, endDate, userId),
@@ -863,8 +905,10 @@ export async function getCalendarDataForRange(
     getDailyMealsForRange(userId, startDate, endDate),
     getVacationsInRange(userId, startDate, endDate),
     getPeopleEventsInRange(startDate, endDate, userId),
-    getRestaurantVisitsInRange(startDate, endDate, userId)
+    getRestaurantVisitsInRange(startDate, endDate, userId),
+    getDrinkLogsInRange(startDate, endDate, userId)
   ]);
+
 
   // Fetch itinerary and bookings for all vacations
   const vacationIds = vacations.map(v => v.id);
@@ -920,8 +964,11 @@ export async function getCalendarDataForRange(
       dailyMeals: [],
       vacations: [],
       peopleEvents: [],
+
       restaurantVisits: [],
+      drinkLogs: [],
     });
+
   }
 
   // Create a set of dates with Duolingo completions for quick lookup
@@ -1133,6 +1180,14 @@ export async function getCalendarDataForRange(
     }
   });
 
+  // Add drink logs
+  drinkLogs.forEach((log) => {
+    const dayData = calendarMap.get(log.date);
+    if (dayData) {
+      dayData.drinkLogs.push(log);
+    }
+  });
+
   // Add vacations (span all days of the vacation)
   vacations.forEach((vacation) => {
     const vacationStart = parseLocalDate(vacation.start_date);
@@ -1316,7 +1371,12 @@ export function convertToSummary(
     anniversaryCount: data.peopleEvents.filter(e => e.eventType === 'anniversary').length,
     restaurantCount: data.restaurantVisits.length,
     restaurantFirstName: data.restaurantVisits[0]?.restaurantName ?? null,
+    drinkCount: data.drinkLogs.length,
+    drinkFirstName: data.drinkLogs[0]?.drinkName ?? null,
+    drinkFirstProducer: data.drinkLogs[0]?.drinkProducer ?? null,
   };
+
+
 }
 
 /**

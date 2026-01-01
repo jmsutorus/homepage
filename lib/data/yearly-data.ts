@@ -181,7 +181,19 @@ export interface YearlyStats {
     topCuisines: { cuisine: string; count: number }[];
     byMonth: Record<number, number>;
   };
+  drinks: {
+    total: number; // Total logs
+    uniqueDrinks: number;
+    avgRating: number;
+    byType: Record<string, number>;
+    topRated: { name: string; type: string | null; producer: string | null; rating: number; location: string | null; date: string }[];
+    topTypes: { type: string; count: number }[];
+    byMonth: Record<number, number>;
+
+    locations: { location: string; count: number }[];
+  };
 }
+
 
 /**
  * Get aggregated data for a specific year
@@ -795,6 +807,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     // Average date rating
     const datesWithRating = dates.filter(d => d.rating !== null);
     const averageDateRating = datesWithRating.length > 0
+
       ? datesWithRating.reduce((sum, d) => sum + (d.rating || 0), 0) / datesWithRating.length
       : 0;
 
@@ -1129,8 +1142,110 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     };
   })();
 
+  // 17. Drinks
+  const drinksPromise = (async () => {
+    // Determine start and end dates ensuring we capture the full year
+    // Depending on date format in DB, simple string comparison usually works for ISO dates
+    
+    // Fetch logs joined with drink details
+    // We select log rating first, fall back to drink rating if needed (though log rating is more specific to the 'tasting')
+    const drinkLogs = await query<{
+      logId: number;
+      drinkId: number;
+      date: string;
+      logRating: number | null;
+      location: string | null;
+      name: string;
+      type: string | null;
+      producer: string | null;
+      drinkRating: number | null;
+    }>(
+      `SELECT 
+        l.id as logId, l.drinkId, l.date, l.rating as logRating, l.location,
+        d.name, d.type, d.producer, d.rating as drinkRating
+       FROM drink_logs l
+       LEFT JOIN drinks d ON l.drinkId = d.id
+       WHERE l.userId = ? 
+       AND l.date >= ? 
+       AND l.date <= ?
+       ORDER BY l.date ASC`,
+      [userId, startDate, endDate]
+    );
+
+    const total = drinkLogs.length;
+    const uniqueDrinkIds = new Set(drinkLogs.map(l => l.drinkId));
+    const uniqueDrinks = uniqueDrinkIds.size;
+    
+    const byType: Record<string, number> = {};
+    const byMonth: Record<number, number> = {};
+    const locations: Record<string, number> = {};
+    let ratingSum = 0;
+    let ratingCount = 0;
+
+    drinkLogs.forEach(log => {
+      // Type freq
+      const type = log.type || 'Other';
+      byType[type] = (byType[type] || 0) + 1;
+
+      // Month freq
+      // Date is YYYY-MM-DD
+      const month = parseInt(log.date.split('-')[1], 10) - 1;
+      byMonth[month] = (byMonth[month] || 0) + 1;
+
+      // Location freq
+      if (log.location) {
+        locations[log.location] = (locations[log.location] || 0) + 1;
+      }
+
+      // Rating average (prefer log rating)
+      const rating = log.logRating || log.drinkRating;
+      if (rating) {
+        ratingSum += rating;
+        ratingCount++;
+      }
+    });
+
+    const topTypes = Object.entries(byType)
+      .sort((a, b) => b[1] - a[1])
+      .map(([type, count]) => ({ type, count }));
+
+    const topLocations = Object.entries(locations)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([location, count]) => ({ location, count }));
+
+    const topRated = drinkLogs
+      .filter(l => (l.logRating || l.drinkRating))
+      .sort((a, b) => ((b.logRating || b.drinkRating) || 0) - ((a.logRating || a.drinkRating) || 0))
+      .slice(0, 5)
+      .map(l => ({
+        name: l.name,
+        type: l.type,
+        producer: l.producer,
+        rating: l.logRating || l.drinkRating || 0,
+        location: l.location,
+        date: l.date
+      }));
+
+
+    return {
+      drinkLogs,
+      stats: {
+        total,
+        uniqueDrinks,
+        avgRating: ratingCount > 0 ? ratingSum / ratingCount : 0,
+        byType,
+        topRated,
+        topTypes,
+        byMonth,
+        locations: topLocations
+      }
+    };
+  })();
+
   const [
     mediaData,
+
     parksData,
     exercisesData,
     moodData,
@@ -1145,8 +1260,10 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     eventsData,
     mealsData,
     vacationsData,
-    restaurantsData
+    restaurantsData,
+    drinksData
   ] = await Promise.all([
+
     mediaPromise,
     parksPromise,
     exercisesPromise,
@@ -1162,8 +1279,10 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     eventsPromise,
     mealsPromise,
     vacationsPromise,
-    restaurantsPromise
+    restaurantsPromise,
+    drinksPromise
   ]);
+
 
   // Process Steam Stats
   const totalPlaytime = steamStats.reduce((acc, s) => acc + s.total_playtime, 0);
@@ -1193,7 +1312,9 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     events: 0,
     meals: 0,
     vacations: 0,
+    drinks: 0,
   }));
+
 
   mediaData.yearMedia.forEach(m => {
     if (m.completed) {
@@ -1256,8 +1377,15 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     monthlyActivity[month].vacations++;
   });
 
+  drinksData.drinkLogs.forEach(d => {
+    // Parse month directly from YYYY-MM-DD string to avoid timezone issues
+    const month = parseInt(d.date.split('-')[1], 10) - 1;
+    monthlyActivity[month].drinks++;
+  });
+
   return {
     year,
+
     media: mediaData.stats,
     parks: parksData.stats,
     exercises: exercisesData.stats,
@@ -1301,8 +1429,10 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     meals: mealsData.stats,
     vacations: vacationsData.stats,
     restaurants: restaurantsData.stats,
+    drinks: drinksData.stats,
   };
 }
+
 
 // Steam DB Helpers
 
