@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/jmsutorus/homepage/compare/v1.18.0...v1.19.0) (2026-01-01)
+
+
+### Features
+
+* drinks tracking added ([#92](https://github.com/jmsutorus/homepage/issues/92)) ([d034718](https://github.com/jmsutorus/homepage/commit/d03471856580259be9e9ee21e67beeaef7e597b4))
+
 # [1.18.0](https://github.com/jmsutorus/homepage/compare/v1.17.0...v1.18.0) (2025-12-31)
 
 
