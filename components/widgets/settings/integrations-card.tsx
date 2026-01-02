@@ -11,12 +11,15 @@ import type { ConnectedAccount } from "@/lib/actions/settings";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 interface IntegrationsCardProps {
   connectedAccounts: ConnectedAccount[];
 }
 
 export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
+  const router = useRouter();
+
   const isGithubConnected = connectedAccounts.some(
     (account) => account.providerId === "github"
   );
@@ -33,6 +36,10 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
   const [isGithubSyncing, setIsGithubSyncing] = useState(false);
   const [githubSyncResult, setGithubSyncResult] = useState<{ success: boolean; message: string } | null>(null);
 
+  // Strava sync state
+  const [isStravaSyncing, setIsStravaSyncing] = useState(false);
+  const [stravaSyncResult, setStravaSyncResult] = useState<{ success: boolean; message: string } | null>(null);
+
    
   useEffect(() => {
     if (stravaAccount?.accessTokenExpiresAt) {
@@ -47,6 +54,42 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
 
   const handleConnectStrava = () => {
     signIn("strava", { callbackUrl: "/settings" });
+  };
+
+  const handleSyncStrava = async () => {
+    setIsStravaSyncing(true);
+    setStravaSyncResult(null);
+    try {
+      const response = await fetch("/api/strava/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // No accessToken sent, API will look it up from session
+        // Force full sync to ensure we get all activities
+        body: JSON.stringify({ full: true }),
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        setStravaSyncResult({ 
+          success: true, 
+          message: `Synced ${data.activitiesSynced} activities` 
+        });
+        
+        router.refresh();
+      } else {
+        setStravaSyncResult({
+          success: false,
+          message: data.error || "Sync failed"
+        });
+      }
+    } catch {
+      setStravaSyncResult({
+        success: false,
+        message: "Failed to sync"
+      });
+    } finally {
+      setIsStravaSyncing(false);
+    }
   };
 
   const handleSyncGithub = async () => {
@@ -181,6 +224,11 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
               <p className="text-sm text-muted-foreground">
                 Connect to sync your exercise activities.
               </p>
+              {stravaSyncResult && (
+                <p className={`text-xs mt-1 ${stravaSyncResult.success ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                  {stravaSyncResult.message}
+                </p>
+              )}
             </div>
           </div>
           <div>
@@ -189,6 +237,18 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
                 <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
                   Connected
                 </Badge>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleSyncStrava}
+                  disabled={isStravaSyncing}
+                  className="h-7 text-xs"
+                >
+                  <RefreshCw className={`h-3 w-3 mr-1 ${isStravaSyncing ? "animate-spin" : ""}`} />
+                  {isStravaSyncing ? "Syncing..." : "Sync"}
+                </Button>
+
                 {isStravaExpired && (
                   <Button variant="ghost" size="sm" onClick={handleConnectStrava} className="text-xs h-7 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                     Reconnect (Expired)
