@@ -1,3 +1,10 @@
+## [1.19.1](https://github.com/jmsutorus/homepage/compare/v1.19.0...v1.19.1) (2026-01-02)
+
+
+### Bug Fixes
+
+* strava fix ([#93](https://github.com/jmsutorus/homepage/issues/93)) ([50c4499](https://github.com/jmsutorus/homepage/commit/50c44998ce1fa1fa6a7bf41095934043edabfa0c))
+
 # [1.19.0](https://github.com/jmsutorus/homepage/compare/v1.18.0...v1.19.0) (2026-01-01)
 
 
