@@ -53,12 +53,20 @@ async function syncActivities(
       if (lastSync) {
         // Add 1 second to avoid duplicates
         after = Math.floor(lastSync.getTime() / 1000) + 1;
+        console.log(`[Strava] Syncing activities after ${lastSync.toISOString()} (${after})`);
+      } else {
+        console.log("[Strava] No last sync time found, performing full sync");
       }
+    } else {
+      console.log("[Strava] Performing full sync requested");
     }
 
     // Fetch activities from API
     // We'll fetch up to 200 activities at a time (Strava API limit)
+    console.log(`[Strava] Fetching activities with params: page=1, perPage=200, after=${after}`);
     const activities = await getActivitiesFromAPI(accessToken, 1, 200, undefined, after);
+
+    console.log(`[Strava] Fetched ${activities.length} activities from API`);
 
     if (activities.length === 0) {
       return 0;
@@ -66,6 +74,7 @@ async function syncActivities(
 
     // Save to database
     await upsertActivities(activities, athleteId, userId);
+    console.log(`[Strava] Upserted ${activities.length} activities to DB`);
 
     return activities.length;
   } catch (error) {

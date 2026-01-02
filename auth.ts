@@ -57,7 +57,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     // Merge the callbacks from auth.config.ts
     ...authConfig.callbacks,
-    async signIn({ user }) {
+    async signIn({ user, account }) {
+      // Allow Strava to proceed even without email (for account linking)
+      if (account?.provider === "strava") {
+        return true;
+      }
+
       if (!user.email) {
         console.error("Sign-in blocked: No email provided");
         return false;

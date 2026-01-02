@@ -26,7 +26,7 @@ export default {
       clientSecret: process.env.AUTH_STRAVA_SECRET!,
       authorization: {
         params: {
-          scope: "read,activity:read_all",
+          scope: "read,activity:read_all,profile:read_all",
         },
       },
     }),

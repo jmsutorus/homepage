@@ -10,21 +10,29 @@ import { requireAuthApi } from "@/lib/auth/server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { accessToken, full = false } = body;
-
-    if (!accessToken) {
-      return NextResponse.json(
-        { error: "Access token is required" },
-        { status: 400 }
-      );
-    }
+    const { full = false } = body;
+    let token = body.accessToken;
 
     const session = await requireAuthApi();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const userId = session.user.id;
-    const result = await syncStravaData(accessToken, userId, full);
+
+    // If no token provided, try to get from database
+    if (!token) {
+      try {
+        const { getValidStravaToken } = await import("@/lib/auth/strava-token");
+        token = await getValidStravaToken(userId);
+      } catch (error) {
+        return NextResponse.json(
+          { error: "Strava account not connected or token expired" },
+          { status: 400 }
+        );
+      }
+    }
+
+    const result = await syncStravaData(token, userId, full);
 
     if (!result.success) {
       return NextResponse.json(
