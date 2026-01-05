@@ -132,7 +132,7 @@ export function EventRestaurantSection({
   );
 
   return (
-    <Card>
+    <Card className="mb-6">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <UtensilsCrossed className="w-5 h-5" />

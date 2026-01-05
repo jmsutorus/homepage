@@ -79,7 +79,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
             Browse and manage your calendar events
           </p>
         </div>
-        <Button onClick={() => router.push('/calendar')}>
+        <Button onClick={() => router.push('/events/new')}>
           <Plus className="w-4 h-4 mr-2" />
           Add Event
         </Button>

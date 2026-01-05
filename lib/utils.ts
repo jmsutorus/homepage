@@ -69,6 +69,7 @@ export function formatDateLongSafe(dateString: string, locale: string = "en-US")
     weekday: "long",
     year: "numeric",
     month: "long",
+    day: "numeric",
   });
 }
 
