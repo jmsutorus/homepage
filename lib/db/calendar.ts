@@ -1,6 +1,5 @@
 import { query, queryOne } from "./index";
 import type { MoodEntry } from "./mood";
-import type { DBStravaActivity } from "./strava";
 import type { MediaContent } from "./media";
 import type { Task } from "./tasks";
 import { type Event, getEventsInRange as getEvents } from "./events";
@@ -92,7 +91,6 @@ export interface CalendarRestaurantVisit extends RestaurantVisit {
 export interface CalendarDayData {
   date: string; // YYYY-MM-DD format
   mood: MoodEntry | null;
-  activities: DBStravaActivity[];
   media: MediaContent[];
   tasks: Task[];
   events: Event[];
@@ -202,22 +200,7 @@ export interface CalendarDaySummary {
 
 
 
-/**
- * Get Strava activities in a date range (by start_date_local)
- */
-export async function getActivitiesInRange(
-  startDate: string,
-  endDate: string,
-  userId: string
-): Promise<DBStravaActivity[]> {
-  return await query<DBStravaActivity>(
-    `SELECT * FROM strava_activities
-     WHERE DATE(start_date_local) BETWEEN ? AND ?
-     AND userId = ?
-     ORDER BY start_date_local ASC`,
-    [startDate, endDate, userId]
-  );
-}
+
 
 /**
  * Get media completed in a date range
@@ -870,7 +853,6 @@ export async function getCalendarDataForRange(
   );
 
   const [
-    activities,
     media,
     tasks,
     events,
@@ -889,7 +871,6 @@ export async function getCalendarDataForRange(
     restaurantVisits,
     drinkLogs
   ] = await Promise.all([
-    getActivitiesInRange(startDate, endDate, userId),
     getMediaCompletedInRange(startDate, endDate, userId),
     getTasksInRange(startDate, endDate, userId),
     getEventsInRange(startDate, endDate, userId),
@@ -946,7 +927,6 @@ export async function getCalendarDataForRange(
     calendarMap.set(dateStr, {
       date: dateStr,
       mood: null,
-      activities: [],
       media: [],
       tasks: [],
       events: [],
@@ -982,14 +962,7 @@ export async function getCalendarDataForRange(
     }
   });
 
-  // Add activities (extract date from start_date_local)
-  activities.forEach((activity) => {
-    const dateStr = activity.start_date_local.split("T")[0];
-    const dayData = calendarMap.get(dateStr);
-    if (dayData) {
-      dayData.activities.push(activity);
-    }
-  });
+
 
   // Add media (by completed date)
   media.forEach((item) => {
@@ -1279,31 +1252,27 @@ export function convertToSummary(
   // Get IDs of Strava activities linked to completed workouts
   const completedWorkouts = data.workoutActivities.filter((w) => w.completed);
   const upcomingWorkouts = data.workoutActivities.filter((w) => !w.completed);
-  const linkedStravaIds = new Set(
-    completedWorkouts
-      .filter((w) => w.strava_activity_id)
-      .map((w) => w.strava_activity_id!)
-  );
 
-  // Filter out linked Strava activities
-  const unlinkedActivities = data.activities.filter(
-    (a) => !linkedStravaIds.has(a.id)
-  );
-
-  // Get first completed workout's linked Strava activity
+  // Get first completed workout info
   let firstCompletedName: string | null = null;
   let firstCompletedDistance: number | null = null;
   if (completedWorkouts.length > 0) {
     const firstWorkout = completedWorkouts[0];
-    if (firstWorkout.strava_activity_id) {
-      const linkedStrava = data.activities.find(
-        (a) => a.id === firstWorkout.strava_activity_id
-      );
-      if (linkedStrava) {
-        firstCompletedName = linkedStrava.name;
-        firstCompletedDistance = linkedStrava.distance || null;
-      }
-    }
+    firstCompletedName = firstWorkout.type; // Or use exercises summary or similar
+    // If it's a run and has distance, use it
+     if (firstWorkout.type === 'run' && firstWorkout.distance) {
+        firstCompletedDistance = firstWorkout.distance * 1000; // Legacy component expects meters? Wait, I should check how it uses this.
+        // Actually formatted summary uses this. Let's see how it formats it.
+        // In calendar-day-cell it does: (summary!.workoutCounts.firstCompletedDistance / 1000).toFixed(1)}km
+        // So it expects meters if I want to show km. But my distance is in miles.
+        // I should probably change the cell to handle miles or convert here.
+        // Note: The previous code was using Strava distance (meters).
+        // If I want to show km, I need meters.
+        // But maybe I should just store miles and update the cell.
+        // For now, let's just not provide distance if it's confusing, or provide it in meters for compatibility.
+        // 1 mile = 1609.34 meters.
+        firstCompletedDistance = firstWorkout.distance * 1609.34;
+     }
   }
 
   // Categorize tasks relative to today
@@ -1318,7 +1287,7 @@ export function convertToSummary(
   return {
     date: data.date,
     moodRating: data.mood?.rating ?? null,
-    activityCount: unlinkedActivities.length,
+    activityCount: 0, // Deprecated
     mediaCount: data.media.length,
     mediaFirstTitle: data.media[0]?.title ?? null,
     mediaFirstType: data.media[0]?.type ?? null,

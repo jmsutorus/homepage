@@ -16,8 +16,9 @@ export interface WorkoutActivity {
   date: string; // YYYY-MM-DD
   time: string; // HH:MM
   length: number; // Total duration in minutes
+  distance?: number; // Distance in miles
   difficulty: "easy" | "moderate" | "hard" | "very hard";
-  type: "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
+  type: "run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
   exercises: string; // JSON string of Exercise[]
   notes?: string | null;
   completed: boolean;
@@ -32,8 +33,9 @@ export interface CreateWorkoutActivity {
   date: string;
   time: string;
   length: number;
+  distance?: number;
   difficulty: "easy" | "moderate" | "hard" | "very hard";
-  type: "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
+  type: "run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
   exercises: Exercise[];
   notes?: string;
 }
@@ -43,13 +45,14 @@ export interface CreateWorkoutActivity {
 export async function createWorkoutActivity(activity: CreateWorkoutActivity, userId: string): Promise<number> {
   const db = getDatabase();
   const result = await db.execute({
-    sql: `INSERT INTO workout_activities (userId, date, time, length, difficulty, type, exercises, notes)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO workout_activities (userId, date, time, length, distance, difficulty, type, exercises, notes)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       userId,
       activity.date,
       activity.time,
       activity.length,
+      activity.distance || 0,
       activity.difficulty,
       activity.type,
       JSON.stringify(activity.exercises),
@@ -222,6 +225,7 @@ export interface WorkoutActivityStats {
   completed_activities: number;
   completion_rate: number;
   total_duration: number;
+  total_distance: number;
   avg_duration: number;
   by_type: {
     type: string;
@@ -251,6 +255,7 @@ export async function getWorkoutActivityStats(userId: string, startDate?: string
             COUNT(*) as total_activities,
             SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed_activities,
             SUM(length) as total_duration,
+            SUM(distance) as total_distance,
             AVG(length) as avg_duration
           FROM workout_activities${whereClause}`,
     args: params
@@ -259,6 +264,7 @@ export async function getWorkoutActivityStats(userId: string, startDate?: string
     total_activities: number;
     completed_activities: number;
     total_duration: number;
+    total_distance: number;
     avg_duration: number;
   };
 
@@ -301,6 +307,7 @@ export async function getWorkoutActivityStats(userId: string, startDate?: string
         ? (overall.completed_activities / overall.total_activities) * 100
         : 0,
     total_duration: overall.total_duration || 0,
+    total_distance: overall.total_distance || 0,
     avg_duration: overall.avg_duration || 0,
     by_type: byType,
     by_difficulty: byDifficulty,

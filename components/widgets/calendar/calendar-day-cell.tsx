@@ -143,15 +143,7 @@ function CalendarDayCellComponent({
       {/* Content - Hidden on mobile, shown on sm and above */}
       {hasAnyData ? (
         <div className="hidden sm:flex sm:flex-1 sm:flex-col sm:space-y-1 text-xs overflow-hidden">
-          {/* Strava Activities (not linked to workouts) */}
-          {hasActivities && (
-            <div className="flex items-center gap-1">
-              <Activity className={cn("h-3 w-3 flex-shrink-0", colors.activity?.text)} />
-              <span className={cn("truncate", colors.activity?.text)}>
-                {summary!.activityCount} {summary!.activityCount === 1 ? "activity" : "activities"}
-              </span>
-            </div>
-          )}
+
 
           {/* Upcoming Workout Activities */}
           {(summary?.workoutCounts.upcoming ?? 0) > 0 && (
@@ -469,9 +461,7 @@ function CalendarDayCellComponent({
       {/* Indicators at bottom - Hidden on mobile, shown on sm and above */}
       {hasAnyData && (
         <div className="hidden sm:flex gap-1 mt-1">
-          {hasActivities && (
-            <div className={cn("w-2 h-2 rounded-full", colors.activity?.bg)} title="Activities" />
-          )}
+
           {(summary?.workoutCounts.upcoming ?? 0) > 0 && (
             <div className={cn("w-2 h-2 rounded-full", colors.workout?.upcoming?.bg)} title="Upcoming Workouts" />
           )}

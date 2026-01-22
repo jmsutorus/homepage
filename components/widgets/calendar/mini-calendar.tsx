@@ -133,7 +133,7 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
             const moodColor = hasMood && dayData?.mood ? MOOD_ICONS[dayData.mood.rating].color : null;
 
             // Check for different types of content
-            const hasActivities = (dayData?.activities.length ?? 0) > 0;
+
             const hasWorkouts = (dayData?.workoutActivities.length ?? 0) > 0;
             const hasMedia = (dayData?.media.length ?? 0) > 0;
             const hasTasks = (dayData?.tasks.length ?? 0) > 0;
@@ -164,9 +164,7 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
 
                 {/* Color indicators */}
                 <div className="flex gap-0.5 flex-wrap">
-                  {hasActivities && (
-                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.activity?.bg)} title="Strava Activities" />
-                  )}
+
                   {hasWorkouts && (
                     <div className={cn("w-1.5 h-1.5 rounded-full", colors.workout?.upcoming?.bg)} title="Workouts" />
                   )}
@@ -223,10 +221,7 @@ export function MiniCalendar({ year, month, calendarData, colors }: MiniCalendar
 
           {/* Activity Type Legend */}
           <div className="flex items-center justify-center flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <div className={cn("w-2 h-2 rounded-full", colors.activity?.bg)} />
-              <span>Activities</span>
-            </div>
+
             <div className="flex items-center gap-1">
               <div className={cn("w-2 h-2 rounded-full", colors.workout?.upcoming?.bg)} />
               <span>Workouts</span>

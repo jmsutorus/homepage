@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDateSafe } from "@/lib/utils";
 import type { CalendarDayData, CalendarGoal, CalendarRelationshipItem, CalendarVacation } from "@/lib/db/calendar";
 import type { MediaContent } from "@/lib/db/media";
-import type { DBStravaActivity } from "@/lib/db/strava";
+import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import type { Event } from "@/lib/db/events";
 import type { ParkContent } from "@/lib/db/parks";
 import type { JournalContent } from "@/lib/db/journals";
@@ -74,7 +74,7 @@ export function CalendarMonthDetail({
 
   // Extract all media, activities, events, parks, journals, goals, and vacations from the calendar data
   const allMedia: MediaContent[] = [];
-  const allActivities: DBStravaActivity[] = [];
+  const allWorkoutActivities: WorkoutActivity[] = [];
   const allEvents: Event[] = [];
   const allParks: ParkContent[] = [];
   const allJournals: JournalContent[] = [];
@@ -83,7 +83,7 @@ export function CalendarMonthDetail({
 
   Object.values(calendarData).forEach((dayData) => {
     allMedia.push(...dayData.media);
-    allActivities.push(...dayData.activities);
+    allWorkoutActivities.push(...dayData.workoutActivities);
     allEvents.push(...dayData.events);
     allParks.push(...dayData.parks);
     allJournals.push(...dayData.journals);
@@ -308,7 +308,7 @@ export function CalendarMonthDetail({
   };
 
   const hasMedia = allMedia.length > 0;
-  const hasActivities = allActivities.length > 0;
+  const hasWorkouts = allWorkoutActivities.length > 0;
   const hasEvents = uniqueEvents.length > 0;
   const hasParks = allParks.length > 0;
   const hasJournals = allJournals.length > 0;
@@ -321,7 +321,7 @@ export function CalendarMonthDetail({
   const hasMeals = mealStats.total > 0;
   const hasVacations = vacationStats.total > 0;
 
-  const hasAnyData = hasMedia || hasActivities || hasEvents || hasParks || hasJournals || 
+  const hasAnyData = hasMedia || hasWorkouts || hasEvents || hasParks || hasJournals || 
     hasGoalsCompleted || hasMood || hasHabits || hasDuolingo || hasGithub || hasRelationship || hasTasks || hasMeals || hasVacations;
 
   if (!hasAnyData) {
@@ -1408,12 +1408,13 @@ export function CalendarMonthDetail({
       )}
 
       {/* Exercise Activities */}
-      {hasActivities && (
+      {/* Exercise Activities */}
+      {hasWorkouts && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              Exercise Activities ({allActivities.length})
+              Exercise Activities ({allWorkoutActivities.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -1422,41 +1423,38 @@ export function CalendarMonthDetail({
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold mb-3">Activities</h3>
                 <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
-                  {allActivities.map((activity) => (
-                    <a
+                  {allWorkoutActivities.map((activity) => (
+                    <div
                       key={activity.id}
-                      href={`https://www.strava.com/activities/${activity.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-start justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors group cursor-pointer"
+                      className="flex items-start justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors group"
                     >
                       <div className="space-y-1 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-blue-700 dark:text-blue-400 group-hover:underline">
-                            {activity.name}
+                          <p className="font-medium text-blue-700 dark:text-blue-400 capitalize">
+                            {activity.type} Workout
                           </p>
-                          <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <div className="flex gap-3 text-xs text-muted-foreground">
                           {activity.distance && (
                             <span>
-                              {(activity.distance / 1000).toFixed(2)} km
+                              {activity.distance} miles
                             </span>
                           )}
-                          {activity.moving_time && (
-                            <span>{Math.round(activity.moving_time / 60)} min</span>
+                          {activity.length > 0 && (
+                            <span>{activity.length} min</span>
                           )}
-                          {activity.type && (
-                            <Badge variant="outline" className="text-xs">
-                              {activity.type}
-                            </Badge>
-                          )}
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {activity.type}
+                          </Badge>
                         </div>
+                        {activity.notes && (
+                            <p className="text-xs text-muted-foreground italic line-clamp-1">{activity.notes}</p>
+                        )}
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {formatDateSafe(activity.start_date_local)}
+                        {formatDateSafe(activity.date)}
                       </span>
-                    </a>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -1473,7 +1471,7 @@ export function CalendarMonthDetail({
                       </div>
                       <div>
                         <p className="text-2xl font-bold">
-                          {(allActivities.reduce((sum, a) => sum + (a.distance || 0), 0) / 1000).toFixed(2)} km
+                          {(allWorkoutActivities.reduce((sum, a) => sum + (a.distance || 0), 0)).toFixed(2)} miles
                         </p>
                         <p className="text-sm text-muted-foreground">Total Distance</p>
                       </div>
@@ -1489,56 +1487,13 @@ export function CalendarMonthDetail({
                       <div>
                         <p className="text-2xl font-bold">
                           {(() => {
-                            const totalMinutes = Math.round(
-                              allActivities.reduce((sum, a) => sum + (a.moving_time || 0), 0) / 60
-                            );
+                            const totalMinutes = allWorkoutActivities.reduce((sum, a) => sum + (a.length || 0), 0);
                             const hours = Math.floor(totalMinutes / 60);
                             const minutes = totalMinutes % 60;
                             return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
                           })()}
                         </p>
                         <p className="text-sm text-muted-foreground">Total Time</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Total Elevation */}
-                  <div className="p-4 rounded-lg border bg-card">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-orange-500/10">
-                        <Mountain className="h-5 w-5 text-orange-500" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold">
-                          {Math.round(
-                            allActivities.reduce((sum, a) => sum + (a.total_elevation_gain || 0), 0)
-                          ).toLocaleString()} m
-                        </p>
-                        <p className="text-sm text-muted-foreground">Total Elevation</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Average Pace */}
-                  <div className="p-4 rounded-lg border bg-card">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-purple-500/10">
-                        <TrendingUp className="h-5 w-5 text-purple-500" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold">
-                          {(() => {
-                            const activitiesWithSpeed = allActivities.filter(a => a.average_speed);
-                            if (activitiesWithSpeed.length === 0) return "N/A";
-                            const avgSpeed = activitiesWithSpeed.reduce((sum, a) => sum + (a.average_speed || 0), 0) / activitiesWithSpeed.length;
-                            const speedKmH = avgSpeed * 3.6;
-                            const paceMinPerKm = 60 / speedKmH;
-                            const minutes = Math.floor(paceMinPerKm);
-                            const seconds = Math.round((paceMinPerKm - minutes) * 60);
-                            return `${minutes}:${seconds.toString().padStart(2, '0')}/km`;
-                          })()}
-                        </p>
-                        <p className="text-sm text-muted-foreground">Average Pace</p>
                       </div>
                     </div>
                   </div>

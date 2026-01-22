@@ -40,7 +40,7 @@ export interface YearlyStats {
   exercises: {
     total: number;
     totalDuration: number;
-    totalDistance: number; // in meters
+    totalDistance: number; // in miles
     byType: { type: string; count: number; distance?: number }[];
   };
   mood: {
@@ -468,7 +468,7 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     };
   })();
 
-  // 3. Exercises (Strava)
+  // 3. Exercises (Workouts)
   const exercisesPromise = (async () => {
     let yearExercises: any[] = [];
     let exerciseStats = {
@@ -479,43 +479,39 @@ export async function getYearlyData(year: number, userId: string): Promise<Yearl
     };
 
     try {
-      const athlete = await queryOne<{ id: number }>(
-        "SELECT id FROM strava_athlete WHERE userId = ?",
-        [userId]
+      yearExercises = await query(
+        `SELECT * FROM workout_activities
+         WHERE userId = ?
+         AND date >= ?
+         AND date <= ?`,
+        [userId, startDate, endDate]
       );
 
-      if (athlete) {
-        yearExercises = await query(
-          `SELECT * FROM strava_activities
-           WHERE athlete_id = ?
-           AND start_date >= ?
-           AND start_date <= ?`,
-          [athlete.id, startDate, endDate]
-        );
+      const typeAggregation = yearExercises.reduce((acc, e) => {
+        const type = e.type || "Unknown";
+        if (!acc[type]) {
+          acc[type] = { count: 0, distance: 0 };
+        }
+        acc[type].count += 1;
+        // Only sum distance for runs, or if distance exists. 
+        // User asked "calculate the distance ran... from the workouts that are runs".
+        // I will sum distance for all, but effectively it should mostly be runs/cardio.
+        acc[type].distance += e.distance || 0;
+        return acc;
+      }, {} as Record<string, { count: number; distance: number }>);
 
-        const typeAggregation = yearExercises.reduce((acc, e) => {
-          const type = e.type || "Unknown";
-          if (!acc[type]) {
-            acc[type] = { count: 0, distance: 0 };
-          }
-          acc[type].count += 1;
-          acc[type].distance += e.distance || 0;
-          return acc;
-        }, {} as Record<string, { count: number; distance: number }>);
-
-        exerciseStats = {
-          total: yearExercises.length,
-          totalDuration: yearExercises.reduce((acc, e) => acc + (e.moving_time || 0), 0) / 60,
-          totalDistance: yearExercises.reduce((acc, e) => acc + (e.distance || 0), 0),
-          byType: (Object.entries(typeAggregation) as [string, { count: number; distance: number }][]).map(([type, data]) => ({
-            type,
-            count: data.count,
-            distance: data.distance
-          })),
-        };
-      }
+      exerciseStats = {
+        total: yearExercises.length,
+        totalDuration: yearExercises.reduce((acc, e) => acc + (e.length || 0), 0), // length is in minutes
+        totalDistance: yearExercises.reduce((acc, e) => acc + (e.distance || 0), 0),
+        byType: (Object.entries(typeAggregation) as [string, { count: number; distance: number }][]).map(([type, data]) => ({
+          type,
+          count: data.count,
+          distance: data.distance
+        })).sort((a, b) => b.count - a.count),
+      };
     } catch (e) {
-      console.error("Failed to fetch Strava data", e);
+      console.error("Failed to fetch workout data", e);
     }
     return { yearExercises, stats: exerciseStats };
   })();

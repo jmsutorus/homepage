@@ -15,17 +15,7 @@ interface Exercise {
   weight?: number;
 }
 
-interface WorkoutActivity {
-  id: number;
-  date: string;
-  time: string;
-  length: number;
-  difficulty: "easy" | "moderate" | "hard" | "very hard";
-  type: "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
-  exercises: string;
-  notes?: string | null;
-  completed: boolean;
-}
+import { WorkoutActivity } from "@/lib/db/workout-activities";
 
 interface UpcomingWorkoutsProps {
   workouts: WorkoutActivity[];

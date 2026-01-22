@@ -6,7 +6,6 @@ import type { Event } from "@/lib/db/events";
 import type { Task } from "@/lib/db/tasks";
 import { DailyEvents } from "@/components/widgets/daily/daily-events";
 import { DailyWorkouts } from "@/components/widgets/daily/daily-workouts";
-import { DailyStrava } from "@/components/widgets/daily/daily-strava";
 import { DailyGithub } from "@/components/widgets/daily/daily-github";
 import { DailyMedia } from "@/components/widgets/daily/daily-media";
 import { DailyParks } from "@/components/widgets/daily/daily-parks";
@@ -21,7 +20,6 @@ interface DailyActivitiesProps {
   overdueTasks: Task[];
   upcomingTasks: Task[];
   completedTasks: Task[];
-  unlinkedStravaActivities: any[];
   upcomingWorkoutActivities: any[];
   completedWorkoutActivities: any[];
   upcomingGoals: CalendarGoal[];
@@ -36,7 +34,6 @@ export function DailyActivities({
   overdueTasks,
   upcomingTasks,
   completedTasks,
-  unlinkedStravaActivities,
   upcomingWorkoutActivities,
   completedWorkoutActivities,
   upcomingGoals,
@@ -92,15 +89,7 @@ export function DailyActivities({
           <DailyWorkouts 
             upcoming={upcomingWorkoutActivities}
             completed={completedWorkoutActivities}
-            stravaActivities={dailyData.activities}
           />
-        </section>
-      )}
-
-      {/* Strava Activities Section */}
-      {unlinkedStravaActivities.length > 0 && (
-        <section className="rounded-lg border bg-card p-6">
-          <DailyStrava activities={unlinkedStravaActivities} />
         </section>
       )}
 

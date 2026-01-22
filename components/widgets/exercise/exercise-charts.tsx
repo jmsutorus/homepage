@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -12,58 +12,21 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { formatDistance } from "@/lib/utils/strava";
 import { format, endOfWeek, eachWeekOfInterval, subMonths } from "date-fns";
+import type { WorkoutActivity } from "@/lib/db/workout-activities";
 
-interface Activity {
-  id: number;
-  distance: number;
-  moving_time: number;
-  start_date: string;
-  type: string;
-  sport_type: string;
+interface ExerciseChartsProps {
+  initialActivities: WorkoutActivity[];
 }
 
 type ChartType = "distance" | "time" | "count";
 
-interface ExerciseChartsProps {
-  initialActivities?: Activity[];
-}
-
 export function ExerciseCharts({ initialActivities = [] }: ExerciseChartsProps) {
-  const [activities, setActivities] = useState<Activity[]>(initialActivities);
-  const [isLoading, setIsLoading] = useState(initialActivities.length === 0);
   const [chartType, setChartType] = useState<ChartType>("distance");
-  const isFirstRender = useState(true)[0];
-
-  useEffect(() => {
-    if (isFirstRender && initialActivities.length > 0) {
-      setIsLoading(false);
-      return;
-    }
-    fetchActivities();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchActivities = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/strava/activities?limit=200");
-
-      if (response.ok) {
-        const data = await response.json();
-        setActivities(data.activities || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch activities:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Group activities by week for the last 3 months
   const chartData = useMemo(() => {
-    if (activities.length === 0) return [];
+    if (initialActivities.length === 0) return [];
 
     const now = new Date();
     const threeMonthsAgo = subMonths(now, 3);
@@ -78,41 +41,25 @@ export function ExerciseCharts({ initialActivities = [] }: ExerciseChartsProps) 
       const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
 
       // Filter activities for this week
-      const weekActivities = activities.filter((activity) => {
-        const activityDate = new Date(activity.start_date);
+      const weekActivities = initialActivities.filter((activity) => {
+        const activityDate = new Date(activity.date);
         return activityDate >= weekStart && activityDate <= weekEnd;
       });
 
-      const totalDistance = weekActivities.reduce((sum, a) => sum + a.distance, 0);
-      const totalTime = weekActivities.reduce((sum, a) => sum + a.moving_time, 0);
+      const totalDistance = weekActivities.reduce((sum, a) => sum + (a.distance || 0), 0);
+      const totalTime = weekActivities.reduce((sum, a) => sum + a.length, 0); // length is in minutes
       const count = weekActivities.length;
 
       return {
         week: format(weekStart, "MMM d"),
-        distance: Math.round(totalDistance / 1000), // Convert to km
-        time: Math.round(totalTime / 3600), // Convert to hours
+        distance: Number(totalDistance.toFixed(2)), // Miles
+        time: Number((totalTime / 60).toFixed(1)), // Hours
         count,
       };
     });
-  }, [activities]);
+  }, [initialActivities]);
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Activity Trends</CardTitle>
-          <CardDescription>Loading chart data...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            Loading...
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (activities.length === 0) {
+  if (initialActivities.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -121,7 +68,7 @@ export function ExerciseCharts({ initialActivities = [] }: ExerciseChartsProps) 
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            No activities found. Use the Strava Sync widget below to sync your data.
+            No activities recorded in the last 3 months.
           </div>
         </CardContent>
       </Card>
@@ -133,7 +80,7 @@ export function ExerciseCharts({ initialActivities = [] }: ExerciseChartsProps) 
       case "distance":
         return {
           dataKey: "distance",
-          label: "Distance (km)",
+          label: "Distance (miles)",
           color: "#3b82f6", // Blue
         };
       case "time":
@@ -207,23 +154,19 @@ export function ExerciseCharts({ initialActivities = [] }: ExerciseChartsProps) 
           <div className="text-center">
             <p className="text-sm text-muted-foreground">Total Distance</p>
             <p className="text-2xl font-bold">
-              {formatDistance(
-                activities.reduce((sum, a) => sum + a.distance, 0)
-              )}
+              {initialActivities.reduce((sum, a) => sum + (a.distance || 0), 0).toFixed(1)} <span className="text-sm font-normal text-muted-foreground">mi</span>
             </p>
           </div>
           <div className="text-center">
             <p className="text-sm text-muted-foreground">Total Time</p>
             <p className="text-2xl font-bold">
-              {Math.round(
-                activities.reduce((sum, a) => sum + a.moving_time, 0) / 3600
-              )}{" "}
-              h
+              {(initialActivities.reduce((sum, a) => sum + a.length, 0) / 60).toFixed(1)}{" "}
+              <span className="text-sm font-normal text-muted-foreground">h</span>
             </p>
           </div>
           <div className="text-center">
             <p className="text-sm text-muted-foreground">Total Activities</p>
-            <p className="text-2xl font-bold">{activities.length}</p>
+            <p className="text-2xl font-bold">{initialActivities.length}</p>
           </div>
         </div>
       </CardContent>

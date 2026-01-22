@@ -20,12 +20,10 @@ import { getHabits, getHabitCompletions } from "@/lib/db/habits";
 import { getMoodEntry, getMoodEntriesInRange } from "@/lib/db/mood";
 import { getAllParks } from "@/lib/db/parks";
 import { getAllJournals } from "@/lib/db/journals";
-import { getAthleteByUserId } from "@/lib/db/strava";
 import { getGoalsWithProgress } from "@/lib/db/goals";
 import { DailyHabits } from "@/components/widgets/habits/daily-habits";
 import { MoodSummary } from "@/components/widgets/mood/mood-summary";
 import { ParkSummary } from "@/components/widgets/parks/park-summary";
-import { RecentActivity } from "@/components/widgets/exercise/recent-activity";
 import { DailyJournalPreview } from "@/components/widgets/journal/daily-journal-preview";
 import { HomeGoals } from "@/components/widgets/goals/home-goals";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +37,7 @@ import { UpcomingWorkouts } from "@/components/widgets/exercise/upcoming-workout
 import { getUpcomingBirthdays, getUpcomingAnniversaries } from "@/lib/db/people";
 import { UpcomingBirthdays } from "@/components/widgets/people/upcoming-birthdays";
 import { UpcomingAnniversaries } from "@/components/widgets/people/upcoming-anniversaries";
-import { getUpcomingWorkoutActivities } from "@/lib/db/workout-activities";
+import { getUpcomingWorkoutActivities, getRecentWorkoutActivities } from "@/lib/db/workout-activities";
 import { BirthdayBanner } from "@/components/birthday/birthday-banner";
 
 export const dynamic = "force-dynamic";
@@ -138,10 +136,7 @@ export default async function DashboardPage({
     latestJournalRaw,
     recentMediaRaw,
     calendarColors,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _athleteRaw,
     activeGoalsRaw,
-    recentActivitiesRaw,
     isPlexEnabled,
     isSteamEnabled,
     isHomeAssistantEnabled,
@@ -150,6 +145,7 @@ export default async function DashboardPage({
     activeVacationRaw,
     upcomingVacationsRaw,
     upcomingWorkoutsRaw,
+    recentWorkoutActivities,
     userBirthdayRaw,
     session,
     upcomingBirthdaysRaw,
@@ -167,10 +163,7 @@ export default async function DashboardPage({
     getAllJournals(userId).then(journals => journals[0] || null),
     getRecentlyCompletedMedia(userId, 4),
     getCalendarColorsForUser(),
-    getAthleteByUserId(userId),
     getGoalsWithProgress(userId, { status: ['not_started', 'in_progress'] }),
-    // Use the new function to fetch activities directly by userId
-    import("@/lib/db/strava").then(mod => mod.getActivitiesByUserId(userId, 5)),
     isPlexEnabledPromise,
     isSteamEnabledPromise,
     isHomeAssistantEnabledPromise,
@@ -182,6 +175,8 @@ export default async function DashboardPage({
     getUpcomingVacations(userId, todayStr, 30),
     // Upcoming workouts for today and tomorrow
     getUpcomingWorkoutActivities(userId, 3),
+    // Recent workouts (fetched but unused for now, or could check RecentActivity equivalent)
+    getRecentWorkoutActivities(userId, 5),
     // User birthday
     queryOne<{ birthday: string | null }>(
       "SELECT birthday FROM user WHERE id = ?",
@@ -226,7 +221,6 @@ export default async function DashboardPage({
   const latestJournal = serialize(latestJournalRaw);
   const recentMedia = serialize(recentMediaRaw);
   const activeGoals = serialize(activeGoalsRaw.slice(0, 3)); // Only show top 3 goals
-  const recentActivities = serialize(recentActivitiesRaw);
   const duolingoProfileSerialized = serialize(duolingoData.profile);
   const duolingoIsCompletedToday = duolingoData.isCompletedToday;
 
@@ -399,7 +393,7 @@ export default async function DashboardPage({
             {/* Duolingo Widget */}
             {duolingoProfileSerialized && (
               <div className="mb-4">
-                 <DuolingoWidget profile={duolingoProfileSerialized} isCompletedToday={duolingoIsCompletedToday} />
+                <DuolingoWidget profile={duolingoProfileSerialized} isCompletedToday={duolingoIsCompletedToday} />
               </div>
             )}
 
@@ -408,8 +402,6 @@ export default async function DashboardPage({
               {upcomingWorkouts.length > 0 && (
                 <UpcomingWorkouts workouts={upcomingWorkouts} todayDate={todayStr} />
               )}
-              
-              <RecentActivity activities={recentActivities} />
               
               <ParkSummary park={featuredPark} />
 

@@ -37,8 +37,9 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [time, setTime] = useState("07:00");
   const [length, setLength] = useState(60);
+  const [distance, setDistance] = useState(0);
   const [difficulty, setDifficulty] = useState<"easy" | "moderate" | "hard" | "very hard">("moderate");
-  const [type, setType] = useState<"cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other">("cardio");
+  const [type, setType] = useState<"run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other">("cardio");
   const [notes, setNotes] = useState("");
   const [exercises, setExercises] = useState<Exercise[]>([
     { description: "", reps: undefined, sets: undefined, duration: undefined, pace: "", weight: undefined }
@@ -51,6 +52,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
       setDate(editActivity.date);
       setTime(editActivity.time);
       setLength(editActivity.length);
+      setDistance(editActivity.distance || 0);
       setDifficulty(editActivity.difficulty);
       setType(editActivity.type);
       setNotes(editActivity.notes || "");
@@ -74,6 +76,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
     setDate(new Date().toISOString().split("T")[0]);
     setTime("07:00");
     setLength(60);
+    setDistance(0);
     setDifficulty("moderate");
     setType("cardio");
     setNotes("");
@@ -102,7 +105,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
       // Filter out empty exercises
       const validExercises = exercises.filter(ex => ex.description?.trim() !== "");
 
-      if (validExercises.length === 0) {
+      if (type !== 'run' && validExercises.length === 0) {
         alert("Please add at least one exercise");
         setLoading(false);
         return;
@@ -117,18 +120,20 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
             date,
             time,
             length,
+            distance: type === 'run' ? distance : undefined,
             difficulty,
             type,
-            exercises: validExercises,
+            exercises: type === 'run' ? [] : validExercises,
             notes,
           }
         : {
             date,
             time,
             length,
+            distance: type === 'run' ? distance : undefined,
             difficulty,
             type,
-            exercises: validExercises,
+            exercises: type === 'run' ? [] : validExercises,
             notes,
           };
 
@@ -210,8 +215,8 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
           </div>
         </div>
 
-        {/* Length, Difficulty, Type */}
-        <div className="grid grid-cols-3 gap-4">
+        {/* Length, Distance (if run), Difficulty, Type */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-2">
             <Label htmlFor="length">Length (min)</Label>
             <Input
@@ -223,6 +228,22 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
               required
             />
           </div>
+          
+          {type === "run" && (
+            <div className="space-y-2">
+              <Label htmlFor="distance">Distance (miles)</Label>
+              <Input
+                id="distance"
+                type="number"
+                min="0"
+                step="0.01"
+                value={distance}
+                onChange={(e) => setDistance(parseFloat(e.target.value))}
+                required
+              />
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="difficulty">Difficulty</Label>
             <Select value={difficulty} onValueChange={(value: any) => setDifficulty(value)}>
@@ -244,6 +265,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="run">Run</SelectItem>
                 <SelectItem value="cardio">Cardio</SelectItem>
                 <SelectItem value="strength">Strength</SelectItem>
                 <SelectItem value="flexibility">Flexibility</SelectItem>
@@ -256,6 +278,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
         </div>
 
         {/* Exercises */}
+        {type !== "run" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label>Exercises</Label>
@@ -351,6 +374,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
             </div>
           ))}
         </div>
+        )}
 
         {/* Notes */}
         <div className="space-y-2">

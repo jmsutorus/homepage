@@ -84,7 +84,7 @@ export function ExerciseTimeline({ stats }: ExerciseTimelineProps) {
                   <div className="text-sm font-medium text-muted-foreground">Distance</div>
                 </div>
                 <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {(stats.exercises.totalDistance / 1609.34).toFixed(0)}
+                  {(stats.exercises.totalDistance).toFixed(0)}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
                   miles covered
@@ -237,7 +237,7 @@ function calculateExerciseInsights(stats: YearlyStats) {
   // Generate insights
   const totalHours = Math.round(stats.exercises.totalDuration / 60);
   const avgWorkoutsPerWeek = (stats.exercises.total / 52).toFixed(1);
-  const totalMiles = (stats.exercises.totalDistance / 1609.34).toFixed(1);
+  const totalMiles = (stats.exercises.totalDistance).toFixed(1);
 
   // Distance-based insights (with fun comparisons)
   if (stats.exercises.totalDistance > 0) {
@@ -289,7 +289,7 @@ function calculateExerciseInsights(stats: YearlyStats) {
     );
 
     if (runType && runType.distance) {
-      const runMiles = (runType.distance / 1609.34).toFixed(1);
+      const runMiles = (runType.distance).toFixed(1);
       if (parseFloat(runMiles) >= 100) {
         insights.push({
           icon: Dumbbell,

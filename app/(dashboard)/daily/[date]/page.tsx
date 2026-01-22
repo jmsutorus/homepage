@@ -192,18 +192,6 @@ export default async function DailyPage({ params }: DailyPageProps) {
   const upcomingWorkoutActivities = dailyData?.workoutActivities.filter((w) => !w.completed) ?? [];
   const completedWorkoutActivities = dailyData?.workoutActivities.filter((w) => w.completed) ?? [];
 
-  // Get IDs of Strava activities that are linked to completed workouts
-  const linkedStravaActivityIds = new Set(
-    completedWorkoutActivities
-      .filter((w) => w.strava_activity_id)
-      .map((w) => w.strava_activity_id!)
-  );
-
-  // Filter out Strava activities that are already linked to completed workouts
-  const unlinkedStravaActivities = dailyData?.activities.filter(
-    (activity) => !linkedStravaActivityIds.has(activity.id)
-  ) ?? [];
-
   return (
     <div className="container mx-auto py-6 sm:py-8 px-4 max-w-4xl">
       {/* Header */}
@@ -325,7 +313,6 @@ export default async function DailyPage({ params }: DailyPageProps) {
             overdueTasks={overdueTasks}
             upcomingTasks={upcomingTasks}
             completedTasks={completedTasks}
-            unlinkedStravaActivities={unlinkedStravaActivities}
             upcomingWorkoutActivities={upcomingWorkoutActivities}
             completedWorkoutActivities={completedWorkoutActivities}
             upcomingGoals={upcomingGoals}
@@ -448,14 +435,6 @@ export default async function DailyPage({ params }: DailyPageProps) {
                     <span>Workouts</span>
                     <span className="font-medium">
                       {dailyData.workoutActivities.length}
-                    </span>
-                  </div>
-                  }
-                  { dailyData.activities.length > 0 &&
-                  <div className="flex justify-between">
-                    <span>Strava</span>
-                    <span className="font-medium">
-                      {dailyData.activities.length}
                     </span>
                   </div>
                   }

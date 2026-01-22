@@ -14,7 +14,6 @@ import { CompleteActivityModal } from "../exercise/complete-activity-modal";
 import { DailyMood } from "../daily/daily-mood";
 import { DailyEvents } from "../daily/daily-events";
 import { DailyWorkouts } from "../daily/daily-workouts";
-import { DailyStrava } from "../daily/daily-strava";
 import { DailyGithub } from "../daily/daily-github";
 import { DailyMedia } from "../daily/daily-media";
 import { DailyParks } from "../daily/daily-parks";
@@ -181,19 +180,7 @@ export function CalendarDayDetail({ date, data, isLoading, error, holidayName, i
   const completedWorkoutActivities = data?.workoutActivities.filter((w) => w.completed) ?? [];
   const hasWorkoutActivities = upcomingWorkoutActivities.length > 0 || completedWorkoutActivities.length > 0;
 
-  // Get IDs of Strava activities that are linked to completed workouts
-  const linkedStravaActivityIds = new Set(
-    completedWorkoutActivities
-      .filter((w) => w.strava_activity_id)
-      .map((w) => w.strava_activity_id!)
-  );
-
-  // Filter out Strava activities that are already linked to completed workouts
-  const unlinkedStravaActivities = data?.activities.filter(
-    (activity) => !linkedStravaActivityIds.has(activity.id)
-  ) ?? [];
-
-  const hasActivities = unlinkedStravaActivities.length > 0;
+  const hasActivities = false; // Deprecated
 
   // Find existing holiday event (matches "${holidayName} ${year}" format)
   const year = date.split('-')[0];
@@ -372,15 +359,11 @@ export function CalendarDayDetail({ date, data, isLoading, error, holidayName, i
           <DailyWorkouts 
             upcoming={upcomingWorkoutActivities}
             completed={completedWorkoutActivities}
-            stravaActivities={data.activities}
             onComplete={handleCompleteActivity}
           />
         )}
 
-        {/* Strava Activities (not linked to workouts) Section */}
-        {hasActivities && data && (
-          <DailyStrava activities={unlinkedStravaActivities} />
-        )}
+
 
         {/* GitHub Section */}
         {hasGithub && data && (
