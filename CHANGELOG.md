@@ -1,3 +1,10 @@
+## [1.19.2](https://github.com/jmsutorus/homepage/compare/v1.19.1...v1.19.2) (2026-01-05)
+
+
+### Bug Fixes
+
+* events spacing ([5d5b13e](https://github.com/jmsutorus/homepage/commit/5d5b13e34dd4cc861d7820b5e1714b210853ec8d))
+
 ## [1.19.1](https://github.com/jmsutorus/homepage/compare/v1.19.0...v1.19.1) (2026-01-02)
 
 
