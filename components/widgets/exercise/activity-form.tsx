@@ -54,7 +54,11 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
       setLength(editActivity.length);
       setDistance(editActivity.distance || 0);
       setDifficulty(editActivity.difficulty);
-      setType(editActivity.type);
+      // Normalize type to ensure it matches the select values
+      // The DB might store "Run" but the select expects "run"
+      const normalizedType = editActivity.type.toLowerCase() as any;
+      setType(normalizedType);
+      
       setNotes(editActivity.notes || "");
 
       // Parse exercises from JSON string
@@ -67,7 +71,8 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
         setExercises([{ description: "", reps: undefined, sets: undefined, duration: undefined, pace: "", weight: undefined }]);
       }
     } else {
-        // Reset handled by effect or parent logic - here we stay consistent with resetForm logic if needed
+        // Reset form when editActivity becomes null (switching to add mode)
+        resetForm();
     }
   }, [editActivity]);
 
@@ -114,28 +119,25 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
       const isEditing = activityId !== null;
       const url = "/api/activities";
       const method = isEditing ? "PATCH" : "POST";
+      
+      // For runs, we just need basic info and distance
+      // For others, we need exercises
+      const baseBody = {
+        date,
+        time,
+        length,
+        difficulty,
+        type,
+        notes,
+        // Include distance if it's a run, otherwise undefined
+        distance: type === 'run' ? distance : undefined,
+        // Include exercises if NOT a run, otherwise empty array
+        exercises: type === 'run' ? [] : validExercises,
+      };
+
       const body = isEditing
-        ? {
-            id: activityId,
-            date,
-            time,
-            length,
-            distance: type === 'run' ? distance : undefined,
-            difficulty,
-            type,
-            exercises: type === 'run' ? [] : validExercises,
-            notes,
-          }
-        : {
-            date,
-            time,
-            length,
-            distance: type === 'run' ? distance : undefined,
-            difficulty,
-            type,
-            exercises: type === 'run' ? [] : validExercises,
-            notes,
-          };
+        ? { id: activityId, ...baseBody }
+        : baseBody;
 
       const response = await fetch(url, {
         method,

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id;
 
     const body = await request.json();
-    const { id, strava_activity_id } = body;
+    const { id } = body;
 
     // Validate ID
     if (!id) {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark as completed
-    await markWorkoutCompleted(id, userId, strava_activity_id);
+    await markWorkoutCompleted(id, userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

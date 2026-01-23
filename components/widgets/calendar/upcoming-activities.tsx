@@ -25,14 +25,12 @@ interface UpcomingActivitiesProps {
   onRefresh?: number;
   initialActivities?: WorkoutActivity[];
   initialRecentActivities?: WorkoutActivity[];
-  stravaActivities?: any[];
 }
 
 export function UpcomingActivities({ 
   onRefresh, 
   initialActivities = [], 
-  initialRecentActivities = [],
-  stravaActivities = []
+  initialRecentActivities = []
 }: UpcomingActivitiesProps) {
   const router = useRouter();
   const [activities, setActivities] = useState<WorkoutActivity[]>(initialActivities);
@@ -81,14 +79,13 @@ export function UpcomingActivities({
     fetchActivities();
   }, [onRefresh]);
 
-  const handleMarkComplete = async (activityId: number, stravaActivityId?: number) => {
+  const handleMarkComplete = async (activityId: number) => {
     try {
       const response = await fetch("/api/activities", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: activityId,
-          strava_activity_id: stravaActivityId,
           completion_notes: "Completed via dashboard"
         }),
       });
@@ -108,14 +105,7 @@ export function UpcomingActivities({
     }
   };
 
-  const findMatchingStravaActivity = (activityDate: string) => {
-    // Basic heuristic: check if there's a strava activity on the same day
-    // The date formats should match YYYY-MM-DD
-    return stravaActivities.find(sa => {
-      const stravaDate = sa.start_date_local || sa.start_date;
-      return stravaDate.split('T')[0] === activityDate;
-    });
-  };
+
 
   const parseExercises = (exercisesJson: string): Exercise[] => {
     try {
@@ -158,7 +148,6 @@ export function UpcomingActivities({
 
   const renderActivityCard = (activity: WorkoutActivity, isPast: boolean) => {
     const exercises = parseExercises(activity.exercises);
-    const matchingStrava = isPast ? findMatchingStravaActivity(activity.date) : null;
 
     return (
       <div key={activity.id} className={`border-l-4 ${isPast ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/10" : "border-primary"} pl-4 py-3 relative group`}>
@@ -226,27 +215,15 @@ export function UpcomingActivities({
             <Pencil className="h-3 w-3 mr-1" />
             Edit
           </Button>
-          {isPast && matchingStrava ? (
-             <Button 
-               size="sm" 
-               variant="default" 
-               className="h-7 text-xs bg-green-600 hover:bg-green-700"
-               onClick={() => handleMarkComplete(activity.id, matchingStrava.id)}
-             >
-               <LinkIcon className="h-3 w-3 mr-1" />
-               Link to {matchingStrava.name}
-             </Button>
-          ) : (
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="h-7 text-xs"
-              onClick={() => handleMarkComplete(activity.id)}
-            >
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              Mark Complete
-            </Button>
-          )}
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="h-7 text-xs"
+            onClick={() => handleMarkComplete(activity.id)}
+          >
+            <CheckCircle2 className="h-3 w-3 mr-1" />
+            Mark Complete
+          </Button>
         </div>
       </div>
     );

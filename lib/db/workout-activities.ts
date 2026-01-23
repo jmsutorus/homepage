@@ -24,7 +24,6 @@ export interface WorkoutActivity {
   completed: boolean;
   completed_at?: string | null;
   completion_notes?: string | null; // Post-activity notes
-  strava_activity_id?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -66,41 +65,61 @@ export async function createWorkoutActivity(activity: CreateWorkoutActivity, use
 export async function getWorkoutActivity(id: number, userId: string): Promise<WorkoutActivity | undefined> {
   const db = getDatabase();
   const result = await db.execute({
-    sql: "SELECT * FROM workout_activities WHERE id = ? AND userId = ?",
+    sql: "SELECT *, length as duration_minutes FROM workout_activities WHERE id = ? AND userId = ?",
     args: [id, userId]
   });
-  return result.rows[0] as unknown as WorkoutActivity | undefined;
+  
+  if (!result.rows[0]) return undefined;
+
+  const row = result.rows[0] as any;
+  return {
+    ...row,
+    length: row.duration_minutes || row.length,
+    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
+  } as WorkoutActivity;
 }
 
 export async function getAllWorkoutActivities(userId: string): Promise<WorkoutActivity[]> {
   const db = getDatabase();
   const result = await db.execute({
-    sql: "SELECT * FROM workout_activities WHERE userId = ? ORDER BY date DESC, time DESC",
+    sql: "SELECT *, length as duration_minutes FROM workout_activities WHERE userId = ? ORDER BY date DESC, time DESC",
     args: [userId]
   });
-  return result.rows as unknown as WorkoutActivity[];
+  return result.rows.map((row: any) => ({
+    ...row,
+    length: row.duration_minutes || row.length,
+    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
+  })) as WorkoutActivity[];
 }
 
 export async function getWorkoutActivitiesByDateRange(startDate: string, endDate: string, userId: string): Promise<WorkoutActivity[]> {
   const db = getDatabase();
   const result = await db.execute({
-    sql: `SELECT * FROM workout_activities
+    sql: `SELECT *, length as duration_minutes FROM workout_activities
           WHERE userId = ? AND date >= ? AND date <= ?
           ORDER BY date ASC, time ASC`,
     args: [userId, startDate, endDate]
   });
-  return result.rows as unknown as WorkoutActivity[];
+  return result.rows.map((row: any) => ({
+    ...row,
+    length: row.duration_minutes || row.length,
+    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
+  })) as WorkoutActivity[];
 }
 
 export async function getWorkoutActivitiesByType(type: string, userId: string): Promise<WorkoutActivity[]> {
   const db = getDatabase();
   const result = await db.execute({
-    sql: `SELECT * FROM workout_activities
+    sql: `SELECT *, length as duration_minutes FROM workout_activities
           WHERE userId = ? AND type = ?
           ORDER BY date DESC, time DESC`,
     args: [userId, type]
   });
-  return result.rows as unknown as WorkoutActivity[];
+  return result.rows.map((row: any) => ({
+    ...row,
+    length: row.duration_minutes || row.length,
+    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
+  })) as WorkoutActivity[];
 }
 
 export async function getUpcomingWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
@@ -108,13 +127,17 @@ export async function getUpcomingWorkoutActivities(userId: string, limit: number
   const today = new Date().toISOString().split("T")[0];
 
   const result = await db.execute({
-    sql: `SELECT * FROM workout_activities
+    sql: `SELECT *, length as duration_minutes FROM workout_activities
           WHERE userId = ? AND date >= ? AND completed = 0
           ORDER BY date ASC, time ASC
           LIMIT ?`,
     args: [userId, today, limit]
   });
-  return result.rows as unknown as WorkoutActivity[];
+  return result.rows.map((row: any) => ({
+    ...row,
+    length: row.duration_minutes || row.length,
+    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
+  })) as WorkoutActivity[];
 }
 
 export async function getRecentWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
@@ -122,26 +145,34 @@ export async function getRecentWorkoutActivities(userId: string, limit: number =
   const today = new Date().toISOString().split("T")[0];
 
   const result = await db.execute({
-    sql: `SELECT * FROM workout_activities
+    sql: `SELECT *, length as duration_minutes FROM workout_activities
           WHERE userId = ? AND date < ? AND completed = 0
           ORDER BY date DESC, time DESC
           LIMIT ?`,
     args: [userId, today, limit]
   });
-  return result.rows as unknown as WorkoutActivity[];
+  return result.rows.map((row: any) => ({
+    ...row,
+    length: row.duration_minutes || row.length,
+    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
+  })) as WorkoutActivity[];
 }
 
 export async function getCompletedWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
   const db = getDatabase();
 
   const result = await db.execute({
-    sql: `SELECT * FROM workout_activities
+    sql: `SELECT *, length as duration_minutes FROM workout_activities
           WHERE userId = ? AND completed = 1
           ORDER BY completed_at DESC
           LIMIT ?`,
     args: [userId, limit]
   });
-  return result.rows as unknown as WorkoutActivity[];
+  return result.rows.map((row: any) => ({
+    ...row,
+    length: row.duration_minutes || row.length,
+    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
+  })) as WorkoutActivity[];
 }
 
 export async function updateWorkoutActivity(
@@ -179,7 +210,6 @@ export async function updateWorkoutActivity(
 export async function markWorkoutActivityCompleted(
   id: number,
   userId: string,
-  stravaActivityId?: number | null,
   completionNotes?: string | null
 ): Promise<boolean> {
   const db = getDatabase();
@@ -194,9 +224,9 @@ export async function markWorkoutActivityCompleted(
 
   await db.execute({
     sql: `UPDATE workout_activities
-          SET completed = 1, completed_at = ?, strava_activity_id = ?, completion_notes = ?
+          SET completed = 1, completed_at = ?, completion_notes = ?
           WHERE id = ? AND userId = ?`,
-    args: [now, stravaActivityId || null, completionNotes || null, id, userId]
+    args: [now, completionNotes || null, id, userId]
   });
 
   return true;

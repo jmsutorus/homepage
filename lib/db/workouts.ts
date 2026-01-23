@@ -25,7 +25,6 @@ export interface ScheduledWorkout {
   reminder_minutes: number;
   completed: boolean;
   completed_at?: string | null;
-  strava_activity_id?: number | null;
   notes?: string | null;
   created_at: string;
   updated_at: string;
@@ -242,7 +241,7 @@ export async function updateScheduledWorkout(
   return true;
 }
 
-export async function markWorkoutCompleted(id: number, userId: string, stravaActivityId?: number): Promise<boolean> {
+export async function markWorkoutCompleted(id: number, userId: string): Promise<boolean> {
   const db = getDatabase();
 
   // Verify ownership
@@ -255,9 +254,9 @@ export async function markWorkoutCompleted(id: number, userId: string, stravaAct
 
   await db.execute({
     sql: `UPDATE scheduled_workouts
-          SET completed = 1, completed_at = ?, strava_activity_id = ?
+          SET completed = 1, completed_at = ?
           WHERE id = ? AND user_id = ?`,
-    args: [now, stravaActivityId || null, id, userId]
+    args: [now, id, userId]
   });
 
   return true;

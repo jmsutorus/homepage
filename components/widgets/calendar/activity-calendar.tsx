@@ -26,12 +26,7 @@ interface Exercise {
   sets?: number;
 }
 
-interface StravaActivity {
-  id: number;
-  name: string;
-  distance: number;
-  total_elevation_gain: number;
-}
+
 
 interface ActivityCalendarProps {
   onRefresh?: number;
@@ -47,28 +42,12 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated, initialActiviti
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [completingActivity, setCompletingActivity] = useState<WorkoutActivity | null>(null);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
-  const [stravaActivities, setStravaActivities] = useState<Map<number, StravaActivity>>(new Map());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<WorkoutActivity | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const isFirstRender = useState(true)[0];
 
-  const fetchStravaActivities = useCallback(async (ids: number[]) => {
-    try {
-      const response = await fetch(`/api/strava/activities?ids=${ids.join(",")}`);
-      const data = await response.json();
 
-      if (data.activities) {
-        const map = new Map<number, StravaActivity>();
-        data.activities.forEach((activity: StravaActivity) => {
-          map.set(activity.id, activity);
-        });
-        setStravaActivities(map);
-      }
-    } catch (error) {
-      console.error("Error fetching Strava activities:", error);
-    }
-  }, []);
 
   const fetchActivities = useCallback(async () => {
     try {
@@ -79,32 +58,13 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated, initialActiviti
       const data = await response.json();
       const workoutActivities = data.activities || [];
       setActivities(workoutActivities);
-
-      // Fetch linked Strava activities
-      const stravaIds = workoutActivities
-        .filter((a: WorkoutActivity) => a.strava_activity_id)
-        .map((a: WorkoutActivity) => a.strava_activity_id);
-
-      if (stravaIds.length > 0) {
-        await fetchStravaActivities(stravaIds);
-      }
     } catch (error) {
       console.error("Error fetching activities:", error);
     }
-  }, [currentMonth, fetchStravaActivities]);
+  }, [currentMonth]);
 
   useEffect(() => {
     if (isFirstRender && initialActivities.length > 0 && isSameMonth(currentMonth, new Date())) {
-      // If we have initial data and it's the current month, we might still need to fetch strava activities?
-      // The initial data passed from server doesn't include strava details map.
-      // So we should probably still fetch strava activities if needed.
-      const stravaIds = initialActivities
-        .filter((a: WorkoutActivity) => a.strava_activity_id)
-        .map((a: WorkoutActivity) => a.strava_activity_id as number);
-
-      if (stravaIds.length > 0) {
-        fetchStravaActivities(stravaIds);
-      }
       return;
     }
     fetchActivities();
@@ -389,35 +349,7 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated, initialActiviti
                         ))}
                       </div>
 
-                      {/* Linked Strava Activity */}
-                      {activity.completed && activity.strava_activity_id && stravaActivities.has(activity.strava_activity_id) && (
-                        <a
-                          href={`https://www.strava.com/activities/${activity.strava_activity_id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex items-center gap-2 p-2 rounded-md bg-orange-500/10 hover:bg-orange-500/20 transition-colors border border-orange-500/20 group"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1 text-sm font-medium text-orange-600 dark:text-orange-400">
-                              <span className="truncate">{stravaActivities.get(activity.strava_activity_id)!.name}</span>
-                              <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                {formatDistance(stravaActivities.get(activity.strava_activity_id)!.distance)}
-                              </span>
-                              {stravaActivities.get(activity.strava_activity_id)!.total_elevation_gain > 0 && (
-                                <span className="flex items-center gap-1">
-                                  <TrendingUp className="h-3 w-3" />
-                                  {Math.round(stravaActivities.get(activity.strava_activity_id)!.total_elevation_gain)} m
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </a>
-                      )}
+
                     </div>
                   );
                 })}

@@ -138,7 +138,7 @@ export async function PUT(request: NextRequest) {
     }
     const userId = session.user.id;
     const body = await request.json();
-    const { id, strava_activity_id, completion_notes } = body;
+    const { id, completion_notes } = body;
 
     // Validate ID
     if (!id) {
@@ -146,7 +146,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Mark workout activity as completed
-    await markWorkoutActivityCompleted(id, userId, strava_activity_id, completion_notes);
+    await markWorkoutActivityCompleted(id, userId, completion_notes);
 
     return NextResponse.json({ success: true });
   } catch (error) {

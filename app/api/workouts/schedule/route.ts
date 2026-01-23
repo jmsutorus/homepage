@@ -93,7 +93,6 @@ export async function POST(request: NextRequest) {
       duration,
       reminder_minutes,
       notes,
-      strava_activity_id: null,
     });
 
     return NextResponse.json({

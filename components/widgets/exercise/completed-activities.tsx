@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,11 @@ export function CompletedActivities({
   const [activities, setActivities] = useState<WorkoutActivity[]>(initialActivities);
   const [editingActivity, setEditingActivity] = useState<WorkoutActivity | null>(null);
   const [showAll, setShowAll] = useState(false);
+
+  // Sync state with props when data is refreshed
+  useEffect(() => {
+    setActivities(initialActivities);
+  }, [initialActivities]);
 
   // Show first 5 by default, all when expanded
   const displayedActivities = showAll ? activities : activities.slice(0, 5);
@@ -131,11 +136,28 @@ export function CompletedActivities({
         </div>
 
         <div className="text-sm text-muted-foreground mb-2">
-          {activity.length} minutes
+          {activity.type === "run" && activity.distance && activity.distance > 0 ? (
+            <div className="flex items-center gap-3">
+              <span>{activity.distance.toFixed(2)} mi</span>
+              <span>•</span>
+              <span>{activity.length} min</span>
+              <span>•</span>
+              <span>
+                {(() => {
+                  const paceDecimal = activity.length / activity.distance;
+                  const minutes = Math.floor(paceDecimal);
+                  const seconds = Math.round((paceDecimal - minutes) * 60);
+                  return `${minutes}:${seconds.toString().padStart(2, "0")}/mi`;
+                })()}
+              </span>
+            </div>
+          ) : (
+            <span>{activity.length} minutes</span>
+          )}
           {activity.completed_at && (
-            <span className="ml-2 text-green-600 dark:text-green-400">
-              • Completed {formatCompletedAt(activity.completed_at)}
-            </span>
+            <div className="text-xs text-muted-foreground mt-1">
+              Completed {formatCompletedAt(activity.completed_at)}
+            </div>
           )}
         </div>
 
