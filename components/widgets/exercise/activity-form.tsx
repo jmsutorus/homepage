@@ -41,9 +41,6 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
   const [difficulty, setDifficulty] = useState<"easy" | "moderate" | "hard" | "very hard">("moderate");
   const [type, setType] = useState<"run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other">("cardio");
   const [notes, setNotes] = useState("");
-  const [exercises, setExercises] = useState<Exercise[]>([
-    { description: "", reps: undefined, sets: undefined, duration: undefined, pace: "", weight: undefined }
-  ]);
 
   // Load edit activity data when provided
   useEffect(() => {
@@ -55,21 +52,10 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
       setDistance(editActivity.distance || 0);
       setDifficulty(editActivity.difficulty);
       // Normalize type to ensure it matches the select values
-      // The DB might store "Run" but the select expects "run"
       const normalizedType = editActivity.type.toLowerCase() as any;
       setType(normalizedType);
       
       setNotes(editActivity.notes || "");
-
-      // Parse exercises from JSON string
-      try {
-        const parsedExercises = JSON.parse(editActivity.exercises);
-        setExercises(parsedExercises.length > 0 ? parsedExercises : [
-          { description: "", reps: undefined, sets: undefined, duration: undefined, pace: "", weight: undefined }
-        ]);
-      } catch {
-        setExercises([{ description: "", reps: undefined, sets: undefined, duration: undefined, pace: "", weight: undefined }]);
-      }
     } else {
         // Reset form when editActivity becomes null (switching to add mode)
         resetForm();
@@ -85,21 +71,6 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
     setDifficulty("moderate");
     setType("cardio");
     setNotes("");
-    setExercises([{ description: "", reps: undefined, sets: undefined, duration: undefined, pace: "", weight: undefined }]);
-  };
-
-  const addExercise = () => {
-    setExercises([...exercises, { description: "", reps: undefined, sets: undefined, duration: undefined, pace: "", weight: undefined }]);
-  };
-
-  const removeExercise = (index: number) => {
-    setExercises(exercises.filter((_, i) => i !== index));
-  };
-
-  const updateExercise = (index: number, field: keyof Exercise, value: any) => {
-    const updated = [...exercises];
-    updated[index] = { ...updated[index], [field]: value };
-    setExercises(updated);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,21 +78,10 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
     setLoading(true);
 
     try {
-      // Filter out empty exercises
-      const validExercises = exercises.filter(ex => ex.description?.trim() !== "");
-
-      if (type !== 'run' && validExercises.length === 0) {
-        alert("Please add at least one exercise");
-        setLoading(false);
-        return;
-      }
-
       const isEditing = activityId !== null;
       const url = "/api/activities";
       const method = isEditing ? "PATCH" : "POST";
       
-      // For runs, we just need basic info and distance
-      // For others, we need exercises
       const baseBody = {
         date,
         time,
@@ -131,13 +91,11 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
         notes,
         // Include distance if it's a run, otherwise undefined
         distance: type === 'run' ? distance : undefined,
-        // Include exercises if NOT a run, otherwise empty array
-        exercises: type === 'run' ? [] : validExercises,
       };
 
       const body = isEditing
         ? { id: activityId, ...baseBody }
-        : baseBody;
+        : { ...baseBody, exercises: [] };
 
       const response = await fetch(url, {
         method,
@@ -278,105 +236,6 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
             </Select>
           </div>
         </div>
-
-        {/* Exercises */}
-        {type !== "run" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label>Exercises</Label>
-            <Button type="button" variant="outline" size="sm" onClick={addExercise}>
-              <Plus className="h-4 w-4 mr-1" />
-              Add Exercise
-            </Button>
-          </div>
-
-          {exercises.map((exercise, index) => (
-            <div key={index} className="space-y-3 p-4 border rounded-lg relative">
-              {exercises.length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute top-2 right-2"
-                  onClick={() => removeExercise(index)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor={`exercise-${index}`}>Description *</Label>
-                <Input
-                  id={`exercise-${index}`}
-                  placeholder="e.g., Run 10 minutes or Barbell curls"
-                  value={exercise.description}
-                  onChange={(e) => updateExercise(index, "description", e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div className="space-y-2">
-                  <Label htmlFor={`reps-${index}`}>Reps</Label>
-                  <Input
-                    id={`reps-${index}`}
-                    type="number"
-                    min="0"
-                    placeholder="10"
-                    value={exercise.reps || ""}
-                    onChange={(e) => updateExercise(index, "reps", e.target.value ? parseInt(e.target.value) : undefined)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`sets-${index}`}>Sets</Label>
-                  <Input
-                    id={`sets-${index}`}
-                    type="number"
-                    min="0"
-                    placeholder="3"
-                    value={exercise.sets || ""}
-                    onChange={(e) => updateExercise(index, "sets", e.target.value ? parseInt(e.target.value) : undefined)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`weight-${index}`}>Weight (lbs)</Label>
-                  <Input
-                    id={`weight-${index}`}
-                    type="number"
-                    min="0"
-                    placeholder="45"
-                    value={exercise.weight || ""}
-                    onChange={(e) => updateExercise(index, "weight", e.target.value ? parseInt(e.target.value) : undefined)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-2">
-                  <Label htmlFor={`duration-${index}`}>Duration (min)</Label>
-                  <Input
-                    id={`duration-${index}`}
-                    type="number"
-                    min="0"
-                    placeholder="10"
-                    value={exercise.duration || ""}
-                    onChange={(e) => updateExercise(index, "duration", e.target.value ? parseInt(e.target.value) : undefined)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`pace-${index}`}>Pace</Label>
-                  <Input
-                    id={`pace-${index}`}
-                    placeholder="6:00/mile"
-                    value={exercise.pace || ""}
-                    onChange={(e) => updateExercise(index, "pace", e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        )}
 
         {/* Notes */}
         <div className="space-y-2">

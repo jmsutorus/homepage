@@ -8,6 +8,7 @@ import { Calendar, Clock, Dumbbell, Activity, CheckCircle2, Link as LinkIcon, Al
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Exercise {
   description: string;
@@ -147,84 +148,49 @@ export function UpcomingActivities({
   };
 
   const renderActivityCard = (activity: WorkoutActivity, isPast: boolean) => {
-    const exercises = parseExercises(activity.exercises);
-
     return (
-      <div key={activity.id} className={`border-l-4 ${isPast ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/10" : "border-primary"} pl-4 py-3 relative group`}>
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">{getDateLabel(activity.date)}</span>
-            <Badge variant="outline" className="text-xs">
-              <Clock className="h-3 w-3 mr-1" />
-              {activity.time}
-            </Badge>
-            {isPast && (
-              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                Overdue
-              </Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs capitalize">
-              {getTypeIcon(activity.type)}
-              <span className="ml-1">{activity.type}</span>
-            </Badge>
-            <Badge className={`text-xs capitalize ${getDifficultyColor(activity.difficulty)}`}>
-              {activity.difficulty}
-            </Badge>
-          </div>
-        </div>
-
-        <div className="text-sm text-muted-foreground mb-2">
-          {activity.length} minutes
-        </div>
-
-        <div className="space-y-1">
-          {exercises.slice(0, 2).map((exercise, idx) => (
-            <div key={idx} className="text-sm flex items-start gap-2">
-              <span className="text-muted-foreground">•</span>
-              <span>{exercise.description}</span>
-              {exercise.sets && exercise.reps && (
-                <span className="text-muted-foreground">
-                  ({exercise.sets}x{exercise.reps}{exercise.weight ? ` @ ${exercise.weight}lbs` : ""})
-                </span>
-              )}
-            </div>
-          ))}
-          {exercises.length > 2 && (
-            <div className="text-sm text-muted-foreground">
-              +{exercises.length - 2} more exercise{exercises.length - 2 !== 1 ? "s" : ""}
-            </div>
-          )}
-        </div>
-
-        {activity.notes && (
-          <div className="mt-2 text-sm text-muted-foreground italic">
-            {activity.notes}
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="mt-3 flex items-center justify-end gap-2">
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            className="h-7 text-xs"
-            onClick={() => setEditingActivity(activity)}
-          >
-            <Pencil className="h-3 w-3 mr-1" />
-            Edit
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            className="h-7 text-xs"
-            onClick={() => handleMarkComplete(activity.id)}
-          >
-            <CheckCircle2 className="h-3 w-3 mr-1" />
-            Mark Complete
-          </Button>
-        </div>
+      <div 
+        key={activity.id} 
+        className={`flex items-center justify-between p-2 rounded-md transition-colors hover:bg-muted/50 border border-transparent hover:border-muted-foreground/10 group ${
+            isPast ? "bg-amber-50/50 dark:bg-amber-950/20" : ""
+        }`}
+      >
+        <Link 
+            href={`/exercise/${activity.id}`}
+            className="flex items-center gap-3 flex-1 min-w-0"
+        >
+             <div className={`p-1.5 rounded-full shrink-0 ${getDifficultyColor(activity.difficulty)}`}>
+                {getTypeIcon(activity.type)}
+             </div>
+             
+             <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm truncate">{getDateLabel(activity.date)}</span>
+                    {isPast && (
+                        <span className="text-[10px] bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 px-1.5 py-0.5 rounded-full font-medium shrink-0">Overdue</span>
+                    )}
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                    <span className="capitalize">{activity.type}</span>
+                    <span>•</span>
+                    <span>{activity.time}</span>
+                    <span>•</span>
+                    <span>{activity.length}m</span>
+                </div>
+             </div>
+        </Link>
+        
+         <div className="flex items-center gap-2 pl-2">
+             <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => handleMarkComplete(activity.id)}
+                title="Mark as Complete"
+             >
+                <CheckCircle2 className="h-4 w-4" />
+             </Button>
+         </div>
       </div>
     );
   };
@@ -262,7 +228,7 @@ export function UpcomingActivities({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              Upcoming Activities
+              Upcoming Workouts
             </CardTitle>
             <CardDescription>Your scheduled workouts</CardDescription>
           </CardHeader>
@@ -282,7 +248,7 @@ export function UpcomingActivities({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              Upcoming Activities
+              Upcoming Workouts
             </CardTitle>
             <CardDescription>Your scheduled workouts</CardDescription>
           </CardHeader>
@@ -302,15 +268,14 @@ export function UpcomingActivities({
       <div className="space-y-6">
         {/* Upcoming */}
         {activities.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Upcoming Activities
+          <Card className="border-0 shadow-none bg-transparent">
+            <CardHeader className="px-0 pt-0 pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Calendar className="h-4 w-4" />
+                Upcoming Workouts
               </CardTitle>
-              <CardDescription>Your next scheduled workouts</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-1 px-0">
               {activities.map(activity => renderActivityCard(activity, false))}
             </CardContent>
           </Card>
@@ -318,15 +283,14 @@ export function UpcomingActivities({
 
         {/* Recent / Past Due */}
         {recentActivities.length > 0 && (
-          <Card className="border-amber-200 dark:border-amber-900">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-500">
-                <AlertCircle className="h-5 w-5" />
-                Past Planned Activities
+          <Card className="border-0 shadow-none bg-transparent">
+            <CardHeader className="px-0 pt-0 pb-2">
+              <CardTitle className="flex items-center gap-2 text-base text-amber-600 dark:text-amber-500">
+                <AlertCircle className="h-4 w-4" />
+                Past Due
               </CardTitle>
-              <CardDescription>Review and complete past activities</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-1 px-0">
               {recentActivities.map(activity => renderActivityCard(activity, true))}
             </CardContent>
           </Card>

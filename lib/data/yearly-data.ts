@@ -8,7 +8,7 @@ import { getEventsInRange } from "@/lib/db/events";
 import { getGithubEventsByDateRange } from "@/lib/db/github";
 import { getVacationsByYear } from "@/lib/db/vacations";
 import { calculateDurationDays } from "@/lib/types/vacations";
-import { execute, query, queryOne } from "@/lib/db";
+import { execute, query } from "@/lib/db";
 
 export interface YearlyStats {
   year: number;

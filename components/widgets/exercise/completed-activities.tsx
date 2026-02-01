@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { AddActivityModal } from "./add-activity-modal";
 
@@ -108,97 +109,36 @@ export function CompletedActivities({
   };
 
   const renderActivityCard = (activity: WorkoutActivity) => {
-    const exercises = parseExercises(activity.exercises);
-
     return (
-      <div 
+      <Link 
+        href={`/exercise/${activity.id}`}
         key={activity.id} 
-        className="border-l-4 border-green-500 pl-4 py-3 relative group bg-green-50/30 dark:bg-green-950/10 rounded-r-lg"
+        className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50 transition-colors group border border-transparent hover:border-muted-foreground/10"
       >
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-            <span className="font-semibold">{formatDate(activity.date)}</span>
-            <Badge variant="outline" className="text-xs">
-              <Clock className="h-3 w-3 mr-1" />
-              {activity.time}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs capitalize">
-              {getTypeIcon(activity.type)}
-              <span className="ml-1">{activity.type}</span>
-            </Badge>
-            <Badge className={`text-xs capitalize ${getDifficultyColor(activity.difficulty)}`}>
-              {activity.difficulty}
-            </Badge>
-          </div>
+        <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-full ${getDifficultyColor(activity.difficulty)}`}>
+                {getTypeIcon(activity.type)}
+            </div>
+            
+            <div className="flex flex-col">
+                <span className="font-medium text-sm">{formatDate(activity.date)}</span>
+                 <div className="flex items-center text-xs text-muted-foreground gap-2">
+                    {activity.type === "run" && activity.distance && activity.distance > 0 ? (
+                        <span>{activity.distance.toFixed(2)} mi • {activity.length} min</span>
+                    ) : (
+                        <span>{activity.length} min</span>
+                    )}
+                 </div>
+            </div>
         </div>
 
-        <div className="text-sm text-muted-foreground mb-2">
-          {activity.type === "run" && activity.distance && activity.distance > 0 ? (
-            <div className="flex items-center gap-3">
-              <span>{activity.distance.toFixed(2)} mi</span>
-              <span>•</span>
-              <span>{activity.length} min</span>
-              <span>•</span>
-              <span>
-                {(() => {
-                  const paceDecimal = activity.length / activity.distance;
-                  const minutes = Math.floor(paceDecimal);
-                  const seconds = Math.round((paceDecimal - minutes) * 60);
-                  return `${minutes}:${seconds.toString().padStart(2, "0")}/mi`;
-                })()}
-              </span>
-            </div>
-          ) : (
-            <span>{activity.length} minutes</span>
-          )}
-          {activity.completed_at && (
-            <div className="text-xs text-muted-foreground mt-1">
-              Completed {formatCompletedAt(activity.completed_at)}
-            </div>
-          )}
+        <div className="flex items-center gap-4">
+             {/* Optional: Add small stats or badges here if needed, but keeping it clean for now */}
+             {activity.completed_at && (
+                 <CheckCircle2 className="h-4 w-4 text-green-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+             )}
         </div>
-
-        <div className="space-y-1">
-          {exercises.slice(0, 2).map((exercise, idx) => (
-            <div key={idx} className="text-sm flex items-start gap-2">
-              <span className="text-muted-foreground">•</span>
-              <span>{exercise.description}</span>
-              {exercise.sets && exercise.reps && (
-                <span className="text-muted-foreground">
-                  ({exercise.sets}x{exercise.reps}{exercise.weight ? ` @ ${exercise.weight}lbs` : ""})
-                </span>
-              )}
-            </div>
-          ))}
-          {exercises.length > 2 && (
-            <div className="text-sm text-muted-foreground">
-              +{exercises.length - 2} more exercise{exercises.length - 2 !== 1 ? "s" : ""}
-            </div>
-          )}
-        </div>
-
-        {activity.completion_notes && (
-          <div className="mt-2 text-sm text-muted-foreground italic">
-            {activity.completion_notes}
-          </div>
-        )}
-
-        {/* Edit button */}
-        <div className="mt-3 flex items-center justify-end">
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            className="h-7 text-xs"
-            onClick={() => setEditingActivity(activity)}
-          >
-            <Pencil className="h-3 w-3 mr-1" />
-            Edit
-          </Button>
-        </div>
-      </div>
+      </Link>
     );
   };
 
@@ -236,37 +176,35 @@ export function CompletedActivities({
 
   return (
     <>
-      <Card className="border-green-200 dark:border-green-900">
-        <CardHeader>
+      <Card className="border-0 shadow-none bg-transparent">
+        <CardHeader className="px-0 pt-0">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-500">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <History className="h-5 w-5" />
                 Completed Workouts
               </CardTitle>
-              <CardDescription>
-                {activities.length} workout{activities.length !== 1 ? "s" : ""} completed
-              </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-1 px-0">
           {displayedActivities.map(activity => renderActivityCard(activity))}
           
           {hasMore && (
             <Button 
               variant="ghost" 
-              className="w-full"
+              className="w-full text-xs text-muted-foreground hover:text-foreground mt-2"
               onClick={() => setShowAll(!showAll)}
+              size="sm"
             >
               {showAll ? (
                 <>
-                  <ChevronUp className="h-4 w-4 mr-2" />
+                  <ChevronUp className="h-3 w-3 mr-2" />
                   Show Less
                 </>
               ) : (
                 <>
-                  <ChevronDown className="h-4 w-4 mr-2" />
+                  <ChevronDown className="h-3 w-3 mr-2" />
                   Show All ({activities.length - 5} more)
                 </>
               )}
