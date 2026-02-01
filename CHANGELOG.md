@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/jmsutorus/homepage/compare/v1.20.0...v1.21.0) (2026-02-01)
+
+
+### Features
+
+* excersise enhanced ([68c2881](https://github.com/jmsutorus/homepage/commit/68c2881bd652e5b179b67b79a8cfc23d5e5cde19))
+
 # [1.20.0](https://github.com/jmsutorus/homepage/compare/v1.19.2...v1.20.0) (2026-01-22)
 
 
