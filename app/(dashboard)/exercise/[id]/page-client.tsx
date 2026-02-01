@@ -35,6 +35,7 @@ import { ExerciseFormModal, type Exercise } from "@/components/widgets/exercise/
 import { SplitFormModal, type Split } from "@/components/widgets/exercise/split-form-modal";
 import { CopyActivityModal } from "@/components/widgets/exercise/copy-activity-modal";
 import { CompleteActivityModal } from "@/components/widgets/exercise/complete-activity-modal";
+import { MuscleMap } from "@/components/widgets/exercise/muscle-map";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -242,6 +243,15 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
     return `${paceMin}'${paceSec.toString().padStart(2, "0")}" /mi`;
   };
 
+  const targetedMuscles = useMemo(() => {
+    if (isRun) return ["Legs", "Cardio"];
+    const muscles = new Set<string>();
+    (items as Exercise[]).forEach(item => {
+      if (item.muscle) muscles.add(item.muscle);
+    });
+    return Array.from(muscles);
+  }, [items, isRun]);
+
   return (
     <div className="max-w-4xl mx-auto pb-20 md:pb-0">
       {/* Header Navigation */}
@@ -329,6 +339,16 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
                     </Badge>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Muscle Map Card */}
+          <Card>
+            <CardContent className="pt-6">
+               <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2 justify-center">
+                  <Activity className="h-3 w-3" /> Muscles Targeted
+               </h3>
+               <MuscleMap muscles={targetedMuscles} />
             </CardContent>
           </Card>
 
