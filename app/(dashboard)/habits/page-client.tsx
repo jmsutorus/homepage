@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { HabitWithStats, HabitCompletionChartData } from "@/lib/actions/habits";
+import type { HabitWithStats } from "@/lib/actions/habits";
+import type { HabitCompletionChartData } from "@/lib/db/habits";
 import { HabitsList } from "@/components/widgets/habits/habits-list";
 import { CreateHabitForm } from "@/components/widgets/habits/create-habit-form";
 import { MobileHabitSheet } from "@/components/widgets/habits/mobile-habit-sheet";

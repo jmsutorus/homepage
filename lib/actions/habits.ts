@@ -23,8 +23,6 @@ export interface HabitWithStats extends Habit {
   completionDates: string[]; // Array of YYYY-MM-DD dates when habit was completed
 }
 
-export type { HabitCompletionChartData };
-
 export async function getHabitsAction() {
   const session = await auth();
   if (!session?.user?.id) return [];

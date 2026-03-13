@@ -62,46 +62,46 @@ export const env = createEnv({
     // Feature Flags
     ENABLE_STEAM: z
       .string()
-      .transform((val) => val === "true")
-      .default("false"),
+      .default("false")
+      .transform((val) => val === "true"),
     ENABLE_STRAVA: z
       .string()
-      .transform((val) => val === "true")
-      .default("false"),
+      .default("false")
+      .transform((val) => val === "true"),
     ENABLE_HOMEASSISTANT: z
       .string()
-      .transform((val) => val === "true")
-      .default("false"),
+      .default("false")
+      .transform((val) => val === "true"),
     ENABLE_PLEX: z
       .string()
-      .transform((val) => val === "true")
-      .default("false"),
+      .default("false")
+      .transform((val) => val === "true"),
     ENABLE_WEATHER: z
       .string()
-      .transform((val) => val === "true")
-      .default("false"),
+      .default("false")
+      .transform((val) => val === "true"),
 
     // Cache TTL (seconds)
     CACHE_TTL_STRAVA: z
       .string()
-      .transform((val) => parseInt(val, 10))
-      .default("900"),
+      .default("900")
+      .transform((val) => parseInt(val, 10)),
     CACHE_TTL_STEAM: z
       .string()
-      .transform((val) => parseInt(val, 10))
-      .default("300"),
+      .default("300")
+      .transform((val) => parseInt(val, 10)),
     CACHE_TTL_HA: z
       .string()
-      .transform((val) => parseInt(val, 10))
-      .default("60"),
+      .default("60")
+      .transform((val) => parseInt(val, 10)),
     CACHE_TTL_PLEX: z
       .string()
-      .transform((val) => parseInt(val, 10))
-      .default("120"),
+      .default("120")
+      .transform((val) => parseInt(val, 10)),
     CACHE_TTL_WEATHER: z
       .string()
-      .transform((val) => parseInt(val, 10))
-      .default("1800"),
+      .default("1800")
+      .transform((val) => parseInt(val, 10)),
   },
 
   /**

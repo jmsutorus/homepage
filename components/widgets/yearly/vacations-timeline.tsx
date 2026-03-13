@@ -215,7 +215,7 @@ export function VacationsTimeline({ stats }: VacationsTimelineProps) {
                         color: "hsl(var(--popover-foreground))"
                       }}
                       itemStyle={{ color: "#06b6d4" }}
-                      formatter={(value: number) => [`${value} trip${value !== 1 ? 's' : ''}`, 'Vacations']}
+                      formatter={(value: any) => [`${value} trip${value !== 1 ? 's' : ''}`, 'Vacations']}
                     />
                     <Area
                       type="monotone"
