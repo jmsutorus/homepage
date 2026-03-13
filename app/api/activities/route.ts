@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
     const userId = session.user.id;
     const body = await request.json();
-    const { date, time, length, difficulty, type, exercises, notes } = body;
+    const { date, time, length, difficulty, type, exercises, notes, completed, distance } = body;
 
     // Validate required fields
     if (!date || !time || !length || !type || !exercises) {
@@ -76,10 +76,12 @@ export async function POST(request: NextRequest) {
       date,
       time,
       length,
+      distance,
       difficulty: difficulty || "moderate",
       type,
       exercises,
       notes,
+      completed,
     };
 
     const activityId = await createWorkoutActivity(activity, userId);

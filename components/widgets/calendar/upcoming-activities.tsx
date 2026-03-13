@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ export function UpcomingActivities({
   const [recentActivities, setRecentActivities] = useState<WorkoutActivity[]>(initialRecentActivities);
   const [loading, setLoading] = useState(initialActivities.length === 0);
   const [editingActivity, setEditingActivity] = useState<WorkoutActivity | null>(null);
-  const isFirstRender = useState(true)[0];
+  const isFirstRender = useRef(true);
 
   const fetchActivities = async () => {
     try {
@@ -73,7 +73,8 @@ export function UpcomingActivities({
   };
 
   useEffect(() => {
-    if (isFirstRender && initialActivities.length > 0) {
+    if (isFirstRender.current && initialActivities.length > 0) {
+      isFirstRender.current = false;
       setLoading(false);
       return;
     }

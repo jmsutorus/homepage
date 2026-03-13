@@ -37,15 +37,20 @@ export interface CreateWorkoutActivity {
   type: "run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
   exercises: Exercise[];
   notes?: string;
+  completed?: boolean;
+  completed_at?: string | null;
 }
 
 // CRUD Operations
 
 export async function createWorkoutActivity(activity: CreateWorkoutActivity, userId: string): Promise<number> {
   const db = getDatabase();
+  const completed = activity.completed ? 1 : 0;
+  const completedAt = activity.completed ? (activity.completed_at || new Date().toISOString()) : null;
+
   const result = await db.execute({
-    sql: `INSERT INTO workout_activities (userId, date, time, length, distance, difficulty, type, exercises, notes)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO workout_activities (userId, date, time, length, distance, difficulty, type, exercises, notes, completed, completed_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       userId,
       activity.date,
@@ -55,7 +60,9 @@ export async function createWorkoutActivity(activity: CreateWorkoutActivity, use
       activity.difficulty,
       activity.type,
       JSON.stringify(activity.exercises),
-      activity.notes || null
+      activity.notes || null,
+      completed,
+      completedAt
     ]
   });
 
@@ -164,7 +171,7 @@ export async function getCompletedWorkoutActivities(userId: string, limit: numbe
   const result = await db.execute({
     sql: `SELECT *, length as duration_minutes FROM workout_activities
           WHERE userId = ? AND completed = 1
-          ORDER BY completed_at DESC
+          ORDER BY date DESC, time DESC
           LIMIT ?`,
     args: [userId, limit]
   });

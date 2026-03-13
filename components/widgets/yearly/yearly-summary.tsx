@@ -189,7 +189,7 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
       )}
 
       {/* Books Journey Timeline */}
-      {stats.media.total > 0 && (
+      {Object.keys(stats.media.byType).some(t => t.toLowerCase() === 'book') && (
         <BooksTimeline stats={stats} />
       )}
 

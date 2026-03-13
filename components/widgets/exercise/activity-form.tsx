@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, X, Send, Trash2 } from "lucide-react";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
   const [difficulty, setDifficulty] = useState<"easy" | "moderate" | "hard" | "very hard">("moderate");
   const [type, setType] = useState<"run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other">("cardio");
   const [notes, setNotes] = useState("");
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Load edit activity data when provided
   useEffect(() => {
@@ -52,10 +54,12 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
       setDistance(editActivity.distance || 0);
       setDifficulty(editActivity.difficulty);
       // Normalize type to ensure it matches the select values
-      const normalizedType = editActivity.type.toLowerCase() as any;
-      setType(normalizedType);
+      const rawType = editActivity.type ? editActivity.type.toLowerCase() : "other";
+      const validTypes = ["run", "cardio", "strength", "flexibility", "sports", "mixed", "other"];
+      setType(validTypes.includes(rawType) ? (rawType as any) : "other");
       
       setNotes(editActivity.notes || "");
+      setIsCompleted(editActivity.completed || false);
     } else {
         // Reset form when editActivity becomes null (switching to add mode)
         resetForm();
@@ -71,6 +75,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
     setDifficulty("moderate");
     setType("cardio");
     setNotes("");
+    setIsCompleted(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,6 +96,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
         notes,
         // Include distance if it's a run, otherwise undefined
         distance: type === 'run' ? distance : undefined,
+        completed: isCompleted,
       };
 
       const body = isEditing
@@ -247,6 +253,23 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
           />
+        </div>
+
+        {/* Completed Checkbox */}
+        <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+          <Checkbox 
+            id="completed" 
+            checked={isCompleted}
+            onCheckedChange={(checked) => setIsCompleted(checked as boolean)}
+          />
+          <div className="space-y-1 leading-none">
+            <Label htmlFor="completed">
+              This workout has already happened
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              Mark this activity as completed immediately.
+            </p>
+          </div>
         </div>
       </div>
 

@@ -24,9 +24,19 @@ function filterBooks(stats: YearlyStats) {
   const filteredByType = Object.fromEntries(bookTypes);
   const filteredTotal = bookTypes.reduce((sum, [, count]) => sum + (count as number), 0);
 
-  // If no books found, return original stats to avoid empty state
+  // If no books found, return empty filtered stats
   if (filteredTotal === 0) {
-    return stats;
+    return {
+      ...stats,
+      media: {
+        ...stats.media,
+        byType: filteredByType,
+        total: 0,
+        averageRating: 0,
+        topGenres: [],
+        topRated: [],
+      }
+    };
   }
 
   return {
