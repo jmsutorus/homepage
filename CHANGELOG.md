@@ -1,3 +1,11 @@
+## [1.21.1](https://github.com/jmsutorus/homepage/compare/v1.21.0...v1.21.1) (2026-03-13)
+
+
+### Bug Fixes
+
+* exercise bugs fixed ([88caec6](https://github.com/jmsutorus/homepage/commit/88caec6e3f819b856a58003c111c7b928cf70884))
+* version fixed ([01499cc](https://github.com/jmsutorus/homepage/commit/01499cce5ddf9f34b489d1254d9598a30d297658))
+
 # [1.21.0](https://github.com/jmsutorus/homepage/compare/v1.20.0...v1.21.0) (2026-02-01)
 
 
