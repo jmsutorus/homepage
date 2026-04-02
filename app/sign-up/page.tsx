@@ -100,7 +100,7 @@ export default function SignUpPage() {
             </div>
           )}
 
-          <form onSubmit={handleEmailSignUp} className="space-y-4">
+          {/* <form onSubmit={handleEmailSignUp} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium">
                 Email address
@@ -161,16 +161,16 @@ export default function SignUpPage() {
             >
               {loading ? "Creating account..." : "Create account"}
             </button>
-          </form>
+          </form> */}
 
-          <div className="relative">
+          {/* <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-muted" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
             </div>
-          </div>
+          </div> */}
 
           <button
             onClick={handleGoogleSignUp}

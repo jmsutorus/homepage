@@ -72,7 +72,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const { queryOne } = await import("@/lib/db");
 
         // Check if allowed_users table exists and user is in it
-        const tableExists = queryOne(
+        const tableExists = await queryOne(
           "SELECT name FROM sqlite_master WHERE type='table' AND name='allowed_users'"
         );
 
@@ -83,7 +83,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Check if user is in allowed_users list
-        const allowed = queryOne("SELECT 1 FROM allowed_users WHERE email = ?", [user.email]);
+        const allowed = await queryOne("SELECT 1 FROM allowed_users WHERE email = ?", [user.email]);
 
         if (!allowed) {
           console.warn(`Sign-in blocked: ${user.email} not in allowed_users`);

@@ -80,7 +80,7 @@ export default function SignInPage() {
             </div>
           )}
 
-          <form onSubmit={handleEmailSignIn} className="space-y-4">
+          {/* <form onSubmit={handleEmailSignIn} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium">
                 Email address
@@ -130,7 +130,7 @@ export default function SignInPage() {
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
             </div>
-          </div>
+          </div> */}
 
           <button
             onClick={handleGoogleSignIn}
