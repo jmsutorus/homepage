@@ -1,3 +1,10 @@
+## [1.21.2](https://github.com/jmsutorus/homepage/compare/v1.21.1...v1.21.2) (2026-04-02)
+
+
+### Bug Fixes
+
+* added mobile support ([30d480b](https://github.com/jmsutorus/homepage/commit/30d480b63109da6568b8ea7108779326fb2def94))
+
 ## [1.21.1](https://github.com/jmsutorus/homepage/compare/v1.21.0...v1.21.1) (2026-03-13)
 
 
