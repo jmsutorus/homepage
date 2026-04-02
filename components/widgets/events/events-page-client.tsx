@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Calendar, MapPin, CalendarDays } from 'lucide-react';
 import type { EventWithCoverPhoto } from '@/lib/db/events';
 import { HolidayIcon, hasHolidayIcon } from './holiday-icons';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { PageTabsList } from '@/components/ui/page-tabs-list';
 
 interface EventsPageClientProps {
   events: EventWithCoverPhoto[];
@@ -19,6 +21,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [viewTab, setViewTab] = useState('events');
 
   // Get unique categories
   const categories = Array.from(new Set(events.map(e => e.category).filter(Boolean)));
@@ -79,14 +82,29 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
             Browse and manage your calendar events
           </p>
         </div>
-        <Button onClick={() => router.push('/events/new')}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Event
-        </Button>
+        <div className="hidden md:block">
+          <Button onClick={() => router.push('/events/new')}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Event
+          </Button>
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <Tabs value={viewTab} onValueChange={(v) => setViewTab(v)}>
+        <PageTabsList
+          tabs={[
+            { value: "events", label: "Events", icon: Calendar, showLabel: false }
+          ]}
+          actionButton={{
+            label: "New Event",
+            onClick: () => router.push('/events/new'),
+            icon: Plus,
+          }}
+        />
+
+        <TabsContent value="events" className="mt-6 sm:mt-8 pb-20 md:pb-0">
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -204,6 +222,8 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
           ))}
         </div>
       )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

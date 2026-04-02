@@ -137,7 +137,7 @@ export function CreateEventClient() {
             Back to Events
           </Button>
         </Link>
-        <Button size="sm" onClick={handleSave} disabled={isSaving}>
+        <Button size="sm" onClick={handleSave} disabled={isSaving} className="hidden sm:flex">
           {isSaving ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           ) : (
@@ -356,6 +356,26 @@ export function CreateEventClient() {
             />
           </CardContent>
         </Card>
+        
+        {/* Action Buttons */}
+        <div className="flex gap-4 justify-end mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isSaving}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {isSaving ? 'Creating...' : 'Create Event'}
+          </Button>
+        </div>
       </div>
     </div>
   );

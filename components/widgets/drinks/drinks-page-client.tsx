@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Wine, MapPin, Star, Heart } from 'lucide-react';
 import type { Drink, DrinkType } from '@/lib/db/drinks';
 import { DrinkFormDialog } from './drink-form-dialog';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { PageTabsList } from '@/components/ui/page-tabs-list';
 
 interface DrinksPageClientProps {
   drinks: (Drink & { logCount: number })[];
@@ -22,6 +24,7 @@ export function DrinksPageClient({ drinks: initialDrinks }: DrinksPageClientProp
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [viewTab, setViewTab] = useState('drinks');
 
   // Filter drinks
   const filteredDrinks = drinks.filter((drink) => {
@@ -73,14 +76,29 @@ export function DrinksPageClient({ drinks: initialDrinks }: DrinksPageClientProp
             Track your beer and wine tastings
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Drink
-        </Button>
+        <div className="hidden md:block">
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Drink
+          </Button>
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <Tabs value={viewTab} onValueChange={setViewTab}>
+        <PageTabsList
+          tabs={[
+            { value: "drinks", label: "Drinks", icon: Wine, showLabel: false }
+          ]}
+          actionButton={{
+            label: "Add Drink",
+            onClick: () => setShowForm(true),
+            icon: Plus,
+          }}
+        />
+
+        <TabsContent value="drinks" className="mt-6 sm:mt-8 pb-20 md:pb-0">
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -205,6 +223,8 @@ export function DrinksPageClient({ drinks: initialDrinks }: DrinksPageClientProp
           ))}
         </div>
       )}
+        </TabsContent>
+      </Tabs>
 
       {/* Add Drink Dialog */}
       <DrinkFormDialog

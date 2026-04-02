@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, UtensilsCrossed, MapPin, Star, Heart, DollarSign } from 'lucide-react';
 import type { Restaurant } from '@/lib/db/restaurants';
 import { RestaurantFormDialog } from './restaurant-form-dialog';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { PageTabsList } from '@/components/ui/page-tabs-list';
 
 interface RestaurantsPageClientProps {
   restaurants: (Restaurant & { visitCount: number })[];
@@ -22,6 +24,7 @@ export function RestaurantsPageClient({ restaurants: initialRestaurants }: Resta
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [viewTab, setViewTab] = useState('restaurants');
 
 
 
@@ -74,12 +77,27 @@ export function RestaurantsPageClient({ restaurants: initialRestaurants }: Resta
             Track your favorite dining spots
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Restaurant
-        </Button>
+        <div className="hidden md:block">
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Restaurant
+          </Button>
+        </div>
       </div>
 
+      <Tabs value={viewTab} onValueChange={setViewTab}>
+        <PageTabsList
+          tabs={[
+            { value: "restaurants", label: "Restaurants", icon: UtensilsCrossed, showLabel: false }
+          ]}
+          actionButton={{
+            label: "Add Restaurant",
+            onClick: () => setShowForm(true),
+            icon: Plus,
+          }}
+        />
+
+        <TabsContent value="restaurants" className="mt-6 sm:mt-8 pb-20 md:pb-0">
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
@@ -205,6 +223,8 @@ export function RestaurantsPageClient({ restaurants: initialRestaurants }: Resta
           ))}
         </div>
       )}
+        </TabsContent>
+      </Tabs>
 
       {/* Add Restaurant Dialog */}
       <RestaurantFormDialog

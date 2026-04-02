@@ -105,12 +105,12 @@ export function MobileDateSheet({ open, onOpenChange, onDateAdded }: MobileDateS
         className="h-auto max-h-[90vh] rounded-t-3xl p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full max-h-[90vh]">
           <SheetHeader className="px-6 pt-6 pb-4 border-b">
             <SheetTitle>Log a Date Night</SheetTitle>
           </SheetHeader>
 
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
               {/* Date and Time */}
               <div className="grid grid-cols-2 gap-3">
