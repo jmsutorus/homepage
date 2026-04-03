@@ -10,7 +10,7 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
 
   // Public paths that don't require authentication
-  const publicPaths = ["/", "/sign-in", "/sign-up", "/auth/error"];
+  const publicPaths = ["/", "/features", "/sign-in", "/sign-up", "/auth/error"];
   const isPublicPath = publicPaths.some((path) => pathname === path || (path !== "/" && pathname.startsWith(path)));
 
   // Auth API routes (always allow)
