@@ -2,7 +2,6 @@
 
 import React, { useMemo } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
-// @ts-ignore
 import { geoAlbersUsaTerritories } from "d3-composite-projections";
 import { NATIONAL_PARKS_DATA } from "@/lib/data/national-parks";
 import { TreePine } from "lucide-react";

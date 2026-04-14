@@ -70,48 +70,6 @@ export function PaginatedMediaGrid({
   const prefetchedDataRef = useRef<MediaItem[] | null>(null);
   const isInitialMount = useRef(true);
 
-  // Use initial items on first mount
-  useEffect(() => {
-    if (isInitialMount.current) {
-      setItems(initialItems);
-      setHasMore(initialItems.length >= 25);
-      isInitialMount.current = false;
-    }
-  }, [initialItems]);
-
-  // Reset and fetch when filters change (skip initial mount)
-  useEffect(() => {
-    // Skip on initial mount - we use initialItems instead
-    if (isInitialMount.current) {
-      return;
-    }
-
-    // Reset state
-    setPage(1);
-    setError(null);
-    prefetchedPageRef.current = null;
-    prefetchedDataRef.current = null;
-
-    // Fetch fresh data with new filters
-    const fetchFilteredData = async () => {
-      setIsLoading(true);
-      const result = await fetchPage(1);
-      if (result) {
-        setItems(result.items);
-        setHasMore(result.hasMore);
-
-        // Prefetch next page if there's more
-        if (result.hasMore) {
-          await fetchPage(2, true);
-        }
-      }
-      setIsLoading(false);
-    };
-
-    fetchFilteredData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
-
   // Fetch a specific page
   const fetchPage = useCallback(
     async (pageNum: number, isPrefetch = false) => {
@@ -161,6 +119,56 @@ export function PaginatedMediaGrid({
     },
     [filters]
   );
+
+  // Handle initial data load and filter changes
+  useEffect(() => {
+    // Determine if we have active filters that require a fresh fetch
+    // initialItems only accounts for status="completed" and sortBy="completed-desc"
+    const hasActiveFilters = 
+      filters?.search || 
+      (filters?.type && filters.type !== "all") || 
+      (filters?.status && filters.status !== "completed") ||
+      (filters?.genres && filters.genres.length > 0) || 
+      (filters?.tags && filters.tags.length > 0) || 
+      (filters?.sortBy && filters.sortBy !== "completed-desc");
+
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      
+      // If no active filters, we can safely use the initial pre-fetched items
+      if (!hasActiveFilters) {
+        setItems(initialItems);
+        setHasMore(initialItems.length >= 25);
+        return;
+      }
+    }
+
+    // Reset state for new fetch
+    setPage(1);
+    setError(null);
+    prefetchedPageRef.current = null;
+    prefetchedDataRef.current = null;
+
+    // Fetch fresh data with new filters
+    const fetchFilteredData = async () => {
+      setIsLoading(true);
+      const result = await fetchPage(1);
+      if (result) {
+        setItems(result.items);
+        setHasMore(result.hasMore);
+
+        // Prefetch next page if there's more
+        if (result.hasMore) {
+          await fetchPage(2, true);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    fetchFilteredData();
+  }, [filters, initialItems, fetchPage]);
+
+
 
   // Load next page
   const loadMore = useCallback(async () => {

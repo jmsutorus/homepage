@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ExerciseStats } from "@/components/widgets/exercise/exercise-stats";
 import { ExerciseCharts } from "@/components/widgets/exercise/exercise-charts";
 import { AddActivityModal } from "@/components/widgets/exercise/add-activity-modal";
@@ -27,11 +28,13 @@ export function ExercisePageClient({
   initialCompletedActivities,
   initialStats
 }: ExercisePageClientProps) {
+  const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
   const [viewTab, setViewTab] = useState<ViewTab>("exercise");
 
   const handleActivityAdded = () => {
     setRefreshKey(prev => prev + 1);
+    router.refresh();
   };
 
   return (
