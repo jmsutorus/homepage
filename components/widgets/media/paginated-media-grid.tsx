@@ -126,7 +126,7 @@ export function PaginatedMediaGrid({
     // initialItems only accounts for status="completed" and sortBy="completed-desc"
     const hasActiveFilters = 
       filters?.search || 
-      (filters?.type && filters.type !== "all") || 
+      (filters?.type) || 
       (filters?.status && filters.status !== "completed") ||
       (filters?.genres && filters.genres.length > 0) || 
       (filters?.tags && filters.tags.length > 0) || 
