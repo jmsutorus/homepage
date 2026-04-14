@@ -588,3 +588,351 @@ export async function isPersonOnPark(
     return false;
   }
 }
+
+// ==================== Photo CRUD ====================
+
+export interface ParkPhoto {
+  id: number;
+  parkId: number;
+  url: string;
+  caption: string | null;
+  date_taken: string | null;
+  order_index: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ParkPhotoInput {
+  url: string;
+  caption?: string | null;
+  date_taken?: string | null;
+  order_index?: number;
+}
+
+/**
+ * Create a new park photo
+ */
+export async function createParkPhoto(
+  parkId: number,
+  data: ParkPhotoInput
+): Promise<ParkPhoto | null> {
+  try {
+    const db = getDatabase();
+    
+    // Get the next order index
+    const resultOrder = await db.execute({
+      sql: "SELECT MAX(order_index) as max_order FROM park_photos WHERE parkId = ?",
+      args: [parkId]
+    });
+    const maxOrderRow = resultOrder.rows[0] as unknown as { max_order: number | null };
+    const orderIndex = data.order_index ?? ((maxOrderRow?.max_order ?? -1) + 1);
+
+    const result = await db.execute({
+      sql: `INSERT INTO park_photos (
+              parkId, url, caption, date_taken, order_index
+            ) VALUES (?, ?, ?, ?, ?)`,
+      args: [
+        parkId,
+        data.url,
+        data.caption || null,
+        data.date_taken || null,
+        orderIndex,
+      ]
+    });
+
+    return await getParkPhoto(Number(result.lastInsertRowid), parkId);
+  } catch (error) {
+    console.error("Error creating park photo:", error);
+    return null;
+  }
+}
+
+/**
+ * Get all photos for a park, ordered by order_index
+ */
+export async function getParkPhotos(parkId: number): Promise<ParkPhoto[]> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT * FROM park_photos WHERE parkId = ? ORDER BY order_index ASC",
+      args: [parkId]
+    });
+    return result.rows as unknown as ParkPhoto[];
+  } catch (error) {
+    console.error("Error getting park photos:", error);
+    return [];
+  }
+}
+
+/**
+ * Get a single park photo
+ */
+export async function getParkPhoto(
+  id: number,
+  parkId: number
+): Promise<ParkPhoto | null> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT * FROM park_photos WHERE id = ? AND parkId = ?",
+      args: [id, parkId]
+    });
+    const row = result.rows[0] as unknown as ParkPhoto | undefined;
+    return row || null;
+  } catch (error) {
+    console.error("Error getting park photo:", error);
+    return null;
+  }
+}
+
+/**
+ * Update a park photo
+ */
+export async function updateParkPhoto(
+  id: number,
+  parkId: number,
+  data: Partial<ParkPhotoInput>
+): Promise<boolean> {
+  try {
+    const photo = await getParkPhoto(id, parkId);
+    if (!photo) return false;
+
+    const updates: string[] = [];
+    const values: (string | number | null)[] = [];
+
+    if (data.url !== undefined) {
+      updates.push("url = ?");
+      values.push(data.url);
+    }
+    if (data.caption !== undefined) {
+      updates.push("caption = ?");
+      values.push(data.caption || null);
+    }
+    if (data.date_taken !== undefined) {
+      updates.push("date_taken = ?");
+      values.push(data.date_taken || null);
+    }
+    if (data.order_index !== undefined) {
+      updates.push("order_index = ?");
+      values.push(data.order_index);
+    }
+
+    if (updates.length === 0) return true;
+
+    values.push(id, parkId);
+    
+    const db = getDatabase();
+    await db.execute({
+      sql: `UPDATE park_photos SET ${updates.join(", ")} WHERE id = ? AND parkId = ?`,
+      args: values
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating park photo:", error);
+    return false;
+  }
+}
+
+/**
+ * Delete a park photo
+ */
+export async function deleteParkPhoto(
+  id: number,
+  parkId: number
+): Promise<boolean> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "DELETE FROM park_photos WHERE id = ? AND parkId = ?",
+      args: [id, parkId]
+    });
+    return (result.rowsAffected ?? 0) > 0;
+  } catch (error) {
+    console.error("Error deleting park photo:", error);
+    return false;
+  }
+}
+
+// ==================== Trail CRUD ====================
+
+export interface ParkTrail {
+  id: number;
+  parkId: number;
+  name: string;
+  distance: number | null;
+  elevation_gain: number | null;
+  difficulty: string | null;
+  rating: number | null;
+  date_hiked: string | null;
+  notes: string | null;
+  alltrails_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ParkTrailInput {
+  name: string;
+  distance?: number | null;
+  elevation_gain?: number | null;
+  difficulty?: string | null;
+  rating?: number | null;
+  date_hiked?: string | null;
+  notes?: string | null;
+  alltrails_url?: string | null;
+}
+
+/**
+ * Create a new park trail
+ */
+export async function createParkTrail(
+  parkId: number,
+  data: ParkTrailInput
+): Promise<ParkTrail | null> {
+  try {
+    const db = getDatabase();
+    
+    const result = await db.execute({
+      sql: `INSERT INTO park_trails (
+              parkId, name, distance, elevation_gain, difficulty, rating, date_hiked, notes, alltrails_url
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        parkId,
+        data.name,
+        data.distance ?? null,
+        data.elevation_gain ?? null,
+        data.difficulty || null,
+        data.rating ?? null,
+        data.date_hiked || null,
+        data.notes || null,
+        data.alltrails_url || null,
+      ]
+    });
+
+    return await getParkTrail(Number(result.lastInsertRowid), parkId);
+  } catch (error) {
+    console.error("Error creating park trail:", error);
+    return null;
+  }
+}
+
+/**
+ * Get all trails for a park, ordered by date_hiked descending
+ */
+export async function getParkTrails(parkId: number): Promise<ParkTrail[]> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT * FROM park_trails WHERE parkId = ? ORDER BY date_hiked DESC, created_at DESC",
+      args: [parkId]
+    });
+    return result.rows as unknown as ParkTrail[];
+  } catch (error) {
+    console.error("Error getting park trails:", error);
+    return [];
+  }
+}
+
+/**
+ * Get a single park trail
+ */
+export async function getParkTrail(
+  id: number,
+  parkId: number
+): Promise<ParkTrail | null> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "SELECT * FROM park_trails WHERE id = ? AND parkId = ?",
+      args: [id, parkId]
+    });
+    const row = result.rows[0] as unknown as ParkTrail | undefined;
+    return row || null;
+  } catch (error) {
+    console.error("Error getting park trail:", error);
+    return null;
+  }
+}
+
+/**
+ * Update a park trail
+ */
+export async function updateParkTrail(
+  id: number,
+  parkId: number,
+  data: Partial<ParkTrailInput>
+): Promise<boolean> {
+  try {
+    const trail = await getParkTrail(id, parkId);
+    if (!trail) return false;
+
+    const updates: string[] = [];
+    const values: (string | number | null)[] = [];
+
+    if (data.name !== undefined) {
+      updates.push("name = ?");
+      values.push(data.name);
+    }
+    if (data.distance !== undefined) {
+      updates.push("distance = ?");
+      values.push(data.distance ?? null);
+    }
+    if (data.elevation_gain !== undefined) {
+      updates.push("elevation_gain = ?");
+      values.push(data.elevation_gain ?? null);
+    }
+    if (data.difficulty !== undefined) {
+      updates.push("difficulty = ?");
+      values.push(data.difficulty || null);
+    }
+    if (data.rating !== undefined) {
+      updates.push("rating = ?");
+      values.push(data.rating ?? null);
+    }
+    if (data.date_hiked !== undefined) {
+      updates.push("date_hiked = ?");
+      values.push(data.date_hiked || null);
+    }
+    if (data.notes !== undefined) {
+      updates.push("notes = ?");
+      values.push(data.notes || null);
+    }
+    if (data.alltrails_url !== undefined) {
+      updates.push("alltrails_url = ?");
+      values.push(data.alltrails_url || null);
+    }
+
+    if (updates.length === 0) return true;
+
+    values.push(id, parkId);
+    
+    const db = getDatabase();
+    await db.execute({
+      sql: `UPDATE park_trails SET ${updates.join(", ")} WHERE id = ? AND parkId = ?`,
+      args: values
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating park trail:", error);
+    return false;
+  }
+}
+
+/**
+ * Delete a park trail
+ */
+export async function deleteParkTrail(
+  id: number,
+  parkId: number
+): Promise<boolean> {
+  try {
+    const db = getDatabase();
+    const result = await db.execute({
+      sql: "DELETE FROM park_trails WHERE id = ? AND parkId = ?",
+      args: [id, parkId]
+    });
+    return (result.rowsAffected ?? 0) > 0;
+  } catch (error) {
+    console.error("Error deleting park trail:", error);
+    return false;
+  }
+}

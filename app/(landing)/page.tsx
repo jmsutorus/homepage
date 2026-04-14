@@ -30,7 +30,7 @@ export default function LandingPage() {
                 </Link>
               </div>
               <div className="flex items-center gap-4 pt-4 text-sm text-[#aaabb0]/60">
-                <span>Trusted by Joseph Sutorus</span>
+                <span>Made by Joseph Sutorus</span>
               </div>
             </div>
             <div className="relative">
@@ -59,11 +59,8 @@ export default function LandingPage() {
                 </div>
                 <div className="space-y-3">
                   <h3 className="font-headline text-xl font-bold">Media</h3>
-                  <p className="text-[#aaabb0] text-sm leading-relaxed">Keep track of what you're watching on Plex and see your media server status.</p>
+                  <p className="text-[#aaabb0] text-sm leading-relaxed">Keep track of what you&apos;re watching.</p>
                 </div>
-                {/* <div className="mt-auto pt-4 border-t border-[#46484d]/10">
-                  <span className="text-xs font-bold text-[#81ecff] tracking-widest uppercase">Plex Integration</span>
-                </div> */}
               </div>
               
               {/* Exercise Card */}
@@ -73,11 +70,8 @@ export default function LandingPage() {
                 </div>
                 <div className="space-y-3">
                   <h3 className="font-headline text-xl font-bold">Exercise</h3>
-                  <p className="text-[#aaabb0] text-sm leading-relaxed">Integrate with Strava to monitor your workouts and fitness progress.</p>
+                  <p className="text-[#aaabb0] text-sm leading-relaxed">Track your your workouts and fitness progress.</p>
                 </div>
-                {/* <div className="mt-auto pt-4 border-t border-[#46484d]/10">
-                  <span className="text-xs font-bold text-[#ff8f00] tracking-widest uppercase">Strava Sync</span>
-                </div> */}
               </div>
 
               {/* Tasks Card */}
