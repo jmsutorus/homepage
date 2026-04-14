@@ -12,6 +12,8 @@ import { RelatedParks } from "@/components/widgets/shared/related-content";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { getUserId } from "@/lib/auth/server";
 import { ParkPeopleSection } from "@/components/widgets/parks/park-people-section";
+import { ParkPhotoGallery } from "@/components/widgets/parks/park-photo-gallery";
+import { ParkTrailsList } from "@/components/widgets/parks/park-trails-list";
 
 interface ParkDetailPageProps {
   params: Promise<{
@@ -138,6 +140,12 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
 
       {/* Divider */}
       <div className="my-8 border-t" />
+
+      {/* Photos */}
+      <ParkPhotoGallery parkSlug={slug} />
+
+      {/* Trails */}
+      <ParkTrailsList parkSlug={slug} />
 
       {/* Visitors */}
       <ParkPeopleSection parkId={park.id} parkSlug={slug} />

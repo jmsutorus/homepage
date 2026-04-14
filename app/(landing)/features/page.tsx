@@ -25,16 +25,10 @@ export default function FeaturesPage() {
               <div className="w-14 h-14 rounded-xl bg-[#81ecff]/10 flex items-center justify-center mb-6">
                 <Infinity className="w-8 h-8 text-[#81ecff]" />
               </div>
-              <h2 className="font-headline text-4xl font-bold tracking-tight">Infinite Tracking</h2>
+              <h2 className="font-headline text-4xl font-bold tracking-tight">Tracking</h2>
               <p className="text-[#aaabb0] text-lg leading-relaxed">
-                Connect your media servers, fitness devices, code repositories, and custom endpoints. 
-                Bring them all into a single, kinetic flow where everything talks to each other.
+                Remember what you watched, what you did, and what you need to do.
               </p>
-              <ul className="space-y-4 pt-4">
-                <li className="flex items-center gap-3 text-[#f6f6fc]"><Network className="w-5 h-5 text-[#81ecff]" /> Unlimited integrations via Webhooks</li>
-                <li className="flex items-center gap-3 text-[#f6f6fc]"><Activity className="w-5 h-5 text-[#81ecff]" /> Native Apple Health & Strava Syncing</li>
-                <li className="flex items-center gap-3 text-[#f6f6fc]"><Film className="w-5 h-5 text-[#81ecff]" /> Direct Plex, Jellyfin, & Spotify tracking</li>
-              </ul>
             </div>
             <div className="glass-card p-12 rounded-3xl relative overflow-hidden group min-h-[400px] flex items-center justify-center">
               <div className="absolute inset-0 bg-gradient-to-br from-[#81ecff]/5 to-transparent"></div>
@@ -111,7 +105,7 @@ export default function FeaturesPage() {
               <div className="glass-card p-8 rounded-2xl text-left hover:-translate-y-2 transition-all">
                 <Shield className="w-8 h-8 text-[#a68cff] mb-4" />
                 <h4 className="font-headline text-xl font-bold mb-2">Media</h4>
-                <p className="text-[#aaabb0] text-sm">Track your media consumption and see what you've watched.</p>
+                <p className="text-[#aaabb0] text-sm">Track your media consumption and see what you&apos;ve watched.</p>
               </div>
             </div>
         </div>
@@ -129,7 +123,7 @@ export default function FeaturesPage() {
           </p>
           <Link href="/sign-up">
             <button className="bg-gradient-to-r from-[#81ecff] via-[#00d4ec] to-[#a68cff] text-[#005762] font-black px-12 py-6 rounded-xl text-xl hover:shadow-[0_0_40px_rgba(129,236,255,0.4)] transition-all transform hover:scale-105 active:scale-95 uppercase tracking-wider">
-              Start Free Trial
+              Start
             </button>
           </Link>
         </div>

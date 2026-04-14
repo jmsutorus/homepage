@@ -8,6 +8,7 @@ import { Plus, TreePine } from 'lucide-react';
 import { ParkFormDialog } from './park-form-dialog';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { PageTabsList } from '@/components/ui/page-tabs-list';
+import { NationalParksMap } from './national-parks-map';
 
 
 interface ParksPageClientProps {
@@ -80,6 +81,11 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
               </p>
             </div>
           </div>
+
+          {/* National Parks Map Visualization */}
+          <NationalParksMap 
+            visitedParkTitles={parks.filter(p => p.category === 'National Park').map(p => p.title)} 
+          />
 
           {/* Parks Grid - Grouped by Category */}
           {parks.length === 0 ? (

@@ -79,37 +79,35 @@ export function MediaPageClient({
   const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game" | "album">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showPlanned, setShowPlanned] = useState(false);
-  const [activeGenres, setActiveGenres] = useState<string[]>([]);
-  const [activeTags, setActiveTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>("completed-desc");
   const [genreSearch, setGenreSearch] = useState("");
   const [tagSearch, setTagSearch] = useState("");
   
+  // Read genres and tags directly from URL parameters on initialization
+  const [activeGenres, setActiveGenres] = useState<string[]>(() => {
+    // Only attempt to read if window is defined (client-side) to avoid SSR hydration mismatches,
+    // though useSearchParams is usually safe in client components.
+    if (typeof window === 'undefined') return [];
+    
+    const genres = searchParams.get("genres");
+    const genre = searchParams.get("genre");
+    if (genres) return genres.split(",");
+    if (genre) return [genre];
+    return [];
+  });
+
+  const [activeTags, setActiveTags] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    
+    const tags = searchParams.get("tags");
+    const tag = searchParams.get("tag");
+    if (tags) return tags.split(",");
+    if (tag) return [tag];
+    return [];
+  });
+  
   // Detect mobile screen for responsive UI
   const isMobile = useMediaQuery("(max-width: 639px)");
-
-  // Read genres and tags from URL parameters
-   
-  useEffect(() => {
-    const genre = searchParams.get("genre");
-    const tag = searchParams.get("tag");
-    const genres = searchParams.get("genres");
-    const tags = searchParams.get("tags");
-
-    // Handle single genre/tag for backwards compatibility
-    if (genre && !genres) {
-      // eslint-disable-next-line
-      setActiveGenres([genre]);
-    } else if (genres) {
-      setActiveGenres(genres.split(","));
-    }
-
-    if (tag && !tags) {
-      setActiveTags([tag]);
-    } else if (tags) {
-      setActiveTags(tags.split(","));
-    }
-  }, [searchParams]);
 
   // Extract all unique genres and tags
   const allGenres = useMemo(() => {
