@@ -10,6 +10,10 @@ import {
   getCompletedWorkoutActivities,
   getWorkoutActivityStats,
 } from "@/lib/db/workout-activities";
+import {
+  getExerciseSettings,
+  getPersonalRecords
+} from "@/lib/db/personal-records";
 
 export default async function ExercisePage() {
   const currentUserId = await getUserId();
@@ -21,12 +25,16 @@ export default async function ExercisePage() {
     upcomingActivities,
     recentActivities,
     completedActivities,
-    workoutStats
+    workoutStats,
+    exerciseSettings,
+    personalRecords
   ] = await Promise.all([
     getUpcomingWorkoutActivities(currentUserId, 3),
     getRecentWorkoutActivities(currentUserId, 5),
     getCompletedWorkoutActivities(currentUserId, 20),
-    getWorkoutActivityStats(currentUserId, startOfYear, endOfYear)
+    getWorkoutActivityStats(currentUserId, startOfYear, endOfYear),
+    getExerciseSettings(currentUserId),
+    getPersonalRecords(currentUserId)
   ]);
 
   // Sanitize data to ensure plain objects are passed to Client Component
@@ -34,6 +42,8 @@ export default async function ExercisePage() {
   const sanitizedRecent = JSON.parse(JSON.stringify(recentActivities));
   const sanitizedCompleted = JSON.parse(JSON.stringify(completedActivities));
   const sanitizedStats = JSON.parse(JSON.stringify(workoutStats));
+  const sanitizedSettings = JSON.parse(JSON.stringify(exerciseSettings));
+  const sanitizedRecords = JSON.parse(JSON.stringify(personalRecords));
 
   return (
     <ExercisePageClient 
@@ -41,6 +51,8 @@ export default async function ExercisePage() {
       initialRecentActivities={sanitizedRecent}
       initialCompletedActivities={sanitizedCompleted}
       initialStats={sanitizedStats}
+      initialSettings={sanitizedSettings}
+      initialRecords={sanitizedRecords}
     />
   );
 }
