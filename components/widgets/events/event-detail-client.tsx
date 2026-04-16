@@ -530,7 +530,14 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
               {event.location && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="w-5 h-5" />
-                  <span>{event.location}</span>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline"
+                  >
+                    {event.location}
+                  </a>
                 </div>
               )}
 

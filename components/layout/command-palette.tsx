@@ -28,6 +28,7 @@ import {
   Save,
   Trash2,
   X,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -260,6 +261,13 @@ export function CommandPalette({ className }: CommandPaletteProps) {
         keywords: ["exercise", "workout", "fitness"],
         icon: <Activity className="h-4 w-4" />,
         action: () => navigate("/exercise"),
+      },
+      {
+        id: "nav-finances",
+        label: "Finances",
+        keywords: ["finances", "money", "subscriptions", "savings", "debts", "budget"],
+        icon: <DollarSign className="h-4 w-4" />,
+        action: () => navigate("/finances"),
       },
       {
         id: "nav-year",

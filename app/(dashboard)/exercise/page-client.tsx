@@ -7,6 +7,8 @@ import { ExerciseCharts } from "@/components/widgets/exercise/exercise-charts";
 import { AddActivityModal } from "@/components/widgets/exercise/add-activity-modal";
 import { UpcomingActivities } from "@/components/widgets/calendar/upcoming-activities";
 import { CompletedActivities } from "@/components/widgets/exercise/completed-activities";
+import { ExerciseSettingsModal } from "@/components/widgets/exercise/exercise-settings-modal";
+import { PersonalRecordsCard } from "@/components/widgets/exercise/personal-records-card";
 
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
@@ -14,19 +16,24 @@ import { PageTabsList } from "@/components/ui/page-tabs-list";
 type ViewTab = "exercise" | "analytics";
 
 import { WorkoutActivity, WorkoutActivityStats } from "@/lib/db/workout-activities";
+import { ExerciseSettings, PersonalRecord } from "@/lib/db/personal-records";
 
 interface ExercisePageClientProps {
   initialUpcomingActivities: WorkoutActivity[];
   initialRecentActivities: WorkoutActivity[];
   initialCompletedActivities: WorkoutActivity[];
   initialStats: WorkoutActivityStats;
+  initialSettings: ExerciseSettings;
+  initialRecords: PersonalRecord[];
 }
 
 export function ExercisePageClient({ 
   initialUpcomingActivities,
   initialRecentActivities,
   initialCompletedActivities,
-  initialStats
+  initialStats,
+  initialSettings,
+  initialRecords
 }: ExercisePageClientProps) {
   const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
@@ -46,13 +53,23 @@ export function ExercisePageClient({
             Monitor your running progress and schedule workouts
           </p>
         </div>
-        <div className="hidden md:block">
+        <div className="hidden md:flex gap-2 items-center">
+          <ExerciseSettingsModal 
+            initialRunningEnabled={initialSettings.enable_running_prs}
+            initialWeightsEnabled={initialSettings.enable_weights_prs}
+          />
           <AddActivityModal onActivityAdded={handleActivityAdded} showButton={true} />
         </div>
       </div>
 
-      {/* Mobile FAB */}
+      {/* Mobile FAB and Actions */}
       <div className="md:hidden">
+          <div className="flex justify-end gap-2 mb-4">
+            <ExerciseSettingsModal 
+              initialRunningEnabled={initialSettings.enable_running_prs}
+              initialWeightsEnabled={initialSettings.enable_weights_prs}
+            />
+          </div>
           <AddActivityModal onActivityAdded={handleActivityAdded} showButton={true} />
       </div>
 
@@ -76,6 +93,13 @@ export function ExercisePageClient({
           <CompletedActivities 
             initialActivities={initialCompletedActivities}
             onRefresh={refreshKey}
+          />
+
+          {/* Personal Records */}
+          <PersonalRecordsCard 
+            initialRecords={initialRecords}
+            enableRunning={initialSettings.enable_running_prs}
+            enableWeights={initialSettings.enable_weights_prs}
           />
         </TabsContent>
 

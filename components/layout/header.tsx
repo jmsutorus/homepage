@@ -83,6 +83,11 @@ export function Header() {
                     People
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/finances" className="w-full cursor-pointer">
+                    Finances
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
