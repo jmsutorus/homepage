@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic Harmony | Exercise Tracking</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"secondary-fixed": "#6bfe9c", "tertiary-fixed": "#ff937b", outline: "#507c94", "primary-container": "#799dff", "surface-container": "#cfecff", "secondary-fixed-dim": "#5bef90", "surface-container-highest": "#b5e3ff", background: "#eff8ff", "surface-container-low": "#e2f3ff", "surface-tint": "#0052d0", "on-primary-fixed": "#000000", "on-primary-container": "#001e58", "inverse-on-surface": "#77a3bc", "inverse-surface": "#001019", "on-error-container": "#570008", "surface-container-lowest": "#ffffff", "on-tertiary-fixed-variant": "#741200", "primary-fixed": "#799dff", "secondary-dim": "#005c2d", "surface-variant": "#b5e3ff", "on-primary": "#f1f2ff", error: "#b31b25", "on-background": "#003346", "surface-container-high": "#c2e8ff", "on-primary-fixed-variant": "#00276c", "on-surface-variant": "#346178", "on-secondary": "#cdffd4", tertiary: "#b22200", "error-dim": "#9f0519", "outline-variant": "#87b3cd", "error-container": "#fb5151", "primary-fixed-dim": "#638eff", "on-surface": "#003346", "on-tertiary-container": "#640e00", "on-tertiary-fixed": "#370500", "surface-dim": "#9fdcff", primary: "#0052d0", "tertiary-container": "#ff937b", "on-error": "#ffefee", "surface-bright": "#eff8ff", "secondary-container": "#6bfe9c", surface: "#eff8ff", "on-secondary-fixed": "#004a23", "tertiary-fixed-dim": "#ff7c5f", "on-tertiary": "#ffefec", "primary-dim": "#0047b7", "on-secondary-fixed-variant": "#006a35", secondary: "#006a35", "tertiary-dim": "#9c1c00", "inverse-primary": "#5e8bff", "on-secondary-container": "#005f2f", "lime-highlight": "#A3E635", "deep-forest": "#1A2E26", "sage-green": "#7A9E8F", "mint-white": "#F0F7F4"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, fontFamily: {headline: ["Lexend"], body: ["Plus Jakarta Sans"], label: ["Plus Jakarta Sans"], display: "Lexend"}}}};</script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        h1, h2, h3, .display-lg { font-family: 'Lexend', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-mint-white text-on-background selection:bg-primary-container">
+<header class="bg-mint-white/70 backdrop-blur-md docked full-width top-0 z-50 shadow-[0_8px_24px_rgba(26,46,38,0.06)] sticky">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+<div class="flex flex-col">
+<span class="text-2xl font-black tracking-tight text-deep-forest">Kinetic Harmony</span>
+<span class="font-label text-xs font-bold text-sage-green tracking-wider uppercase">Exercise Tracking</span>
+</div>
+<div class="hidden md:flex gap-8 items-center">
+<nav class="flex gap-6">
+<a class="text-deep-forest font-bold hover:scale-105 transition-transform duration-200" href="#">Home</a>
+<a class="text-sage-green hover:scale-105 transition-transform duration-200" href="#">Workouts</a>
+<a class="text-sage-green hover:scale-105 transition-transform duration-200" href="#">History</a>
+<a class="text-sage-green hover:scale-105 transition-transform duration-200" href="#">Trophy Room</a>
+</nav>
+</div>
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined p-2 rounded-full surface-container-lowest text-sage-green shadow-sm hover:scale-105 transition-transform">notifications</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img class="w-full h-full object-cover" data-alt="close up headshot of a smiling energetic fitness coach with short hair in a bright outdoor athletic setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV2Nb6yKWS-rb3op2M78vWmolEjaEkA1oMA9uNhr52Cisl91GjIfyFaYyN7jH38xdhfbXioQQeUO4lvTFTMKOImCcI5l5sqG3YEIpark9AI8pQAVhTM4stQVV1MxSX2Ou9w7BQg8ObuLzl18pVo9_8_JqZoUJXC1k-LLxolkMEL2zVD2wRa6oKZ_y5hkNxgsv1XVuVb-eJu8ks5b5jpGR3Fwgh25tPbg4in7rjzwW9x4QVEpoUwF_0X4OxgBkpvIX_gipQI-cxNpw"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 py-10 pb-32">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+<div>
+<h1 class="text-5xl font-extrabold tracking-tight text-on-surface mb-2">Exercise Tracking</h1>
+<p class="text-xl text-sage-green font-medium">Your potential has no finish line. Let's move.</p>
+</div>
+<div class="flex gap-4">
+<button class="bg-surface-container-high text-on-surface px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-sm">
+<span class="material-symbols-outlined text-sage-green">add_circle</span>
+                    New Goal
+                </button>
+<button class="bg-lime-highlight text-deep-forest px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-lime-highlight/20">
+<span class="material-symbols-outlined">fitness_center</span>
+                    Add Activity
+                </button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Next Up Card -->
+<section class="lg:col-span-12">
+<div class="relative overflow-hidden rounded-lg bg-gradient-to-br from-deep-forest to-teal-700 p-1 shadow-xl">
+<div class="bg-white/5 backdrop-blur-sm rounded-[1.8rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between text-white relative overflow-hidden">
+<div class="absolute -right-20 -top-20 w-80 h-80 bg-lime-highlight/10 rounded-full blur-3xl"></div>
+<div class="flex flex-col gap-4 z-10">
+<span class="bg-white/10 backdrop-blur-md px-4 py-1 rounded-full text-sm font-bold uppercase tracking-widest w-fit">Next Up</span>
+<h2 class="text-4xl md:text-5xl font-black">Morning HIIT Blast</h2>
+<p class="text-lg opacity-90 max-w-md">35 minutes of metabolic conditioning to jumpstart your Tuesday morning.</p>
+<div class="flex items-center gap-4 mt-4">
+<div class="flex items-center gap-2 bg-black/20 px-4 py-2 rounded-lg">
+<span class="material-symbols-outlined text-lime-highlight">schedule</span>
+<span class="font-bold">Starts in: 02:14:45</span>
+</div>
+</div>
+</div>
+<div class="mt-8 md:mt-0 flex items-center gap-6 z-10">
+<div class="text-center">
+<div class="text-5xl font-black mb-1">08:30</div>
+<div class="text-xs font-bold uppercase tracking-widest opacity-80">Tomorrow AM</div>
+</div>
+<div class="w-[2px] h-16 bg-white/20"></div>
+<button class="bg-lime-highlight text-deep-forest px-8 py-4 rounded-xl font-black text-lg hover:scale-110 transition-transform shadow-xl">
+                                PREPARE SESSION
+                            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Active Streak Widget -->
+<section class="lg:col-span-12">
+<div class="bg-lime-highlight rounded-lg p-8 flex flex-col md:flex-row items-center gap-8 shadow-lg shadow-lime-highlight/10 relative overflow-hidden">
+<div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-white/20 to-transparent pointer-events-none"></div>
+<div class="flex-shrink-0 relative">
+<div class="w-24 h-24 rounded-full border-8 border-deep-forest flex items-center justify-center">
+<span class="text-4xl font-black text-deep-forest">14</span>
+</div>
+<div class="absolute -top-2 -right-2 bg-deep-forest text-lime-highlight p-1 rounded-full shadow-md">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+</div>
+<div class="flex-grow">
+<h3 class="text-2xl md:text-3xl font-black text-deep-forest mb-2">You're on fire! 🔥</h3>
+<p class="text-deep-forest/80 font-bold text-lg">14-day movement streak. You haven't missed a beat for two full weeks. Keep that momentum going!</p>
+</div>
+<div class="flex gap-2">
+<div class="w-10 h-10 rounded-lg bg-deep-forest/10 flex items-center justify-center font-bold text-deep-forest">M</div>
+<div class="w-10 h-10 rounded-lg bg-deep-forest/10 flex items-center justify-center font-bold text-deep-forest">T</div>
+<div class="w-10 h-10 rounded-lg bg-deep-forest/10 flex items-center justify-center font-bold text-deep-forest">W</div>
+<div class="w-10 h-10 rounded-lg bg-deep-forest/10 flex items-center justify-center font-bold text-deep-forest">T</div>
+<div class="w-10 h-10 rounded-lg bg-deep-forest/10 flex items-center justify-center font-bold text-deep-forest">F</div>
+<div class="w-10 h-10 rounded-lg bg-deep-forest/10 flex items-center justify-center font-bold text-deep-forest">S</div>
+<div class="w-10 h-10 rounded-lg bg-deep-forest flex items-center justify-center font-bold text-lime-highlight shadow-md">S</div>
+</div>
+</div>
+</section>
+<section class="lg:col-span-8 flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h3 class="text-2xl font-bold">Recent Achievements</h3>
+<button class="text-sage-green font-bold hover:underline">View All History</button>
+</div>
+<div class="space-y-6">
+<div class="group bg-surface-container-lowest p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center gap-6 relative overflow-hidden">
+<div class="flex-shrink-0 w-16 h-16 rounded-full bg-lime-highlight/20 text-deep-forest flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">directions_run</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h4 class="text-xl font-bold">Sunset Trail Run</h4>
+<span class="text-sage-green text-sm font-medium">2 hours ago</span>
+</div>
+<div class="flex gap-4 text-sage-green text-sm font-semibold">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">distance</span> 8.4 km</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">timer</span> 48:20</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">local_fire_department</span> 520 kcal</span>
+</div>
+</div>
+<div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-lime-highlight">chevron_right</span>
+</div>
+</div>
+<div class="group bg-surface-container-lowest p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center gap-6 relative overflow-hidden">
+<div class="flex-shrink-0 w-16 h-16 rounded-full bg-sage-green/20 text-deep-forest flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">fitness_center</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h4 class="text-xl font-bold">Upper Body Strength</h4>
+<span class="text-sage-green text-sm font-medium">Yesterday</span>
+</div>
+<div class="flex gap-4 text-sage-green text-sm font-semibold">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">repeat</span> 12 Sets</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">weight</span> 4,500 kg total</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">timer</span> 55:00</span>
+</div>
+</div>
+<div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-lime-highlight">chevron_right</span>
+</div>
+</div>
+<div class="group bg-surface-container-lowest p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center gap-6 relative overflow-hidden">
+<div class="flex-shrink-0 w-16 h-16 rounded-full bg-surface-container-highest text-deep-forest flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">pedal_bike</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h4 class="text-xl font-bold">Coastal Cycle Path</h4>
+<span class="text-sage-green text-sm font-medium">Sat, Oct 21</span>
+</div>
+<div class="flex gap-4 text-sage-green text-sm font-semibold">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">distance</span> 24.2 km</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">timer</span> 1:12:00</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">local_fire_department</span> 840 kcal</span>
+</div>
+</div>
+<div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-lime-highlight">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Personal Records Section -->
+<div class="mt-10 flex flex-col gap-6">
+<h3 class="text-2xl font-bold">Personal Records</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="group bg-surface-container-lowest p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center gap-6 relative overflow-hidden">
+<div class="flex-shrink-0 w-16 h-16 rounded-full bg-lime-highlight/20 text-deep-forest flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">directions_run</span>
+</div>
+<div class="flex-grow">
+<h4 class="text-xl font-bold">Marathon</h4>
+<div class="text-2xl font-black text-on-surface mt-1">4:10:00</div>
+<div class="text-sage-green text-sm font-semibold mt-1">Set on Nov 05, 2023</div>
+</div>
+</div>
+<div class="group bg-surface-container-lowest p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center gap-6 relative overflow-hidden">
+<div class="flex-shrink-0 w-16 h-16 rounded-full bg-sage-green/20 text-deep-forest flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">timer</span>
+</div>
+<div class="flex-grow">
+<h4 class="text-xl font-bold">10K Run</h4>
+<div class="text-2xl font-black text-on-surface mt-1">45:30</div>
+<div class="text-sage-green text-sm font-semibold mt-1">Set on Oct 18, 2023</div>
+</div>
+</div>
+<div class="group bg-surface-container-lowest p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center gap-6 relative overflow-hidden md:col-span-2 lg:col-span-1">
+<div class="flex-shrink-0 w-16 h-16 rounded-full bg-surface-container-highest text-deep-forest flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">avg_pace</span>
+</div>
+<div class="flex-grow">
+<h4 class="text-xl font-bold">Half Marathon</h4>
+<div class="text-2xl font-black text-on-surface mt-1">1:53:22</div>
+<div class="text-sage-green text-sm font-semibold mt-1">Set on Sep 12, 2023</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="lg:col-span-4 flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h3 class="text-2xl font-bold">Trophy Room</h3>
+<span class="material-symbols-outlined text-sage-green">military_tech</span>
+</div>
+<!-- Best Metrics Cards -->
+<div class="grid grid-cols-1 gap-4">
+<div class="bg-gradient-to-br from-white to-surface-container-low p-6 rounded-lg shadow-sm relative overflow-hidden border border-white group cursor-pointer hover:shadow-md transition-all">
+<div class="absolute -right-4 -bottom-4 opacity-10 rotate-12 text-sage-green group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[8rem]">trophy</span>
+</div>
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-lime-highlight" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold uppercase tracking-widest text-sage-green">Longest Run</span>
+</div>
+<div class="text-4xl font-black text-on-surface mb-1">15.4 <span class="text-xl font-bold opacity-60">km</span></div>
+<div class="text-sm font-semibold text-deep-forest">Set on Oct 12, 2023</div>
+</div>
+<div class="bg-gradient-to-br from-white to-surface-container-low p-6 rounded-lg shadow-sm relative overflow-hidden border border-white group cursor-pointer hover:shadow-md transition-all">
+<div class="absolute -right-4 -bottom-4 opacity-10 rotate-12 text-sage-green group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[8rem]">speed</span>
+</div>
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-lime-highlight" data-weight="fill" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="text-xs font-bold uppercase tracking-widest text-sage-green">Top Speed</span>
+</div>
+<div class="text-4xl font-black text-on-surface mb-1">34.2 <span class="text-xl font-bold opacity-60">km/h</span></div>
+<div class="text-sm font-semibold text-deep-forest">Set on Sep 28, 2023</div>
+</div>
+<div class="bg-gradient-to-br from-white to-surface-container-low p-6 rounded-lg shadow-sm relative overflow-hidden border border-white group cursor-pointer hover:shadow-md transition-all">
+<div class="absolute -right-4 -bottom-4 opacity-10 rotate-12 text-sage-green group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[8rem]">fitness_center</span>
+</div>
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-lime-highlight" data-weight="fill" style="font-variation-settings: 'FILL' 1;">weight</span>
+<span class="text-xs font-bold uppercase tracking-widest text-sage-green">Max Bench</span>
+</div>
+<div class="text-4xl font-black text-on-surface mb-1">95.0 <span class="text-xl font-bold opacity-60">kg</span></div>
+<div class="text-sm font-semibold text-deep-forest">Set on Oct 15, 2023</div>
+</div>
+<div class="bg-gradient-to-br from-white to-surface-container-low p-6 rounded-lg shadow-sm relative overflow-hidden border border-white group cursor-pointer hover:shadow-md transition-all">
+<div class="absolute -right-4 -bottom-4 opacity-10 rotate-12 text-sage-green group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[8rem]">pool</span>
+</div>
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-lime-highlight" data-weight="fill" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+<span class="text-xs font-bold uppercase tracking-widest text-sage-green">Longest Swim</span>
+</div>
+<div class="text-4xl font-black text-on-surface mb-1">2.5 <span class="text-xl font-bold opacity-60">km</span></div>
+<div class="text-sm font-semibold text-deep-forest">Set on Aug 22, 2023</div>
+</div>
+</div>
+<div class="bg-surface-container-highest p-6 rounded-lg mt-4">
+<p class="font-bold text-on-surface italic leading-relaxed">
+                        "Your speed doesn't matter, forward is forward."
+                    </p>
+<div class="mt-4 flex items-center gap-2">
+<div class="h-1 flex-grow bg-white/50 rounded-full">
+<div class="h-full w-2/3 bg-lime-highlight rounded-full"></div>
+</div>
+<span class="text-xs font-bold text-sage-green">66% to Weekly Goal</span>
+</div>
+</div>
+</section>
+</div>
+</main>
+<nav class="fixed bottom-0 left-0 w-full bg-white/70 backdrop-blur-md z-50 rounded-t-[2rem] shadow-[0_-8px_24px_rgba(26,46,38,0.06)] md:hidden">
+<div class="flex justify-around items-center px-4 pb-6 pt-3">
+<a class="flex flex-col items-center justify-center bg-surface-container text-deep-forest rounded-full px-5 py-2 scale-110 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label font-medium text-[10px] uppercase tracking-wider">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-sage-green hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="font-label font-medium text-[10px] uppercase tracking-wider">Workouts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-sage-green hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label font-medium text-[10px] uppercase tracking-wider">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-sage-green hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">trophy</span>
+<span class="font-label font-medium text-[10px] uppercase tracking-wider">Trophy Room</span>
+</a>
+</div>
+</nav>
+<button class="md:hidden fixed bottom-24 right-6 bg-lime-highlight text-deep-forest w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50 hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</body></html>

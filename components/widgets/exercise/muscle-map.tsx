@@ -109,13 +109,13 @@ export function MuscleMap({ muscles, className }: MuscleMapProps) {
       <svg viewBox="0 0 200 400" className="w-full h-full drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="muscleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(var(--primary) / 0.8)" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" />
+            <stop offset="0%" stopColor="#2B463C" />
+            <stop offset="100%" stopColor="#1B251E" />
           </linearGradient>
         </defs>
 
         {/* Base Silhouette (Simplified) */}
-        <g className="text-muted/20 fill-current">
+        <g className="text-muted/20 dark:text-white/5 fill-current">
              {/* Head */}
             <circle cx="100" cy="40" r="25" />
             {/* Body base layer to connect gaps */}
@@ -130,10 +130,10 @@ export function MuscleMap({ muscles, className }: MuscleMapProps) {
               key={zone}
               d={path}
               className={cn(
-                "transition-all duration-500 ease-in-out stroke-background stroke-[1px]",
+                "transition-all duration-500 ease-in-out stroke-background dark:stroke-evergreen-dark stroke-[1px]",
                 isActive 
                   ? "fill-[url(#muscleGradient)] opacity-100" 
-                  : "fill-muted/40 opacity-50 hover:opacity-70"
+                  : "fill-muted/40 dark:fill-white/10 opacity-50 dark:opacity-30 hover:opacity-70"
               )}
             />
           );

@@ -40,6 +40,9 @@ oauth-debug.log
 /data/*.db-shm
 /data/*.db-wal
 
+# local backups (run npm run backup:db to generate)
+/backups/
+
 # vercel
 .vercel
 

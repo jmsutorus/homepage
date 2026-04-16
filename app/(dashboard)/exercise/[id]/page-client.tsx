@@ -23,7 +23,12 @@ import {
   Route,
   Mountain,
   Copy,
-  CheckCircle2
+  CheckCircle2,
+  History,
+  TrendingUp,
+  Award,
+  ChevronRight,
+  Info
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -39,6 +44,9 @@ import { MuscleMap } from "@/components/widgets/exercise/muscle-map";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+import { DetailCard } from "@/Shared/Components/Cards/DetailCard";
+import { HomepageFooter } from "@/Shared/Components/Footers/HomepageFooter";
 
 interface ExerciseDetailClientProps {
   activity: WorkoutActivity;
@@ -64,6 +72,7 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
   const isRun = activity.type === "run";
+  const isStrength = activity.type === "strength";
 
   // Parse items safely
   const items: (Exercise | Split)[] = useMemo(() => {
@@ -252,290 +261,262 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
     return Array.from(muscles);
   }, [items, isRun]);
 
+  // bg-warm-cream
+
   return (
-    <div className="max-w-4xl mx-auto pb-20 md:pb-0">
+    <div className="min-h-screen pb-20">
       {/* Header Navigation */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link 
           href="/exercise" 
-          className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+          className="flex items-center text-sm font-bold transition-colors"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Workouts
+          BACK TO WORKOUTS
         </Link>
         
         <div className="flex items-center gap-2">
             {!activity.completed && (
-                <Button variant="default" size="sm" onClick={() => setIsCompleteModalOpen(true)}>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="bg-evergreen hover:bg-evergreen-dark text-white rounded-xl"
+                  onClick={() => setIsCompleteModalOpen(true)}
+                >
                     <CheckCircle2 className="mr-2 h-4 w-4" />
                     Mark Complete
                 </Button>
             )}
-          <Button variant="ghost" size="icon" onClick={() => setIsCopyModalOpen(true)}>
+           <Button variant="ghost" size="icon" className="hover:bg-evergreen/10" onClick={() => setIsCopyModalOpen(true)}>
             <Copy className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setIsEditModalOpen(true)}>
+          <Button variant="ghost" size="icon" className="hover:bg-evergreen/10" onClick={() => setIsEditModalOpen(true)}>
             <Pencil className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Main Content Info */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* ... (Keep existing layout) */}
-        
-        {/* Left Column: Summary Card */}
-        <div className="md:col-span-1 space-y-6">
-          <Card className="overflow-hidden border-2">
-            <div className={cn("h-2 w-full", getDifficultyColor(activity.difficulty).replace("text-", "bg-").split(" ")[0])} />
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center">
-                <div className={cn("p-4 rounded-full mb-4", getDifficultyColor(activity.difficulty))}>
-                  {getTypeIcon()}
-                </div>
-                
-                <h1 className="text-2xl font-bold capitalize mb-1">{activity.type} Workout</h1>
-                <div className="flex items-center gap-2 text-muted-foreground mb-6">
-                  <Calendar className="h-4 w-4" />
-                  <span>{format(activityDate, "EEEE, MMMM d, yyyy")}</span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 w-full">
-                  <div className="flex flex-col p-3 bg-muted/50 rounded-lg">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Duration</span>
-                    <span className="text-xl font-bold">{activity.length} <span className="text-sm font-normal text-muted-foreground">min</span></span>
+      <main className="max-w-6xl mx-auto px-6 py-4">
+        {/* Hero Section */}
+        <section className="mb-10 relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-evergreen to-evergreen-dark p-8 md:p-12 text-white shadow-2xl shadow-evergreen/10">
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full mb-6 text-sm font-semibold tracking-wide border border-white/10 uppercase">
+              <Timer className="h-4 w-4" />
+              Activity Details
+            </div>
+            
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <h1 className="text-4xl md:text-6xl font-black mb-2 tracking-tighter capitalize">
+                  {activity.type === 'run' ? 'Morning Run' : `${activity.type} Workout`}
+                </h1>
+                <p className="text-white/80 font-medium text-lg">
+                  {format(activityDate, "EEEE, MMMM d")} • {format(activityDate, "h:mm a")}
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-3 bg-burnt-terracotta text-white px-6 py-3 rounded-2xl shadow-lg shadow-black/10">
+                <Award className="h-6 w-6" />
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest leading-none opacity-80">Status</div>
+                  <div className="text-lg font-black leading-tight">
+                    {activity.completed ? 'Completed' : 'Planned'}
                   </div>
-                  
-                  {activity.distance && activity.distance > 0 ? (
-                    <div className="flex flex-col p-3 bg-muted/50 rounded-lg">
-                      <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Distance</span>
-                      <span className="text-xl font-bold">{activity.distance} <span className="text-sm font-normal text-muted-foreground">mi</span></span>
-                    </div>
-                  ) : (
-                     <div className="flex flex-col p-3 bg-muted/50 rounded-lg">
-                      <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Time</span>
-                      <span className="text-xl font-bold">{activity.time}</span>
-                     </div>
-                  )}
-                </div>
-
-                {(activity.distance || 0) > 0 && (
-                   <div className="w-full mt-4 flex flex-col p-3 bg-muted/50 rounded-lg">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Est. Pace</span>
-                    <span className="text-xl font-bold">
-                        {(() => {
-                        const paceDecimal = activity.length / activity.distance!;
-                        const minutes = Math.floor(paceDecimal);
-                        const seconds = Math.round((paceDecimal - minutes) * 60);
-                        return `${minutes}'${seconds.toString().padStart(2, "0")}" /mi`;
-                        })()}
-                    </span>
-                   </div>
-                )}
-                
-                <div className="mt-6 w-full">
-                    <Badge variant="outline" className={cn("w-full justify-center py-1 capitalize", getDifficultyColor(activity.difficulty))}>
-                        {activity.difficulty} Effort
-                    </Badge>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+          <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
+        </section>
 
-          {/* Muscle Map Card */}
-          <Card>
-            <CardContent className="pt-6">
-               <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2 justify-center">
-                  <Activity className="h-3 w-3" /> Muscles Targeted
-               </h3>
-               <MuscleMap muscles={targetedMuscles} />
-            </CardContent>
-          </Card>
+        {/* Quick Stats Bar */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <DetailCard
+            icon={<Clock className="h-5 w-5" />}
+            name="Duration"
+            value={activity.length}
+            measurement="min"
+          />
 
-           {/* Notes Card */}
-           {(activity.notes || activity.completion_notes) && (
-            <Card>
-                <CardContent className="pt-6 space-y-4">
-                    {activity.notes && (
-                        <div>
-                            <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-                                <Share2 className="h-3 w-3" /> Notes
-                            </h3>
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{activity.notes}</p>
-                        </div>
-                    )}
-                    
-                    {activity.notes && activity.completion_notes && <Separator />}
-                    
-                    {activity.completion_notes && (
-                        <div>
-                             <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-                                <Trophy className="h-3 w-3" /> Completion Notes
-                            </h3>
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed italic text-muted-foreground">{activity.completion_notes}</p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-           )}
-        </div>
+          <DetailCard
+            icon={isStrength ? <Dumbbell className="h-5 w-5" /> : <Route className="h-5 w-5" />}
+            name={isStrength ? "Exercises" : "Distance"}
+            value={isStrength ? items.length : (activity.distance || 0)}
+            measurement={isStrength ? "" : "mi"}
+            iconBgClassName={isStrength ? "bg-evergreen/10" : "bg-burnt-terracotta/10"}
+            iconColorClassName={isStrength ? "text-evergreen" : "text-burnt-terracotta"}
+          />
 
-        {/* Right Column: Exercises/Details */}
-        <div className="md:col-span-2 space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                        {isRun ? <Route className="h-5 w-5 text-primary" /> : <Dumbbell className="h-5 w-5 text-primary" />}
-                        {isRun ? "Splits" : "Workout Session"}
-                    </h2>
-                    <Badge variant="secondary">{items.length} {isRun ? "Splits" : "Exercises"}</Badge>
-                </div>
-                <Button size="sm" onClick={openAddItem}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    {isRun ? "Add Split" : "Add Exercise"}
+          <DetailCard
+            icon={isStrength ? <Activity className="h-5 w-5" /> : <Zap className="h-5 w-5" />}
+            name={isStrength ? "Muscles Worked" : "Est. Pace"}
+            value={isStrength ? targetedMuscles.length : (() => {
+              const paceDecimal = activity.length / (activity.distance || 1);
+              const minutes = Math.floor(paceDecimal);
+              const seconds = Math.round((paceDecimal - minutes) * 60);
+              return `${minutes}'${seconds.toString().padStart(2, "0")}"`;
+            })()}
+            measurement={isStrength ? "" : "/mi"}
+          />
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Main Content: Splits / Exercises text-evergreen-dark*/}
+          <section className="lg:col-span-2">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
+                <TrendingUp className="h-6 w-6 text-burnt-terracotta" />
+                {isRun ? "Workout Splits" : "Workout Session"}
+              </h2>
+              <div className="flex items-center gap-3">
+                 <span className="text-xs font-bold bg-evergreen/10 px-3 py-1 rounded-full uppercase">
+                  {items.length} {isRun ? "Laps Total" : "Exercises"}
+                </span>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="rounded-xl border-evergreen/20 hover:bg-evergreen/5"
+                  onClick={openAddItem}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
                 </Button>
+              </div>
             </div>
 
-            {items.length > 0 ? (
-                <div className="space-y-4">
-                  {isRun ? (
-                    // Run Splits View
-                    <div className="grid gap-3">
-                      {items.map((item, index) => {
-                        const split = item as Split;
-                        return (
-                          <Card key={index} className="overflow-hidden transition-all hover:shadow-md group">
-                            <CardContent className="p-4 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                   <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted text-xs font-bold text-muted-foreground">
-                                      {index + 1}
-                                   </div>
-                                   <div className="grid gap-1">
-                                      <div className="flex items-baseline gap-2">
-                                         <span className="text-lg font-semibold">{split.distance}</span>
-                                         <span className="text-xs text-muted-foreground uppercase">mi</span>
-                                      </div>
-                                   </div>
-                                    <Separator orientation="vertical" className="h-8" />
-                                   <div className="grid gap-1">
-                                      <div className="flex items-baseline gap-2">
-                                         <span className="text-lg font-mono font-medium">{split.time}</span>
-                                         <span className="text-xs text-muted-foreground uppercase">time</span>
-                                      </div>
-                                   </div>
-                                   <Separator orientation="vertical" className="h-8 hidden sm:block" />
-                                   <div className="hidden sm:grid gap-1">
-                                      <div className="flex items-baseline gap-2">
-                                         <span className="text-lg font-medium">{calculatePace(split.time, split.distance)}</span>
-                                         <span className="text-xs text-muted-foreground uppercase">pace</span>
-                                      </div>
-                                   </div>
-                                    <Separator orientation="vertical" className="h-8 hidden md:block" />
-                                   <div className="hidden md:grid gap-1">
-                                      <div className="flex items-baseline gap-2">
-                                         <div className="flex items-center gap-1">
-                                            {split.elevation !== 0 && (
-                                                <Mountain className={cn("h-3 w-3", split.elevation > 0 ? "text-green-500" : "text-red-500")} />
-                                            )}
-                                            <span className="text-lg font-medium">{split.elevation}</span>
-                                         </div>
-                                         <span className="text-xs text-muted-foreground uppercase">ft</span>
-                                      </div>
-                                   </div>
-                                </div>
-
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEditItem(index)}>
-                                        <Pencil className="h-3 w-3 text-muted-foreground" />
-                                    </Button>
-                                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleDeleteItem(index)}>
-                                        <Trash2 className="h-3 w-3 text-red-500" />
-                                    </Button>
-                                </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    // Regular Exercises View
-                    items.map((item, index) => {
-                        const exercise = item as Exercise;
-                        return (
-                        <Card key={index} className="overflow-hidden transition-all hover:shadow-md group">
-                            <div className="flex flex-col sm:flex-row sm:items-center">
-                                <div className="flex-1 p-4 sm:p-6">
-                                    <div className="flex items-start justify-between mb-2">
-                                        <h3 className="font-semibold text-lg">{exercise.description}</h3>
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex items-center gap-2 text-xs font-mono bg-muted px-2 py-1 rounded">
-                                                <span className="text-muted-foreground">#{index + 1}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEditItem(index)}>
-                                                    <Pencil className="h-3 w-3 text-muted-foreground" />
-                                                </Button>
-                                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleDeleteItem(index)}>
-                                                    <Trash2 className="h-3 w-3 text-red-500" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3">
-                                        {exercise.sets && (
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Sets</span>
-                                                <span className="font-medium text-lg">{exercise.sets}</span>
-                                            </div>
-                                        )}
-                                        {exercise.reps && (
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Reps</span>
-                                                <span className="font-medium text-lg">{exercise.reps}</span>
-                                            </div>
-                                        )}
-                                        {exercise.weight && (
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Weight</span>
-                                                <span className="font-medium text-lg">{exercise.weight} <span className="text-xs text-muted-foreground font-normal">lbs</span></span>
-                                            </div>
-                                        )}
-                                        {exercise.duration && (
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Duration</span>
-                                                <span className="font-medium text-lg">{exercise.duration} <span className="text-xs text-muted-foreground font-normal">min</span></span>
-                                            </div>
-                                        )}
-                                        {exercise.muscle && (
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Muscle</span>
-                                                <span className="font-medium text-lg">{exercise.muscle}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-                    )})
-                  )}
-                </div>
-            ) : (
-                <Card className="bg-muted/30 border-dashed">
-                    <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-                        <div className="p-3 bg-muted rounded-full mb-3">
-                            <Activity className="h-6 w-6 text-muted-foreground" />
+            <div className="space-y-3">
+              {items.length > 0 ? (
+                items.map((item, index) => {
+                  const isSplit = 'distance' in item;
+                  return (
+                    <div 
+                      key={index}
+                      className="bg-white p-5 rounded-2xl flex items-center justify-between shadow-sm group transition-colors border border-stone-200/50"
+                    >
+                      <div className="flex items-center gap-6">
+                        <span className="text-lg font-black text-stone-300 w-6">{(index + 1).toString().padStart(2, '0')}</span>
+                        <div>
+                          <div className="text-lg font-bold text-evergreen-dark">
+                            {isSplit ? (item as Split).time : (item as Exercise).description}
+                          </div>
+                          <div className="text-xs font-medium text-soft-earth uppercase font-bold tracking-tight">
+                            {isSplit ? "Time" : (item as Exercise).muscle || "Exercise"}
+                          </div>
                         </div>
-                        <h3 className="font-medium text-muted-foreground">No specific {isRun ? "splits" : "exercises"} logged</h3>
-                        <p className="text-sm text-muted-foreground mt-1 mb-4">This workout tracks overall activity</p>
-                        <Button variant="outline" onClick={openAddItem}>
-                            {isRun ? "Add Your First Split" : "Add Your First Exercise"}
-                        </Button>
-                    </CardContent>
-                </Card>
-            )}
+                      </div>
+                      
+                      <div className="flex items-center gap-8">
+                        {isSplit ? (
+                          <>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-evergreen-dark">{(item as Split).distance} mi</div>
+                              <div className="text-xs font-medium text-soft-earth uppercase font-bold tracking-tight">Distance</div>
+                            </div>
+                            <div className="w-24 h-1.5 bg-stone-100 rounded-full overflow-hidden hidden sm:block">
+                              <div 
+                                className="h-full bg-evergreen rounded-full" 
+                                style={{ width: `${Math.min(100, (600 / (parseFloat((item as Split).time.split(':')[0]) * 60 + parseFloat((item as Split).time.split(':')[1]))) * 100)}%` }}
+                              ></div>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-4 text-right">
+                            {(item as Exercise).sets && (
+                              <div>
+                                <div className="text-lg font-bold text-evergreen-dark">{(item as Exercise).sets}</div>
+                                <div className="text-[10px] font-bold text-soft-earth uppercase">Sets</div>
+                              </div>
+                            )}
+                            {(item as Exercise).reps && (
+                              <div>
+                                <div className="text-lg font-bold text-evergreen-dark">{(item as Exercise).reps}</div>
+                                <div className="text-[10px] font-bold text-soft-earth uppercase">Reps</div>
+                              </div>
+                            )}
+                             {(item as Exercise).weight && (
+                              <div>
+                                <div className="text-lg font-bold text-evergreen-dark">{(item as Exercise).weight}</div>
+                                <div className="text-[10px] font-bold text-soft-earth uppercase">lbs</div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button size="icon" variant="ghost" className="h-8 w-8 text-soft-earth" onClick={() => openEditItem(index)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-50" onClick={() => handleDeleteItem(index)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="bg-white/50 dark:bg-white/5 border-2 border-dashed border-stone-200 dark:border-white/10 rounded-3xl p-12 text-center">
+                  <div className="w-16 h-16 bg-stone-100 dark:bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-stone-300 dark:text-white/40">
+                    <Info className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-lg font-bold text-evergreen-dark dark:text-white mb-1">No activities logged yet</h3>
+                  <p className="text-soft-earth dark:text-white/60 text-sm mb-6 font-medium">Add your first split or exercise to see detailed progress.</p>
+                  <Button 
+                    onClick={openAddItem}
+                    className="bg-evergreen dark:bg-white/10 hover:bg-evergreen-dark dark:hover:bg-white/20 text-white rounded-xl px-8"
+                  >
+                    Get Started
+                  </Button>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Sidebar: Targeted Muscles */}
+          <section className="lg:sticky lg:top-8">
+            <h2 className="text-2xl font-black mb-6 tracking-tight flex items-center gap-3">
+              <Dumbbell className="h-6 w-6 text-burnt-terracotta" />
+              Targeted Muscles
+            </h2>
+            
+            <div className="bg-white dark:bg-[#1b251e] rounded-[2rem] p-8 relative flex flex-col items-center border border-stone-200/50 dark:border-white/5 shadow-sm">
+              <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden mb-6 bg-warm-cream/50 dark:bg-white/5 backdrop-blur-sm p-4 border border-stone-100 dark:border-white/5 flex items-center justify-center">
+                <MuscleMap muscles={targetedMuscles} className="w-full h-full" />
+              </div>
+              
+              <div className="w-full grid grid-cols-2 gap-3">
+                {targetedMuscles.length > 0 ? targetedMuscles.slice(0, 4).map((muscle, idx) => (
+                  <div key={idx} className="bg-warm-cream/50 dark:bg-white/5 px-4 py-3 rounded-xl border border-evergreen/5 dark:border-white/5">
+                    <div className="text-[10px] font-bold text-soft-earth dark:text-white/40 uppercase tracking-tighter">
+                      {idx < 2 ? "Primary" : "Secondary"}
+                    </div>
+                    <div className="font-bold text-sm text-evergreen-dark dark:text-white">{muscle}</div>
+                  </div>
+                )) : (
+                   <div className="col-span-2 text-center py-4 text-soft-earth dark:text-white/40 text-xs font-medium italic">
+                    No specific muscles targeted
+                  </div>
+                )}
+              </div>
+              
+              <div className="absolute top-6 right-6 bg-burnt-terracotta/10 backdrop-blur-md px-3 py-1 rounded-lg border border-burnt-terracotta/20 text-burnt-terracotta font-bold text-[10px] uppercase tracking-widest">
+                Intensity: {activity.difficulty}
+              </div>
+            </div>
+          </section>
         </div>
-      </div>
+
+        {/* Recovery Recommendation Footer */}
+        <HomepageFooter
+          title="Recovery Recommendation"
+          description={isRun 
+            ? "15 min dynamic stretching focused on lower body." 
+            : "Focus on deep breathing and core stability recovery."}
+          icon={<History className="h-8 w-8" />}
+          buttonText="View Full Plan"
+          className="mt-16"
+        />
+      </main>
 
       <AddActivityModal 
         editActivity={activity} 

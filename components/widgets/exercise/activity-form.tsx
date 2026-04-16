@@ -11,6 +11,7 @@ import { Plus, X, Send, Trash2 } from "lucide-react";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
 
 interface Exercise {
   description: string;
@@ -301,16 +302,16 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
                 <Button type="button" variant="outline" onClick={onCancel} disabled={loading || deleting}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading || deleting}>
+                <HomePageButton type="submit" disabled={loading || deleting} className="h-9 px-6 text-sm">
                   {loading
                     ? (isEditing ? "Updating..." : "Creating...")
                     : (isEditing ? "Update Activity" : "Create Activity")}
-                </Button>
+                </HomePageButton>
               </div>
             </>
         ) : (
           <div className="space-y-3">
-            <Button type="submit" disabled={loading || deleting} className="w-full h-12 text-base bg-brand hover:bg-brand/90 text-brand-foreground">
+            <HomePageButton type="submit" disabled={loading || deleting} className="w-full h-12 text-base">
               {loading
                 ? (isEditing ? "Updating..." : "Creating...")
                 : (
@@ -319,7 +320,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
                       {isEditing ? "Update Activity" : "Create Activity"}
                     </>
                 )}
-            </Button>
+            </HomePageButton>
             
             {/* Delete button for mobile - only show when editing */}
             {isEditing && onDelete && (

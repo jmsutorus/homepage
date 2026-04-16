@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700;800&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#D7D3C6",
+                    "secondary-dim": "#2D3E33",
+                    "inverse-primary": "#C5D0B1",
+                    "outline": "#787C6F",
+                    "background": "#FDFBF7",
+                    "surface-tint": "#2D5A27",
+                    "tertiary-dim": "#8D4B38",
+                    "on-primary-fixed-variant": "#162D14",
+                    "inverse-on-surface": "#F2EFE9",
+                    "on-secondary-fixed": "#101D16",
+                    "on-primary-container": "#0B1D0B",
+                    "on-tertiary-container": "#3D170C",
+                    "on-secondary": "#F1F5F2",
+                    "surface-container-high": "#E8E4D9",
+                    "error-dim": "#9F0519",
+                    "surface-container-lowest": "#FFFFFF",
+                    "secondary-container": "#D2E1D6",
+                    "surface-variant": "#E1DFD4",
+                    "on-primary-fixed": "#000000",
+                    "on-background": "#23241F",
+                    "tertiary-fixed": "#FFB29C",
+                    "surface-container-low": "#F4F1E9",
+                    "secondary": "#3E5C4E",
+                    "on-primary": "#FDFCFB",
+                    "secondary-fixed-dim": "#89AA97",
+                    "primary-dim": "#2D5A27",
+                    "surface-bright": "#FDFBF7",
+                    "on-tertiary-fixed": "#2B0B02",
+                    "error": "#B31B25",
+                    "on-secondary-fixed-variant": "#2D4438",
+                    "on-error-container": "#570008",
+                    "primary-fixed": "#A8C69F",
+                    "on-surface-variant": "#5C5F56",
+                    "on-secondary-container": "#1D2B23",
+                    "outline-variant": "#C7C9BC",
+                    "tertiary-fixed-dim": "#E5927B",
+                    "secondary-fixed": "#C0D6C8",
+                    "surface": "#FDFBF7",
+                    "primary": "#2D5A27",
+                    "on-error": "#FFEFEE",
+                    "tertiary-container": "#E5927B",
+                    "on-tertiary": "#FDF9F8",
+                    "surface-container": "#EFECE3",
+                    "on-surface": "#23241F",
+                    "primary-container": "#A8C69F",
+                    "error-container": "#FB5151",
+                    "inverse-surface": "#2E312C",
+                    "primary-fixed-dim": "#8FB185",
+                    "tertiary": "#A65A46",
+                    "surface-container-highest": "#E1DFD4",
+                    "on-tertiary-fixed-variant": "#6A2D1E"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Lexend', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(253, 251, 247, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #EFECE3;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<main class="flex-1 overflow-y-auto custom-scrollbar bg-background">
+<div class="max-w-7xl mx-auto p-8">
+<header class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Workout History</h1>
+<p class="text-on-surface-variant font-medium">Review your performance and track your growth.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-surface-container-lowest p-3 rounded-xl shadow-sm border border-surface-container text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="file_download">file_download</span>
+</button>
+<button class="bg-surface-container-lowest p-3 rounded-xl shadow-sm border border-surface-container text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="print">print</span>
+</button>
+</div>
+</header>
+<div class="bg-surface-container-lowest rounded-3xl shadow-sm border border-surface-container overflow-hidden mb-6 p-4">
+<div class="flex flex-wrap items-center gap-4">
+<div class="relative min-w-[240px] flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-sm text-on-surface placeholder:text-on-surface-variant/40 transition-all" placeholder="Search activities..." type="text"/>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-low p-1 rounded-xl">
+<select class="bg-transparent border-none py-1.5 px-3 text-xs font-bold text-on-surface focus:ring-0">
+<option>Activity Type</option>
+<option>Run</option>
+<option>HIIT</option>
+<option>Strength</option>
+<option>Cycling</option>
+</select>
+<div class="w-px h-4 bg-surface-container"></div>
+<select class="bg-transparent border-none py-1.5 px-3 text-xs font-bold text-on-surface focus:ring-0">
+<option>Last 7 days</option>
+<option>Last month</option>
+<option>Last 3 months</option>
+</select>
+<div class="w-px h-4 bg-surface-container"></div>
+<select class="bg-transparent border-none py-1.5 px-3 text-xs font-bold text-on-surface focus:ring-0">
+<option>Intensity</option>
+<option>Low</option>
+<option>Moderate</option>
+<option>High</option>
+</select>
+</div>
+<button class="text-primary text-xs font-bold flex items-center gap-1.5 hover:opacity-80 transition-opacity ml-auto">
+<span class="material-symbols-outlined text-sm" data-icon="refresh">refresh</span>
+                        Clear Filters
+                    </button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-3xl shadow-sm border border-surface-container overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-surface-container">
+<th class="px-6 py-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Activity &amp; Date</th>
+<th class="px-6 py-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Type</th>
+<th class="px-6 py-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Duration</th>
+<th class="px-6 py-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Intensity</th>
+<th class="px-6 py-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest text-right">Burn/Volume</th>
+<th class="px-6 py-5"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="bolt">bolt</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<p class="font-bold text-on-surface">Morning HIIT Blast</p>
+<span class="bg-secondary text-on-secondary px-2 py-0.5 rounded-full text-[8px] font-black tracking-widest uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                                    PR
+                                                </span>
+</div>
+<p class="text-xs text-on-surface-variant">Today, Oct 24 • 07:30 AM</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-surface-container-low text-primary rounded-full text-xs font-bold uppercase">HIIT</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-bold text-on-surface">35 <span class="text-on-surface-variant font-medium">min</span></p>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-bold text-tertiary">High</span>
+</td>
+<td class="px-6 py-5 text-right">
+<p class="text-sm font-bold text-secondary">482 <span class="text-on-surface-variant font-medium">kcal</span></p>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-outline-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="directions_run">directions_run</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Riverside Evening Run</p>
+<p class="text-xs text-on-surface-variant">Yesterday, Oct 23 • 05:45 PM</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-surface-container-low text-primary rounded-full text-xs font-bold uppercase">Run</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-bold text-on-surface">28 <span class="text-on-surface-variant font-medium">min</span></p>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-bold text-secondary">Moderate</span>
+</td>
+<td class="px-6 py-5 text-right">
+<p class="text-sm font-bold text-on-surface">5.2 <span class="text-on-surface-variant font-medium">km</span></p>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-outline-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-tertiary-container/20 rounded-lg flex items-center justify-center text-tertiary shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="fitness_center">fitness_center</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Upper Body Strength</p>
+<p class="text-xs text-on-surface-variant">Oct 21 • 06:15 AM</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-surface-container-low text-primary rounded-full text-xs font-bold uppercase">Strength</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-bold text-on-surface">45 <span class="text-on-surface-variant font-medium">min</span></p>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-bold text-tertiary">High</span>
+</td>
+<td class="px-6 py-5 text-right">
+<p class="text-sm font-bold text-on-surface">4,200 <span class="text-on-surface-variant font-medium">kg</span></p>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-outline-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="pedal_bike">pedal_bike</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<p class="font-bold text-on-surface">Endurance Cycle</p>
+<span class="bg-secondary text-on-secondary px-2 py-0.5 rounded-full text-[8px] font-black tracking-widest uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                                    PR
+                                                </span>
+</div>
+<p class="text-xs text-on-surface-variant">Oct 20 • 04:00 PM</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-surface-container-low text-primary rounded-full text-xs font-bold uppercase">Cycling</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-bold text-on-surface">65 <span class="text-on-surface-variant font-medium">min</span></p>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-bold text-secondary">Moderate</span>
+</td>
+<td class="px-6 py-5 text-right">
+<p class="text-sm font-bold text-on-surface">420 <span class="text-on-surface-variant font-medium">m elev.</span></p>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-outline-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="mt-8 bg-primary text-on-primary p-8 rounded-[2rem] shadow-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 -mr-12 -mt-12 w-64 h-64 bg-white/10 rounded-full blur-3xl transition-transform duration-700"></div>
+<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+<div class="max-w-xl">
+<span class="bg-white/20 text-on-primary px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase mb-4 inline-block">Weekly Highlight</span>
+<h3 class="text-3xl font-extrabold mb-2">Yoga &amp; Mobility Flow</h3>
+<p class="text-surface-container-high font-medium mb-6">You've completed 4 mobility sessions this week. Flexibility is up by 12%.</p>
+<button class="bg-surface-container-lowest text-primary font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg">View Analytics</button>
+</div>
+<div class="hidden md:block flex-shrink-0">
+<img alt="Yoga Session" class="w-48 h-32 object-cover rounded-2xl shadow-lg rotate-3 group-hover:rotate-0 transition-transform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCScYR8dKi5Ixubx7gTJdnKA7hWK6ZgBAZYg0wAioNaQYAmCF_IwF8gv--ySJOqkdSNXJYlcMQcPfjQfaGuBzeYO_HOcuqHX-FaCkbhzj1cLgZBWukjlaJZlDkolbPfgIa16ERd6_eE1_J4m0-pG4VB0ofv-Ct9nkqxw1QdUuHGvnuVH03mmDZ8OUA78Bt1G8BnLV3t0vFRUY-yxxrftONZlJBrNW3vDzertfFHXTgoXerZTCyiePpHH3ho5HoTrkxVJWA79VrPqW8"/>
+</div>
+</div>
+</div>
+<div class="flex justify-center mt-12 mb-20">
+<button class="bg-surface-container-high text-on-surface font-bold py-4 px-12 rounded-2xl hover:scale-105 transition-all shadow-sm">
+                    Load more activities
+                </button>
+</div>
+</div>
+</main>
+</div>
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-surface/70 backdrop-blur-xl shadow-[0_-4px_16px_0_rgba(35,36,31,0.08)] rounded-t-3xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+<span class="text-[10px] font-semibold">Activity</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary text-on-primary rounded-2xl p-2 w-16 h-12 scale-90 transition-transform duration-200 shadow-md" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-[10px] font-semibold">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+<span class="text-[10px] font-semibold">Plan</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px] font-semibold">Profile</span>
+</a>
+</nav>
+</body></html>

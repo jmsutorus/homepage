@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Dumbbell } from "lucide-react";
+import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { SuccessCheck } from "@/components/ui/animations/success-check";
 import { useSuccessDialog } from "@/hooks/use-success-dialog";
@@ -109,10 +110,9 @@ export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActiv
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         {!editActivity && showButton && (
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Activity
-            </Button>
+            <HomePageButton icon={<Dumbbell className="h-5 w-5" />}>
+              Log Activity
+            </HomePageButton>
           </DialogTrigger>
         )}
         <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden">
@@ -128,13 +128,12 @@ export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActiv
       {/* FAB for Mobile - rendered via Portal or just fixed if showButton is true */}
       {!editActivity && showButton && (
         <SheetTrigger asChild>
-          <Button 
-            size="icon" 
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 md:hidden"
+          <HomePageButton 
+            className="fixed bottom-6 right-6 h-14 rounded-full shadow-lg z-50 md:hidden !px-6"
+            icon={<Dumbbell className="h-6 w-6" />}
           >
-            <Plus className="h-6 w-6" />
-            <span className="sr-only">Add Activity</span>
-          </Button>
+            Log Activity
+          </HomePageButton>
         </SheetTrigger>
       )}
       <SheetContent 

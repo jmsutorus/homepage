@@ -13,7 +13,8 @@
     "lint:quiet": "eslint --quiet",
     "test": "jest",
     "test:watch": "jest --watch",
-    "generate:icons": "node scripts/generate-icons.js"
+    "generate:icons": "node scripts/generate-icons.js",
+    "backup:db": "tsx scripts/backup-db.ts"
   },
   "dependencies": {
     "@auth/core": "^0.41.0",
