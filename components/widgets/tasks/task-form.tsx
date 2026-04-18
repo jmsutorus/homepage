@@ -192,173 +192,111 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
   };
 
   return (
-    <TooltipProvider>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Input
-              placeholder='Try "Buy milk tomorrow" or "!!! Urgent task"'
-              value={rawInput}
-              onChange={(e) => {
-                setRawInput(e.target.value);
-                // Reset manual override when user types new input
-                if (!manualOverride) setManualOverride(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && e.ctrlKey) {
-                  handleSubmit(e);
-                }
-              }}
-              disabled={isAdding}
-              className={showNLPHint ? "pr-10" : ""}
-            />
-            {showNLPHint && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <Sparkles className="h-4 w-4 text-amber-500 animate-pulse" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-xs">
-                  <p className="text-sm">
-                    Smart parsing detected!
-                    {parsedContent?.hasDate && " Date will be extracted."}
-                    {parsedContent?.hasPriority && " Priority will be set."}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+    <div className="bg-media-surface-container-lowest p-6 md:p-10 rounded-2xl shadow-sm border border-media-outline-variant/10 text-left">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Title Input Area */}
+        <div className="group">
+          <input
+            className="w-full text-2xl md:text-3xl font-bold tracking-tight bg-transparent border-none p-0 placeholder:text-media-outline-variant/40 focus:ring-0 text-media-primary"
+            placeholder="Title of the task..."
+            type="text"
+            value={rawInput}
+            onChange={(e) => {
+              setRawInput(e.target.value);
+              if (!manualOverride) setManualOverride(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.ctrlKey) {
+                handleSubmit(e);
+              }
+            }}
+            disabled={isAdding}
+          />
+          <div className="h-0.5 w-full bg-media-outline-variant/20 group-focus-within:bg-media-secondary transition-all duration-500 mt-2"></div>
+          
+          {showNLPHint && (
+            <div className="flex items-center gap-1.5 mt-2 text-amber-600 dark:text-amber-500 animate-in fade-in slide-in-from-top-1 duration-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="text-xs font-medium">
+                Smart parsing: 
+                {parsedContent?.hasDate && " date detected"}
+                {parsedContent?.hasDate && parsedContent?.hasPriority && ","}
+                {parsedContent?.hasPriority && " priority detected"}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Description Area */}
+        <textarea
+          className="w-full bg-transparent border-none p-0 resize-none text-media-on-surface-variant focus:ring-0 h-24 text-lg placeholder:text-media-outline-variant/30"
+          placeholder="Optional description of the objective..."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          disabled={isAdding}
+        ></textarea>
+
+        {/* Controls Area */}
+        <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-media-outline-variant/10">
+          <div className="flex flex-wrap gap-4">
+            {/* Priority Select */}
+            <Select value={priority} onValueChange={handleManualPriorityChange}>
+              <SelectTrigger className="bg-media-surface-container-low border border-media-outline-variant/20 rounded-lg text-xs font-lexend uppercase tracking-widest px-4 py-3 focus:ring-media-secondary/20 h-auto w-auto min-w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low Priority</SelectItem>
+                <SelectItem value="medium">Medium Priority</SelectItem>
+                <SelectItem value="high">High Priority</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Deadline / Date Picker */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button 
+                  className="flex items-center gap-2 text-media-on-surface-variant text-xs font-lexend uppercase tracking-widest hover:text-media-primary transition-colors px-4 border border-media-outline-variant/20 rounded-lg h-[46px]" 
+                  type="button"
+                >
+                  <CalendarIcon className="w-3.5 h-3.5" />
+                  {dueDate ? format(dueDate, "MMM d, yyyy") : "Set Deadline"}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dueDate}
+                  onSelect={handleManualDateChange}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+
+            {/* Category Select (Added to match existing functionality but styled like prototype) */}
+            <Select value={category || "none"} onValueChange={(value) => setCategory(value === "none" ? "" : value)}>
+              <SelectTrigger className="bg-media-surface-container-low border border-media-outline-variant/20 rounded-lg text-xs font-lexend uppercase tracking-widest px-4 py-3 focus:ring-media-secondary/20 h-auto w-auto min-w-[160px]">
+                <SelectValue placeholder="Journal Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Category</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Button type="submit" disabled={isAdding || !rawInput.trim()}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add
-          </Button>
-        </div>
 
-        {/* Description Field - Collapsible */}
-        <Collapsible open={showDescription} onOpenChange={setShowDescription}>
-          <CollapsibleTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-            >
-              {showDescription ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-              Add description
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2">
-            <Textarea
-              placeholder="Add optional notes or details..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={isAdding}
-              rows={3}
-              className="resize-none"
-            />
-          </CollapsibleContent>
-        </Collapsible>
-
-      <div className="flex gap-2 justify-end flex-wrap">
-        <TemplatePicker type="task" onSelect={handleTemplateSelect} />
-        <div>
-          <Label htmlFor="priority" className="sr-only">
-            Priority
-          </Label>
-          <Select value={priority} onValueChange={handleManualPriorityChange}>
-            <SelectTrigger id="priority" className="cursor-pointer">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low">Low Priority</SelectItem>
-              <SelectItem value="medium">Medium Priority</SelectItem>
-              <SelectItem value="high">High Priority</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="category" className="sr-only">
-            Category
-          </Label>
-          <Select value={category || "none"} onValueChange={(value) => setCategory(value === "none" ? "" : value)}>
-            <SelectTrigger id="category" className="cursor-pointer">
-              <SelectValue placeholder="No category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">No category</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.name}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="status" className="sr-only">
-            Status
-          </Label>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger id="status" className="cursor-pointer">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="blocked">Blocked</SelectItem>
-              <SelectItem value="on_hold">On Hold</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              {statuses.custom.length > 0 && (
-                <>
-                  <SelectSeparator />
-                  {statuses.custom.map((s) => (
-                    <SelectItem key={s.id} value={s.name}>
-                      {s.name}
-                    </SelectItem>
-                  ))}
-                </>
-              )}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="justify-start text-left font-normal">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {dueDate ? format(dueDate, "PPP") : "Set due date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={dueDate}
-              onSelect={handleManualDateChange}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-
-        {dueDate && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => handleManualDateChange(undefined)}
+          <button 
+            type="submit"
+            disabled={isAdding || !rawInput.trim()}
+            className="bg-media-primary text-media-on-primary px-10 py-4 rounded-lg font-lexend uppercase tracking-widest text-xs font-bold kinetic-hover shadow-lg shadow-media-primary/10 disabled:opacity-50 disabled:transform-none cursor-pointer"
           >
-            Clear
-          </Button>
-        )}
-      </div>
+            {isAdding ? "Drafting..." : "Submit"}
+          </button>
+        </div>
       </form>
-    </TooltipProvider>
+    </div>
   );
 }

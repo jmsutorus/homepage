@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aspirations Board | Personal Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Inter:wght@300;400;500;600&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3D5A42", // Forest Green
+              accent: "#C16E4F", // Earthy Terracotta
+              "background-light": "#F9F8F4", // Warm Cream
+              "background-dark": "#1A1C19", // Deep Charcoal Green
+            },
+            fontFamily: {
+              display: ["Playfair Display", "serif"],
+              sans: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.75rem",
+              'xl': "1.25rem",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        }
+        .glass-nav {
+            backdrop-filter: blur(8px);
+            background: rgba(249, 248, 244, 0.8);
+        }
+        .dark .glass-nav {
+            background: rgba(26, 28, 25, 0.8);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #374151;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
+<main class="lg:ml-64 min-h-screen">
+<div class="max-w-7xl mx-auto px-8 py-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+<div>
+<span class="text-xs font-bold uppercase tracking-[0.3em] text-accent mb-2 block">Personal Vision</span>
+<h2 class="font-display text-5xl md:text-6xl text-slate-900 dark:text-white leading-tight">Aspirations Board</h2>
+<p class="mt-4 text-slate-500 dark:text-slate-400 max-w-md font-light italic">
+                        "The future belongs to those who believe in the beauty of their dreams."
+                    </p>
+</div>
+<button class="bg-primary text-white px-8 py-4 rounded-full font-medium flex items-center gap-3 hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 group">
+<span class="material-symbols-outlined group-hover:rotate-90 transition-transform duration-300">add</span>
+                    New Aspiration
+                </button>
+</div>
+<section class="mb-16">
+<div class="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 editorial-shadow border border-slate-200 dark:border-slate-800">
+<div class="grid md:grid-cols-2">
+<div class="p-10 lg:p-14 z-10">
+<div class="flex items-center gap-2 mb-6">
+<span class="px-3 py-1 bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-wider rounded-full">Next Milestone</span>
+<span class="text-slate-400 text-[10px] uppercase font-bold tracking-widest">• 82% Complete</span>
+</div>
+<h3 class="font-display text-3xl md:text-4xl text-slate-900 dark:text-white mb-4">Launch "Forest Echoes" Art Series</h3>
+<p class="text-slate-500 dark:text-slate-400 mb-8 leading-relaxed line-clamp-2">Finalizing the last three canvas pieces and coordinating with the gallery for the opening night in October.</p>
+<div class="space-y-6">
+<div class="flex items-center justify-between text-sm">
+<span class="font-medium">Current Progress</span>
+<span class="text-primary font-bold italic font-display text-lg">82%</span>
+</div>
+<div class="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-1000" style="width: 82%"></div>
+</div>
+<div class="flex items-center gap-4 text-xs text-slate-400 italic bg-background-light dark:bg-background-dark/30 p-4 rounded-xl border-l-2 border-accent">
+<span class="material-symbols-outlined text-accent text-[18px]">history_edu</span>
+                                    "The palette for the third piece is coming together. The deep greens feel truly alive today..."
+                                </div>
+</div>
+</div>
+<div class="relative h-64 md:h-auto min-h-[300px]">
+<img alt="Art project representation" class="absolute inset-0 w-full h-full object-cover brightness-90 dark:brightness-75" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9WVvUcy9BBJrpCNkJKLKBvgK7XooncxHZq_zpC08joQJUV7MtzyyCep7PN4ihg45k2GYzrJuGWIGwTB0bNxzR361137FvnQ5SxzATySNIRSL_axSKTjqIZcEDlYsH7G5FzakX04YuXs1IkE_0xTWOfYhDRGnJY8IaXFhQMwgOh8cahJK58aQnseo7XZKuI0IUWzfcC6sgMArFJrZVMikoF5L6Sd-UzPYSywP42pHEVwAca5tOuGq4o6ZQ2fZJ7bxMJjEWTp8UmuU"/>
+<div class="absolute inset-0 bg-gradient-to-r from-white dark:from-slate-900 via-transparent to-transparent md:block hidden"></div>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-16">
+<div class="flex items-center justify-between mb-8 border-b border-slate-200 dark:border-slate-800 pb-4">
+<h4 class="font-display text-2xl">Active Aspirations</h4>
+<div class="flex gap-4">
+<select class="bg-transparent border-none text-xs font-bold uppercase tracking-wider text-slate-400 focus:ring-0 cursor-pointer hover:text-primary">
+<option>All Categories</option>
+<option>Wellness</option>
+<option>Creative</option>
+<option>Career</option>
+</select>
+<select class="bg-transparent border-none text-xs font-bold uppercase tracking-wider text-slate-400 focus:ring-0 cursor-pointer hover:text-primary">
+<option>Recent First</option>
+<option>Priority</option>
+<option>Progress</option>
+</select>
+</div>
+</div>
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+<div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-100 dark:border-slate-800 editorial-shadow hover:translate-y-[-4px] transition-all duration-300 group">
+<div class="flex justify-between items-start mb-6">
+<div class="relative">
+<svg class="w-16 h-16 transform -rotate-90">
+<circle class="text-slate-100 dark:text-slate-800" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-width="2"></circle>
+<circle class="text-accent transition-all duration-1000" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-dasharray="175.9" stroke-dashoffset="123" stroke-width="2"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-accent">30%</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-3 py-1 border border-slate-200 dark:border-slate-800 rounded-full">Wellness</span>
+</div>
+<h5 class="font-display text-xl mb-3 group-hover:text-primary transition-colors">Go on one date night per month</h5>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">Strengthen connection through intentional shared experiences and adventure.</p>
+<div class="p-4 bg-background-light dark:bg-background-dark/30 rounded-xl">
+<p class="text-[11px] italic text-slate-400 flex gap-2">
+<span class="material-symbols-outlined text-[14px]">edit_note</span>
+                                Last journal: "Found a quiet bistro for Friday..."
+                            </p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-100 dark:border-slate-800 editorial-shadow hover:translate-y-[-4px] transition-all duration-300 group">
+<div class="flex justify-between items-start mb-6">
+<div class="relative">
+<svg class="w-16 h-16 transform -rotate-90">
+<circle class="text-slate-100 dark:text-slate-800" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-width="2"></circle>
+<circle class="text-primary transition-all duration-1000" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-dasharray="175.9" stroke-dashoffset="70" stroke-width="2"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-primary">60%</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-3 py-1 border border-slate-200 dark:border-slate-800 rounded-full">Connection</span>
+</div>
+<h5 class="font-display text-xl mb-3 group-hover:text-primary transition-colors">Master Classical Piano Étude</h5>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">Developing discipline through musical expression and daily practice sessions.</p>
+<div class="p-4 bg-background-light dark:bg-background-dark/30 rounded-xl">
+<p class="text-[11px] italic text-slate-400 flex gap-2">
+<span class="material-symbols-outlined text-[14px]">edit_note</span>
+                                Last journal: "Fingering for measure 24 is better."
+                            </p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-100 dark:border-slate-800 editorial-shadow hover:translate-y-[-4px] transition-all duration-300 group">
+<div class="flex justify-between items-start mb-6">
+<div class="relative">
+<svg class="w-16 h-16 transform -rotate-90">
+<circle class="text-slate-100 dark:text-slate-800" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-width="2"></circle>
+<circle class="text-amber-600 transition-all duration-1000" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-dasharray="175.9" stroke-dashoffset="150" stroke-width="2"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-amber-600">15%</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-3 py-1 border border-slate-200 dark:border-slate-800 rounded-full">Adventure</span>
+</div>
+<h5 class="font-display text-xl mb-3 group-hover:text-primary transition-colors">Summit Mount Katahdin</h5>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">Physical endurance training and logistics for the northern AT terminus hike.</p>
+<div class="p-4 bg-background-light dark:bg-background-dark/30 rounded-xl">
+<p class="text-[11px] italic text-slate-400 flex gap-2">
+<span class="material-symbols-outlined text-[14px]">edit_note</span>
+                                Last journal: "Cardio is improving, pace is up."
+                            </p>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-20">
+<div class="flex items-center gap-4 mb-8">
+<h4 class="font-display text-2xl">Recently Manifested</h4>
+<div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-6 p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-transparent hover:border-primary/20 transition-all">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<div class="flex-1">
+<h6 class="font-bold text-sm">Read 12 Books this Quarter</h6>
+<p class="text-xs text-slate-400 italic">Completed on Aug 14 • Finished with "The Overstory"</p>
+</div>
+<div class="text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
+                            Wellness
+                        </div>
+</div>
+<div class="flex items-center gap-6 p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-transparent hover:border-primary/20 transition-all">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<div class="flex-1">
+<h6 class="font-bold text-sm">Build Heritage Garden Shed</h6>
+<p class="text-xs text-slate-400 italic">Completed on July 28 • Cedar siding looks fantastic</p>
+</div>
+<div class="text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
+                            Creative
+                        </div>
+</div>
+</div>
+</section>
+</div>
+<footer class="px-8 py-12 border-t border-slate-200 dark:border-slate-800 flex flex-col items-center">
+<div class="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary/40">all_inclusive</span>
+</div>
+<p class="text-xs text-slate-400 uppercase tracking-[0.4em] font-medium">Kinetic Forest Design System</p>
+<div class="mt-8 flex gap-8 text-[10px] uppercase font-bold tracking-widest text-slate-500">
+<a class="hover:text-primary" href="#">Archives</a>
+<a class="hover:text-primary" href="#">Reflections</a>
+<a class="hover:text-primary" href="#">Systems</a>
+</div>
+</footer>
+</main>
+<script>
+        // Simple animation trigger for progress bars on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const circles = document.querySelectorAll('circle[stroke-dasharray]');
+            circles.forEach(circle => {
+                const finalOffset = circle.getAttribute('stroke-dashoffset');
+                circle.setAttribute('stroke-dashoffset', '175.9'); // Start empty
+                setTimeout(() => {
+                    circle.style.transition = 'stroke-dashoffset 2s ease-out';
+                    circle.setAttribute('stroke-dashoffset', finalOffset);
+                }, 300);
+            });
+        });
+    </script>
+
+</body></html>

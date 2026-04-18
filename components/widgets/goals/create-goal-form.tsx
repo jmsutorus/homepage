@@ -2,6 +2,7 @@
 
 import { createGoalAction } from "@/lib/actions/goals";
 import { Button } from "@/components/ui/button";
+import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
 import {
   Dialog,
   DialogContent,
@@ -86,10 +87,9 @@ export function CreateGoalForm({ onCreated }: CreateGoalFormProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="cursor-pointer">
-          <Plus className="h-4 w-4 mr-2" />
+        <HomePageButton icon={<Plus className="h-4 w-4" />}>
           New Goal
-        </Button>
+        </HomePageButton>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         {showSuccess ? (

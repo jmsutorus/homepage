@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Relationship Tracker - Milestones</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#A2472E", // Terracotta
+              "forest": "#2D4A3E",
+              "forest-dark": "#1A2421",
+              "cream": "#FDFBF7",
+              "background-light": "#FDFBF7",
+              "background-dark": "#121816",
+            },
+            fontFamily: {
+              display: ["Playfair Display", "serif"],
+              sans: ["Lexend", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "12px",
+              "xl": "24px",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #D1D5DB;
+        }
+        .dark .timeline-line::before {
+            background: #2D4A3E;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
+<div class="flex min-h-screen">
+<main class="flex-1 min-w-0 overflow-y-auto">
+<div class="px-8 py-8 max-w-7xl mx-auto">
+<div class="flex items-start gap-5 mb-10">
+<div class="p-4 bg-primary/10 rounded-2xl">
+<span class="material-icons-outlined text-4xl text-primary">auto_awesome</span>
+</div>
+<div>
+<h2 class="text-5xl font-display font-bold text-forest dark:text-cream leading-tight">Relationship Tracker</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-1 max-w-lg">Capturing the grand chapters and quiet moments of our journey through life together.</p>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+<div class="p-6 bg-white dark:bg-forest-dark border border-slate-200 dark:border-forest/20 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<span class="text-[11px] uppercase tracking-widest text-slate-400 font-bold">Total Milestones</span>
+<span class="material-icons-outlined text-primary/50">military_tech</span>
+</div>
+<div class="text-3xl font-display font-bold">14</div>
+</div>
+<div class="p-6 bg-white dark:bg-forest-dark border border-slate-200 dark:border-forest/20 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<span class="text-[11px] uppercase tracking-widest text-slate-400 font-bold">Years Together</span>
+<span class="material-icons-outlined text-primary/50">favorite</span>
+</div>
+<div class="text-3xl font-display font-bold">4.2</div>
+</div>
+<div class="p-6 bg-white dark:bg-forest-dark border border-slate-200 dark:border-forest/20 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<span class="text-[11px] uppercase tracking-widest text-slate-400 font-bold">Photos Tagged</span>
+<span class="material-icons-outlined text-primary/50">photo_library</span>
+</div>
+<div class="text-3xl font-display font-bold">842</div>
+</div>
+<div class="p-6 bg-white dark:bg-forest-dark border border-slate-200 dark:border-forest/20 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<span class="text-[11px] uppercase tracking-widest text-slate-400 font-bold">Next Event</span>
+<span class="material-icons-outlined text-primary/50">event</span>
+</div>
+<div class="text-sm font-semibold text-primary">Anniversary in 12 days</div>
+</div>
+</div>
+<div class="flex items-center gap-8 border-b border-slate-200 dark:border-forest/20 mb-12 overflow-x-auto whitespace-nowrap">
+<a class="pb-4 text-sm font-medium text-slate-400 hover:text-forest dark:hover:text-cream transition-colors" href="#">Dates &amp; Outings</a>
+<a class="pb-4 text-sm font-medium text-slate-400 hover:text-forest dark:hover:text-cream transition-colors" href="#">Intimacy Tracker</a>
+<a class="pb-4 text-sm font-bold text-forest dark:text-cream border-b-2 border-primary relative" href="#">
+                        Milestones
+                        <span class="absolute -top-1 -right-2 w-1.5 h-1.5 bg-primary rounded-full"></span>
+</a>
+<a class="pb-4 text-sm font-medium text-slate-400 hover:text-forest dark:hover:text-cream transition-colors" href="#">Archive &amp; Manage</a>
+<div class="flex-1"></div>
+<button class="mb-4 bg-primary text-white px-5 py-2 rounded-full flex items-center gap-2 hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
+<span class="material-icons-outlined text-sm">add</span> Add Milestone
+                    </button>
+</div>
+<section class="mb-20">
+<div class="group relative overflow-hidden rounded-[32px] bg-forest text-cream shadow-2xl">
+<div class="absolute inset-0 bg-gradient-to-br from-forest via-forest/80 to-primary/20 opacity-90 z-10"></div>
+<img alt="Wedding Celebration" class="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-1000" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQESJnsOrPCsKRgEL7scMHaIz1wObf0Xt5z_loRY6DevuQzMKGEgjsFARe4heX8y2dit7MbSr5O2T3hFXtpJk7eK23zZi3HfZBie7z3UgLUUICvqpYRNVldGnC4zb3fras9zU9w5lIjTZH9eB3LvaW3iWYtht6eVI1JFZkAtX4lsKYjxMMYO-ZCzz2dQG-hori3jnleJBSrmJfCyeC4dSvw-4iXoEwA2vJBZDM-EpLocJT7bpqXu3GrSN89IFkj_tZYk_BvGDLHI0"/>
+<div class="relative z-20 p-12 lg:p-20 flex flex-col items-start justify-center min-h-[500px]">
+<div class="inline-flex items-center gap-2 px-4 py-1 bg-primary/20 backdrop-blur-md rounded-full border border-primary/30 mb-6">
+<span class="material-icons-outlined text-primary text-lg">stars</span>
+<span class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Latest Major Milestone</span>
+</div>
+<h3 class="text-6xl md:text-8xl font-display font-bold mb-6 italic leading-tight">Our Wedding Day!</h3>
+<div class="flex items-center gap-6 mb-8 opacity-90">
+<div class="flex items-center gap-2">
+<span class="material-icons-outlined text-primary">calendar_today</span>
+<span class="text-lg font-medium">October 24, 2025</span>
+</div>
+<div class="w-1.5 h-1.5 bg-primary rounded-full"></div>
+<div class="flex items-center gap-2">
+<span class="material-icons-outlined text-primary">location_on</span>
+<span class="text-lg font-medium">The Forest Estates</span>
+</div>
+</div>
+<p class="text-xl md:text-2xl font-light max-w-2xl text-cream/80 leading-relaxed mb-10">
+                                Surrounded by our closest family and friends, we promised our lives to each other. A perfect autumn day where time seemed to stand still.
+                            </p>
+<div class="flex gap-4">
+<button class="bg-cream text-forest font-bold px-8 py-4 rounded-2xl hover:bg-white transition-all flex items-center gap-2">
+<span class="material-icons-outlined">photo_library</span> View Gallery
+                                </button>
+<button class="bg-primary/20 backdrop-blur-md text-white border border-white/20 font-bold px-8 py-4 rounded-2xl hover:bg-primary/40 transition-all flex items-center gap-2">
+<span class="material-icons-outlined">edit</span> Edit Memory
+                                </button>
+</div>
+</div>
+</div>
+</section>
+<section class="relative">
+<div class="flex items-center justify-between mb-12">
+<h4 class="text-3xl font-display font-bold text-forest dark:text-cream italic">The Chapters of Our Story</h4>
+<div class="flex gap-2">
+<button class="p-2 border border-slate-200 dark:border-forest/20 rounded-lg hover:bg-slate-50 dark:hover:bg-forest/20">
+<span class="material-icons-outlined">sort</span>
+</button>
+<button class="p-2 border border-slate-200 dark:border-forest/20 rounded-lg hover:bg-slate-50 dark:hover:bg-forest/20">
+<span class="material-icons-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<div class="relative pl-12 timeline-line space-y-16 pb-20">
+<div class="relative">
+<div class="absolute -left-[54px] top-0 w-12 h-12 bg-cream dark:bg-forest-dark border-4 border-primary rounded-full flex items-center justify-center z-10 shadow-lg">
+<span class="material-icons-outlined text-primary">apartment</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+<div class="md:col-span-3">
+<span class="text-sm font-bold text-primary uppercase tracking-widest block mb-1">June 12, 2024</span>
+<span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[10px] rounded-full font-bold uppercase tracking-widest border border-green-200 dark:border-green-800">Life Transition</span>
+</div>
+<div class="md:col-span-9 bg-white dark:bg-forest/10 p-8 rounded-[2rem] border border-slate-100 dark:border-forest/20 hover:border-primary/50 transition-all hover:shadow-xl shadow-slate-200/50">
+<div class="flex justify-between items-start mb-4">
+<h5 class="text-3xl font-display font-bold">Moved in Together</h5>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-slate-400 hover:text-primary"><span class="material-icons-outlined text-sm">edit</span></button>
+<button class="p-2 text-slate-400 hover:text-red-500"><span class="material-icons-outlined text-sm">delete</span></button>
+</div>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-6">
+                                        After months of searching for the perfect spot, we finally found our little sanctuary on 5th Street. Two households became one, and our shared life truly began.
+                                    </p>
+<div class="flex flex-wrap gap-3">
+<div class="flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-forest/40 rounded-full text-xs font-medium text-slate-500 dark:text-slate-300">
+<span class="material-icons-outlined text-[14px]">home</span> New Home
+                                        </div>
+<div class="flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-forest/40 rounded-full text-xs font-medium text-slate-500 dark:text-slate-300">
+<span class="material-icons-outlined text-[14px]">local_shipping</span> Big Move
+                                        </div>
+</div>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -left-[54px] top-0 w-12 h-12 bg-cream dark:bg-forest-dark border-4 border-forest rounded-full flex items-center justify-center z-10 shadow-lg">
+<span class="material-icons-outlined text-forest">flight</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+<div class="md:col-span-3">
+<span class="text-sm font-bold text-primary uppercase tracking-widest block mb-1">Dec 28, 2023</span>
+<span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] rounded-full font-bold uppercase tracking-widest border border-blue-200 dark:border-blue-800">Adventure</span>
+</div>
+<div class="md:col-span-9 bg-white dark:bg-forest/10 p-8 rounded-[2rem] border border-slate-100 dark:border-forest/20 hover:border-primary/50 transition-all hover:shadow-xl shadow-slate-200/50">
+<div class="flex justify-between items-start mb-4">
+<h5 class="text-3xl font-display font-bold">First International Trip</h5>
+<span class="material-icons-outlined text-slate-300">more_horiz</span>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-6">
+                                        Kyoto was magic. Navigating the quiet alleys of Gion, sharing endless bowls of ramen, and getting lost in the Bamboo Forest. We learned so much about each other's travel quirks.
+                                    </p>
+<div class="grid grid-cols-3 gap-3 mb-6">
+<img alt="Kyoto Trip" class="rounded-xl h-24 w-full object-cover hover:scale-105 transition-transform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrTarnCpVNqHjvPUjMvmh4wZfLbMPst7iTNgg6imnzIArWWVFe5LHG4NswOocfZM4r7ST7NmJZ391rIYQ54ofaDHvhwGprF7Lmq9JRBchXSCpJl8deCEcV13FPrH-k-BvvtKQszUlvu8RZ69UI55_PLdiR3yuu8FJOcF95jFDMVrHxgTQnyEDG0X_Ebeut67NcQM4fh4Vi4sszhcUFrwjAMSXzYYy9waLvFIS1EJJV5Vcsmp0FPDS1LmyNfjAxBvy1FKwox3dVm2s"/>
+<img alt="Temples" class="rounded-xl h-24 w-full object-cover hover:scale-105 transition-transform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2wR9Xq_zHRBsIIxw7kqibB0hPjr_sAtnccaEn-9EJyU4wBirDbZ6Y4QjdIw0QJi85G_jj4G5DFdXZ9j-Bw5Kg8xBJIzyNjxEcxc5Lbu2fqsrhIRVn-fJvYFwiE74lIuNkDThA1SJ6CrwPnSDS8TzWsuU2_-LxK5b1voxA1i9d5es9zXyZOTurlTdsry4aGodqlzxCxCvweJjsSS8wZnK4YHKHUYwnjLFyyw01oCR0c14v9Bz1g9zHUeCOBQVyWrbUmIb6MFmUh90"/>
+<div class="rounded-xl h-24 w-full bg-slate-200 dark:bg-forest/30 flex items-center justify-center text-xs font-bold text-slate-500">+12 more</div>
+</div>
+<div class="flex flex-wrap gap-3">
+<div class="flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-forest/40 rounded-full text-xs font-medium text-slate-500 dark:text-slate-300">
+<span class="material-icons-outlined text-[14px]">public</span> Japan
+                                        </div>
+</div>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -left-[54px] top-0 w-12 h-12 bg-cream dark:bg-forest-dark border-4 border-primary rounded-full flex items-center justify-center z-10 shadow-lg">
+<span class="material-icons-outlined text-primary">celebration</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+<div class="md:col-span-3">
+<span class="text-sm font-bold text-primary uppercase tracking-widest block mb-1">July 04, 2022</span>
+<span class="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] rounded-full font-bold uppercase tracking-widest border border-amber-200 dark:border-amber-800">The Beginning</span>
+</div>
+<div class="md:col-span-9 bg-white dark:bg-forest/10 p-8 rounded-[2rem] border border-slate-100 dark:border-forest/20 hover:border-primary/50 transition-all hover:shadow-xl shadow-slate-200/50">
+<h5 class="text-3xl font-display font-bold mb-4">The First Date</h5>
+<p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-4">
+                                        A nervous coffee that turned into a three-hour dinner. We both knew something was different before the appetizers even arrived.
+                                    </p>
+<p class="italic text-primary/70 text-sm font-serif">"I remember thinking I never wanted the night to end."</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-center mt-8">
+<button class="px-10 py-4 border-2 border-slate-200 dark:border-forest/20 text-slate-500 dark:text-slate-300 rounded-2xl font-bold hover:border-primary hover:text-primary transition-all group">
+                            Show All Memories 
+                            <span class="material-icons-outlined align-middle ml-2 group-hover:translate-y-1 transition-transform">expand_more</span>
+</button>
+</div>
+</section>
+</div>
+<footer class="mt-20 border-t border-slate-200 dark:border-forest/20 px-8 py-12 bg-white dark:bg-forest-dark/40">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-3 grayscale opacity-60">
+<div class="w-8 h-8 bg-forest text-cream rounded-lg flex items-center justify-center">
+<span class="material-icons-outlined text-sm">spa</span>
+</div>
+<h1 class="font-bold text-sm tracking-tight">Relationship Tracker</h1>
+</div>
+<div class="flex gap-8 text-sm font-medium text-slate-400">
+<a class="hover:text-primary" href="#">Privacy Policy</a>
+<a class="hover:text-primary" href="#">Data Export</a>
+<a class="hover:text-primary" href="#">Help Center</a>
+</div>
+<p class="text-sm text-slate-400">© 2026 Kinetic Forest Dashboard</p>
+</div>
+</footer>
+</main>
+</div>
+<button class="fixed bottom-6 right-6 lg:hidden w-16 h-16 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center z-50">
+<span class="material-icons-outlined text-3xl">add</span>
+</button>
+
+</body></html>

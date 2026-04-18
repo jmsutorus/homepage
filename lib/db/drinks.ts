@@ -137,12 +137,13 @@ export async function getAllDrinks(userId: string): Promise<Drink[]> {
 }
 
 /**
- * Get drinks with log count for card display
+ * Get drinks with log count and last log date for card display
  */
-export async function getAllDrinksWithLogCount(userId: string): Promise<(Drink & { logCount: number })[]> {
-  const rows = await query<DBDrink & { logCount: number }>(
+export async function getAllDrinksWithLogCount(userId: string): Promise<(Drink & { logCount: number, lastLogDate: string | null })[]> {
+  const rows = await query<DBDrink & { logCount: number, lastLogDate: string | null }>(
     `SELECT d.*, 
-      (SELECT COUNT(*) FROM drink_logs WHERE drinkId = d.id) as logCount
+      (SELECT COUNT(*) FROM drink_logs WHERE drinkId = d.id) as logCount,
+      (SELECT MAX(date) FROM drink_logs WHERE drinkId = d.id) as lastLogDate
     FROM drinks d
     WHERE d.userId = ?
     ORDER BY d.name ASC`,
@@ -151,6 +152,7 @@ export async function getAllDrinksWithLogCount(userId: string): Promise<(Drink &
   return rows.map(row => ({
     ...transformDrink(row),
     logCount: row.logCount,
+    lastLogDate: row.lastLogDate,
   }));
 }
 

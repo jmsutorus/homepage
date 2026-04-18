@@ -1297,6 +1297,7 @@ CREATE TABLE IF NOT EXISTS vacation_itinerary_days (
   location TEXT,
   activities TEXT, -- JSON array of activity strings
   notes TEXT, -- Markdown
+  photo TEXT,
   budget_planned REAL,
   budget_actual REAL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

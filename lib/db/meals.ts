@@ -62,10 +62,15 @@ export async function getMealById(
   ]);
 }
 
-// Get all meals for a user
-export async function getAllMeals(userId: string): Promise<Meal[]> {
-  return query<Meal>(
-    "SELECT * FROM meals WHERE userId = ? ORDER BY name ASC",
+// Get all meals for a user with ingredient counts
+export async function getAllMeals(userId: string): Promise<(Meal & { ingredient_count: number })[]> {
+  return query<Meal & { ingredient_count: number }>(
+    `SELECT m.*, COUNT(mi.id) as ingredient_count 
+     FROM meals m 
+     LEFT JOIN meal_ingredients mi ON m.id = mi.mealId 
+     WHERE m.userId = ? 
+     GROUP BY m.id 
+     ORDER BY m.name ASC`,
     [userId]
   );
 }

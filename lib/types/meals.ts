@@ -144,6 +144,30 @@ export function formatTime(minutes: number | null): string {
   return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
 }
 
+export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
+
+export function getDifficulty(meal: Meal & { ingredient_count?: number }): Difficulty {
+  const totalTime = getTotalTime(meal) || 0;
+  const steps = parseSteps(meal.steps);
+  const stepCount = steps.length;
+  const ingredientCount = meal.ingredient_count || 0;
+
+  // Algorithm: 
+  // Beginner: Time < 30m AND steps < 6 AND ingredients < 8
+  // Advanced: Time > 90m OR steps > 12 OR ingredients > 15
+  // Intermediate: Everything else
+  
+  if (totalTime <= 30 && stepCount < 6 && ingredientCount < 8) {
+    return "Beginner";
+  }
+  
+  if (totalTime >= 90 || stepCount >= 12 || ingredientCount >= 15) {
+    return "Advanced";
+  }
+  
+  return "Intermediate";
+}
+
 // Daily Meals Types
 export type MealType = "breakfast" | "lunch" | "dinner";
 

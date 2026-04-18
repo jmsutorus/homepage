@@ -102,9 +102,13 @@ export interface EventWithDetails {
   people: EventPerson[];
 }
 
-// Event with just the cover photo for card display
 export interface EventWithCoverPhoto extends Event {
   cover_photo: string | null;
+}
+
+// Full event details for the chronological timeline
+export interface TimelineEvent extends EventWithCoverPhoto {
+  people: EventPerson[];
 }
 
 // Helper to serialize notifications to JSON string
@@ -221,6 +225,46 @@ export async function getAllEventsWithCoverPhoto(userId: string): Promise<EventW
   return rows.map(row => ({
     ...transformEvent(row),
     cover_photo: row.cover_photo,
+  }));
+}
+
+/**
+ * Get all events with cover photo and associated people for the timeline view
+ */
+export async function getAllEventsForTimeline(userId: string): Promise<TimelineEvent[]> {
+  const events = await getAllEventsWithCoverPhoto(userId);
+  if (events.length === 0) return [];
+
+  const eventIds = events.map(e => e.id);
+  const placeholders = eventIds.map(() => '?').join(',');
+  
+  const peopleRows = await query<EventPerson>(
+    `SELECT
+      ep.id,
+      ep.eventId,
+      ep.personId,
+      p.name,
+      p.photo,
+      p.relationship,
+      rt.name as relationshipTypeName,
+      ep.created_at
+    FROM event_people ep
+    JOIN people p ON p.id = ep.personId
+    LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
+    WHERE ep.eventId IN (${placeholders})
+    ORDER BY p.name ASC`,
+    eventIds
+  );
+
+  const peopleMap = peopleRows.reduce((acc, person) => {
+    if (!acc[person.eventId]) acc[person.eventId] = [];
+    acc[person.eventId].push(person);
+    return acc;
+  }, {} as Record<number, EventPerson[]>);
+
+  return events.map(event => ({
+    ...event,
+    people: peopleMap[event.id] || []
   }));
 }
 

@@ -42,6 +42,7 @@ export async function PATCH(
     if (body.location !== undefined) updateData.location = body.location;
     if (body.activities !== undefined) updateData.activities = body.activities;
     if (body.notes !== undefined) updateData.notes = body.notes;
+    if (body.photo !== undefined) updateData.photo = body.photo;
     if (body.budget_planned !== undefined) updateData.budget_planned = body.budget_planned;
     if (body.budget_actual !== undefined) updateData.budget_actual = body.budget_actual;
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Heart, Lock, Clock, Star, Trash2, Edit, ShieldAlert } from "lucide-react";
+import { Plus, Heart, Lock, Clock, Star, Trash2, Edit, ShieldAlert, MapPin, Calendar } from "lucide-react";
 import { CreateIntimacyDialog } from "./create-intimacy-dialog";
 import { MobileIntimacySheet } from "./mobile-intimacy-sheet";
 import { EditIntimacyDialog } from "./edit-intimacy-dialog";
@@ -132,168 +132,188 @@ export function IntimacyTab({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Privacy Header */}
-      <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50 border border-border">
-        <ShieldAlert className="h-5 w-5 text-pink-500" />
-        <div className="flex-1">
-          <p className="text-sm font-medium">Private & Secure</p>
-          <p className="text-xs text-muted-foreground">
-            All intimacy data is completely private and visible only to you
-          </p>
-        </div>
-        <Lock className="h-5 w-5 text-muted-foreground" />
-      </div>
+    <>
+      <div className="flex flex-col xl:flex-row gap-8">
+        <div className="flex-1 space-y-8">
+          {/* Private & Secure Banner */}
+          <div className="flex items-center justify-between bg-zinc-900/5 dark:bg-white/5 border border-border p-4 rounded-2xl">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-white dark:bg-zinc-800 rounded-xl flex items-center justify-center shadow-sm">
+                <Lock className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground">Private & Secure</h3>
+                <p className="text-xs text-muted-foreground">Only you can see this section of your dashboard.</p>
+              </div>
+            </div>
+            <ShieldAlert className="h-5 w-5 text-muted-foreground" />
+          </div>
 
-      {/* Header with Add Button */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Intimacy Tracking</h2>
-          <p className="text-muted-foreground">Private tracking for your relationship</p>
-        </div>
-        <Button
-          onClick={() => setIsCreateDialogOpen(true)}
-          className="cursor-pointer hidden md:flex"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Entry
-        </Button>
-      </div>
+          {/* Header with Add Button */}
+          <div className="flex items-center justify-between mt-10">
+            <div>
+              <h2 className="text-2xl font-playfair font-bold italic">Intimacy Tracking</h2>
+              <p className="text-sm text-muted-foreground">Sacred moments in your connection.</p>
+            </div>
+            <Button
+              onClick={() => setIsCreateDialogOpen(true)}
+              className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <Plus className="h-5 w-5" />
+              Add Entry
+            </Button>
+          </div>
 
-      {/* Entry List */}
-      {entries.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No intimacy entries yet</p>
-            <p className="text-sm mt-2">Start tracking your private moments</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {entries.map((entry) => {
-            // Parse positions if it's a string
-            let positions: string[] = [];
-            try {
-              if (entry.positions) {
-                positions = typeof entry.positions === 'string' 
-                  ? JSON.parse(entry.positions) 
-                  : entry.positions;
-              }
-            } catch (e) {
-              console.error("Failed to parse positions", e);
-            }
+          {/* Entry List */}
+          <div className="space-y-6">
+            {entries.length === 0 ? (
+              <div className="p-12 text-center text-muted-foreground glass-card rounded-2xl border-2 border-dashed">
+                <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-playfair italic">No shared moments recorded yet</p>
+                <p className="text-sm mt-2">Begin your private history today.</p>
+              </div>
+            ) : (
+              entries.map((entry) => {
+                let positions: string[] = [];
+                try {
+                  if (entry.positions) {
+                    positions = typeof entry.positions === 'string' 
+                      ? JSON.parse(entry.positions) 
+                      : entry.positions;
+                  }
+                } catch (e) {
+                  console.error("Failed to parse positions", e);
+                }
 
-            return (
-            <Card key={entry.id} className="hover:border-primary/50 transition-colors relative overflow-hidden group">
-              <IntimacyCardBackground rating={entry.satisfaction_rating} type={entry.type} location={entry.location} />
-              <CardHeader className="pb-3 relative z-10">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Lock className="h-4 w-4 text-muted-foreground" />
-                      {entry.satisfaction_rating && (
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-3 w-3 ${
-                                i < entry.satisfaction_rating!
-                                  ? "fill-pink-500 text-pink-500"
-                                  : "text-pink-300"
-                              }`}
-                            />
-                          ))}
-                          <span className="text-xs text-muted-foreground ml-1">
-                            {entry.satisfaction_rating}/5
-                          </span>
+                return (
+                  <div key={entry.id} className="p-6 rounded-2xl glass-card shadow-sm border border-border hover:border-primary/30 transition-all duration-500 group relative">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary shadow-sm shrink-0">
+                          <Heart className="h-5 w-5 fill-current" />
                         </div>
-                      )}
+                        <div>
+                          <h4 className="text-lg font-playfair font-bold">{formatDateLongSafe(entry.date, "en-US")}</h4>
+                          <p className="text-xs text-muted-foreground">Logged at {entry.time || "Unknown Time"}</p>
+                        </div>
+                      </div>
+                      <div className="heart-rating flex gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Heart
+                            key={i}
+                            className={`h-5 w-5 ${
+                              i < (entry.satisfaction_rating || 0)
+                                ? "fill-primary text-primary"
+                                : "text-muted-foreground/30"
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <CardTitle className="text-lg">
-                      {formatDateLongSafe(entry.date, "en-US")}
-                      {entry.time && (
-                        <span className="text-sm font-normal text-muted-foreground ml-2">
-                          at {entry.time}
+
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {entry.duration && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-muted/50 text-muted-foreground border border-border rounded-full text-xs font-medium">
+                          <Clock className="h-3.3 w-3.5" /> {entry.duration} min
                         </span>
                       )}
-                    </CardTitle>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setEditingEntry(entry)}
-                      className="cursor-pointer"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(entry.id)}
-                      className="cursor-pointer text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4 relative z-10">
-                <div className="flex flex-wrap gap-2">
-                  {entry.duration && (
-                    <Badge variant="outline" className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {entry.duration} min
-                    </Badge>
-                  )}
-                  {entry.initiation && (
-                    <Badge variant="outline">
-                      Initiated by: {entry.initiation === "me" ? "You" : entry.initiation}
-                    </Badge>
-                  )}
-                  {entry.location && (
-                    <Badge variant="outline">
-                      {entry.location.charAt(0).toUpperCase() + entry.location.slice(1)}
-                    </Badge>
-                  )}
-                  {positions.map((pos) => {
-                    const Icon = POSITION_ICONS[pos];
-                    if (Icon) {
-                      return (
-                         <div key={pos} className="inline-flex items-center gap-2 px-3 py-1 bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800/30 rounded-full text-pink-700 dark:text-pink-300">
-                            <Icon className="h-6 w-6" strokeWidth={4} />
-                            <span className="text-sm font-medium">{pos}</span>
-                         </div>
-                      );
-                    }
-                    return (
-                      <Badge key={pos} variant="secondary" className="bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300">
-                        {pos}
-                      </Badge>
-                    );
-                  })}
-                </div>
+                      {entry.initiation && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-muted/50 text-muted-foreground border border-border rounded-full text-xs font-medium">
+                          <Plus className="h-3.5 w-3.5" /> Initiated by: {entry.initiation === "me" ? "You" : entry.initiation}
+                        </span>
+                      )}
+                      {entry.location && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30 rounded-full text-xs font-medium">
+                          <MapPin className="h-3.5 w-3.5" /> {entry.location}
+                        </span>
+                      )}
+                      {positions.map((pos) => {
+                        const Icon = POSITION_ICONS[pos];
+                        return (
+                          <span key={pos} className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/5 text-primary border border-primary/10 rounded-full text-xs font-medium">
+                            {Icon ? <Icon className="h-4 w-4" /> : <Heart className="h-3.5 w-3.5" />}
+                            {pos}
+                          </span>
+                        );
+                      })}
+                    </div>
 
-                {entry.type && (
-                  <p className="text-sm text-muted-foreground">Type: {entry.type}</p>
-                )}
-                {(entry.mood_before || entry.mood_after) && (
-                  <div className="text-xs text-muted-foreground flex gap-4">
-                    {entry.mood_before && <span>Before: {entry.mood_before}</span>}
-                    {entry.mood_after && <span>After: {entry.mood_after}</span>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-border pt-6">
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block mb-2 font-font-lexend">Before Reflection</span>
+                        <p className="text-sm italic text-muted-foreground leading-relaxed">"{entry.mood_before || "No reflection recorded."}"</p>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block mb-2 font-font-lexend">After Reflection</span>
+                        <p className="text-sm italic text-muted-foreground leading-relaxed">"{entry.mood_after || "No reflection recorded."}"</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditingEntry(entry)}
+                        className="cursor-pointer h-8 w-8 text-muted-foreground hover:text-primary"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(entry.id)}
+                        className="cursor-pointer h-8 w-8 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                )}
-                {entry.notes && (
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2 italic">
-                    {entry.notes}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          )})}
+                );
+              })
+            )}
+          </div>
+
+          <div className="pt-12 text-center">
+            <p className="text-muted-foreground font-playfair italic text-lg opacity-60">
+              "Intimacy is not purely physical. It's the act of connecting with another soul."
+            </p>
+          </div>
         </div>
-      )}
+
+        {/* Insights Sidebar */}
+        <aside className="xl:w-80 space-y-4 shrink-0">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2 mb-4 font-font-lexend">Insights</h3>
+          <div className="p-6 glass-card rounded-2xl shadow-sm">
+            <div className="flex items-center gap-2 text-muted-foreground mb-2">
+              <Calendar className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-bold uppercase tracking-wider font-font-lexend">Total Entries</span>
+            </div>
+            <div className="text-3xl font-playfair font-bold">{entries.length}</div>
+          </div>
+          <div className="p-6 glass-card rounded-2xl shadow-sm">
+            <div className="flex items-center gap-2 text-primary mb-2">
+              <Heart className="h-3.5 w-3.5 fill-current" />
+              <span className="text-[11px] font-bold uppercase tracking-wider font-font-lexend">Top Mood</span>
+            </div>
+            <div className="text-3xl font-playfair font-bold">Peaceful</div>
+          </div>
+          <div className="p-6 glass-card rounded-2xl shadow-sm">
+            <div className="flex items-center gap-2 text-muted-foreground mb-2">
+              <Clock className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-bold uppercase tracking-wider font-font-lexend">Avg Duration</span>
+            </div>
+            <div className="text-3xl font-playfair font-bold">25 min</div>
+          </div>
+
+          <div className="mt-8 p-6 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/20">
+            <h4 className="text-sm font-semibold text-primary mb-2">Connection Goal</h4>
+            <div className="w-full bg-background dark:bg-zinc-800 rounded-full h-1.5 mb-2">
+              <div className="bg-primary h-1.5 rounded-full" style={{ width: '75%' }}></div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">3 of 4 moments shared this week</p>
+          </div>
+        </aside>
+      </div>
 
       {/* Create Dialog/Sheet - Mobile uses Sheet, Desktop uses Dialog */}
       {isMobile ? (
@@ -319,6 +339,6 @@ export function IntimacyTab({
           onEntryUpdated={handleEntryUpdated}
         />
       )}
-    </div>
+    </>
   );
 }

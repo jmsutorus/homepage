@@ -23,151 +23,24 @@ export function Header() {
     setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0);
   }, []);
 
-
-
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-16 max-w-screen-2xl items-center px-4 md:px-6">
-        <div className="mr-4 flex items-center gap-2">
-          <MobileNav />
-          <Link href="/home" className="flex items-center space-x-2">
-            <span className="font-bold text-xl">Homepage</span>
-          </Link>
-        </div>
-        <div className="flex-1">
-          <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link
-              href="/calendar"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Calendar
+    <header className="w-full bg-[#faf9f6]/95 dark:bg-[#061b0e]/95 backdrop-blur supports-[backdrop-filter]:bg-[#faf9f6]/60 sticky top-0 z-50 shrink-0 border-b border-outline-variant/10">
+      <div className="flex h-16 items-center justify-between px-4 md:px-8">
+        <div className="flex items-center gap-4 flex-1">
+          <div className="md:hidden flex items-center gap-2">
+            <MobileNav />
+            <Link href="/home" className="flex items-center gap-2">
+               <div className="w-8 h-8 rounded bg-[#061b0e] flex items-center justify-center text-[#ffffff]">
+                  <span className="material-symbols-outlined text-sm">temp_preferences_custom</span>
+               </div>
+               <span className="font-bold tracking-tighter">Homepage</span>
             </Link>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 transition-colors hover:text-foreground/80 text-foreground/60 outline-none cursor-pointer">
-                Track <ChevronDown className="h-3 w-3" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild>
-                  <Link href="/tasks" className="w-full cursor-pointer">
-                    Tasks
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/habits" className="w-full cursor-pointer">
-                    Habits
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/goals" className="w-full cursor-pointer">
-                    Goals
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/exercise" className="w-full cursor-pointer">
-                    Exercise
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/mood" className="w-full cursor-pointer">
-                    Mood
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/relationship" className="w-full cursor-pointer flex items-center gap-2">
-                    Relationship
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/people" className="w-full cursor-pointer">
-                    People
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/finances" className="w-full cursor-pointer">
-                    Finances
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 transition-colors hover:text-foreground/80 text-foreground/60 outline-none cursor-pointer">
-                Library <ChevronDown className="h-3 w-3" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild>
-                  <Link href="/media" className="w-full cursor-pointer">
-                    Media
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/parks" className="w-full cursor-pointer">
-                    Parks
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/journals" className="w-full cursor-pointer">
-                    Journals
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/recipes" className="w-full cursor-pointer">
-                    Recipes
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/restaurants" className="w-full cursor-pointer">
-                    Restaurants
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/drinks" className="w-full cursor-pointer">
-                    Drinks
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/vacations" className="w-full cursor-pointer">
-                    Vacations
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/events" className="w-full cursor-pointer">
-                    Events
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 transition-colors hover:text-foreground/80 text-foreground/60 outline-none cursor-pointer">
-                Progress <ChevronDown className="h-3 w-3" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild>
-                  <Link href="/achievements" className="w-full cursor-pointer">
-                    Achievements
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href={`/year/${new Date().getFullYear()}`}
-                    className="w-full cursor-pointer"
-                  >
-                    Year in Review
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </nav>
-        </div>
-        <div className="flex items-center justify-end space-x-2">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-            <Button
-              variant="outline"
-              className="relative h-9 w-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2 text-muted-foreground"
+          </div>
+          
+          <div className="relative max-w-md w-full hidden sm:block md:ml-0">
+            <span 
+              className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#434843] dark:text-[#e3e2e0] text-sm cursor-pointer"
               onClick={() => {
-                // Dispatch keyboard event to trigger command palette
                 const event = new KeyboardEvent("keydown", {
                   key: "k",
                   metaKey: true,
@@ -177,26 +50,55 @@ export function Header() {
                 document.dispatchEvent(event);
               }}
             >
-              <Search className="h-4 w-4 xl:mr-2" />
-              <span className="hidden xl:inline-flex">Search...</span>
-              <kbd className="pointer-events-none absolute right-1.5 top-2 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 xl:flex">
-                <span className="text-xs">{isMac ? "⌘" : "Ctrl"}</span>K
-              </kbd>
-            </Button>
+              search
+            </span>
+            <input 
+              readOnly
+              className="w-full bg-[#f4f3f1] dark:bg-[#1b3022]/40 border-none rounded-full pl-10 pr-12 py-1.5 text-sm focus:ring-2 focus:ring-[#9f402d]/20 transition-all cursor-pointer" 
+              placeholder="Search your dashboard..." 
+              type="text"
+              onClick={() => {
+                const event = new KeyboardEvent("keydown", {
+                  key: "k",
+                  metaKey: true,
+                  ctrlKey: true,
+                  bubbles: true,
+                });
+                document.dispatchEvent(event);
+              }}
+            />
+            <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+              <span className="text-[10px]">{isMac ? "⌘" : "Ctrl"}</span>K
+            </kbd>
           </div>
-          <nav className="flex items-center gap-3">
-            {isAuthenticated && user && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2 px-2">
-                    <User className="h-4 w-4 md:hidden" />
-                    <span className="hidden md:inline-block text-sm text-muted-foreground">
-                      {user.name || user.email}
-                    </span>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+        </div>
+
+        <div className="flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-6">
+            <Link className="text-[#9f402d] font-bold text-sm tracking-tight hover:opacity-80 transition-opacity" href="/home">Overview</Link>
+            <Link className="text-[#434843] dark:text-[#e3e2e0] font-medium text-sm tracking-tight hover:text-[#9f402d] transition-colors" href="/calendar">Calendar</Link>
+            <Link className="text-[#434843] dark:text-[#e3e2e0] font-medium text-sm tracking-tight hover:text-[#9f402d] transition-colors" href="/settings">Settings</Link>
+          </nav>
+
+          {isAuthenticated && user && (
+            <div className="flex items-center gap-3 bg-[#f4f3f1] dark:bg-[#1b3022]/40 px-3 py-1 rounded-full border border-outline-variant/30">
+               <div className="w-6 h-6 rounded-full border border-[#b4cdb8] bg-[#061b0e] flex items-center justify-center text-[#ffffff] overflow-hidden">
+                  {user.image ? (
+                    <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="material-symbols-outlined text-xs">person</span>
+                  )}
+               </div>
+               <span className="text-[11px] font-bold text-[#1a1c1a] dark:text-[#faf9f6] truncate hidden md:block max-w-[100px]">
+                 {user.name || user.email}
+               </span>
+               <DropdownMenu>
+                 <DropdownMenuTrigger asChild>
+                   <button className="p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors">
+                     <span className="material-symbols-outlined text-sm block">settings</span>
+                   </button>
+                 </DropdownMenuTrigger>
+                 <DropdownMenuContent align="end">
                     {(user as any).role === 'admin' && (
                       <DropdownMenuItem asChild>
                         <Link href="/admin" className="w-full cursor-pointer">
@@ -211,10 +113,10 @@ export function Header() {
                         Settings
                       </Link>
                     </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </nav>
+                 </DropdownMenuContent>
+               </DropdownMenu>
+            </div>
+          )}
         </div>
       </div>
     </header>

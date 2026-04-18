@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gourmet Kitchen | Earthbound Editorial</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2f312f",
+                        "on-background": "#1a1c1a",
+                        "on-primary-fixed": "#0b2013",
+                        "secondary-fixed-dim": "#ffb4a5",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#2b2d1d",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#e4e4cc",
+                        "surface-dim": "#dbdad7",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#802918",
+                        "surface-container": "#efeeeb",
+                        "primary-container": "#1b3022",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "surface-bright": "#faf9f6",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "tertiary": "#17180a",
+                        "secondary-container": "#fd876f",
+                        "surface-container-low": "#f4f3f1",
+                        "surface-tint": "#4d6453",
+                        "outline-variant": "#c3c8c1",
+                        "on-secondary-fixed": "#3e0500",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#b4cdb8",
+                        "error": "#ba1a1a",
+                        "background": "#faf9f6",
+                        "surface-variant": "#e3e2e0",
+                        "secondary-fixed": "#ffdad3",
+                        "secondary": "#9f402d",
+                        "surface": "#faf9f6",
+                        "primary-fixed": "#d0e9d4",
+                        "outline": "#737973",
+                        "on-tertiary-container": "#93947f",
+                        "inverse-on-surface": "#f2f1ee",
+                        "surface-container-high": "#e9e8e5",
+                        "on-surface-variant": "#434843",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "on-primary-container": "#819986",
+                        "primary-fixed-dim": "#b4cdb8",
+                        "primary": "#061b0e",
+                        "on-surface": "#1a1c1a",
+                        "on-secondary-container": "#732010",
+                        "on-primary-fixed-variant": "#364c3c",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e3e2e0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Lexend"],
+                        "label": ["Lexend"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-shadow {
+            box-shadow: 0 32px 64px -12px rgba(6, 27, 14, 0.04);
+        }
+        .masonry-grid {
+            columns: 1;
+            column-gap: 2rem;
+        }
+        @media (min-width: 768px) {
+            .masonry-grid {
+                columns: 2;
+            }
+        }
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 2rem;
+            display: block;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<main class="md:ml-64 min-h-screen">
+<div class="px-8 py-12 max-w-4xl mx-auto space-y-24">
+<section class="flex flex-col items-center text-center space-y-10">
+<div class="space-y-6 max-w-2xl">
+<h3 class="text-sm font-black text-secondary uppercase tracking-[0.3em]">Seasonal Discovery</h3>
+<h1 class="text-5xl md:text-7xl font-bold text-primary tracking-tighter leading-tight">Earthbound Flavors for Autumn.</h1>
+<p class="text-on-surface-variant text-lg leading-relaxed mx-auto">
+                    Explore our curated selection of recipes that celebrate the deep, woody notes of wild fungi and the golden warmth of harvest grains.
+                </p>
+<div class="flex flex-wrap justify-center gap-4 pt-4">
+<button class="bg-secondary text-on-secondary px-8 py-4 rounded-lg font-bold tracking-wide flex items-center gap-2 scale-98 active:opacity-90 transition-all">
+                        Start Cooking <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<button class="border border-outline-variant text-primary px-8 py-4 rounded-lg font-bold tracking-wide hover:bg-surface-container-low transition-colors">
+                        Save to Journal
+                    </button>
+</div>
+</div>
+<div class="w-full relative">
+<div class="aspect-[16/9] bg-surface-container overflow-hidden rounded-xl">
+<img class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCilf-r6aUST3AazQga55G-cteTR7mdiXou1tfUXm8Jzln41bthybNoxZNXqeaqSbuHMioCAFmrICV5r53Hn_FLZB6OxfoeeBEcz5ZyuB4xLbVZAnJip8YT1f8r2eJKkv7ZqM18UVJWo9jt9PthPCoxVwRYry2BWzROUwUFrKhtMDq4OVF3fgRtoIbgNzUZZlQyx1T1jPwwxUHBIwC0PbnXnptW13lmnVDCBm3byU3NUjW6CD_uXDTS2Q42IQ-8LbrwNE4s-Kf7ARA"/>
+</div>
+<div class="absolute -bottom-6 right-8 bg-primary p-6 rounded-lg shadow-2xl hidden md:block max-w-xs text-left">
+<span class="text-secondary text-[10px] font-black uppercase tracking-[0.2em] block mb-2">Recipe of the Week</span>
+<h2 class="text-on-primary text-xl font-bold leading-tight mb-4">Forest Floor Wild Mushroom Risotto</h2>
+<div class="flex items-center gap-4 text-on-primary/60 text-xs font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span> 45m</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="hotel_class">hotel_class</span> Intermediate</span>
+</div>
+</div>
+</div>
+</section>
+<section class="space-y-12">
+<div class="flex flex-col items-center text-center gap-6 border-b border-outline-variant/10 pb-12">
+<div>
+<h2 class="text-4xl font-bold text-primary tracking-tight">The Recipe Gallery</h2>
+<p class="text-on-surface-variant mt-3 text-lg">Browse our editorial collection of 142 seasonal dishes.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-3">
+<span class="px-6 py-3 bg-primary text-on-primary rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer">All Recipes</span>
+<span class="px-6 py-3 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-bold uppercase tracking-wider hover:bg-tertiary-fixed-dim transition-colors cursor-pointer">Quick</span>
+<span class="px-6 py-3 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-bold uppercase tracking-wider hover:bg-tertiary-fixed-dim transition-colors cursor-pointer">Vegan</span>
+<span class="px-6 py-3 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-bold uppercase tracking-wider hover:bg-tertiary-fixed-dim transition-colors cursor-pointer">Dinner</span>
+<span class="px-6 py-3 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-bold uppercase tracking-wider hover:bg-tertiary-fixed-dim transition-colors cursor-pointer">Baking</span>
+<span class="px-6 py-3 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span> More
+                    </span>
+</div>
+</div>
+<div class="masonry-grid">
+<div class="masonry-item group relative overflow-hidden rounded-xl bg-surface-container-low editorial-shadow aspect-[4/5]">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdymqDpEh16T3R8qocgOAkeam1XtpnNvY2acKSceYNdlU44yh7Ip3fXNCfez1YmIKOTQahomqk9f3nx2jtsUyCnp6lEbefmUyAuj31YbRpUCJb0tfaWeRiHrH-Nf0igBK8E3eQgHjJHyPVuhAK29_ZRVLDLfT-4WPPNEr0VVwgjHg0GWNeNutJvrVbFiygbLsFnYbzfJPILLK8deiHvD3y3ns2sJNdARO_RYpn0_AF1DlkPEEQK9_ANE4rmAm19nUyyQ8luGhCuqk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-transparent to-transparent opacity-70"></div>
+<div class="absolute bottom-0 p-8 w-full">
+<span class="text-secondary-fixed text-[10px] font-black uppercase tracking-widest">Editor's Pick</span>
+<h3 class="text-3xl font-bold text-on-primary mt-2">Sun-Drenched Heritage Salad</h3>
+<div class="flex items-center gap-4 text-on-primary/80 text-sm mt-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base" data-icon="timer">timer</span> 15 min</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base" data-icon="signal_cellular_alt">signal_cellular_alt</span> Beginner</span>
+</div>
+</div>
+</div>
+<div class="masonry-item group relative overflow-hidden rounded-xl bg-surface-container editorial-shadow aspect-square">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHKd7zKUZOStVK3dL---uzQx84RAqhghEAqrTxgZkH6gT7EiLOM5acB5EgeZEk7MF2fk7zWmKT2tcbZ97gprEZ5r2Onv2v36NnlRfdIfOxgcYk0OcvyBce5nPD831GHNXocwpnWjk2xyHZ29d0zij9aNo1pe3Z1DXM94gof8ip_ttu2OtzOMGh5GzwKQOgsrCsbK-pvOEmDc9AXRdit5O6kHSHs3u6YHWybsiuusVamCLZuLWRvI26YFcA7eDqvj8XDeVDP5iYWSY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/70 via-transparent to-transparent opacity-60"></div>
+<div class="absolute bottom-0 p-8 w-full">
+<h3 class="text-2xl font-bold text-on-primary">Ancient Grain Sourdough</h3>
+<div class="flex items-center gap-4 text-on-primary/80 text-xs mt-3">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="timer">timer</span> 24h</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="signal_cellular_alt">signal_cellular_alt</span> Advanced</span>
+</div>
+</div>
+</div>
+<div class="masonry-item group relative overflow-hidden rounded-xl bg-surface-container editorial-shadow aspect-video">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8lSHBsrLLDce6UTZ2y-rAhzWwKa-eJ6i76bjilBY9nfnaBKW4YE02rmeiuLuxMQXdYd7wlna8YUMaruK3J9pVviT_THW6VMRTRTC8FZeEvp7BVJM_v2eXhMXRpz5b1SCO1JYz8HwDQGvB27nQw3kHz_uQ-Hdn_QrlVgQRNJ8AHAyiU5FkKTJs_KZ-IrF0uSaOS3Mh7FuYAhuKlQT_rTt3m7hee8wQtLy3Hg3oO2m4L42twuZAuRtWlhP4SHxN05QNQEgyYjfvgXc"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/70 via-transparent to-transparent opacity-60"></div>
+<div class="absolute bottom-0 p-6">
+<h3 class="text-xl font-bold text-on-primary leading-tight">Pacific Coast Ahi Bowl</h3>
+</div>
+</div>
+<div class="masonry-item group relative overflow-hidden rounded-xl bg-surface-container editorial-shadow aspect-[3/4]">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBq5R0V-rKbRnFz03mPfpRtVMEFxyLsdRRBuCSwVsSiAXq7sWQzqWCAc7cGjIDPyIQ4WaeyCb6xA7eSHPYk4jTsn28H1GSeuQiiCYNhN4-CfSQDnxqih5QyBlTpJG0qZEIyVqSHO0COc_ZmujyR6jT_TnSv_W-Hypbzbbeoy1NXKF26BclmFaqMS_CD5xwNSSAUVsiFCdPTyUoki3eFocBhFtnx1Z86U8lSop1S_1EgF07eiisv1WuZutgJ-aXVfaaT_fyBbi8I0nI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/70 via-transparent to-transparent opacity-60"></div>
+<div class="absolute bottom-0 p-8">
+<h3 class="text-2xl font-bold text-on-primary leading-tight">Honeyed Peach Tart</h3>
+</div>
+</div>
+</div>
+</section>
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-12 pt-8">
+<div class="lg:col-span-8 flex flex-col md:flex-row bg-primary rounded-xl overflow-hidden shadow-2xl">
+<div class="md:w-1/2 p-10 flex flex-col justify-center space-y-4">
+<span class="text-secondary text-[10px] font-black uppercase tracking-[0.3em]">The Maker's Philosophy</span>
+<h2 class="text-3xl font-bold text-on-primary tracking-tight">"Cooking is the soul's primary language."</h2>
+<p class="text-on-primary/60 italic leading-relaxed">
+                        Join our community of tactile chefs. We believe in the slow movement, the heavy cast iron, and the patience of a proper proofing.
+                    </p>
+<div class="pt-4">
+<button class="bg-on-primary text-primary px-6 py-3 rounded-lg font-bold text-sm hover:bg-on-primary/90 transition-all">Read the Manifesto</button>
+</div>
+</div>
+<div class="md:w-1/2 h-64 md:h-auto relative">
+<img class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCl_LLnfKpaQLCJiFSZFDQdT4AYHw64B-l6ckzjDtgSJ-BWqALP4Amf9N4wRc635UQGW84vg5DxZv5kWuE347mJeZhNAk2gZaKtTJehn2V_epZTBU2UaTIABlmarMFWdMeD0yoWGCGMQO1Wi76B01jGYuSNP3feC_f1SPA5JTOiVg5JpCSsHrryceLGXopCC54C8_cmrUAymles_jThaZ6euwpDGPHi1imIvMLdfjeDTHxtFtmm31lyilnb1vN64kkVsRPtXT7sRFo"/>
+</div>
+</div>
+<div class="lg:col-span-4 space-y-6">
+<div class="bg-surface-container-low p-8 rounded-xl space-y-6 h-full flex flex-col justify-between">
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-bold text-primary">Pantry Essentials</h3>
+<span class="material-symbols-outlined text-secondary" data-icon="inventory_2">inventory_2</span>
+</div>
+<ul class="space-y-4">
+<li class="flex items-center justify-between group cursor-pointer">
+<span class="text-on-surface-variant group-hover:text-primary transition-colors">Cold Pressed Olive Oil</span>
+<span class="text-[10px] bg-tertiary-fixed px-2 py-0.5 rounded uppercase font-bold tracking-tighter">Low</span>
+</li>
+<li class="flex items-center justify-between group cursor-pointer">
+<span class="text-on-surface-variant group-hover:text-primary transition-colors">Smoked Maldon Salt</span>
+<span class="text-[10px] bg-primary-fixed px-2 py-0.5 rounded uppercase font-bold tracking-tighter">In Stock</span>
+</li>
+<li class="flex items-center justify-between group cursor-pointer">
+<span class="text-on-surface-variant group-hover:text-primary transition-colors">San Marzano Tomatoes</span>
+<span class="text-[10px] bg-secondary-fixed px-2 py-0.5 rounded uppercase font-bold tracking-tighter">Restock</span>
+</li>
+<li class="flex items-center justify-between group cursor-pointer">
+<span class="text-on-surface-variant group-hover:text-primary transition-colors">Tahini (Organic)</span>
+<span class="text-[10px] bg-primary-fixed px-2 py-0.5 rounded uppercase font-bold tracking-tighter">In Stock</span>
+</li>
+</ul>
+</div>
+<button class="w-full mt-8 text-sm font-bold text-secondary flex items-center justify-center gap-2 py-3 hover:bg-surface-container transition-colors rounded-lg">
+                        Go to Grocery List <span class="material-symbols-outlined text-sm" data-icon="shopping_basket">shopping_basket</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+<footer class="mt-20 border-t border-outline-variant/10 py-12 px-8">
+<div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="text-xl font-black text-primary tracking-tighter">Gourmet Kitchen</span>
+<span class="text-[10px] text-on-surface-variant/50 uppercase tracking-widest ml-4">© 2024 Earthbound Editorial</span>
+</div>
+<div class="flex gap-8 text-sm font-medium text-on-surface-variant">
+<a class="hover:text-secondary transition-colors" href="#">Privacy</a>
+<a class="hover:text-secondary transition-colors" href="#">Terms</a>
+<a class="hover:text-secondary transition-colors" href="#">Archive</a>
+<a class="hover:text-secondary transition-colors" href="#">Newsletter</a>
+</div>
+<div class="flex gap-4">
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:text-primary transition-colors" data-icon="share">share</button>
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:text-primary transition-colors" data-icon="rss_feed">rss_feed</button>
+</div>
+</div>
+</footer>
+</main>
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-highest flex justify-around items-center py-4 px-6 z-50 border-t-0 shadow-[0_-8px_24px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center text-secondary" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+<span class="text-[10px] font-bold mt-1 uppercase tracking-tighter">Recipes</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-[10px] font-medium mt-1 uppercase tracking-tighter">Pantry</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="text-[10px] font-medium mt-1 uppercase tracking-tighter">Journal</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-[10px] font-medium mt-1 uppercase tracking-tighter">Settings</span>
+</a>
+</nav>
+<button class="fixed bottom-24 right-8 md:bottom-12 md:right-12 w-16 h-16 bg-secondary text-on-secondary rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all z-40 group">
+<span class="material-symbols-outlined text-3xl" data-icon="add">add</span>
+<span class="absolute right-20 bg-primary text-on-primary px-4 py-2 rounded text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">New Recipe</span>
+</button>
+
+</body></html>

@@ -139,3 +139,25 @@ export async function deletePersonalRecord(id: number, userId: string): Promise<
   });
   return (result.rowsAffected ?? 0) > 0;
 }
+
+export async function updatePersonalRecord(id: number, userId: string, record: CreatePersonalRecord): Promise<boolean> {
+  const db = getDatabase();
+  const result = await db.execute({
+    sql: `UPDATE personal_records 
+          SET type = ?, date = ?, notes = ?, distance = ?, total_seconds = ?, exercise = ?, weight = ?, reps = ?
+          WHERE id = ? AND userId = ?`,
+    args: [
+      record.type,
+      record.date,
+      record.notes || null,
+      record.distance || null,
+      record.total_seconds || null,
+      record.exercise || null,
+      record.weight || null,
+      record.reps || null,
+      id,
+      userId
+    ]
+  });
+  return (result.rowsAffected ?? 0) > 0;
+}

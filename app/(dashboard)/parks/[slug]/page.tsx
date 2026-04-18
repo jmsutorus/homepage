@@ -2,18 +2,21 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getParkBySlug } from "@/lib/db/parks";
-import { formatDateLongSafe } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Pencil, MapPin } from "lucide-react";
+import { Pencil, Settings, Share } from "lucide-react";
 import { ExportButton } from "@/components/widgets/shared/export-button";
 import { getRelatedParks } from "@/lib/actions/related-content";
 import { RelatedParks } from "@/components/widgets/shared/related-content";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { getUserId } from "@/lib/auth/server";
-import { ParkPeopleSection } from "@/components/widgets/parks/park-people-section";
-import { ParkPhotoGallery } from "@/components/widgets/parks/park-photo-gallery";
-import { ParkTrailsList } from "@/components/widgets/parks/park-trails-list";
+
+// Editorial Components
+import { ParkHeroEditorial } from "@/components/widgets/parks/editorial/park-hero";
+import { ParkExpeditionSummary } from "@/components/widgets/parks/editorial/park-expedition-summary";
+import { ParkGalleryEditorial } from "@/components/widgets/parks/editorial/park-gallery-editorial";
+import { ParkCompanionsEditorial } from "@/components/widgets/parks/editorial/park-companions-editorial";
+import { ParkTrailsEditorial } from "@/components/widgets/parks/editorial/park-trails-editorial";
+import { ParkMapSection, ParkFooterQuote } from "@/components/widgets/parks/editorial/park-editorial-footer";
 
 interface ParkDetailPageProps {
   params: Promise<{
@@ -41,122 +44,80 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
   );
 
   return (
-    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-4xl">
-      {/* Breadcrumb Navigation */}
-      <PageBreadcrumb
-        items={[
-          { label: "Parks", href: "/parks" },
-          { label: park.title },
-        ]}
-        className="mb-4 sm:mb-6"
-      />
-
-      {/* Header with poster */}
-      {park.poster && (
-        <div className="mb-6 sm:mb-8 rounded-lg overflow-hidden">
-          <img
-            src={park.poster}
-            alt={park.title}
-            className="w-full h-auto max-h-64 sm:max-h-96 object-cover"
-            referrerPolicy="no-referrer"
+    <div className="min-h-screen bg-media-background font-lexend -mt-8 -mx-4 md:-mx-8">
+      {/* Floating Action Menu for Admin */}
+      <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-4">
+        {park.content && (
+          <ExportButton
+            content={park.content}
+            filename={park.slug}
+            variant="outline"
+            size="icon"
+            className="w-14 h-14 rounded-full bg-media-surface/80 backdrop-blur-xl border-media-outline-variant/20 shadow-2xl hover:bg-media-secondary hover:text-white transition-all duration-300"
           />
-        </div>
-      )}
-
-      <div className="space-y-4 sm:space-y-6">
-        {/* Title and Edit Button */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{park.title}</h1>
-          <div className="flex gap-2 flex-wrap">
-            {park.content && (
-              <ExportButton
-                content={park.content}
-                filename={park.slug}
-              />
-            )}
-            <Button variant="outline" size="sm" asChild className="cursor-pointer flex-1 sm:flex-none">
-              <Link href={`/parks/${slug}/edit`}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* Metadata */}
-        <div className="flex flex-wrap gap-3 items-center">
-          <Badge className="text-sm">{park.category}</Badge>
-
-          {park.state && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              {park.state}
-            </div>
-          )}
-
-          {park.rating !== null && park.rating !== undefined && (
-            <div className="flex items-center gap-1">
-              <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
-              <span className="font-medium">{park.rating}/10</span>
-            </div>
-          )}
-        </div>
-
-        {/* Tags */}
-        {park.tags && park.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {park.tags.map((tag) => (
-              <Badge key={tag} variant="outline">
-                {tag}
-              </Badge>
-            ))}
-          </div>
         )}
-
-        {/* Visited Date */}
-        {park.visited && (
-          <p className="text-sm text-muted-foreground">
-            Visited on {formatDateLongSafe(park.visited, "en-US")}
-          </p>
-        )}
-
-        {/* Description */}
-        {park.description && (
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            {park.description}
-          </p>
-        )}
+        <Button size="icon" className="w-14 h-14 rounded-full bg-media-secondary text-media-on-secondary shadow-2xl hover:scale-110 transition-transform duration-300 border-none" asChild>
+          <Link href={`/parks/${slug}/edit`}>
+            <Pencil className="h-6 w-6" />
+          </Link>
+        </Button>
       </div>
 
-      {/* Divider */}
-      <div className="my-8 border-t" />
+      <div className="max-w-5xl mx-auto px-6 py-12 space-y-24 pb-24">
+        {/* Breadcrumb Navigation - Styled to blend in */}
+        <div className="opacity-50 hover:opacity-100 transition-opacity duration-300">
+          <PageBreadcrumb
+            items={[
+              { label: "Parks", href: "/parks" },
+              { label: park.title },
+            ]}
+          />
+        </div>
 
-      {/* Markdown Content */}
-      {park.content && (
-        <article className="prose prose-neutral dark:prose-invert max-w-none">
-          <MDXRemote source={park.content} />
-        </article>
-      )}
+        {/* Cinematic Hero */}
+        <ParkHeroEditorial park={park} />
 
-      {/* Divider */}
-      <div className="my-8 border-t" />
+        {/* Photos Grid */}
+        <ParkGalleryEditorial parkSlug={slug} />
 
-      {/* Photos */}
-      <ParkPhotoGallery parkSlug={slug} />
+        {/* Expedition Summary */}
+        <ParkExpeditionSummary park={park} />
 
-      {/* Trails */}
-      <ParkTrailsList parkSlug={slug} />
+        {/* Travel Companions */}
+        <ParkCompanionsEditorial parkSlug={slug} />
 
-      {/* Visitors */}
-      <ParkPeopleSection parkId={park.id} parkSlug={slug} />
+        {/* The Trails */}
+        <ParkTrailsEditorial parkSlug={slug} />
 
-      {/* Related Parks */}
-      {relatedParks.length > 0 && (
-        <>
-          <div className="my-8 border-t" />
-          <RelatedParks items={relatedParks} title="Similar Parks You Might Like" />
-        </>
-      )}
+        {/* Markdown Content Section */}
+        {park.content && (
+          <section className="relative">
+            <div className="flex items-baseline gap-4 mb-12">
+              <span className="text-media-secondary font-black text-5xl md:text-7xl opacity-20 leading-none">05</span>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-media-primary dark:text-media-surface">The Narrative</h2>
+            </div>
+            <div className="bg-media-surface-container/30 rounded-[2.5rem] p-8 md:p-16 border border-media-outline-variant/5 shadow-inner">
+              <article className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-black prose-headings:tracking-tighter prose-p:text-lg prose-p:font-light prose-p:leading-relaxed prose-a:text-media-secondary hover:prose-a:text-media-primary transition-colors">
+                <MDXRemote source={park.content} />
+              </article>
+            </div>
+          </section>
+        )}
+
+        {/* Topographic Map Segment */}
+        {/* <ParkMapSection /> */}
+
+        {/* Related Content */}
+        {relatedParks.length > 0 && (
+          <section className="border-t border-media-outline-variant/10">
+            <RelatedParks items={relatedParks} title="Beyond the Horizon" />
+          </section>
+        )}
+
+        {/* Stylized Footer Quote */}
+        <ParkFooterQuote title={park.title} />
+      </div>
     </div>
   );
 }
+

@@ -144,48 +144,51 @@ export function RelatedParks({ items, title = "Related Parks" }: RelatedParksPro
   if (items.length === 0) return null;
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">{title}</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className="space-y-8 font-lexend mt-24">
+      <div className="flex items-center gap-6">
+        <h2 className="text-3xl font-black tracking-tighter text-media-primary dark:text-media-surface whitespace-nowrap">{title}</h2>
+        <div className="h-[1px] w-full bg-media-outline-variant/10"></div>
+      </div>
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
         {items.map((item) => (
-          <Link key={item.id} href={`/parks/${item.slug}`}>
-            <Card className="overflow-hidden hover:ring-2 hover:ring-primary transition-all cursor-pointer h-full">
-              <CardContent className="p-0">
+          <Link key={item.id} href={`/parks/${item.slug}`} className="group block">
+            <div className="bg-media-surface-container-low rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 hover:translate-y-[-6px] border border-media-outline-variant/5 h-full flex flex-col">
+              <div className="aspect-[4/3] relative overflow-hidden shrink-0">
                 {item.poster ? (
-                  <div className="aspect-[4/3] relative">
-                    <img
-                      src={item.poster}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <img
+                    src={item.poster}
+                    alt={item.title}
+                    className="w-full h-full object-cover scale-100 group-hover:scale-110 transition-transform duration-1000"
+                    referrerPolicy="no-referrer"
+                  />
                 ) : (
-                  <div className="aspect-[4/3] bg-muted flex items-center justify-center">
-                    <MapPin className="h-8 w-8 text-muted-foreground" />
+                  <div className="w-full h-full bg-media-primary-container flex items-center justify-center">
+                    <MapPin className="h-8 w-8 text-media-primary-fixed/20" />
                   </div>
                 )}
-                <div className="p-3 space-y-1">
-                  <h3 className="font-semibold text-sm line-clamp-2 leading-tight">
-                    {item.title}
-                  </h3>
-                  <div className="items-center gap-2">
-                    <Badge variant="secondary" className="text-xs capitalize mt-2">
-                      {item.category}
-                    </Badge>
-                    <div>
-                    {item.state && (
-                      <Badge variant="secondary" className="text-xs capitalize text-muted-foreground mt-2">
-                      {item.state}
-                    </Badge>
-                    )}
-                    </div>
-                  </div>
+                <div className="absolute top-3 left-3 bg-media-primary/90 backdrop-blur-md text-white text-[8px] font-black px-3 py-1 rounded-lg uppercase tracking-[.2em] shadow-lg">
+                  {item.category}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="p-5 flex flex-col flex-1">
+                <h3 className="font-black text-sm tracking-tight text-media-primary dark:text-media-surface group-hover:text-media-secondary transition-colors line-clamp-2 leading-tight mb-4">
+                  {item.title}
+                </h3>
+                <div className="mt-auto flex items-center justify-between">
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-media-on-surface-variant/40">
+                     {item.state || "Wilderness"}
+                   </span>
+                   <div className="w-6 h-6 rounded-full bg-media-surface-variant/20 flex items-center justify-center text-media-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                      <Star className="w-3 h-3 fill-current" />
+                   </div>
+                </div>
+              </div>
+            </div>
           </Link>
         ))}
       </div>
     </div>
   );
 }
+

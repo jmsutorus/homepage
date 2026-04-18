@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Archive | Culinary Archive</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f4f3f1",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "on-secondary-fixed": "#3e0500",
+                        "background": "#faf9f6",
+                        "primary": "#061b0e",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "on-primary-fixed-variant": "#364c3c",
+                        "surface-tint": "#4d6453",
+                        "surface-container-high": "#e9e8e5",
+                        "surface": "#faf9f6",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1a1c1a",
+                        "secondary": "#9f402d",
+                        "primary-fixed": "#d0e9d4",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#dbdad7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#819986",
+                        "on-secondary-fixed-variant": "#802918",
+                        "on-error": "#ffffff",
+                        "primary-container": "#1b3022",
+                        "outline-variant": "#c3c8c1",
+                        "inverse-primary": "#b4cdb8",
+                        "primary-fixed-dim": "#b4cdb8",
+                        "on-primary-fixed": "#0b2013",
+                        "tertiary-fixed": "#e4e4cc",
+                        "tertiary": "#17180a",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "on-tertiary-container": "#93947f",
+                        "surface-variant": "#e3e2e0",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#efeeeb",
+                        "inverse-on-surface": "#f2f1ee",
+                        "surface-bright": "#faf9f6",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1a1c1a",
+                        "secondary-fixed-dim": "#ffb4a5",
+                        "surface-container-highest": "#e3e2e0",
+                        "secondary-fixed": "#ffdad3",
+                        "on-surface-variant": "#434843",
+                        "outline": "#737973",
+                        "on-secondary-container": "#732010",
+                        "secondary-container": "#fd876f",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#2f312f",
+                        "tertiary-container": "#2b2d1d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Lexend"],
+                        "label": ["Lexend"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-secondary selection:text-on-secondary">
+<main class="lg:pl-64 min-h-screen">
+<div class="max-w-7xl mx-auto px-8 py-12">
+<div class="mb-16">
+<nav class="mb-8">
+<a class="inline-flex items-center text-secondary text-xs font-bold uppercase tracking-widest hover:translate-x-[-4px] transition-transform" href="#">
+<span class="material-symbols-outlined mr-2">arrow_back</span>
+                        Gourmet Discoveries
+                    </a>
+</nav>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h1 class="text-6xl md:text-8xl font-black text-primary tracking-tighter leading-none mb-4">The Culinary<br/>Archive</h1>
+<p class="text-on-surface-variant font-medium tracking-wide flex items-center">
+<span class="w-12 h-[1px] bg-secondary mr-4"></span>
+                            124 TOTAL ENTRIES IN YOUR PERSONAL CURATION
+                        </p>
+</div>
+</div>
+</div>
+<div class="mb-12 bg-surface-container-low p-2 rounded-xl flex flex-col md:flex-row gap-4 items-center">
+<div class="relative w-full md:flex-1">
+<span class="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-lowest border-none py-6 pl-16 pr-8 rounded-lg focus:ring-2 focus:ring-secondary/20 transition-all text-lg placeholder:text-on-surface-variant/40" placeholder="Search your culinary history..." type="text"/>
+</div>
+<div class="flex gap-2 overflow-x-auto w-full md:w-auto px-2 md:px-0">
+<button class="whitespace-nowrap px-6 py-4 bg-primary text-on-primary rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors">Cuisine</button>
+<button class="whitespace-nowrap px-6 py-4 bg-surface-container-highest text-on-surface-variant rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-surface-container-high transition-colors">Price Range</button>
+<button class="whitespace-nowrap px-6 py-4 bg-surface-container-highest text-on-surface-variant rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-surface-container-high transition-colors">Rating</button>
+<button class="whitespace-nowrap px-6 py-4 bg-surface-container-highest text-on-surface-variant rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-surface-container-high transition-colors">Year</button>
+</div>
+</div>
+<div class="space-y-24">
+<article class="flex flex-col group border-b border-surface-variant/20 pb-20 last:border-0">
+<div class="w-full h-[500px] overflow-hidden rounded-xl bg-surface-container-high relative mb-12">
+<img alt="Terra &amp; Tide interior" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnvTovIr8UTZzYfTILp1gsZDC67yed0sl8I44py_r9M5ks5crhaaoplsiMOBJmOu0VRXJBGPIrYmBKcwVlqulNvUoOAlY5z0V9hujWpgdgBdYITWUXWvl7SRUGG7hdPQhbaAyxxNvq7wflGAK4jcT-hXEz4vNRKy1wpMqISYYTKEeMcqwNXRwMMXhw1ZtEbsdCWKI98CxOGu10V5DAOV4Xh9AepZ0HiUMR0apN_yChPkzxC682_24J3agQAaDV9c4S9THxfWfM65k"/>
+<div class="absolute top-6 left-6 bg-secondary text-on-secondary px-4 py-1 text-[10px] font-black uppercase tracking-widest">
+                            Visited Oct 2023
+                        </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+<div>
+<h2 class="text-5xl font-black text-primary tracking-tighter group-hover:text-secondary transition-colors leading-tight mb-2">Terra &amp; Tide</h2>
+<div class="flex items-center gap-4">
+<p class="text-secondary font-bold tracking-[0.3em]">$$$$</p>
+<span class="text-outline-variant/50">|</span>
+<p class="text-lg font-black text-primary">4.9 <span class="text-sm opacity-40">/ 5</span></p>
+</div>
+</div>
+<div>
+<p class="text-secondary text-xs font-bold tracking-widest uppercase mb-4">Modern Nordic • Tokyo, Japan</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-1 rounded-full border border-outline-variant text-[10px] uppercase font-bold tracking-widest">Minimalist</span>
+<span class="px-4 py-1 rounded-full border border-outline-variant text-[10px] uppercase font-bold tracking-widest">Tasting Menu</span>
+<span class="px-4 py-1 rounded-full border border-outline-variant text-[10px] uppercase font-bold tracking-widest">Coastal Views</span>
+</div>
+</div>
+<div>
+<p class="text-on-surface-variant text-lg leading-relaxed italic">
+                                "An exercise in restraint and precision. The reindeer moss with fermented lingonberries redefined my understanding of forest-to-table dining. A quiet, contemplative space that speaks volumes through its minimalist plates."
+                            </p>
+</div>
+</div>
+</article>
+<article class="flex flex-col group border-b border-surface-variant/20 pb-20 last:border-0">
+<div class="w-full h-[500px] overflow-hidden rounded-xl bg-surface-container-high relative mb-12">
+<img alt="The Emerald Mortar dish" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAl1_xcdrzNOKFHmRaZErcMF8GolSTNIS_sVFn1VascQSPE11mdp2fjSfNA8_6BS06rGbux4Vls1ubudQsqNOzjDIG0uYgXY-IVf4erAwuh7Jul23q1JM5lXY05mzAaZlIGeQgPpn6JcPAywaLVmbB0RhSRRYwUN0jLGN1MhHLDGftdTr1hrhD5iq9e1zT1zqe1RkNVPk6AtrhnI_4acY3ZlEIc-OkFen_F59sGMoVNgh1ru4f3wqiFWl5PmuKi_0sdmOm3ICn9pps"/>
+<div class="absolute top-6 left-6 bg-primary text-on-primary px-4 py-1 text-[10px] font-black uppercase tracking-widest">
+                            Visited Aug 2023
+                        </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+<div>
+<h2 class="text-5xl font-black text-primary tracking-tighter group-hover:text-secondary transition-colors leading-tight mb-2">The Emerald Mortar</h2>
+<div class="flex items-center gap-4">
+<p class="text-secondary font-bold tracking-[0.3em]">$$$</p>
+<span class="text-outline-variant/50">|</span>
+<p class="text-lg font-black text-primary">4.7 <span class="text-sm opacity-40">/ 5</span></p>
+</div>
+</div>
+<div>
+<p class="text-secondary text-xs font-bold tracking-widest uppercase mb-4">Progressive Thai • Bangkok, Thailand</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-1 rounded-full border border-outline-variant text-[10px] uppercase font-bold tracking-widest">Spicy</span>
+<span class="px-4 py-1 rounded-full border border-outline-variant text-[10px] uppercase font-bold tracking-widest">Contemporary</span>
+</div>
+</div>
+<div>
+<p class="text-on-surface-variant text-lg leading-relaxed">
+                                Bold, unyielding heat balanced by the surgical use of rare citrus. The street-food inspired elevates childhood memories to architectural heights. A kinetic atmosphere that vibrates with Bangkok's nocturnal energy.
+                            </p>
+</div>
+</div>
+</article>
+<article class="flex flex-col group border-b border-surface-variant/20 pb-20 last:border-0">
+<div class="w-full h-[500px] overflow-hidden rounded-xl bg-surface-container-high relative mb-12">
+<img alt="L'Héritage interior" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnYP8BDFtNpqi6BMT6wYvFhLzVQSEyqEAL0wpzsT77YoOqtoRfmVMNsfouwTIjd0Q54y8QF2NCklP8nik5Urg5_7dOKMQnicLbUuzdcZcupARAzp5OV8-nZk3d5mDRtINqRNtBLMC0RMty_U-2sCeCIuZlI5IVbs83lHg3Yw5twPVm_UbWyye0QR7yMknzZVcUkebgcz3J-NYusMS_qWs4IkpezRDFU9IdvCMMGY4fSYyZeA6tdct7P0Poyq1TjirXdi0nNhQzkHA"/>
+<div class="absolute top-6 left-6 bg-secondary text-on-secondary px-4 py-1 text-[10px] font-black uppercase tracking-widest">
+                            Visited May 2023
+                        </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+<div>
+<h2 class="text-5xl font-black text-primary tracking-tighter group-hover:text-secondary transition-colors leading-tight mb-2">L'Héritage</h2>
+<div class="flex items-center gap-4">
+<p class="text-secondary font-bold tracking-[0.3em]">$$$$$</p>
+<span class="text-outline-variant/50">|</span>
+<p class="text-lg font-black text-primary">4.8 <span class="text-sm opacity-40">/ 5</span></p>
+</div>
+</div>
+<div>
+<p class="text-secondary text-xs font-bold tracking-widest uppercase mb-4">Classic French • Paris, France</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-1 rounded-full border border-outline-variant text-[10px] uppercase font-bold tracking-widest">Historic</span>
+<span class="px-4 py-1 rounded-full border border-outline-variant text-[10px] uppercase font-bold tracking-widest">Silver Service</span>
+</div>
+</div>
+<div>
+<p class="text-on-surface-variant text-lg leading-relaxed italic">
+                                "The duck confit here is not merely food; it's a historical document. In an era of foam and dry ice, L'Héritage reminds us why the classics remain immortal. Service that is invisible yet omnipresent."
+                            </p>
+</div>
+</div>
+</article>
+</div>
+<div class="mt-32 py-12 border-t border-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-8">
+<div class="flex items-center gap-4">
+<button class="w-12 h-12 rounded-full border border-outline flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<span class="text-sm font-bold tracking-widest">PAGE 01 OF 12</span>
+<button class="w-12 h-12 rounded-full border border-outline flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<button class="px-12 py-4 bg-primary text-on-primary rounded-lg text-xs font-bold uppercase tracking-[0.3em] hover:scale-105 transition-transform shadow-xl shadow-primary/10">
+                    Export Archive as PDF
+                </button>
+</div>
+</div>
+</main>
+<footer class="md:hidden fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-lg border-t border-surface-variant/20 flex justify-around items-center py-4 z-50">
+<button class="flex flex-col items-center gap-1 text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+<span class="text-[9px] font-bold uppercase tracking-widest">Archive</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined">map</span>
+<span class="text-[9px] font-bold uppercase tracking-widest">Maps</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined">search</span>
+<span class="text-[9px] font-bold uppercase tracking-widest">Search</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[9px] font-bold uppercase tracking-widest">Profile</span>
+</button>
+</footer>
+
+</body></html>

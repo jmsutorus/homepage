@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#434843",
+                    "surface-container-high": "#e9e8e5",
+                    "inverse-surface": "#2f312f",
+                    "primary-container": "#1b3022",
+                    "secondary-fixed": "#ffdad3",
+                    "secondary-container": "#fd876f",
+                    "surface-tint": "#4d6453",
+                    "surface": "#faf9f6",
+                    "primary": "#061b0e",
+                    "tertiary": "#17180a",
+                    "surface-dim": "#dbdad7",
+                    "on-secondary-fixed-variant": "#802918",
+                    "inverse-primary": "#b4cdb8",
+                    "surface-bright": "#faf9f6",
+                    "primary-fixed": "#d0e9d4",
+                    "on-secondary-fixed": "#3e0500",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#1b1d0e",
+                    "tertiary-container": "#2b2d1d",
+                    "outline": "#737973",
+                    "surface-container": "#efeeeb",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#819986",
+                    "surface-container-highest": "#e3e2e0",
+                    "secondary-fixed-dim": "#ffb4a5",
+                    "secondary": "#9f402d",
+                    "outline-variant": "#c3c8c1",
+                    "on-secondary-container": "#732010",
+                    "inverse-on-surface": "#f2f1ee",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#b4cdb8",
+                    "on-primary-fixed-variant": "#364c3c",
+                    "on-background": "#1a1c1a",
+                    "on-tertiary-container": "#93947f",
+                    "surface-variant": "#e3e2e0",
+                    "tertiary-fixed": "#e4e4cc",
+                    "on-tertiary-fixed-variant": "#474836",
+                    "tertiary-fixed-dim": "#c8c8b0",
+                    "on-error-container": "#93000a",
+                    "background": "#faf9f6",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f4f3f1",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-primary": "#ffffff",
+                    "on-surface": "#1a1c1a",
+                    "on-primary-fixed": "#0b2013"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- SideNavBar (Authority: Shared Components JSON) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#faf9f6] dark:bg-[#061b0e] flex flex-col p-6 space-y-8 z-50 hidden md:flex">
+<div class="flex items-center gap-3">
+<span class="text-xl font-bold text-[#061b0e] dark:text-[#faf9f6]">MediaLibrary</span>
+</div>
+<div class="space-y-1">
+<p class="font-lexend text-sm tracking-wide uppercase font-medium opacity-50 mb-4 px-2">Editorial Collection</p>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#9f402d] font-bold border-r-4 border-[#9f402d] bg-white/50 dark:bg-white/5 transition-transform scale-102 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">subscriptions</span>
+<span>Library</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#434843] dark:text-[#e3e2e0] opacity-70 hover:bg-[#e3e2e0] dark:hover:bg-[#1B3022] hover:opacity-100 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">category</span>
+<span>Genres</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#434843] dark:text-[#e3e2e0] opacity-70 hover:bg-[#e3e2e0] dark:hover:bg-[#1B3022] hover:opacity-100 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">queue_music</span>
+<span>Playlists</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#434843] dark:text-[#e3e2e0] opacity-70 hover:bg-[#e3e2e0] dark:hover:bg-[#1B3022] hover:opacity-100 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>Recent</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#434843] dark:text-[#e3e2e0] opacity-70 hover:bg-[#e3e2e0] dark:hover:bg-[#1B3022] hover:opacity-100 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">download</span>
+<span>Downloads</span>
+</a>
+</div>
+<div class="mt-auto space-y-4">
+<button class="w-full py-4 px-6 bg-secondary text-on-secondary rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined">add</span>
+<span>Add New Media</span>
+</button>
+<div class="flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="User Profile" data-alt="Close-up portrait of a professional man with a friendly expression in a modern office with soft bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRqQNzzTOc3xqsWlbDoetLJ3KJBQ1hRkXx9qPgGuWX_mpGexQP5HqHwQ3FegGCAgskkfGjF4WV_ett104VKctKtqSjO2j7HPwuTnX65Q7br-glqmuvH3rQCCwRusOvmGOQetCM2-gjNJfbZjf-IG2Iu8RKIB7yk9xeUCO4fpYjKyC09WKsL8lZswMxeq_gTJCf0xV01lg56jb3FtEe21NRDVYs8WicmEVliF0esihzpuy_-rGS5R1gvbdiPdTvChZwg_hkK-3LrW0"/>
+</div>
+<div>
+<p class="text-xs font-bold uppercase tracking-widest text-primary">Premium Tier</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="md:ml-64 min-h-screen pb-24">
+<!-- TopNavBar (Authority: Shared Components JSON) -->
+<header class="w-full top-0 sticky bg-[#faf9f6] dark:bg-[#061b0e] text-[#061b0e] dark:text-[#faf9f6] z-40 flex justify-between items-center px-8 py-4 max-w-[1440px] mx-auto">
+<div class="flex-1 max-w-2xl hidden md:block">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-12 pr-6 py-3 bg-surface-container-low rounded-full border-none focus:ring-2 focus:ring-secondary/20 transition-all text-sm placeholder:text-on-surface-variant/50" placeholder="Search your media library..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<nav class="flex items-center gap-8 text-sm uppercase tracking-widest font-bold">
+<a class="text-[#9f402d] font-semibold border-b-2 border-[#9f402d] pb-1 hover:text-[#9f402d] transition-colors duration-300" href="#">MOVIES</a>
+<a class="text-[#434843] dark:text-[#e3e2e0] hover:text-[#9f402d] transition-colors duration-300" href="#">TV</a>
+<a class="text-[#434843] dark:text-[#e3e2e0] hover:text-[#9f402d] transition-colors duration-300" href="#">BOOKS</a>
+<a class="text-[#434843] dark:text-[#e3e2e0] hover:text-[#9f402d] transition-colors duration-300" href="#">GAMES</a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Search Bar Mobile -->
+<div class="px-8 py-4 md:hidden">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-12 pr-4 py-3 bg-surface-container-low rounded-xl border-none" placeholder="Search library..." type="text"/>
+</div>
+</div>
+<!-- Filters Section -->
+<section class="px-8 pt-4 pb-8 flex flex-wrap items-center gap-4">
+<div class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-full text-xs font-bold tracking-widest uppercase">
+<span class="material-symbols-outlined text-sm">tune</span>
+<span>Filters</span>
+</div>
+<!-- Genres -->
+<div class="flex gap-2">
+<span class="px-4 py-2 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-medium cursor-pointer hover:bg-tertiary-fixed-dim transition-colors">Sci-Fi</span>
+<span class="px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-medium cursor-pointer hover:bg-surface-container-highest transition-colors">Fantasy</span>
+<span class="px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-medium cursor-pointer hover:bg-surface-container-highest transition-colors">Drama</span>
+</div>
+<div class="h-6 w-[1px] bg-outline-variant/30 mx-2"></div>
+<!-- Tags -->
+<div class="flex gap-2">
+<span class="px-4 py-2 bg-secondary-fixed text-on-secondary-fixed-variant rounded-full text-xs font-medium cursor-pointer flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">sell</span> Sanderson
+                </span>
+<span class="px-4 py-2 bg-surface-container-low border border-outline-variant/20 text-on-surface-variant rounded-full text-xs font-medium cursor-pointer hover:bg-surface-container transition-colors">Unread</span>
+<span class="px-4 py-2 bg-surface-container-low border border-outline-variant/20 text-on-surface-variant rounded-full text-xs font-medium cursor-pointer hover:bg-surface-container transition-colors">Favorites</span>
+</div>
+</section>
+<!-- Cinematic Hero: The Sunlit Man -->
+<section class="px-8 mb-16">
+<div class="relative w-full aspect-[21/9] rounded-2xl overflow-hidden group">
+<img alt="The Sunlit Man Hero" class="w-full h-full object-cover" data-alt="Cinematic wide shot of a solitary figure walking across a scorched, cracked desert floor under a massive, glowing orange sun in a hazy sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMPhtTAZAkvsdZllEpfXDzDiVMhDbAUEAzzxcuZtKQsS8kAaYACEITIxqlnSAQfLQxz8-XzcohkCKWL3kTEZwW2DJWXlvf2HaCY93woLJGCJzbraTs3ZrPITiqTOCvgXgkgi3aZacnw1ljHVgh786YBqhGm0dX4fQv3gus_FICvGgiZuaoOs7RVJu7mszUQ_xX8ajo26rXstudLRHAsxJNXIJVas4E5sJaE8Rk20VTKdtQjRDnl9otp6k6pog11L5_JgIR7Df6FKM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-12 w-full flex flex-col md:flex-row md:items-end justify-between gap-8">
+<div class="max-w-2xl">
+<span class="inline-block px-3 py-1 bg-secondary text-on-secondary text-[10px] font-bold tracking-[0.2em] uppercase rounded mb-4">Latest Arrival</span>
+<h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-white mb-4">The Sunlit Man</h1>
+<p class="text-white/80 text-lg font-light leading-relaxed mb-6">A man wakes up on a world where the sun incinerates anything it touches. He must run. But how far can you go when the dawn is your executioner?</p>
+<div class="flex gap-4">
+<button class="px-8 py-3 bg-white text-primary font-bold rounded-lg hover:scale-105 transition-transform active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                                Begin Journey
+                            </button>
+<button class="px-8 py-3 bg-white/10 backdrop-blur-md text-white font-bold rounded-lg hover:bg-white/20 transition-all border border-white/20">
+                                Details
+                            </button>
+</div>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<div class="text-right">
+<p class="text-white/50 text-xs uppercase tracking-widest font-bold mb-1">Author</p>
+<p class="text-white font-medium">Brandon Sanderson</p>
+</div>
+<div class="w-[1px] h-10 bg-white/20"></div>
+<div class="text-right">
+<p class="text-white/50 text-xs uppercase tracking-widest font-bold mb-1">Status</p>
+<p class="text-white font-medium">24% Complete</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Active Journeys Grid -->
+<section class="px-8 mb-12">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold tracking-tight text-primary">Active Journeys</h2>
+<a class="text-secondary font-bold text-sm tracking-wide uppercase flex items-center gap-1 hover:underline" href="#">
+                    View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+<!-- Card 1 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-surface-container mb-4 transition-all duration-500 group-hover:scale-102 group-hover:-translate-y-2">
+<img alt="Dune" class="w-full h-full object-cover" data-alt="Abstract cinematic movie poster style with deep orange sand dunes and a small dark silhouette of a traveler under a giant crescent moon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDb_7VbCBxbUuNy2G-GkdoiT72mEfIZ6zat9A4F1cM86OSDWmajbRmAgpppZzTM-2NrfN5QxXd_iBgs7Gf9ixLX-KLbZjr-FH7KmLM8Lhld1Aolui7Yraa8qzEUWPR5sLZuZWldQiiSoaZow_4cZYX9kMxue8C7UVlgLTKxosalLpoVVVEvEdYTx4-Gc_hErPtqd3oEIY7bI7iLVIlva4cHnUfpg235y_MXABLiYaOe36C3C6l3CfYhher1BdIAP0OJo-EXovTa0wg"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<div class="w-12 h-12 rounded-full bg-white text-primary flex items-center justify-center shadow-2xl">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="absolute top-3 right-3 px-2 py-1 bg-primary-container/80 backdrop-blur-sm text-on-primary-container text-[10px] font-bold rounded">
+                            4K HDR
+                        </div>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-surface-container-highest">
+<div class="h-full bg-secondary w-3/4"></div>
+</div>
+</div>
+<h3 class="font-bold text-primary truncate">Arrival of the Seer</h3>
+<p class="text-on-surface-variant text-sm">Sci-Fi • 75% Viewed</p>
+</div>
+<!-- Card 2 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-surface-container mb-4 transition-all duration-500 group-hover:scale-102 group-hover:-translate-y-2">
+<img alt="The Way of Kings" class="w-full h-full object-cover" data-alt="Epic fantasy book cover art showing a stormy landscape with shattered plains and a warrior in glowing plate armor holding a massive sword" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCE2KMK2cPLU2UA48yUZt_sKVDnpPYbfsiZb8UTZyyH9ozWnHv4XOIVuOiwpZ4FeRBWXSg8zc8bGoOGd5e46Vb2UAl2KJLZQsP4Mia8pjtb-WZ6_oc-hF1uqKMP1x3uzt1rX1pke1kw4eenR1kWU2C8sn8E0aEGW4DsCxhm13VsIjeEQl_fzLiEfOfw3NPkVF4dd7SthMdCjMVTJN_1MduozYG3u5HWAZpWpleawBwTT6cTiK2k-Ud0dmtrT6-48akD_Unmr0k6_W0"/>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-surface-container-highest">
+<div class="h-full bg-secondary w-1/2"></div>
+</div>
+</div>
+<h3 class="font-bold text-primary truncate">The Way of Kings</h3>
+<p class="text-on-surface-variant text-sm">Epic Fantasy • 512 / 1200 pages</p>
+</div>
+<!-- Card 3 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-surface-container mb-4 transition-all duration-500 group-hover:scale-102 group-hover:-translate-y-2">
+<img alt="Cyberpunk 2077" class="w-full h-full object-cover" data-alt="Vibrant neon city street at night with futuristic rain-slicked pavement and glowing holographic advertisements in a dense urban environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB_bKYPe4sKcVjFI3AAVvxeuLI-1i92Tnm5HatkktaAyIY9WlwSNfpfi4ht6lMdtQpUKSDih4eG2-fZGu_TnMf1Rw38BfULGDkcAXlP-E28thg8kk7QnotzhtkWOxSegELyzuXKrOmxQp684Y5jjco2_uOO2VJ0fKtS0RlpkKV5YM3ygzeHaKg4TkJdWQ04B7Abh8BEGHeW5RjhZq2T8MCYqTVJIbHgxxnudopi8VDd8WiQ_lrhWjdgeMepTvw7tLnvbWuOC2AB2U"/>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-surface-container-highest">
+<div class="h-full bg-secondary w-1/5"></div>
+</div>
+</div>
+<h3 class="font-bold text-primary truncate">Cyberpunk 2077</h3>
+<p class="text-on-surface-variant text-sm">RPG • 12 Hours Played</p>
+</div>
+<!-- Card 4 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-surface-container mb-4 transition-all duration-500 group-hover:scale-102 group-hover:-translate-y-2">
+<img alt="The Midnight Library" class="w-full h-full object-cover" data-alt="Moody dark library interior with glowing lanterns and magical dust floating between rows of endless towering bookshelves" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBR1THuQxOYlGM1SrHTDpSaled04kQNpgksVxg5uqVFwbyvemIE1ws7LpOjg7erJqCOPMsomGGnzruz4-LeCbOBVtujjmuT3XQowCrtYXimE3J2FpZQUOKd3syOjcgDIuLudBJZxDj7gOvK_ck8R-EfC2Nkdk5rMvIjGrjtEwsGx-nvRy67fVlM4hW1voAAcys0etUCC-y5LhhKXGjprJ_lI3ic3-f3GlvSFWT3NN7honKUkYyO3RTVK2xHYijDRfC54yyVCjV60Ow"/>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-surface-container-highest">
+<div class="h-full bg-secondary w-4/5"></div>
+</div>
+</div>
+<h3 class="font-bold text-primary truncate">The Midnight Library</h3>
+<p class="text-on-surface-variant text-sm">Fiction • Audio Book</p>
+</div>
+<!-- Card 5 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-surface-container mb-4 transition-all duration-500 group-hover:scale-102 group-hover:-translate-y-2">
+<img alt="Interstellar" class="w-full h-full object-cover" data-alt="Cinematic still of a spaceship traveling through a massive glowing wormhole with swirling gas and light patterns in deep space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnsu_Axp4gzc2SIhiFCN67yYaCPwvZGCMrMsHiY3Ro_8ymLMRClPvoos5YgSjAAXUZw1W7gLEWiGiIzmyP7FbZR66uUn2LBmHxgyuZp6nVo5sHQ83DfDaOjm1PVIvai7CTkBC1Z4Tsv-hABs_ensFpiCHpfDrxp-dmAVjX6gMhjDDqKFev4w-ZtiXvnofzipOcIG6eI6PIhopmBPQauDeVUUfpM6qxpz_iPYN6jaAszQmHIkJKo2YwBWTpPJkqmBiTtnkoi-UCY6g"/>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-surface-container-highest">
+<div class="h-full bg-secondary w-1/4"></div>
+</div>
+</div>
+<h3 class="font-bold text-primary truncate">Interstellar</h3>
+<p class="text-on-surface-variant text-sm">Sci-Fi • Re-watching</p>
+</div>
+</div>
+</section>
+<!-- Bento Grid: Curated Collections -->
+<section class="px-8 mb-24">
+<h2 class="text-2xl font-bold tracking-tight text-primary mb-8">Curated Editorial</h2>
+<div class="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 h-[600px]">
+<!-- Large Feature -->
+<div class="md:col-span-2 md:row-span-2 relative rounded-2xl overflow-hidden bg-primary group cursor-pointer">
+<img alt="Fantasy Collection" class="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700" data-alt="High fantasy landscape with floating islands and a waterfall cascading into a crystal clear lake at sunrise" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7pcvtmMg32DbGNhYZ5j7HDRd6h0ozmJWI6-i5585aouD9mwd6_w3xhoYOKafn380CW3tp8JwbMK4zivGqgpf84pILAFTCHWhX3M2Hv2RmkcqFoarl8e2qLLpcLu1dRUWErjfihb7lYoX76fisVB2o73j5QRr_T8xXLdUs2L0WT3cnb7LIY3lEnLzB0brLB16xa0m3O53WehciDRxmNS_Uwxknh2u5KpxOzW2uNX9TtU_H1hPUj0wcLTcQwFWMm-qg6jTZwPuQXlk"/>
+<div class="absolute inset-0 p-10 flex flex-col justify-end bg-gradient-to-t from-primary/80 to-transparent">
+<span class="text-secondary text-xs font-bold tracking-[0.3em] uppercase mb-4">Masterpiece Collection</span>
+<h3 class="text-3xl font-bold text-white mb-2">The High Fantasy Essentials</h3>
+<p class="text-white/70 max-w-sm">From Tolkien to Sanderson, discover the worlds that defined a genre.</p>
+</div>
+</div>
+<!-- Small Grid 1 -->
+<div class="md:col-span-2 relative rounded-2xl overflow-hidden bg-surface-container-high group cursor-pointer">
+<div class="absolute inset-0 p-8 flex items-center justify-between">
+<div>
+<span class="text-primary/40 text-[10px] font-bold tracking-widest uppercase block mb-1">Playlist</span>
+<h3 class="text-xl font-bold text-primary">Late Night Coding</h3>
+<p class="text-on-surface-variant text-sm">Lo-fi beats to keep the focus sharp.</p>
+</div>
+<div class="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-4xl">headphones</span>
+</div>
+</div>
+</div>
+<!-- Small Grid 2 -->
+<div class="md:col-span-1 relative rounded-2xl overflow-hidden bg-tertiary-container group cursor-pointer">
+<div class="absolute inset-0 p-8 flex flex-col justify-center text-center">
+<span class="material-symbols-outlined text-on-tertiary-container text-4xl mb-4">auto_stories</span>
+<h3 class="text-lg font-bold text-on-tertiary-container">Unfinished Chapters</h3>
+<p class="text-on-tertiary-container/60 text-xs mt-2">12 books waiting for you</p>
+</div>
+</div>
+<!-- Small Grid 3 -->
+<div class="md:col-span-1 relative rounded-2xl overflow-hidden bg-secondary-container group cursor-pointer">
+<div class="absolute inset-0 p-8 flex flex-col justify-center text-center">
+<span class="material-symbols-outlined text-on-secondary-container text-4xl mb-4">movie</span>
+<h3 class="text-lg font-bold text-on-secondary-container">Director's Cut</h3>
+<p class="text-on-secondary-container/60 text-xs mt-2">Exclusive behind-the-scenes</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full bg-surface-container-lowest flex md:hidden items-center justify-around py-4 z-50">
+<button class="flex flex-col items-center gap-1 text-[#9f402d] font-semibold border-b-2 border-[#9f402d] pb-1">
+<span class="material-symbols-outlined">subscriptions</span>
+<span class="text-[10px] uppercase font-bold tracking-tighter">Library</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-[#434843] opacity-70">
+<span class="material-symbols-outlined">category</span>
+<span class="text-[10px] uppercase font-bold tracking-tighter">Genres</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-[#434843] opacity-70">
+<span class="material-symbols-outlined">queue_music</span>
+<span class="text-[10px] uppercase font-bold tracking-tighter">Playlists</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-[#434843] opacity-70">
+<span class="material-symbols-outlined">history</span>
+<span class="text-[10px] uppercase font-bold tracking-tighter">Recent</span>
+</button>
+</nav>
+</body></html>

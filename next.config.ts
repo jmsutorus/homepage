@@ -210,6 +210,24 @@ const nextConfig: NextConfig = {
         hostname: "upload.wikimedia.org",
         pathname: "/**",
       },
+      // Cloudinary (used for vacation posters)
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+      // Google User Content (used for prototype images and photos)
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+      // Unsplash images for editorial featured content
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
       // Add your custom Tautulli/Home Assistant domains here if needed
       // Example:
       // {

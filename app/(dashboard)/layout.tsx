@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { SideNav } from "@/components/layout/side-nav";
 import { CommandPalette } from "@/components/layout/command-palette";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 
@@ -13,11 +14,16 @@ export default function DashboardLayout({
   useGlobalShortcuts();
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1">
-        <div className="container mx-auto py-8 max-w-screen-2xl px-4 md:px-6">{children}</div>
-      </main>
+    <div className="relative min-h-screen flex flex-col bg-[#faf9f6]/50 dark:bg-[#061b0e]/50">
+      <SideNav />
+      <div className="flex-1 md:pl-72 flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-1">
+          <div className="container mx-auto py-8 max-w-screen-2xl px-4 md:px-8">
+            {children}
+          </div>
+        </main>
+      </div>
       <CommandPalette />
     </div>
   );
