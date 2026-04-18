@@ -52,7 +52,7 @@ export function MediaCuratedBento() {
             <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-6 transition-transform">
               <span className="material-symbols-outlined text-media-on-secondary-container text-4xl">movie</span>
             </div>
-            <h3 className="text-xl font-bold text-media-on-secondary-container tracking-tight">Director's Cut</h3>
+            <h3 className="text-xl font-bold text-media-on-secondary-container tracking-tight">Director&apos;s Cut</h3>
             <p className="text-media-on-secondary-container/60 text-xs mt-2 uppercase font-bold tracking-tighter">Exclusive Behind-The-Scenes</p>
           </div>
         </div>

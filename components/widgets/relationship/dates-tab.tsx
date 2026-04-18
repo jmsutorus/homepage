@@ -156,7 +156,7 @@ export function DatesTab({
                     ))}
                   </div>
                   <p className="text-white/90 italic text-sm leading-relaxed">
-                    "{dates[0].notes || "A moment to remember forever."}"
+                    &quot;{dates[0].notes || "A moment to remember forever."}&quot;
                   </p>
                 </div>
               </div>

@@ -90,7 +90,7 @@ export function StatusRegistry({ initialStatuses, onChanged }: StatusRegistryPro
         <h2 className="text-lg font-black uppercase tracking-widest text-media-primary">Task Statuses</h2>
         <button 
           onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 text-media-secondary font-bold text-xs uppercase tracking-widest hover:underline"
+          className="cursor-pointer flex items-center gap-2 text-media-secondary font-bold text-xs uppercase tracking-widest hover:underline"
         >
           <PlusCircle className="w-4 h-4" />
           Add Status
@@ -150,15 +150,15 @@ export function StatusRegistry({ initialStatuses, onChanged }: StatusRegistryPro
               </div>
               <div className="flex justify-end gap-3 items-center">
                 {editingId === status.id ? (
-                  <button onClick={() => handleSaveEdit(status.id)} className="text-green-600">
+                  <button onClick={() => handleSaveEdit(status.id)} className="cursor-pointer text-green-600">
                     <Check className="w-4 h-4" />
                   </button>
                 ) : (
                   <>
-                    <button onClick={() => { setEditingId(status.id); setEditingName(status.name); }} className="text-media-primary/40 hover:text-media-primary">
+                    <button onClick={() => { setEditingId(status.id); setEditingName(status.name); }} className="cursor-pointer text-media-primary/40 hover:text-media-primary">
                       <Edit2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(status.id)} className="text-media-error/40 hover:text-media-error">
+                    <button onClick={() => handleDelete(status.id)} className="cursor-pointer text-media-error/40 hover:text-media-error">
                       <Trash2 className="w-4 h-4" />
                     </button>
                     <GripVertical className="w-4 h-4 text-media-on-surface-variant/40 group-hover:text-media-primary cursor-pointer transition-colors" />
@@ -181,8 +181,8 @@ export function StatusRegistry({ initialStatuses, onChanged }: StatusRegistryPro
                 onKeyDown={(e) => e.key === 'Enter' && handleAddStatus()}
               />
               <div className="flex gap-2">
-                <button onClick={handleAddStatus} className="bg-media-secondary text-media-on-secondary px-4 py-1 rounded text-xs font-bold uppercase tracking-widest">Save</button>
-                <button onClick={() => setIsAdding(false)} className="text-media-on-surface-variant px-4 py-1 rounded text-xs font-bold uppercase tracking-widest">Cancel</button>
+                <button onClick={handleAddStatus} className="cursor-pointer bg-media-secondary text-media-on-secondary px-4 py-1 rounded text-xs font-bold uppercase tracking-widest">Save</button>
+                <button onClick={() => setIsAdding(false)} className="cursor-pointer text-media-on-surface-variant px-4 py-1 rounded text-xs font-bold uppercase tracking-widest">Cancel</button>
               </div>
             </div>
           </div>

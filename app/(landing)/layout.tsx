@@ -31,7 +31,7 @@ export default function LandingLayout({
             <Link href="/docs" className="text-[#f6f6fc]/70 hover:text-[#81ecff] transition-colors duration-300">Docs</Link>
           </div>
           <Link href="/sign-up">
-            <button className="bg-gradient-to-br from-[#81ecff] to-[#00d4ec] text-[#005762] font-semibold px-6 py-2 rounded-lg transition-all hover:shadow-[0_0_15px_rgba(129,236,255,0.4)] hover:scale-105 active:scale-95">
+            <button className="cursor-pointer bg-gradient-to-br from-[#81ecff] to-[#00d4ec] text-[#005762] font-semibold px-6 py-2 rounded-lg transition-all hover:shadow-[0_0_15px_rgba(129,236,255,0.4)] hover:scale-105 active:scale-95">
               Get Started
             </button>
           </Link>
@@ -54,10 +54,10 @@ export default function LandingLayout({
             {/* <Link href="/" className="text-sm text-[#f6f6fc]/50 hover:text-[#ff8f00] transition-all">Terms</Link> */}
           </div>
           <div className="flex gap-4">
-            <button className="w-10 h-10 rounded-full border border-[#46484d]/30 flex items-center justify-center hover:bg-[#23262c] transition-colors">
+            <button className="cursor-pointer w-10 h-10 rounded-full border border-[#46484d]/30 flex items-center justify-center hover:bg-[#23262c] transition-colors">
               <Share2 className="w-4 h-4 text-[#f6f6fc]/70" />
             </button>
-            <button className="w-10 h-10 rounded-full border border-[#46484d]/30 flex items-center justify-center hover:bg-[#23262c] transition-colors">
+            <button className="cursor-pointer w-10 h-10 rounded-full border border-[#46484d]/30 flex items-center justify-center hover:bg-[#23262c] transition-colors">
               <AtSign className="w-4 h-4 text-[#f6f6fc]/70" />
             </button>
           </div>

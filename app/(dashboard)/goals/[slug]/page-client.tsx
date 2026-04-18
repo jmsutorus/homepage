@@ -695,10 +695,10 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
             
             <div className="mt-12 flex gap-4">
               <Link href={`/goals/${goal.slug}/edit`}>
-                <button className="bg-media-secondary text-media-on-secondary px-6 py-3 rounded-lg font-bold text-sm tracking-tight hover:opacity-90 transition-all">Add Reflection</button>
+                <button className="cursor-pointer bg-media-secondary text-media-on-secondary px-6 py-3 rounded-lg font-bold text-sm tracking-tight hover:opacity-90 transition-all">Add Reflection</button>
               </Link>
               <Link href={`/goals/${goal.slug}/edit`}>
-                <button className="bg-media-primary text-media-on-primary px-6 py-3 rounded-lg font-bold text-sm tracking-tight hover:opacity-90 transition-all">Update Strategy</button>
+                <button className="cursor-pointer bg-media-primary text-media-on-primary px-6 py-3 rounded-lg font-bold text-sm tracking-tight hover:opacity-90 transition-all">Update Strategy</button>
               </Link>
             </div>
           </div>

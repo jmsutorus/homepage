@@ -112,7 +112,7 @@ export function GoalsPageClient({ initialGoals }: GoalsPageClientProps) {
               Goals
             </h1>
             <p className="text-slate-500 dark:text-slate-400 max-w-md font-light italic leading-relaxed text-lg">
-              "The future belongs to those who believe in the beauty of their dreams."
+              &quot;The future belongs to those who believe in the beauty of their dreams.&quot;
               <span className="block mt-4 text-[10px] not-italic font-bold uppercase tracking-widest text-[#7A9E8F]">
                 {stats.active} active • {stats.completed} completed • {stats.total} total
               </span>

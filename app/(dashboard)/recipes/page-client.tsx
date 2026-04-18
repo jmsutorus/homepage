@@ -438,8 +438,8 @@ export function MealsPageClient({
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 pt-8">
           <div className="lg:col-span-8 flex flex-col md:flex-row bg-media-primary rounded-xl overflow-hidden shadow-2xl">
             <div className="md:w-1/2 p-10 md:p-14 flex flex-col justify-center space-y-6">
-              <span className="text-media-secondary text-[10px] font-black uppercase tracking-[0.3em]">The Maker's Philosophy</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-media-on-primary tracking-tight">"Cooking is the soul's primary language."</h2>
+              <span className="text-media-secondary text-[10px] font-black uppercase tracking-[0.3em]">The Maker&apos;s Philosophy</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-media-on-primary tracking-tight">&quot;Cooking is the soul&apos;s primary language.&quot;</h2>
               <p className="text-media-on-primary/60 italic leading-relaxed text-lg">
                 Join our community of tactile chefs. We believe in the slow movement, the heavy cast iron, and the patience of a proper proofing.
               </p>
@@ -461,7 +461,13 @@ export function MealsPageClient({
           <div className="lg:col-span-4">
             <PantryWidget 
               groceryList={groceryList} 
-              onViewAll={() => {setActiveTab("grocery"); window.scrollTo({ top: document.querySelector('[role="tablist"]')?.getBoundingClientRect().top! + window.scrollY - 100, behavior: 'smooth' });}} 
+              onViewAll={() => {
+                setActiveTab("grocery");
+                const rect = document.querySelector('[role="tablist"]')?.getBoundingClientRect();
+                if (rect) {
+                  window.scrollTo({ top: rect.top + window.scrollY - 100, behavior: 'smooth' });
+                }
+              }} 
             />
           </div>
         </section>
@@ -483,11 +489,11 @@ export function MealsPageClient({
           <Inventory className={`h-6 w-6 ${activeTab === 'grocery' ? 'fill-current' : ''}`} />
           <span className="text-[10px] font-bold uppercase tracking-tighter">Pantry</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-media-on-surface-variant">
+        <button className="cursor-pointer flex flex-col items-center gap-1 text-media-on-surface-variant">
           <Book className="h-6 w-6" />
           <span className="text-[10px] font-bold uppercase tracking-tighter">Journal</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-media-on-surface-variant">
+        <button className="cursor-pointer flex flex-col items-center gap-1 text-media-on-surface-variant">
           <SettingsIcon className="h-6 w-6" />
           <span className="text-[10px] font-bold uppercase tracking-tighter">Settings</span>
         </button>
@@ -496,7 +502,7 @@ export function MealsPageClient({
       {/* Floating Action Button */}
       <button 
         onClick={() => setMobileFormOpen(true)}
-        className="fixed bottom-24 right-8 lg:bottom-12 lg:right-12 w-16 h-16 bg-media-secondary text-media-on-secondary rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all z-40 group"
+        className="cursor-pointer fixed bottom-24 right-8 lg:bottom-12 lg:right-12 w-16 h-16 bg-media-secondary text-media-on-secondary rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all z-40 group"
       >
         <Plus className="h-8 w-8 text-media-on-secondary" />
         <span className="absolute right-20 bg-media-primary text-media-on-primary px-4 py-2 rounded text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">New Recipe</span>

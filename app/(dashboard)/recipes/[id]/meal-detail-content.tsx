@@ -153,7 +153,7 @@ export function MealDetailContent({ meal }: MealDetailContentProps) {
         <div className="relative z-10 max-w-4xl space-y-8">
           <div className="flex flex-wrap gap-3">
             <span className="bg-media-secondary px-4 py-1.5 text-[10px] tracking-[0.2em] text-media-on-secondary uppercase font-black rounded-full">Editorial Feature</span>
-            <span className="bg-media-primary-container px-4 py-1.5 text-[10px] tracking-[0.2em] text-media-on-primary-container uppercase font-black rounded-full">Chef's Choice</span>
+            <span className="bg-media-primary-container px-4 py-1.5 text-[10px] tracking-[0.2em] text-media-on-primary-container uppercase font-black rounded-full">Chef&apos;s Choice</span>
           </div>
           
           <motion.h1 
@@ -330,7 +330,7 @@ export function MealDetailContent({ meal }: MealDetailContentProps) {
                   </p>
                 </div>
                 <div className="space-y-4">
-                  <h5 className="text-[10px] uppercase tracking-[0.4em] font-black text-media-secondary">Elena's Secret</h5>
+                  <h5 className="text-[10px] uppercase tracking-[0.4em] font-black text-media-secondary">Elena&apos;s Secret</h5>
                   <p className="text-lg leading-relaxed text-white/70 italic">
                     Infuse your stock with a single dried kombu sheet while heating. It subtly boosts the glutamate levels for a deeper, richer flavor profile.
                   </p>
@@ -343,19 +343,19 @@ export function MealDetailContent({ meal }: MealDetailContentProps) {
 
       {/* Mobile Bottom Navigation */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-media-surface-container-highest/80 backdrop-blur-xl flex justify-around items-center py-5 px-6 z-50 border-t border-media-outline-variant/10">
-        <button onClick={() => router.push('/recipes')} className="flex flex-col items-center gap-1 text-media-on-surface-variant/60 hover:text-media-secondary transition-colors">
+        <button onClick={() => router.push('/recipes')} className="cursor-pointer flex flex-col items-center gap-1 text-media-on-surface-variant/60 hover:text-media-secondary transition-colors">
           <BookOpen className="h-6 w-6" />
           <span className="text-[10px] font-black uppercase tracking-tighter">Journal</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-media-secondary">
+        <button className="cursor-pointer flex flex-col items-center gap-1 text-media-secondary">
           <Utensils className="h-6 w-6 fill-current" />
           <span className="text-[10px] font-black uppercase tracking-tighter">Cook</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-media-on-surface-variant/60">
+        <button className="cursor-pointer flex flex-col items-center gap-1 text-media-on-surface-variant/60">
           <Bookmark className="h-6 w-6" />
           <span className="text-[10px] font-black uppercase tracking-tighter">Saved</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-media-on-surface-variant/60">
+        <button className="cursor-pointer flex flex-col items-center gap-1 text-media-on-surface-variant/60">
           <User className="h-6 w-6" />
           <span className="text-[10px] font-black uppercase tracking-tighter">Studio</span>
         </button>

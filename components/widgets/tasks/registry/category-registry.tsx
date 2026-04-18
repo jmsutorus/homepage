@@ -110,7 +110,7 @@ export function CategoryRegistry({ initialCategories, tasks, onChanged }: Catego
         <h2 className="text-lg font-black uppercase tracking-widest text-media-primary">Categories</h2>
         <button 
           onClick={fetchCategories}
-          className="text-media-primary hover:rotate-180 transition-transform duration-500"
+          className="cursor-pointer text-media-primary hover:rotate-180 transition-transform duration-500"
         >
           <RotateCcw className="w-4 h-4" />
         </button>
@@ -140,7 +140,7 @@ export function CategoryRegistry({ initialCategories, tasks, onChanged }: Catego
             
             <div className="flex items-center gap-3">
               {editingId === category.id ? (
-                <button onClick={() => handleSaveEdit(category.id)} className="text-green-600">
+                <button onClick={() => handleSaveEdit(category.id)} className="cursor-pointer text-green-600">
                   <Check className="w-4 h-4" />
                 </button>
               ) : (
@@ -149,10 +149,10 @@ export function CategoryRegistry({ initialCategories, tasks, onChanged }: Catego
                     {getTaskCount(category.name).toString().padStart(2, '0')} Items
                   </span>
                   <div className="hidden group-hover:flex items-center gap-2">
-                    <button onClick={() => handleStartEdit(category)} className="text-media-primary/60 hover:text-media-primary">
+                    <button onClick={() => handleStartEdit(category)} className="cursor-pointer text-media-primary/60 hover:text-media-primary">
                       <Edit2 className="w-3 h-3" />
                     </button>
-                    <button onClick={() => handleDelete(category.id)} className="text-media-error/60 hover:text-media-error">
+                    <button onClick={() => handleDelete(category.id)} className="cursor-pointer text-media-error/60 hover:text-media-error">
                       <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
@@ -176,13 +176,13 @@ export function CategoryRegistry({ initialCategories, tasks, onChanged }: Catego
             />
             <button 
               onClick={handleAddCategory}
-              className="bg-media-primary text-media-on-primary p-2 rounded-lg"
+              className="cursor-pointer bg-media-primary text-media-on-primary p-2 rounded-lg"
             >
               <Check className="w-4 h-4" />
             </button>
             <button 
               onClick={() => setIsAdding(false)}
-              className="bg-media-surface-container-high text-media-primary p-2 rounded-lg"
+              className="cursor-pointer bg-media-surface-container-high text-media-primary p-2 rounded-lg"
             >
               <X className="w-4 h-4" />
             </button>
@@ -190,7 +190,7 @@ export function CategoryRegistry({ initialCategories, tasks, onChanged }: Catego
         ) : (
           <button 
             onClick={() => setIsAdding(true)}
-            className="w-full py-3 border border-media-outline/20 rounded-lg text-media-primary font-bold text-sm uppercase tracking-widest hover:bg-media-primary hover:text-media-surface transition-all"
+            className="cursor-pointer w-full py-3 border border-media-outline/20 rounded-lg text-media-primary font-bold text-sm uppercase tracking-widest hover:bg-media-primary hover:text-media-surface transition-all"
           >
             Manage Categories
           </button>

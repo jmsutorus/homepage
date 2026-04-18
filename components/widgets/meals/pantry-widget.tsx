@@ -55,7 +55,7 @@ export function PantryWidget({ groceryList, onViewAll }: PantryWidgetProps) {
 
       <button 
         onClick={onViewAll}
-        className="w-full mt-8 text-sm font-bold text-media-secondary flex items-center justify-center gap-2 py-3 hover:bg-media-surface-container transition-all rounded-lg border border-transparent hover:border-media-outline-variant/30"
+        className="cursor-pointer w-full mt-8 text-sm font-bold text-media-secondary flex items-center justify-center gap-2 py-3 hover:bg-media-surface-container transition-all rounded-lg border border-transparent hover:border-media-outline-variant/30"
       >
         Go to Grocery List <ShoppingBasket className="h-4 w-4" />
       </button>

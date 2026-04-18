@@ -19,12 +19,12 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Link href="/sign-up">
-                  <button className="bg-gradient-to-br from-[#ff8f00] to-[#eb8300] text-[#462300] font-bold px-8 py-4 rounded-lg text-lg hover:shadow-[0_0_25px_rgba(255,143,0,0.3)] transition-all transform active:scale-95 hover:scale-105">
+                  <button className="cursor-pointer bg-gradient-to-br from-[#ff8f00] to-[#eb8300] text-[#462300] font-bold px-8 py-4 rounded-lg text-lg hover:shadow-[0_0_25px_rgba(255,143,0,0.3)] transition-all transform active:scale-95 hover:scale-105">
                     Get Started
                   </button>
                 </Link>
                 <Link href="/sign-in">
-                  <button className="bg-[#23262c]/40 backdrop-blur-md border border-[#46484d]/30 text-[#f6f6fc] px-8 py-4 rounded-lg text-lg hover:bg-[#23262c]/60 transition-all hover:scale-105">
+                  <button className="cursor-pointer bg-[#23262c]/40 backdrop-blur-md border border-[#46484d]/30 text-[#f6f6fc] px-8 py-4 rounded-lg text-lg hover:bg-[#23262c]/60 transition-all hover:scale-105">
                     Sign In
                   </button>
                 </Link>
@@ -156,7 +156,7 @@ export default function LandingPage() {
               Join thousands of users today and experience the clarity of a unified personal life dashboard.
             </p>
             <Link href="/sign-up">
-              <button className="bg-gradient-to-r from-[#81ecff] via-[#00d4ec] to-[#a68cff] text-[#005762] font-black px-12 py-6 rounded-xl text-xl hover:shadow-[0_0_40px_rgba(129,236,255,0.4)] transition-all transform hover:scale-105 active:scale-95 uppercase tracking-wider">
+              <button className="cursor-pointer bg-gradient-to-r from-[#81ecff] via-[#00d4ec] to-[#a68cff] text-[#005762] font-black px-12 py-6 rounded-xl text-xl hover:shadow-[0_0_40px_rgba(129,236,255,0.4)] transition-all transform hover:scale-105 active:scale-95 uppercase tracking-wider">
                 Get Started Now
               </button>
             </Link>

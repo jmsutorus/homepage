@@ -239,7 +239,7 @@ export function MoodPageClient({ initialMoodData, userId }: MoodPageClientProps)
                       "text-lg font-body text-media-primary leading-relaxed",
                       reflection.rating <= 2 && "italic opacity-80"
                     )}>
-                      "{reflection.note}"
+                      &quot;{reflection.note}&quot;
                     </p>
                   </motion.div>
                 ))
@@ -299,7 +299,7 @@ export function MoodPageClient({ initialMoodData, userId }: MoodPageClientProps)
               </div>
               <div className="flex justify-between items-center">
                 <span className="material-symbols-outlined text-media-secondary text-5xl">trending_up</span>
-                <button className="text-xs font-bold font-label uppercase tracking-widest text-media-primary border-b-2 border-media-primary/20 hover:border-media-primary pb-1 transition-all">
+                <button className="cursor-pointer text-xs font-bold font-label uppercase tracking-widest text-media-primary border-b-2 border-media-primary/20 hover:border-media-primary pb-1 transition-all">
                   View Full Report
                 </button>
               </div>

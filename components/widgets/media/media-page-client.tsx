@@ -308,7 +308,7 @@ export function MediaPageClient({
                 <div>
                   <h2 className="text-3xl font-black tracking-tight text-media-primary dark:text-media-surface mb-2">My Library</h2>
                   <p className="text-media-on-surface-variant font-medium">
-                    Everything you've finished, organized and rated.
+                    Everything you&apos;ve finished, organized and rated.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -336,7 +336,7 @@ export function MediaPageClient({
       {/* Mobile Nav Overlay (Prototype style) */}
       <nav className="fixed bottom-0 left-0 w-full bg-media-surface-container-lowest flex md:hidden items-center justify-around py-4 z-50 border-t border-media-outline-variant/20 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
         {(["subscriptions", "category", "queue_music", "history"] as const).map((icon) => (
-          <button key={icon} className="flex flex-col items-center gap-1 text-media-on-surface-variant transition-all hover:text-media-secondary border-none bg-transparent">
+          <button key={icon} className="cursor-pointer flex flex-col items-center gap-1 text-media-on-surface-variant transition-all hover:text-media-secondary border-none bg-transparent">
             <span className="material-symbols-outlined text-2xl">{icon}</span>
           </button>
         ))}

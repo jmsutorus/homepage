@@ -323,7 +323,7 @@ export function BookingSection({ vacation, bookings, onUpdate }: BookingSectionP
                       navigator.clipboard.writeText(booking.location!);
                       toast.success('Location copied to clipboard');
                     }}
-                    className="p-1 rounded hover:bg-muted transition-colors shrink-0"
+                    className="cursor-pointer p-1 rounded hover:bg-muted transition-colors shrink-0"
                     title="Copy location"
                   >
                     <Copy className="w-3 h-3 text-muted-foreground hover:text-foreground" />

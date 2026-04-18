@@ -109,7 +109,7 @@ export function RecipeEditorialCard({
 
       <div className="absolute bottom-0 p-6 md:p-8 w-full">
         {isFeatured && (
-            <span className="text-media-secondary-fixed text-[10px] font-black uppercase tracking-widest block mb-2">Editor's Pick</span>
+            <span className="text-media-secondary-fixed text-[10px] font-black uppercase tracking-widest block mb-2">Editor&apos;s Pick</span>
         )}
         <h3 className={`${isFeatured ? 'text-3xl' : 'text-xl md:text-2xl'} font-bold text-media-on-primary leading-tight line-clamp-2`}>
             {meal.name}

@@ -120,7 +120,7 @@ export function TasksPageClient({ initialTasks }: TasksPageClientProps) {
 
         {completedTasks.length > 5 && (
           <div className="mt-16 text-center">
-            <button className="text-[10px] font-lexend uppercase tracking-[0.3em] text-media-on-surface-variant/40 hover:text-media-primary transition-all font-bold border border-media-outline-variant/20 px-8 py-4 rounded-full hover:bg-media-surface-container-low">
+            <button className="cursor-pointer text-[10px] font-lexend uppercase tracking-[0.3em] text-media-on-surface-variant/40 hover:text-media-primary transition-all font-bold border border-media-outline-variant/20 px-8 py-4 rounded-full hover:bg-media-surface-container-low">
               View Entire Archive Library ({completedTasks.length})
             </button>
           </div>
@@ -141,7 +141,7 @@ export function TasksPageClient({ initialTasks }: TasksPageClientProps) {
       {/* Floating Action Button: New Task */}
       <button 
         onClick={() => setMobileSheetOpen(true)}
-        className="fixed bottom-10 right-1/2 translate-x-1/2 md:right-10 md:translate-x-0 px-8 py-4 bg-media-secondary text-media-on-secondary rounded-full flex items-center gap-3 shadow-2xl shadow-media-secondary/40 kinetic-hover z-50 group active:scale-95 transition-all"
+        className="cursor-pointer fixed bottom-10 right-1/2 translate-x-1/2 md:right-10 md:translate-x-0 px-8 py-4 bg-media-secondary text-media-on-secondary rounded-full flex items-center gap-3 shadow-2xl shadow-media-secondary/40 kinetic-hover z-50 group active:scale-95 transition-all"
       >
         <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
         <span className="font-lexend uppercase tracking-widest text-xs font-bold whitespace-nowrap">New Task</span>

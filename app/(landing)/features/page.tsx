@@ -122,7 +122,7 @@ export default function FeaturesPage() {
             Bring order to the chaos and set up your dashboard in less than 5 minutes.
           </p>
           <Link href="/sign-up">
-            <button className="bg-gradient-to-r from-[#81ecff] via-[#00d4ec] to-[#a68cff] text-[#005762] font-black px-12 py-6 rounded-xl text-xl hover:shadow-[0_0_40px_rgba(129,236,255,0.4)] transition-all transform hover:scale-105 active:scale-95 uppercase tracking-wider">
+            <button className="cursor-pointer bg-gradient-to-r from-[#81ecff] via-[#00d4ec] to-[#a68cff] text-[#005762] font-black px-12 py-6 rounded-xl text-xl hover:shadow-[0_0_40px_rgba(129,236,255,0.4)] transition-all transform hover:scale-105 active:scale-95 uppercase tracking-wider">
               Start
             </button>
           </Link>

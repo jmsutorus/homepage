@@ -204,7 +204,7 @@ export function VacationPageClient({ vacations }: VacationPageClientProps) {
               {/* If search leaves us empty */}
               {filteredArchived.length === 0 && searchTerm && (
                 <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-20 text-center">
-                  <p className="text-media-outline font-lexend italic">No expeditions found matching "{searchTerm}"</p>
+                  <p className="text-media-outline font-lexend italic">No expeditions found matching &quot;{searchTerm}&quot;</p>
                 </div>
               )}
             </div>

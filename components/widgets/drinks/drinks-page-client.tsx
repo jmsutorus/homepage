@@ -18,51 +18,44 @@ interface DrinksPageClientProps {
   drinks: (Drink & { logCount: number, lastLogDate: string | null })[];
 }
 
-export function DrinksPageClient({ drinks: initialDrinks }: DrinksPageClientProps) {
+export function DrinksPageClient({ drinks }: DrinksPageClientProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
 
-  const drinks = initialDrinks;
-
   // Featured Pour Logic: Highest rated in the last month, else highest of all time
-  const featuredDrink = useMemo(() => {
-    if (drinks.length === 0) return null;
-    
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    const oneMonthAgoStr = oneMonthAgo.toISOString().split('T')[0];
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  const oneMonthAgoStr = oneMonthAgo.toISOString().split('T')[0];
 
+  const featuredDrinkRaw = drinks.length === 0 ? null : (() => {
     const recentDrinks = drinks.filter(d => d.lastLogDate && d.lastLogDate >= oneMonthAgoStr);
     if (recentDrinks.length > 0) {
       return recentDrinks.reduce((prev, current) => (prev.rating || 0) >= (current.rating || 0) ? prev : current);
     }
     return drinks.reduce((prev, current) => (prev.rating || 0) >= (current.rating || 0) ? prev : current);
-  }, [drinks]);
+  })();
+  const featuredDrink = featuredDrinkRaw;
 
   // Recent Tastings Logic: 3 most recent logs (excluding featured)
-  const recentTastings = useMemo(() => {
-    return [...drinks]
-      .filter(d => d.lastLogDate && d.id !== featuredDrink?.id)
-      .sort((a, b) => (b.lastLogDate || '').localeCompare(a.lastLogDate || ''))
-      .slice(0, 3);
-  }, [drinks, featuredDrink]);
+  const recentTastings = [...drinks]
+    .filter(d => d.lastLogDate && d.id !== featuredDrink?.id)
+    .sort((a, b) => (b.lastLogDate || '').localeCompare(a.lastLogDate || ''))
+    .slice(0, 3);
 
   // Filtered drinks for the archive
-  const filteredDrinks = useMemo(() => {
-    return drinks.filter((drink) => {
-      const matchesSearch =
-        searchTerm === '' ||
-        drink.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (drink.producer?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (drink.type?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+  const filteredDrinks = drinks.filter((drink) => {
+    const matchesSearch =
+      searchTerm === '' ||
+      drink.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (drink.producer?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (drink.type?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
 
-      const matchesType = typeFilter === 'all' || drink.type === typeFilter;
+    const matchesType = typeFilter === 'all' || drink.type === typeFilter;
 
-      return matchesSearch && matchesType;
-    });
-  }, [drinks, searchTerm, typeFilter]);
+    return matchesSearch && matchesType;
+  });
 
   const handleCreated = () => {
     setShowForm(false);
@@ -125,7 +118,7 @@ export function DrinksPageClient({ drinks: initialDrinks }: DrinksPageClientProp
               <h3 className="text-3xl font-bold text-[var(--color-media-primary)] tracking-tight">Recent Tastings</h3>
               <button 
                 onClick={() => document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth' })}
-                className="text-[var(--color-media-secondary)] font-bold text-xs uppercase tracking-widest flex items-center gap-2 group"
+                className="cursor-pointer text-[var(--color-media-secondary)] font-bold text-xs uppercase tracking-widest flex items-center gap-2 group"
               >
                 View Collection
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -283,7 +276,7 @@ export function DrinksPageClient({ drinks: initialDrinks }: DrinksPageClientProp
       {/* Floating Action Button */}
       <button 
         onClick={() => setShowForm(true)}
-        className="fixed bottom-10 right-10 bg-[var(--color-media-primary)] text-[var(--color-media-on-primary)] w-16 lg:w-20 h-16 lg:h-20 rounded-full shadow-2xl flex items-center justify-center kinetic-hover active:scale-95 transition-all z-50 group hover:bg-[var(--color-media-secondary)]"
+        className="cursor-pointer fixed bottom-10 right-10 bg-[var(--color-media-primary)] text-[var(--color-media-on-primary)] w-16 lg:w-20 h-16 lg:h-20 rounded-full shadow-2xl flex items-center justify-center kinetic-hover active:scale-95 transition-all z-50 group hover:bg-[var(--color-media-secondary)]"
       >
         <Plus className="w-8 h-8 lg:w-10 lg:h-10 transition-transform group-hover:rotate-90" />
       </button>

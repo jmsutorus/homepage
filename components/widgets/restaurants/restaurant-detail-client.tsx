@@ -142,14 +142,14 @@ export function RestaurantDetailClient({ restaurantData: initialData }: Restaura
           <div className="flex gap-4 mb-2">
             <button
               onClick={() => setShowEditForm(true)}
-              className="bg-media-surface text-media-primary px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-media-surface-container-high transition-colors"
+              className="cursor-pointer bg-media-surface text-media-primary px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-media-surface-container-high transition-colors"
             >
               <span className="material-symbols-outlined text-sm">edit</span>
               Edit Entry
             </button>
             <button
               onClick={() => setShowAddVisit(true)}
-              className="bg-media-secondary text-media-on-secondary px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:opacity-90 transition-opacity"
+              className="cursor-pointer bg-media-secondary text-media-on-secondary px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:opacity-90 transition-opacity"
             >
               <span className="material-symbols-outlined text-sm">add</span>
               Add Visit
@@ -173,7 +173,7 @@ export function RestaurantDetailClient({ restaurantData: initialData }: Restaura
             <span className="text-2xl font-bold text-media-outline">/10</span>
           </div>
           <p className="text-sm text-media-on-surface-variant italic font-medium leading-relaxed line-clamp-2">
-            "{restaurant.visits[0]?.notes || restaurant.notes || 'A culinary destination worth exploring.'}"
+            &quot;{restaurant.visits[0]?.notes || restaurant.notes || 'A culinary destination worth exploring.'}&quot;
           </p>
         </div>
 
@@ -235,7 +235,7 @@ export function RestaurantDetailClient({ restaurantData: initialData }: Restaura
                       )}
                       <button 
                         onClick={() => handleDeleteVisit(visit.id)}
-                        className="material-symbols-outlined text-media-outline hover:text-media-error transition-colors p-2"
+                        className="cursor-pointer material-symbols-outlined text-media-outline hover:text-media-error transition-colors p-2"
                       >
                         delete
                       </button>
@@ -289,7 +289,7 @@ export function RestaurantDetailClient({ restaurantData: initialData }: Restaura
           <div className="flex gap-4 w-full md:w-auto">
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="flex-1 md:flex-none bg-media-error text-media-on-error px-6 py-3 rounded-lg font-bold hover:bg-media-error/90 transition-colors flex items-center justify-center gap-2"
+              className="cursor-pointer flex-1 md:flex-none bg-media-error text-media-on-error px-6 py-3 rounded-lg font-bold hover:bg-media-error/90 transition-colors flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined text-sm">delete</span>
               Remove Restaurant

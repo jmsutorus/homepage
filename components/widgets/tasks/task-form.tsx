@@ -255,7 +255,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
             <Popover>
               <PopoverTrigger asChild>
                 <button 
-                  className="flex items-center gap-2 text-media-on-surface-variant text-xs font-lexend uppercase tracking-widest hover:text-media-primary transition-colors px-4 border border-media-outline-variant/20 rounded-lg h-[46px]" 
+                  className="cursor-pointer flex items-center gap-2 text-media-on-surface-variant text-xs font-lexend uppercase tracking-widest hover:text-media-primary transition-colors px-4 border border-media-outline-variant/20 rounded-lg h-[46px]" 
                   type="button"
                 >
                   <CalendarIcon className="w-3.5 h-3.5" />

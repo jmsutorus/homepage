@@ -194,7 +194,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
                               {formatDateShort(featuredEvent.date).full} • {featuredEvent.all_day ? 'All Day' : formatTime(featuredEvent.start_time)}
                             </p>
                           </div>
-                          <button className="bg-white text-[#061b0e] px-8 py-4 rounded-lg font-bold text-sm tracking-wide uppercase hover:bg-[#9f402d] hover:text-white transition-all transform active:scale-95 shadow-xl md:w-fit md:ml-auto">
+                          <button className="cursor-pointer bg-white text-[#061b0e] px-8 py-4 rounded-lg font-bold text-sm tracking-wide uppercase hover:bg-[#9f402d] hover:text-white transition-all transform active:scale-95 shadow-xl md:w-fit md:ml-auto">
                             View Details
                           </button>
                         </div>
@@ -366,7 +366,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
 
                 <div className="w-full">
                   <div className="rounded-3xl w-full h-[400px] md:h-[500px] bg-[#e3e2e2] flex items-center justify-center text-[#434843] font-light italic text-xl border border-[#c3c8c1]/20">
-                    "The best way to predict the future is to create it."
+                    &quot;The best way to predict the future is to create it.&quot;
                   </div>
                 </div>
 

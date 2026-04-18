@@ -94,7 +94,7 @@ export function Header() {
                </span>
                <DropdownMenu>
                  <DropdownMenuTrigger asChild>
-                   <button className="p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors">
+                   <button className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors">
                      <span className="material-symbols-outlined text-sm block">settings</span>
                    </button>
                  </DropdownMenuTrigger>

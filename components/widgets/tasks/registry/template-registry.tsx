@@ -75,7 +75,7 @@ export function TemplateRegistry({ initialTemplates, onChanged }: TemplateRegist
         <h2 className="text-2xl font-black uppercase tracking-tighter text-media-primary">Task Templates</h2>
         <button 
           onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 bg-media-secondary text-media-on-secondary px-6 py-2 rounded-lg font-bold hover:brightness-110 transition-all active:scale-[0.98]"
+          className="cursor-pointer flex items-center gap-2 bg-media-secondary text-media-on-secondary px-6 py-2 rounded-lg font-bold hover:brightness-110 transition-all active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
           New Template
@@ -98,7 +98,7 @@ export function TemplateRegistry({ initialTemplates, onChanged }: TemplateRegist
                 <span className={`text-[10px] uppercase tracking-widest ${i % 2 === 0 ? 'opacity-60' : 'opacity-40'}`}>Pattern ID: #TP-{template.id.toString().padStart(2, '0')}</span>
                 <button 
                   onClick={() => handleDelete(template.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-media-error hover:scale-110"
+                  className="cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity text-media-error hover:scale-110"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -150,7 +150,7 @@ export function TemplateRegistry({ initialTemplates, onChanged }: TemplateRegist
             </div>
             <button 
               onClick={handleCreate}
-              className="mt-6 w-full py-2 bg-media-secondary text-media-on-secondary rounded font-bold uppercase tracking-widest text-xs hover:brightness-110 transition-all"
+              className="cursor-pointer mt-6 w-full py-2 bg-media-secondary text-media-on-secondary rounded font-bold uppercase tracking-widest text-xs hover:brightness-110 transition-all"
             >
               Initialize Template
             </button>

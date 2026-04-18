@@ -38,7 +38,7 @@ export function EditorialTaskCard({
               e.stopPropagation();
               onToggleComplete?.(task);
             }}
-            className="w-8 h-8 border-2 border-media-secondary/30 rounded-lg flex items-center justify-center bg-media-secondary/10 hover:bg-media-secondary/20 transition-colors shrink-0"
+            className="cursor-pointer w-8 h-8 border-2 border-media-secondary/30 rounded-lg flex items-center justify-center bg-media-secondary/10 hover:bg-media-secondary/20 transition-colors shrink-0"
           >
             <Check className="w-5 h-5 text-media-secondary stroke-[3]" />
           </button>
@@ -62,7 +62,7 @@ export function EditorialTaskCard({
               e.stopPropagation();
               onToggleComplete?.(task);
             }}
-            className="text-media-on-surface-variant hover:text-media-primary transition-colors"
+            className="cursor-pointer text-media-on-surface-variant hover:text-media-primary transition-colors"
             title="Revive Task"
           >
             <History className="w-5 h-5" />
@@ -110,7 +110,7 @@ export function EditorialTaskCard({
               e.stopPropagation();
               onToggleComplete?.(task);
             }}
-            className="w-10 h-10 bg-media-secondary/20 hover:bg-media-secondary/40 text-media-secondary rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
+            className="cursor-pointer w-10 h-10 bg-media-secondary/20 hover:bg-media-secondary/40 text-media-secondary rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
             title="Mark Complete"
           >
             <Check className="w-5 h-5 stroke-[3]" />
@@ -120,7 +120,7 @@ export function EditorialTaskCard({
               e.stopPropagation();
               onDelete?.(task);
             }}
-            className="w-10 h-10 bg-white/10 hover:bg-red-500/20 text-white/60 hover:text-red-400 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
+            className="cursor-pointer w-10 h-10 bg-white/10 hover:bg-red-500/20 text-white/60 hover:text-red-400 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
             title="Delete Task"
           >
             <Trash2 className="w-5 h-5" />

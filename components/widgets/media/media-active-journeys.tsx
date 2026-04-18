@@ -43,8 +43,9 @@ export function MediaActiveJourneys({ items }: MediaActiveJourneysProps) {
               progress = Math.min(Math.round((frontmatter.timeSpent / total) * 100), 100);
             }
           } else {
-            // Default random-ish progress for prototype feel if data is missing
-            progress = Math.floor(Math.random() * 60) + 10;
+            // Default deterministic progress based on title if data is missing
+            const seed = frontmatter.title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            progress = (seed % 60) + 15;
           }
 
           return (

@@ -199,10 +199,10 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
             <p className="text-muted-foreground font-medium text-lg">Review your performance and track your growth.</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="bg-card p-3 rounded-xl shadow-sm border border-border text-muted-foreground hover:text-primary transition-colors">
+            <button className="cursor-pointer bg-card p-3 rounded-xl shadow-sm border border-border text-muted-foreground hover:text-primary transition-colors">
               <Download className="h-5 w-5" />
             </button>
-            <button className="bg-card p-3 rounded-xl shadow-sm border border-border text-muted-foreground hover:text-primary transition-colors">
+            <button className="cursor-pointer bg-card p-3 rounded-xl shadow-sm border border-border text-muted-foreground hover:text-primary transition-colors">
               <Printer className="h-5 w-5" />
             </button>
           </div>
@@ -262,7 +262,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
 
             <button 
               onClick={clearFilters}
-              className="text-primary text-xs font-bold flex items-center gap-1.5 hover:opacity-80 transition-opacity ml-auto"
+              className="cursor-pointer text-primary text-xs font-bold flex items-center gap-1.5 hover:opacity-80 transition-opacity ml-auto"
             >
               <RefreshCcw className="h-3 w-3" />
               Clear Filters
@@ -367,7 +367,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
                           </p>
                         </td>
                         <td className="px-6 py-5 text-right">
-                          <button className="p-2 text-muted-foreground/40 hover:text-primary transition-colors">
+                          <button className="cursor-pointer p-2 text-muted-foreground/40 hover:text-primary transition-colors">
                             <MoreVertical className="h-5 w-5" />
                           </button>
                         </td>
@@ -388,7 +388,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
               <span className="bg-white/20 text-white px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase mb-4 inline-block">Weekly Highlight</span>
               <h3 className="text-3xl font-extrabold mb-2">{weeklyHighlight.title}</h3>
               <p className="text-primary-foreground/80 font-medium mb-6">{weeklyHighlight.description}</p>
-              <button className="bg-background text-primary font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg">
+              <button className="cursor-pointer bg-background text-primary font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg">
                 View Analytics
               </button>
             </div>
@@ -403,7 +403,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
         {/* Pagination/Load More */}
         {filteredActivities.length > 20 && (
           <div className="flex justify-center mt-12 mb-20">
-            <button className="bg-card text-foreground font-bold py-4 px-12 rounded-2xl hover:scale-105 transition-all shadow-sm border border-border">
+            <button className="cursor-pointer bg-card text-foreground font-bold py-4 px-12 rounded-2xl hover:scale-105 transition-all shadow-sm border border-border">
               Load more activities
             </button>
           </div>

@@ -241,11 +241,11 @@ export function IntimacyTab({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-border pt-6">
                       <div>
                         <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block mb-2 font-font-lexend">Before Reflection</span>
-                        <p className="text-sm italic text-muted-foreground leading-relaxed">"{entry.mood_before || "No reflection recorded."}"</p>
+                        <p className="text-sm italic text-muted-foreground leading-relaxed">&quot;{entry.mood_before || "No reflection recorded."}&quot;</p>
                       </div>
                       <div>
                         <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block mb-2 font-font-lexend">After Reflection</span>
-                        <p className="text-sm italic text-muted-foreground leading-relaxed">"{entry.mood_after || "No reflection recorded."}"</p>
+                        <p className="text-sm italic text-muted-foreground leading-relaxed">&quot;{entry.mood_after || "No reflection recorded."}&quot;</p>
                       </div>
                     </div>
 
@@ -275,7 +275,7 @@ export function IntimacyTab({
 
           <div className="pt-12 text-center">
             <p className="text-muted-foreground font-playfair italic text-lg opacity-60">
-              "Intimacy is not purely physical. It's the act of connecting with another soul."
+              &quot;Intimacy is not purely physical. It&apos;s the act of connecting with another soul.&quot;
             </p>
           </div>
         </div>

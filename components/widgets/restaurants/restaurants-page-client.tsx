@@ -279,7 +279,7 @@ export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProp
         <div className="max-w-4xl mx-auto text-center">
           <h6 className="text-xs font-bold text-media-secondary uppercase tracking-[0.4em] mb-10">The Editorial Ethos</h6>
           <p className="text-3xl lg:text-5xl font-bold tracking-tighter text-media-primary leading-[1.1] mb-12 italic">
-            "Gastronomy is the greatest of all arts, for it engages all five senses at once and leaves only the memory of a moment perfectly spent."
+            &quot;Gastronomy is the greatest of all arts, for it engages all five senses at once and leaves only the memory of a moment perfectly spent.&quot;
           </p>
           <div className="flex flex-wrap justify-center items-center gap-4 lg:gap-10 text-media-on-surface-variant/70 text-xs font-medium tracking-wide">
             <span>Est. 2021</span>
@@ -294,7 +294,7 @@ export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProp
       {/* Floating Action Button */}
       <button 
         onClick={() => setShowForm(true)}
-        className="fixed bottom-10 right-10 bg-media-primary text-media-on-primary w-16 lg:w-20 h-16 lg:h-20 rounded-full shadow-2xl flex items-center justify-center kinetic-hover active:scale-95 transition-all z-50 group hover:bg-media-secondary"
+        className="cursor-pointer fixed bottom-10 right-10 bg-media-primary text-media-on-primary w-16 lg:w-20 h-16 lg:h-20 rounded-full shadow-2xl flex items-center justify-center kinetic-hover active:scale-95 transition-all z-50 group hover:bg-media-secondary"
       >
         <Plus className="w-8 h-8 lg:w-10 lg:h-10 transition-transform group-hover:rotate-90" />
       </button>

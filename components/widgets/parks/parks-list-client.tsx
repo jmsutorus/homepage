@@ -97,7 +97,7 @@ export function ParksListClient({ initialParks }: ParksListClientProps) {
           {searchQuery && (
             <button 
               onClick={() => setSearchQuery("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-media-on-surface-variant/40 hover:text-media-primary"
+              className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 text-media-on-surface-variant/40 hover:text-media-primary"
             >
               <X className="w-5 h-5" />
             </button>
@@ -176,7 +176,7 @@ export function ParksListClient({ initialParks }: ParksListClientProps) {
 
           <button 
             onClick={resetFilters}
-            className="text-media-secondary text-xs font-bold uppercase tracking-widest ml-auto border-b border-media-secondary/30 pb-0.5 hover:text-media-primary transition-colors"
+            className="cursor-pointer text-media-secondary text-xs font-bold uppercase tracking-widest ml-auto border-b border-media-secondary/30 pb-0.5 hover:text-media-primary transition-colors"
           >
             Reset All
           </button>

@@ -316,7 +316,7 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => setIsAddingPerson(true)}
-                    className="text-media-primary hover:text-media-secondary transition-colors"
+                    className="cursor-pointer text-media-primary hover:text-media-secondary transition-colors"
                     title="Add Companion"
                   >
                     <PlusCircle className="w-5 h-5" />

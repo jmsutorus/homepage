@@ -394,7 +394,7 @@ export function EventsTimelineClient({ events }: EventsTimelineClientProps) {
                             <img src={event.cover_photo} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           </div>
                         )}
-                        <button className="text-[var(--color-media-secondary)] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 font-bold text-xs uppercase whitespace-nowrap">
+                        <button className="cursor-pointer text-[var(--color-media-secondary)] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 font-bold text-xs uppercase whitespace-nowrap">
                           View Story
                           <ChevronRight className="w-4 h-4" />
                         </button>

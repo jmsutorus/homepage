@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 "use client";
 
 import { useState, useEffect } from "react";
@@ -62,7 +62,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
 
   // Set isClient to true after hydration to prevent hydration mismatch with date calculations
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setIsClient(true);
   }, []);
 
@@ -248,7 +248,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
         </div>
         <button 
           onClick={openAddDialog}
-          className="bg-media-primary text-white px-8 py-4 rounded-lg flex items-center gap-3 self-start md:self-auto hover:scale-105 transition-transform"
+          className="cursor-pointer bg-media-primary text-white px-8 py-4 rounded-lg flex items-center gap-3 self-start md:self-auto hover:scale-105 transition-transform"
         >
           <span className="material-symbols-outlined">person_add</span>
           <span className="font-bold tracking-tight">Add Person</span>
@@ -360,7 +360,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
               {searchTerm && (
                 <button 
                   onClick={clearSearch}
-                  className="mt-6 text-media-secondary font-bold hover:underline"
+                  className="cursor-pointer mt-6 text-media-secondary font-bold hover:underline"
                 >
                   Clear search
                 </button>
@@ -413,13 +413,13 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
                           onClick={() => openEditDialog(person)}
-                          className="p-2 hover:bg-media-surface-container rounded-full text-media-outline hover:text-media-primary transition-colors"
+                          className="cursor-pointer p-2 hover:bg-media-surface-container rounded-full text-media-outline hover:text-media-primary transition-colors"
                         >
                           <span className="material-symbols-outlined text-sm">edit</span>
                         </button>
                         <button 
                           onClick={() => openDeleteDialog(person)}
-                          className="p-2 hover:bg-media-surface-container rounded-full text-media-outline hover:text-media-error transition-colors"
+                          className="cursor-pointer p-2 hover:bg-media-surface-container rounded-full text-media-outline hover:text-media-error transition-colors"
                         >
                           <span className="material-symbols-outlined text-sm">delete</span>
                         </button>
@@ -455,7 +455,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
                           {person.email && (
                             <button 
                               onClick={() => copyToClipboard(person.email!, "Email")}
-                              className="text-media-outline hover:text-media-primary transition-colors"
+                              className="cursor-pointer text-media-outline hover:text-media-primary transition-colors"
                               title={person.email}
                             >
                               <span className="material-symbols-outlined text-lg">mail</span>
@@ -464,7 +464,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
                           {person.phone && (
                             <button 
                               onClick={() => copyToClipboard(person.phone!, "Phone")}
-                              className="text-media-outline hover:text-media-primary transition-colors"
+                              className="cursor-pointer text-media-outline hover:text-media-primary transition-colors"
                               title={person.phone}
                             >
                               <span className="material-symbols-outlined text-lg">call</span>

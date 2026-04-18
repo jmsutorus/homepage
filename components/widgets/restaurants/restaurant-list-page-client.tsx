@@ -372,7 +372,7 @@ export function RestaurantListPageClient({ restaurants }: RestaurantListPageClie
           <div className="mt-32 py-12 border-t border-media-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-4">
               <button 
-                className="w-12 h-12 rounded-full border border-media-outline flex items-center justify-center hover:bg-media-primary hover:text-media-on-primary transition-all disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-inherit"
+                className="cursor-pointer w-12 h-12 rounded-full border border-media-outline flex items-center justify-center hover:bg-media-primary hover:text-media-on-primary transition-all disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-inherit"
                 disabled={currentPage === 1}
                 onClick={() => handlePageChange(currentPage - 1)}
               >
@@ -382,14 +382,14 @@ export function RestaurantListPageClient({ restaurants }: RestaurantListPageClie
                 PAGE {currentPage.toString().padStart(2, '0')} OF {totalPages.toString().padStart(2, '0')}
               </span>
               <button 
-                className="w-12 h-12 rounded-full border border-media-outline flex items-center justify-center hover:bg-media-primary hover:text-media-on-primary transition-all disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-inherit"
+                className="cursor-pointer w-12 h-12 rounded-full border border-media-outline flex items-center justify-center hover:bg-media-primary hover:text-media-on-primary transition-all disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-inherit"
                 disabled={currentPage === totalPages}
                 onClick={() => handlePageChange(currentPage + 1)}
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
-            <button className="px-12 py-4 bg-media-primary text-media-on-primary rounded-lg text-xs font-bold uppercase tracking-[0.3em] hover:scale-105 transition-transform shadow-xl shadow-media-primary/10">
+            <button className="cursor-pointer px-12 py-4 bg-media-primary text-media-on-primary rounded-lg text-xs font-bold uppercase tracking-[0.3em] hover:scale-105 transition-transform shadow-xl shadow-media-primary/10">
               Export Archive as PDF
             </button>
           </div>

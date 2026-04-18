@@ -306,7 +306,7 @@ export function PlannedView({ vacationData, onUpdate }: PlannedViewProps) {
                       <p className="text-media-on-surface-variant text-xs uppercase tracking-widest">Companions</p>
                       <button 
                         onClick={() => setIsAddingPerson(true)}
-                        className="text-media-primary hover:text-media-secondary transition-colors"
+                        className="cursor-pointer text-media-primary hover:text-media-secondary transition-colors"
                         title="Add Companion"
                       >
                         <PlusCircle className="w-4 h-4" />
@@ -473,7 +473,7 @@ export function PlannedView({ vacationData, onUpdate }: PlannedViewProps) {
                 <div className="relative pl-10 pt-4">
                   <button 
                     onClick={handleOpeningAddDay}
-                    className="bg-media-surface-container text-media-on-surface-variant px-6 py-4 rounded-xl border-2 border-dashed border-media-outline-variant w-full text-center font-bold text-sm uppercase tracking-widest hover:bg-media-surface-container-high transition-all group flex items-center justify-center gap-2"
+                    className="cursor-pointer bg-media-surface-container text-media-on-surface-variant px-6 py-4 rounded-xl border-2 border-dashed border-media-outline-variant w-full text-center font-bold text-sm uppercase tracking-widest hover:bg-media-surface-container-high transition-all group flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-outlined align-middle group-hover:scale-110 transition-transform">add_circle</span>
                     <span>Add Activity for Day {itinerary.length + 1}</span>
