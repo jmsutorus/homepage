@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { Plus, User, Users, UserPlus, Briefcase, Mail, Phone, Trash2, Edit, Cake, Heart, Settings, ListTodo, Search, X, Copy, Sparkles, Gift } from "lucide-react";
 import { type Person, type RelationshipCategory } from "@/lib/db/people";
+import { calculateAge, calculateDaysUntilBirthday } from "@/lib/people-utils";
 import { PersonFormDialog } from "@/components/widgets/people/person-form-dialog";
 import { DeletePersonDialog } from "@/components/widgets/people/delete-person-dialog";
 import { RelationshipTypeManager } from "@/components/widgets/people/relationship-type-manager";
@@ -11,6 +12,7 @@ import { getZodiacSignFromBirthday, getZodiacElementColor } from "@/lib/zodiac";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import Link from "next/link";
 
 interface PeoplePageClientProps {
   initialPeople: Person[];
@@ -66,38 +68,6 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
     setIsClient(true);
   }, []);
 
-  // Calculate days until birthday
-  const calculateDaysUntil = (birthday: string): number => {
-    const [year, month, day] = birthday.split('-');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const currentYear = today.getFullYear();
-
-    let nextBirthday = new Date(currentYear, parseInt(month) - 1, parseInt(day));
-    if (nextBirthday < today) {
-      nextBirthday = new Date(currentYear + 1, parseInt(month) - 1, parseInt(day));
-    }
-
-    const diffTime = nextBirthday.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
-  // Calculate age
-  const calculateAge = (birthday: string): number | null => {
-    const [year] = birthday.split('-');
-    if (year === '0000') return null;
-
-    const birthDate = new Date(birthday);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-
-    return age;
-  };
 
   // Apply filters and sorting
   const applyFiltersAndSort = (peopleList: Person[], filter: RelationshipCategory | "all", sort: SortOption, search: string) => {
@@ -130,7 +100,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
         return `${aMonth}-${aDay}`.localeCompare(`${bMonth}-${bDay}`);
       });
     } else if (sort === "upcoming") {
-      result.sort((a, b) => calculateDaysUntil(a.birthday) - calculateDaysUntil(b.birthday));
+      result.sort((a, b) => calculateDaysUntilBirthday(a.birthday) - calculateDaysUntilBirthday(b.birthday));
     }
 
     setFilteredPeople(result);
@@ -224,7 +194,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
           milestoneCount++;
         }
       }
-      const days = calculateDaysUntil(p.birthday);
+      const days = calculateDaysUntilBirthday(p.birthday);
       if (days < nextBirthdayDays) {
         nextBirthdayDays = days;
       }
@@ -370,7 +340,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16 pt-12">
               {filteredPeople.map((person) => {
                 const config = RELATIONSHIP_CONFIG[person.relationship];
-                const daysUntil = isClient ? calculateDaysUntil(person.birthday) : null;
+                const daysUntil = isClient ? calculateDaysUntilBirthday(person.birthday) : null;
                 const zodiacSign = isClient ? getZodiacSignFromBirthday(person.birthday) : null;
                 const initials = person.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
@@ -404,8 +374,10 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
                     </div>
 
                     <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-2xl font-bold text-media-primary tracking-tight line-clamp-1">{person.name}</h3>
+                      <div className="flex-1">
+                        <Link href={`/people/${person.slug}`} className="group/link">
+                          <h3 className="text-2xl font-bold text-media-primary tracking-tight line-clamp-1 group-hover/link:text-media-secondary transition-colors">{person.name}</h3>
+                        </Link>
                         <p className="text-media-on-surface-variant italic font-serif">
                           {person.relationshipTypeName || config.label}
                         </p>

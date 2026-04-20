@@ -35,6 +35,8 @@ export async function POST(req: NextRequest) {
       cycle: body.cycle || 'monthly',
       currency: body.currency || 'USD',
       active: body.active !== false,
+      category: body.category || undefined,
+      billing_day: body.billing_day ? parseInt(body.billing_day) : undefined,
       notes: body.notes || undefined,
     };
 

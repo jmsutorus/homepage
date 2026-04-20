@@ -210,77 +210,77 @@ export function CommandPalette({ className }: CommandPaletteProps) {
         id: "nav-home",
         label: "Home",
         keywords: ["home", "dashboard"],
-        icon: <Home className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">home</span>,
         action: () => navigate("/home"),
       },
       {
         id: "nav-calendar",
         label: "Calendar",
         keywords: ["calendar", "date", "schedule"],
-        icon: <Calendar className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">calendar_today</span>,
         action: () => navigate("/calendar"),
       },
       {
         id: "nav-tasks",
         label: "Tasks",
         keywords: ["tasks", "todo", "checklist"],
-        icon: <ListTodo className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">checklist</span>,
         action: () => navigate("/tasks"),
       },
       {
         id: "nav-habits",
         label: "Habits",
         keywords: ["habits", "tracking", "routine"],
-        icon: <Activity className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">repeat</span>,
         action: () => navigate("/habits"),
       },
       {
         id: "nav-journals",
         label: "Journals",
         keywords: ["journals", "diary", "writing"],
-        icon: <BookOpen className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">menu_book</span>,
         action: () => navigate("/journals"),
       },
       {
         id: "nav-media",
         label: "Media",
         keywords: ["media", "movies", "books", "tv", "games"],
-        icon: <Film className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">movie</span>,
         action: () => navigate("/media"),
       },
       {
         id: "nav-parks",
         label: "Parks",
         keywords: ["parks", "national", "travel"],
-        icon: <Mountain className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">park</span>,
         action: () => navigate("/parks"),
       },
       {
         id: "nav-exercise",
         label: "Exercise",
         keywords: ["exercise", "workout", "fitness"],
-        icon: <Activity className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">fitness_center</span>,
         action: () => navigate("/exercise"),
       },
       {
         id: "nav-finances",
         label: "Finances",
         keywords: ["finances", "money", "subscriptions", "savings", "debts", "budget"],
-        icon: <DollarSign className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">attach_money</span>,
         action: () => navigate("/finances"),
       },
       {
         id: "nav-year",
         label: "Year in Review",
         keywords: ["year", "review", "statistics", "stats"],
-        icon: <TrendingUp className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">trending_up</span>,
         action: () => navigate(`/year/${new Date().getFullYear()}`),
       },
       {
         id: "nav-settings",
         label: "Settings",
         keywords: ["settings", "preferences", "config"],
-        icon: <Settings className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">settings</span>,
         action: () => navigate("/settings"),
       },
     ],
@@ -293,43 +293,29 @@ export function CommandPalette({ className }: CommandPaletteProps) {
         id: "add-task",
         label: "New Task",
         keywords: ["new", "create", "add", "task"],
-        icon: <Plus className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">add</span>,
         action: () => navigate("/tasks?new=true"),
       },
       {
         id: "add-journal",
         label: "New Journal Entry",
         keywords: ["new", "create", "add", "journal", "diary"],
-        icon: <Plus className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">add</span>,
         action: () => navigate("/journals/new"),
       },
       {
         id: "add-media",
         label: "Add Media",
         keywords: ["new", "create", "add", "media", "movie", "book"],
-        icon: <Plus className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">add</span>,
         action: () => navigate("/media/new"),
       },
       {
         id: "add-park",
         label: "Add Park",
         keywords: ["new", "create", "add", "park", "national"],
-        icon: <Plus className="h-4 w-4" />,
+        icon: <span className="material-symbols-outlined">add</span>,
         action: () => navigate("/parks/new"),
-      },
-    ],
-  };
-
-  const helpCommands: CommandGroup = {
-    heading: "Help",
-    commands: [
-      {
-        id: "help-shortcuts",
-        label: "Keyboard Shortcuts",
-        keywords: ["help", "shortcuts", "keyboard", "keys"],
-        icon: <Keyboard className="h-4 w-4" />,
-        action: () => setPages([...pages, "shortcuts"]),
-        shortcut: "?",
       },
     ],
   };
@@ -341,294 +327,187 @@ export function CommandPalette({ className }: CommandPaletteProps) {
   const isSearchMode = search.length > 0 || hasActiveFilters;
 
   const renderHome = () => (
-    <>
-      {/* Saved Searches */}
-      {savedSearches.length > 0 && !isSearchMode && (
-        <Command.Group heading="Saved Searches">
-          {savedSearches.map((savedSearch) => (
-            <Command.Item
-              key={`saved-${savedSearch.id}`}
-              value={`saved-${savedSearch.name}`}
-              onSelect={() => handleSelectSavedSearch(savedSearch)}
-              className="flex items-center gap-2 px-4 py-3 cursor-pointer rounded-sm hover:bg-accent data-[selected=true]:bg-accent group"
-            >
-              <Save className="h-4 w-4 text-muted-foreground" />
-              <span className="flex-1">{savedSearch.name}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                onClick={(e) => handleDeleteSavedSearch(e, savedSearch.id)}
+    <div className="space-y-10 py-6 px-8">
+      {/* Recent Inquiries (Combined Recents + Saved) */}
+      {(recentSearches.length > 0 || savedSearches.length > 0) && !isSearchMode && (
+        <section>
+          <h3 className="text-[10px] font-bold text-media-secondary uppercase tracking-[0.2em] mb-6 px-1">Recent Inquiries</h3>
+          <div className="space-y-2">
+            {savedSearches.map((savedSearch) => (
+              <div
+                key={`saved-${savedSearch.id}`}
+                onClick={() => handleSelectSavedSearch(savedSearch)}
+                className="group flex items-center justify-between p-4 rounded-xl hover:bg-media-surface-container-low transition-all cursor-pointer"
               >
-                <Trash2 className="h-3 w-3 text-destructive" />
-              </Button>
-            </Command.Item>
-          ))}
-        </Command.Group>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-media-surface-container-highest flex items-center justify-center text-media-primary">
+                    <span className="material-symbols-outlined">save</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-media-primary tracking-tight">Saved: {savedSearch.name}</p>
+                    <p className="text-xs text-media-on-surface-variant line-clamp-1">{savedSearch.query || "No query"}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="material-symbols-outlined text-media-outline-variant">north_west</span>
+                  <button
+                    onClick={(e) => handleDeleteSavedSearch(e, savedSearch.id)}
+                    className="p-1 hover:text-red-500 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-sm">delete</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+            {recentSearches.map((term) => (
+              <div
+                key={`recent-${term}`}
+                onClick={() => setSearch(term)}
+                className="group flex items-center justify-between p-4 rounded-xl hover:bg-media-surface-container-low transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-media-surface-container-highest flex items-center justify-center text-media-primary">
+                    <span className="material-symbols-outlined">history</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-media-primary tracking-tight">{term}</p>
+                    <p className="text-xs text-media-on-surface-variant">Recent search</p>
+                  </div>
+                </div>
+                <span className="material-symbols-outlined text-media-outline-variant opacity-0 group-hover:opacity-100 transition-opacity">north_west</span>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* Recent Searches */}
-      {recentSearches.length > 0 && !isSearchMode && (
-        <Command.Group heading="Recent Searches">
-          {recentSearches.map((term) => (
-            <Command.Item
-              key={`recent-${term}`}
-              value={`recent-${term}`}
-              onSelect={() => setSearch(term)}
-              className="flex items-center gap-2 px-4 py-3 cursor-pointer rounded-sm hover:bg-accent data-[selected=true]:bg-accent"
-            >
-              <History className="h-4 w-4 text-muted-foreground" />
-              <span>{term}</span>
-            </Command.Item>
-          ))}
-        </Command.Group>
-      )}
-
-      {/* Navigation Commands */}
-      {!isSearchMode && (
-        <>
-          {[navigationCommands, quickAddCommands, helpCommands].map((group) => (
-            <Command.Group key={group.heading} heading={group.heading}>
-              {group.commands.map((cmd) => (
-                <Command.Item
-                  key={cmd.id}
-                  value={cmd.id}
-                  keywords={cmd.keywords}
-                  onSelect={() => cmd.action()}
-                  className="flex items-center gap-2 px-4 py-3 cursor-pointer rounded-sm hover:bg-accent data-[selected=true]:bg-accent"
-                >
-                  {cmd.icon && <span className="text-muted-foreground">{cmd.icon}</span>}
-                  <span className="flex-1">{cmd.label}</span>
-                  {cmd.shortcut && (
-                    <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-                      {cmd.shortcut}
-                    </kbd>
-                  )}
-                </Command.Item>
-              ))}
-            </Command.Group>
-          ))}
-        </>
-      )}
-
-      {/* Search Results */}
+      {/* Suggested Results Grid */}
       {isSearchMode && (
-        <>
-          {isPending && (
-            <div className="flex items-center justify-center py-6">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <section>
+          <h3 className="text-[10px] font-bold text-media-secondary uppercase tracking-[0.2em] mb-6 px-1">
+            {isPending ? "Searching..." : "Suggested for you"}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {results && Object.entries(results).map(([type, items]) => 
+              items.map((item: SearchResult) => (
+                <div
+                  key={`${item.type}-${item.id}`}
+                  onClick={() => handleSelect(item.url, search)}
+                  className="relative overflow-hidden rounded-xl bg-media-surface-container-lowest p-5 group cursor-pointer kinetic-hover"
+                >
+                  <div className="flex gap-4 items-start text-left">
+                    {item.image ? (
+                      <img 
+                        alt={item.title} 
+                        className="w-16 h-16 rounded-lg object-cover shadow-sm bg-media-surface-container"
+                        src={item.image} 
+                      />
+                    ) : (
+                      <div className={cn(
+                        "w-16 h-16 rounded-lg flex items-center justify-center text-3xl",
+                        item.type === 'habit' ? "bg-media-primary-fixed text-media-on-primary-fixed-variant" :
+                        item.type === 'journal' ? "bg-media-secondary-fixed text-media-on-secondary-container" :
+                        item.type === 'task' ? "bg-media-surface-container-high text-media-primary" :
+                        "bg-media-surface-container-high text-media-primary"
+                      )}>
+                        <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                          {item.type === 'habit' ? 'repeat' :
+                           item.type === 'journal' ? 'menu_book' :
+                           item.type === 'task' ? 'check_circle' :
+                           item.type === 'media' ? 'movie' :
+                           item.type === 'park' ? 'park' : 'search'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <span className="inline-block px-2 py-0.5 rounded bg-media-tertiary-fixed text-[9px] font-bold text-media-on-tertiary-fixed uppercase mb-2">
+                        {item.type}
+                      </span>
+                      <p className="font-bold text-media-primary text-sm leading-tight mb-1">{item.title}</p>
+                      <p className="text-xs text-media-on-surface-variant line-clamp-1">
+                        {item.description || (item.date ? `Dated: ${item.date}` : 'View details')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          {results && Object.values(results).every(arr => arr.length === 0) && !isPending && (
+            <div className="py-20 text-center text-sm text-media-on-surface-variant font-medium">
+              No results found for &quot;{search}&quot;
             </div>
           )}
-
-          {results && (
-            <>
-              {results.tasks.length > 0 && (
-                <Command.Group heading="Tasks">
-                  {results.tasks.map((task) => (
-                    <Command.Item
-                      key={`task-${task.id}`}
-                      value={`task-${task.id}-${task.title}`}
-                      onSelect={() => handleSelect(task.url, search)}
-                      className="flex items-center gap-2 px-4 py-3 cursor-pointer rounded-sm hover:bg-accent data-[selected=true]:bg-accent"
-                    >
-                      <CheckSquare className="h-4 w-4 text-muted-foreground" />
-                      <span>{task.title}</span>
-                    </Command.Item>
-                  ))}
-                </Command.Group>
-              )}
-
-              {results.journals.length > 0 && (
-                <Command.Group heading="Journals">
-                  {results.journals.map((journal) => (
-                    <Command.Item
-                      key={`journal-${journal.id}`}
-                      value={`journal-${journal.id}-${journal.title}`}
-                      onSelect={() => handleSelect(journal.url, search)}
-                      className="flex items-center gap-2 px-4 py-3 cursor-pointer rounded-sm hover:bg-accent data-[selected=true]:bg-accent"
-                    >
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span>{journal.title}</span>
-                    </Command.Item>
-                  ))}
-                </Command.Group>
-              )}
-
-              {results.media.length > 0 && (
-                <Command.Group heading="Media">
-                  {results.media.map((item) => (
-                    <Command.Item
-                      key={`media-${item.id}`}
-                      value={`media-${item.id}-${item.title}`}
-                      onSelect={() => handleSelect(item.url, search)}
-                      className="flex items-center gap-2 px-4 py-3 cursor-pointer rounded-sm hover:bg-accent data-[selected=true]:bg-accent"
-                    >
-                      <Film className="h-4 w-4 text-muted-foreground" />
-                      <span>{item.title}</span>
-                    </Command.Item>
-                  ))}
-                </Command.Group>
-              )}
-
-              {results.parks.length > 0 && (
-                <Command.Group heading="Parks">
-                  {results.parks.map((park) => (
-                    <Command.Item
-                      key={`park-${park.id}`}
-                      value={`park-${park.id}-${park.title}`}
-                      onSelect={() => handleSelect(park.url, search)}
-                      className="flex items-center gap-2 px-4 py-3 cursor-pointer rounded-sm hover:bg-accent data-[selected=true]:bg-accent"
-                    >
-                      <MapIcon className="h-4 w-4 text-muted-foreground" />
-                      <span>{park.title}</span>
-                    </Command.Item>
-                  ))}
-                </Command.Group>
-              )}
-
-              {results.habits.length > 0 && (
-                <Command.Group heading="Habits">
-                  {results.habits.map((habit) => (
-                    <Command.Item
-                      key={`habit-${habit.id}`}
-                      value={`habit-${habit.id}-${habit.title}`}
-                      onSelect={() => handleSelect(habit.url, search)}
-                      className="flex items-center gap-2 px-4 py-3 cursor-pointer rounded-sm hover:bg-accent data-[selected=true]:bg-accent"
-                    >
-                      <Repeat className="h-4 w-4 text-muted-foreground" />
-                      <span>{habit.title}</span>
-                    </Command.Item>
-                  ))}
-                </Command.Group>
-              )}
-
-              {!isPending &&
-                results.tasks.length === 0 &&
-                results.journals.length === 0 &&
-                results.media.length === 0 &&
-                results.parks.length === 0 &&
-                results.habits.length === 0 && (
-                  <div className="py-6 text-center text-sm text-muted-foreground">
-                    No results found.
-                  </div>
-                )}
-            </>
-          )}
-        </>
+        </section>
       )}
-    </>
+
+      {/* Navigation Groups when no search */}
+      {!isSearchMode && (
+        <section>
+          <h3 className="text-[10px] font-bold text-media-secondary uppercase tracking-[0.2em] mb-6 px-1">Navigation</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {[...navigationCommands.commands, ...quickAddCommands.commands].map((cmd) => (
+              <button
+                key={cmd.id}
+                onClick={cmd.action}
+                className="flex flex-col items-center justify-center p-4 rounded-xl bg-media-surface-container-lowest border border-media-outline-variant/10 hover:bg-media-primary-fixed-dim transition-all group"
+              >
+                <div className="w-10 h-10 rounded-lg bg-media-surface-container flex items-center justify-center text-media-primary mb-3 group-hover:bg-white/50 transition-colors">
+                  {cmd.icon}
+                </div>
+                <span className="text-xs font-bold text-media-primary">{cmd.label}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   );
 
   const renderShortcuts = () => (
-    <Command.Group heading="Keyboard Shortcuts">
-      <div className="px-4 py-2 space-y-2 text-sm">
-        <div className="font-semibold text-foreground mb-2">Command Palette</div>
-        <div className="flex items-center justify-between py-2">
-          <span>Open command palette</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            ⌘K / Ctrl+K
-          </kbd>
+    <div className="py-6 px-8 space-y-8">
+      <section>
+        <h3 className="text-[10px] font-bold text-media-secondary uppercase tracking-[0.2em] mb-6 px-1">Keyboard Shortcuts</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold text-media-primary mb-2">Command Palette</h4>
+            {[
+              { label: "Open search", key: "⌘K / Ctrl+K" },
+              { label: "Open shortcuts", key: "?" },
+              { label: "Navigate", key: "↑ ↓" },
+              { label: "Select", key: "Enter" },
+              { label: "Close", key: "Esc" },
+            ].map(item => (
+              <div key={item.label} className="flex items-center justify-between py-1">
+                <span className="text-[12px] text-media-on-surface-variant font-medium">{item.label}</span>
+                <kbd className="bg-media-surface-container-highest px-1.5 py-0.5 rounded text-[10px] font-bold text-media-primary border-b-2 border-media-primary/20">{item.key}</kbd>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold text-media-primary mb-2">Navigation (G + Path)</h4>
+            {[
+              { label: "Calendar", key: "G then C" },
+              { label: "Tasks", key: "G then T" },
+              { label: "Habits", key: "G then H" },
+              { label: "Media", key: "G then M" },
+              { label: "Settings", key: "G then S" },
+            ].map(item => (
+              <div key={item.label} className="flex items-center justify-between py-1">
+                <span className="text-[12px] text-media-on-surface-variant font-medium">{item.label}</span>
+                <kbd className="bg-media-surface-container-highest px-1.5 py-0.5 rounded text-[10px] font-bold text-media-primary border-b-2 border-media-primary/20">{item.key}</kbd>
+              </div>
+            ))}
+            <button 
+              onClick={() => setPages(["home"])}
+              className="mt-6 w-full py-2 bg-media-primary text-media-on-primary rounded-lg text-xs font-bold kinetic-hover"
+            >
+              Back to Home
+            </button>
+          </div>
         </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Open shortcuts</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            ?
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Navigate up/down</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            ↑ ↓
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Select item</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            Enter
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2 mb-2">
-          <span>Close palette</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            Esc
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2 mb-2">
-          <span>Back</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            Alt+Left Arrow
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2 mb-2">
-          <span>Forward</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            Alt+Right Arrow
-          </kbd>
-        </div>
-
-        <div className="font-semibold text-foreground mb-2 pt-4 border-t">Navigation (Press G then key)</div>
-        <div className="flex items-center justify-between py-2">
-          <span>Go to Calendar</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            G then C
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Go to Tasks</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            G then T
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Go to Habits</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            G then H
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Go to Media</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            G then M
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Go to Journals</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            G then J
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Go to Parks</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            G then P
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Go to Exercise</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            G then E
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Go to Goals</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            G then K
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Go to Achievements</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            G then A
-          </kbd>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <span>Go to Settings</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            G then S
-          </kbd>
-        </div>
-      </div>
-    </Command.Group>
+      </section>
+    </div>
   );
 
   // Use mobile version on mobile devices
@@ -638,90 +517,85 @@ export function CommandPalette({ className }: CommandPaletteProps) {
 
   return (
     <>
-      {/* Backdrop overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
-        />
-      )}
-
-      {/* Command Dialog */}
       <Command.Dialog
         open={open}
         onOpenChange={setOpen}
         label="Global Command Menu"
         className={cn(
-          "fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-lg border bg-popover p-0 text-popover-foreground shadow-lg",
-          "w-full max-w-2xl",
+          "fixed left-[50%] top-[50%] z-[60] translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-xl bg-media-surface-container shadow-2xl shadow-media-primary/10",
+          "w-full max-w-3xl flex flex-col max-h-[870px] font-lexend",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
           className
         )}
       >
-        <Command
-          className="[&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground"
+        {/* Backdrop integrated with Dialog for better control */}
+        <div className="absolute inset-x-0 -top-full h-full bg-media-primary/40 backdrop-blur-xl -z-10" />
+
+        <Command 
+          className="flex-1 flex flex-col min-h-0"
           shouldFilter={!isSearchMode}
         >
-          {/* Filters Section */}
-          {currentPage === "home" && (
-            <div className="flex flex-col gap-2 p-3 border-b bg-muted/10">
-              <div className="flex items-center gap-2 overflow-x-auto">
-                <Tabs
-                  value={filters.types?.[0] || "all"}
-                  onValueChange={(val) =>
-                    handleFilterChange({ ...filters, types: val === "all" ? [] : [val] })
-                  }
-                  className="w-full"
-                >
-                  <TabsList className="h-8">
-                    <TabsTrigger value="all" className="text-xs h-7 cursor-pointer">
-                      All
-                    </TabsTrigger>
-                    <TabsTrigger value="task" className="text-xs h-7 cursor-pointer">
-                      Tasks
-                    </TabsTrigger>
-                    <TabsTrigger value="journal" className="text-xs h-7 cursor-pointer">
-                      Journals
-                    </TabsTrigger>
-                    <TabsTrigger value="media" className="text-xs h-7 cursor-pointer">
-                      Media
-                    </TabsTrigger>
-                    <TabsTrigger value="park" className="text-xs h-7 cursor-pointer">
-                      Parks
-                    </TabsTrigger>
-                    <TabsTrigger value="habit" className="text-xs h-7 cursor-pointer">
-                      Habits
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
+          {/* Header Section */}
+          <div className="px-8 pt-8 pb-6 bg-media-surface-container-low border-b border-media-outline-variant/5">
+            <div className="flex items-center gap-4 relative">
+              <span className="material-symbols-outlined text-media-primary text-3xl">search</span>
+              <Command.Input
+                placeholder="Search your ecosystem..."
+                value={search}
+                onValueChange={setSearch}
+                autoFocus
+                className="w-full bg-transparent border-none focus:ring-0 text-2xl font-bold text-media-primary placeholder-media-primary/20 py-2 outline-none"
+              />
+              <div className="flex items-center gap-2 bg-media-surface-container-highest px-3 py-1.5 rounded-lg border-b-2 border-media-secondary/20">
+                <span className="text-[10px] font-bold text-media-on-surface-variant tracking-widest whitespace-nowrap uppercase">CMD + K</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <TagAutocomplete
-                    selectedTags={filters.tags || []}
-                    onTagsChange={(tags) => handleFilterChange({ ...filters, tags })}
-                  />
-                </div>
-                {hasActiveFilters && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={clearFilters}
-                    title="Clear filters"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+            </div>
+
+            {/* Filter Category Chips */}
+            <div className="flex flex-wrap gap-3 mt-8 overflow-x-auto no-scrollbar">
+              <button 
+                onClick={clearFilters}
+                className={cn(
+                  "px-6 py-2 rounded-full text-sm font-bold tracking-tight kinetic-hover transition-all shrink-0",
+                  !hasActiveFilters ? "bg-media-secondary text-media-on-secondary" : "bg-media-surface-container-highest text-media-on-surface-variant hover:bg-media-primary-fixed-dim"
                 )}
+              >
+                All
+              </button>
+              {[
+                { id: 'task', label: 'Tasks' },
+                { id: 'journal', label: 'Journals' },
+                { id: 'media', label: 'Media' },
+                { id: 'park', label: 'Parks' },
+                { id: 'habit', label: 'Habits' }
+              ].map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleFilterChange({ ...filters, types: [cat.id] })}
+                  className={cn(
+                    "px-6 py-2 rounded-full text-sm font-bold tracking-tight kinetic-hover transition-all shrink-0",
+                    filters.types?.[0] === cat.id ? "bg-media-secondary text-media-on-secondary" : "bg-media-surface-container-highest text-media-on-surface-variant hover:bg-media-primary-fixed-dim"
+                  )}
+                >
+                  {cat.label}
+                </button>
+              ))}
+              
+              {/* Tag Search Popover */}
+              <div className="ml-auto flex items-center gap-2">
+                <TagAutocomplete
+                  selectedTags={filters.tags || []}
+                  onTagsChange={(tags) => handleFilterChange({ ...filters, tags })}
+                />
                 <Popover open={saveOpen} onOpenChange={setSaveOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" title="Save Search">
-                      <Save className="h-4 w-4" />
-                    </Button>
+                    <button className="p-2 rounded-full bg-media-surface-container-highest text-media-on-surface-variant hover:text-media-primary transition-colors">
+                      <span className="material-symbols-outlined text-sm">save</span>
+                    </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-60 p-3" align="end">
-                    <div className="grid gap-2">
-                      <Label htmlFor="name" className="text-xs font-medium">
+                  <PopoverContent className="w-60 p-4 rounded-xl border-media-outline-variant/10 shadow-xl" align="end">
+                    <div className="grid gap-3">
+                      <Label htmlFor="name" className="text-[10px] font-bold text-media-secondary uppercase tracking-[0.2em]">
                         Save Search
                       </Label>
                       <div className="flex gap-2">
@@ -729,10 +603,10 @@ export function CommandPalette({ className }: CommandPaletteProps) {
                           id="name"
                           value={saveName}
                           onChange={(e) => setSaveName(e.target.value)}
-                          placeholder="Name..."
-                          className="h-8 text-xs"
+                          placeholder="Search name..."
+                          className="h-9 text-xs rounded-lg border-media-outline-variant/20 focus:border-media-primary transition-all"
                         />
-                        <Button size="sm" className="h-8" onClick={handleSaveSearch}>
+                        <Button size="sm" className="h-9 bg-media-primary text-media-on-primary rounded-lg font-bold" onClick={handleSaveSearch}>
                           Save
                         </Button>
                       </div>
@@ -741,31 +615,47 @@ export function CommandPalette({ className }: CommandPaletteProps) {
                 </Popover>
               </div>
             </div>
-          )}
-
-          {/* Search Input */}
-          <div className="flex items-center border-b px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <Command.Input
-              placeholder="Type a command or search..."
-              value={search}
-              onValueChange={setSearch}
-              autoFocus
-              className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            />
           </div>
 
-          {/* Command List */}
-          <Command.List className="max-h-[400px] overflow-y-auto overflow-x-hidden p-2">
-            <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
-              No results found.
+          {/* Content Area */}
+          <Command.List className="flex-1 overflow-y-auto no-scrollbar max-h-[600px]">
+            <Command.Empty className="py-20 text-center text-sm text-media-on-surface-variant font-medium">
+              Start typing to see results...
             </Command.Empty>
-
             {currentPage === "home" && renderHome()}
             {currentPage === "shortcuts" && renderShortcuts()}
           </Command.List>
+
+          {/* Keyboard Shortcuts Footer */}
+          <div className="px-8 py-5 bg-media-surface-container-highest/30 flex items-center justify-between border-t border-media-outline-variant/10">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <kbd className="bg-media-surface-container-highest px-1.5 py-0.5 rounded text-[10px] font-bold text-media-primary border-b-2 border-media-primary/20">ESC</kbd>
+                <span className="text-[10px] text-media-on-surface-variant font-semibold tracking-wide">to close</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <kbd className="bg-media-surface-container-highest px-1.5 py-0.5 rounded text-[10px] font-bold text-media-primary border-b-2 border-media-primary/20">↑↓</kbd>
+                <span className="text-[10px] text-media-on-surface-variant font-semibold tracking-wide">to navigate</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <kbd className="bg-media-surface-container-highest px-1.5 py-0.5 rounded text-[10px] font-bold text-media-primary border-b-2 border-media-primary/20">ENTER</kbd>
+                <span className="text-[10px] text-media-on-surface-variant font-semibold tracking-wide">to select</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-media-primary/40">
+              <span className="text-[10px] font-bold tracking-[0.15em] uppercase">Kinetic Search</span>
+            </div>
+          </div>
         </Command>
       </Command.Dialog>
+
+      {/* Backdrop overlay for focus */}
+      {open && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+          onClick={() => setOpen(false)}
+        />
+      )}
     </>
   );
 }

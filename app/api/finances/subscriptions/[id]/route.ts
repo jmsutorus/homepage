@@ -36,6 +36,8 @@ export async function PUT(
       cycle: body.cycle,
       currency: body.currency,
       active: body.active,
+      category: body.category,
+      billing_day: body.billing_day !== undefined ? parseInt(body.billing_day) : undefined,
       notes: body.notes,
     });
 

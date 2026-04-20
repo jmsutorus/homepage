@@ -57,6 +57,9 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
   const [imageUrl, setImageUrl] = useState('');
   const [favorite, setFavorite] = useState(false);
   const [status, setStatus] = useState<DrinkStatus>('tasted');
+  const [bodyFeel, setBodyFeel] = useState('');
+  const [servingTemp, setServingTemp] = useState('');
+  const [pairings, setPairings] = useState('');
 
   useEffect(() => {
     if (initialData) {
@@ -70,6 +73,9 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
       setImageUrl(initialData.image_url || '');
       setFavorite(initialData.favorite);
       setStatus(initialData.status);
+      setBodyFeel(initialData.body_feel || '');
+      setServingTemp(initialData.serving_temp || '');
+      setPairings(initialData.pairings || '');
     } else {
       setName('');
       setType('beer');
@@ -81,6 +87,9 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
       setImageUrl('');
       setFavorite(false);
       setStatus('tasted');
+      setBodyFeel('');
+      setServingTemp('');
+      setPairings('');
     }
   }, [initialData, open]);
 
@@ -100,6 +109,9 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
         image_url: imageUrl || undefined,
         favorite,
         status,
+        body_feel: bodyFeel || undefined,
+        serving_temp: servingTemp || undefined,
+        pairings: pairings || undefined,
       };
 
       const url = initialData 
@@ -233,6 +245,40 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
           placeholder="https://..." 
+          className="text-base h-12 border-2 focus-visible:ring-brand"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="bodyFeel">Body & Feel</Label>
+          <Input 
+            id="bodyFeel"
+            value={bodyFeel}
+            onChange={(e) => setBodyFeel(e.target.value)}
+            placeholder="Creamy & Unfiltered" 
+            className="text-base h-12 border-2 focus-visible:ring-brand"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="servingTemp">Serving Temp</Label>
+          <Input 
+            id="servingTemp"
+            value={servingTemp}
+            onChange={(e) => setServingTemp(e.target.value)}
+            placeholder="6-8°C / 43-46°F" 
+            className="text-base h-12 border-2 focus-visible:ring-brand"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="pairings">Pairings</Label>
+        <Input 
+          id="pairings"
+          value={pairings}
+          onChange={(e) => setPairings(e.target.value)}
+          placeholder="Pretzels, Weisswurst" 
           className="text-base h-12 border-2 focus-visible:ring-brand"
         />
       </div>

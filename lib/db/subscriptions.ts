@@ -18,6 +18,8 @@ export interface Subscription {
   cycle: SubscriptionCycle;
   currency: string;
   active: boolean;
+  category: string | null;
+  billing_day: number | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -31,6 +33,8 @@ export interface CreateSubscriptionInput {
   cycle?: SubscriptionCycle;
   currency?: string;
   active?: boolean;
+  category?: string;
+  billing_day?: number;
   notes?: string;
 }
 
@@ -42,6 +46,8 @@ export interface UpdateSubscriptionInput {
   cycle?: SubscriptionCycle;
   currency?: string;
   active?: boolean;
+  category?: string;
+  billing_day?: number;
   notes?: string;
 }
 
@@ -64,6 +70,8 @@ interface DBSubscription {
   cycle: string;
   currency: string;
   active: number;
+  category: string | null;
+  billing_day: number | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -120,8 +128,8 @@ export async function createSubscription(input: CreateSubscriptionInput, userId:
   }
 
   const result = await execute(
-    `INSERT INTO subscriptions (userId, name, website, icon_url, price, cycle, currency, active, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO subscriptions (userId, name, website, icon_url, price, cycle, currency, active, category, billing_day, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       input.name,
@@ -131,6 +139,8 @@ export async function createSubscription(input: CreateSubscriptionInput, userId:
       input.cycle || 'monthly',
       input.currency || 'USD',
       input.active !== false ? 1 : 0,
+      input.category || null,
+      input.billing_day || null,
       input.notes || null,
     ]
   );
@@ -194,6 +204,14 @@ export async function updateSubscription(
   if (updates.active !== undefined) {
     fields.push('active = ?');
     params.push(updates.active ? 1 : 0);
+  }
+  if (updates.category !== undefined) {
+    fields.push('category = ?');
+    params.push(updates.category || null);
+  }
+  if (updates.billing_day !== undefined) {
+    fields.push('billing_day = ?');
+    params.push(updates.billing_day || null);
   }
   if (updates.notes !== undefined) {
     fields.push('notes = ?');

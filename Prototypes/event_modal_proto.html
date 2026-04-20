@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#ffdad3",
+                        "surface-container-low": "#f4f3f1",
+                        "surface-dim": "#dbdad7",
+                        "on-secondary-fixed": "#3e0500",
+                        "tertiary-fixed": "#e4e4cc",
+                        "on-background": "#1a1c1a",
+                        "surface-container-highest": "#e3e2e0",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1a1c1a",
+                        "primary-container": "#1b3022",
+                        "secondary-fixed-dim": "#ffb4a5",
+                        "primary": "#061b0e",
+                        "surface-container-high": "#e9e8e5",
+                        "on-secondary-container": "#732010",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e3e2e0",
+                        "on-secondary-fixed-variant": "#802918",
+                        "on-primary-container": "#819986",
+                        "secondary-container": "#fd876f",
+                        "outline-variant": "#c3c8c1",
+                        "on-primary-fixed-variant": "#364c3c",
+                        "inverse-on-surface": "#f2f1ee",
+                        "primary-fixed": "#d0e9d4",
+                        "on-tertiary-container": "#93947f",
+                        "surface": "#faf9f6",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#b4cdb8",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "outline": "#737973",
+                        "inverse-primary": "#b4cdb8",
+                        "tertiary": "#17180a",
+                        "tertiary-container": "#2b2d1d",
+                        "surface-tint": "#4d6453",
+                        "on-surface-variant": "#434843",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#0b2013",
+                        "background": "#faf9f6",
+                        "surface-bright": "#faf9f6",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "error": "#ba1a1a",
+                        "inverse-surface": "#2f312f",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#efeeeb",
+                        "secondary": "#9f402d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Lexend"],
+                        "label": ["Lexend"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Lexend', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<main class="pt-24 pb-32 px-6 md:px-12 lg:px-24 max-w-4xl mx-auto">
+<div class="bg-surface-container-lowest p-8 md:p-16 rounded-xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.04)] relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary/5 blur-[100px] -mr-32 -mt-32 rounded-full"></div>
+<form class="space-y-16 relative z-10 max-w-2xl mx-auto">
+<div class="space-y-8">
+<div>
+<label class="font-headline text-xs font-bold uppercase tracking-widest text-secondary block mb-2">Essential Details</label>
+<h2 class="text-3xl font-bold text-primary mb-6">Identity &amp; Purpose</h2>
+</div>
+<div class="space-y-8">
+<div>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-4 text-xl font-bold text-primary placeholder:text-outline/50 focus:ring-0 focus:bg-surface-container-high transition-colors" placeholder="Event Title" type="text"/>
+<div class="h-[2px] w-0 bg-secondary transition-all duration-500 mt-1 focus-within:w-full"></div>
+</div>
+<div>
+<textarea class="w-full bg-surface-container-low border-none rounded-lg p-4 text-on-surface placeholder:text-outline/50 focus:ring-0 focus:bg-surface-container-high transition-colors" placeholder="Description of the gathering..." rows="4"></textarea>
+</div>
+</div>
+</div>
+<div class="space-y-8 pt-8 border-t border-surface-container-high">
+<div>
+<label class="font-headline text-xs font-bold uppercase tracking-widest text-secondary block mb-2">Space &amp; Time</label>
+<h2 class="text-3xl font-bold text-primary mb-6">Logistics</h2>
+</div>
+<div class="space-y-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-tighter">Location</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" data-icon="location_on">location_on</span>
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-12 pr-4 py-4 text-on-surface focus:ring-0 focus:bg-surface-container-high transition-colors" placeholder="Physical address or digital link" type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-tighter">Category</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" data-icon="category">category</span>
+<select class="w-full bg-surface-container-low border-none rounded-lg pl-12 pr-4 py-4 text-on-surface focus:ring-0 focus:bg-surface-container-high transition-colors appearance-none">
+<option>Select a category</option>
+<option>Nature Walk</option>
+<option>Social Circle</option>
+<option>Workshop</option>
+<option>Exhibition</option>
+</select>
+</div>
+</div>
+</div>
+<div class="p-8 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="event_repeat">event_repeat</span>
+<span class="font-bold text-primary">All day event</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-outline-variant/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="grid grid-cols-1 gap-10">
+<div class="space-y-4">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block">Start</label>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<input class="w-full bg-surface-container border-none rounded-lg p-4 text-sm focus:ring-0" type="date"/>
+<input class="w-full bg-surface-container border-none rounded-lg p-4 text-sm focus:ring-0" type="time"/>
+</div>
+</div>
+<div class="space-y-4">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block">End</label>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<input class="w-full bg-surface-container border-none rounded-lg p-4 text-sm focus:ring-0" type="date"/>
+<input class="w-full bg-surface-container border-none rounded-lg p-4 text-sm focus:ring-0" type="time"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col md:flex-row items-center justify-center gap-6 pt-12">
+<button class="w-full md:w-auto min-w-[160px] px-10 py-4 rounded-lg bg-primary-fixed text-on-primary-fixed-variant font-bold hover:opacity-80 transition-all active:scale-95" type="button">
+                    Cancel
+                </button>
+<button class="w-full md:w-auto min-w-[200px] px-12 py-4 rounded-lg bg-secondary text-on-secondary font-bold shadow-lg shadow-secondary/20 hover:opacity-90 transition-all active:scale-95" type="submit">
+                    Create Event
+                </button>
+</div>
+</form>
+</div>
+</main>
+
+</body></html>

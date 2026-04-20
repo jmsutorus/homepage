@@ -1,4 +1,12 @@
 import { execute, query, queryOne } from "./index";
+export { 
+  calculateAge, 
+  calculateNextBirthday, 
+  calculateDaysUntilBirthday, 
+  calculateYearsTogether, 
+  calculateNextAnniversary, 
+  calculateDaysUntilAnniversary 
+} from "@/lib/people-utils";
 
 // ============================================================================
 // Interfaces
@@ -19,6 +27,7 @@ export interface Person {
   relationship_type_id: number | null;
   relationshipTypeName?: string | null; // Joined from relationship_types table
   is_partner: boolean;
+  slug: string;
   created_at: string;
   updated_at: string;
 }
@@ -48,149 +57,6 @@ export interface RelationshipType {
 // Utility Functions
 // ============================================================================
 
-/**
- * Calculate age from birthday string
- * Returns null if year is unknown (0000-MM-DD format)
- */
-export function calculateAge(birthday: string): number | null {
-  if (!birthday) return null;
-
-  const [year] = birthday.split('-');
-
-  // Year unknown
-  if (year === '0000') return null;
-
-  const birthDate = new Date(birthday);
-  const today = new Date();
-
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-
-  // Adjust if birthday hasn't occurred this year yet
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-
-  return age;
-}
-
-/**
- * Calculate next birthday occurrence (YYYY-MM-DD)
- * Uses current year or next year depending on if birthday has passed
- */
-export function calculateNextBirthday(birthday: string): string {
-  if (!birthday) return '';
-
-  const [, month, day] = birthday.split('-');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const currentYear = today.getFullYear();
-
-  // Create birthday date for this year
-  let nextBirthday = new Date(currentYear, parseInt(month) - 1, parseInt(day));
-
-  // If birthday has already passed this year, use next year
-  if (nextBirthday < today) {
-    nextBirthday = new Date(currentYear + 1, parseInt(month) - 1, parseInt(day));
-  }
-
-  // Return in YYYY-MM-DD format
-  const year_str = nextBirthday.getFullYear();
-  const month_str = String(nextBirthday.getMonth() + 1).padStart(2, '0');
-  const day_str = String(nextBirthday.getDate()).padStart(2, '0');
-  return `${year_str}-${month_str}-${day_str}`;
-}
-
-/**
- * Calculate days until next birthday
- */
-export function calculateDaysUntilBirthday(birthday: string): number {
-  if (!birthday) return 0;
-
-  const nextBirthdayStr = calculateNextBirthday(birthday);
-  const [year, month, day] = nextBirthdayStr.split('-');
-  const nextBirthday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const diffTime = nextBirthday.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays;
-}
-
-/**
- * Calculate years together from anniversary date
- * Returns null if year is unknown (0000-MM-DD format)
- */
-export function calculateYearsTogether(anniversary: string): number | null {
-  if (!anniversary) return null;
-
-  const [year] = anniversary.split('-');
-
-  // Year unknown
-  if (year === '0000') return null;
-
-  const anniversaryDate = new Date(anniversary);
-  const today = new Date();
-
-  let years = today.getFullYear() - anniversaryDate.getFullYear();
-  const monthDiff = today.getMonth() - anniversaryDate.getMonth();
-
-  // Adjust if anniversary hasn't occurred this year yet
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < anniversaryDate.getDate())) {
-    years--;
-  }
-
-  return years;
-}
-
-/**
- * Calculate next anniversary occurrence (YYYY-MM-DD)
- * Uses current year or next year depending on if anniversary has passed
- */
-export function calculateNextAnniversary(anniversary: string): string {
-  if (!anniversary) return '';
-
-  const [, month, day] = anniversary.split('-');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const currentYear = today.getFullYear();
-
-  // Create anniversary date for this year
-  let nextAnniversary = new Date(currentYear, parseInt(month) - 1, parseInt(day));
-
-  // If anniversary has already passed this year, use next year
-  if (nextAnniversary < today) {
-    nextAnniversary = new Date(currentYear + 1, parseInt(month) - 1, parseInt(day));
-  }
-
-  // Return in YYYY-MM-DD format
-  const year_str = nextAnniversary.getFullYear();
-  const month_str = String(nextAnniversary.getMonth() + 1).padStart(2, '0');
-  const day_str = String(nextAnniversary.getDate()).padStart(2, '0');
-  return `${year_str}-${month_str}-${day_str}`;
-}
-
-/**
- * Calculate days until next anniversary
- */
-export function calculateDaysUntilAnniversary(anniversary: string): number {
-  if (!anniversary) return 0;
-
-  const nextAnniversaryStr = calculateNextAnniversary(anniversary);
-  const [year, month, day] = nextAnniversaryStr.split('-');
-  const nextAnniversary = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const diffTime = nextAnniversary.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays;
-}
 
 /**
  * Check if a date (MM-DD) falls within a date range
@@ -232,11 +98,14 @@ export async function createPerson(
   anniversary: string | undefined,
   userId: string,
   relationshipTypeId?: number | null,
-  isPartner?: boolean
+  isPartner?: boolean,
+  slug?: string
 ): Promise<Person> {
+  const generatedSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  
   const result = await execute(
-    `INSERT INTO people (userId, name, birthday, relationship, photo, email, phone, notes, gift_ideas, anniversary, relationship_type_id, is_partner)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO people (userId, name, birthday, relationship, photo, email, phone, notes, gift_ideas, anniversary, relationship_type_id, is_partner, slug)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       name,
@@ -249,7 +118,8 @@ export async function createPerson(
       giftIdeas || null,
       anniversary || null,
       relationshipTypeId ?? null,
-      isPartner ? 1 : 0
+      isPartner ? 1 : 0,
+      generatedSlug
     ]
   );
 
@@ -301,6 +171,26 @@ export async function getPersonById(
 }
 
 /**
+ * Get a single person by slug (with ownership verification and relationship type name)
+ */
+export async function getPersonBySlug(
+  slug: string,
+  userId: string
+): Promise<Person | undefined> {
+  // DB returns is_partner as 0/1, so we use a raw type and convert
+  type PersonDBRow = Omit<Person, 'is_partner'> & { is_partner: number };
+  const result = await queryOne<PersonDBRow>(
+    `SELECT p.*, rt.name as relationshipTypeName
+     FROM people p
+     LEFT JOIN relationship_types rt ON p.relationship_type_id = rt.id
+     WHERE p.slug = ? AND p.userId = ?`,
+    [slug, userId]
+  );
+  if (!result) return undefined;
+  return { ...result, is_partner: Boolean(result.is_partner) };
+}
+
+/**
  * Update a person
  */
 export async function updatePerson(
@@ -316,11 +206,12 @@ export async function updatePerson(
   anniversary: string | undefined,
   userId: string,
   relationshipTypeId?: number | null,
-  isPartner?: boolean
+  isPartner?: boolean,
+  slug?: string
 ): Promise<boolean> {
   const result = await execute(
     `UPDATE people
-     SET name = ?, birthday = ?, relationship = ?, photo = ?, email = ?, phone = ?, notes = ?, gift_ideas = ?, anniversary = ?, relationship_type_id = ?, is_partner = ?
+     SET name = ?, birthday = ?, relationship = ?, photo = ?, email = ?, phone = ?, notes = ?, gift_ideas = ?, anniversary = ?, relationship_type_id = ?, is_partner = ?, slug = ?
      WHERE id = ? AND userId = ?`,
     [
       name,
@@ -334,6 +225,7 @@ export async function updatePerson(
       anniversary || null,
       relationshipTypeId ?? null,
       isPartner ? 1 : 0,
+      slug,
       id,
       userId
     ]
@@ -619,5 +511,73 @@ export async function getCurrentPartner(userId: string): Promise<Person | undefi
   );
   if (!result) return undefined;
   return { ...result, is_partner: Boolean(result.is_partner) };
+}
+
+/**
+ * Get shared history for a person (linked events, vacations, and parks)
+ */
+export async function getPersonSharedHistory(personId: number, userId: string) {
+  // 1. Get linked events
+  const events = await query<any>(
+    `SELECT e.*, 'event' as entry_type,
+            (SELECT url FROM event_photos WHERE eventId = e.id ORDER BY order_index ASC LIMIT 1) as top_photo
+     FROM events e
+     JOIN event_people ep ON e.id = ep.eventId
+     WHERE ep.personId = ? AND ep.userId = ?
+     ORDER BY e.date DESC`,
+    [personId, userId]
+  );
+
+  // 2. Get linked vacations
+  const vacations = await query<any>(
+    `SELECT v.*, 'vacation' as entry_type
+     FROM vacations v
+     JOIN vacation_people vp ON v.id = vp.vacationId
+     WHERE vp.personId = ? AND vp.userId = ?
+     ORDER BY v.start_date DESC`,
+    [personId, userId]
+  );
+
+  // 3. Get linked parks
+  const parks = await query<any>(
+    `SELECT p.*, 'park' as entry_type
+     FROM parks p
+     JOIN park_people pp ON p.id = pp.parkId
+     WHERE pp.personId = ? AND pp.userId = ?
+     ORDER BY p.visited DESC`,
+    [personId, userId]
+  );
+
+  // Combine and sort by date
+  const combined = [
+    ...events.map(e => ({
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      date: e.date,
+      entry_type: 'event',
+      image: e.top_photo
+    })),
+    ...vacations.map(v => ({
+      id: v.id,
+      title: v.title,
+      description: v.description,
+      date: v.start_date,
+      entry_type: 'vacation',
+      image: v.poster
+    })),
+    ...parks.map(p => ({
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      date: p.visited,
+      entry_type: 'park',
+      image: p.poster
+    }))
+  ];
+
+  combined.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  return combined;
 }
 

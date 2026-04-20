@@ -106,7 +106,7 @@ export function DatesTab({
       {/* Editorial Header */}
       <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
         <div className="md:col-span-7">
-          <p className="text-primary font-font-lexend uppercase tracking-[0.2em] text-xs mb-4">Volume IV: {new Date().getFullYear()}</p>
+          <p className="text-primary font-font-lexend uppercase tracking-[0.2em] text-xs mb-4">{new Date().getFullYear()}</p>
           <h2 className="text-4xl md:text-6xl font-playfair font-bold text-primary tracking-tight leading-none mb-6">
             Our Written <br/>History
           </h2>

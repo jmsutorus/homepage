@@ -28,12 +28,23 @@ import {
   Save,
   X,
   Loader2,
+  MoreVertical,
+  ExternalLink,
+  Plus,
 } from 'lucide-react';
 import { EventPhotoGallery } from './event-photo-gallery';
 import { EventPeopleSection } from './event-people-section';
 import { EventRestaurantSection } from '@/components/widgets/restaurants/event-restaurant-section';
 import type { Event, EventPhoto, EventWithDetails, EventCategory } from '@/lib/db/events';
 import type { RestaurantVisit } from '@/lib/db/restaurants';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 interface EventDetailClientProps {
   eventData: EventWithDetails;
@@ -45,6 +56,8 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { event, photos, people } = data;
+  const isUpcoming = new Date(event.date) >= new Date(new Date().setHours(0, 0, 0, 0));
+  const heroImage = photos.length > 0 ? photos[0].url : 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=1200';
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -187,7 +200,6 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
     }
   };
 
-  // Markdown toolbar functions
   const insertMarkdown = (before: string, after: string = '') => {
     const textarea = contentRef.current;
     if (!textarea) return;
@@ -229,382 +241,455 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
   };
 
   return (
-    <div className="container mx-auto py-6 sm:py-8 px-4 max-w-4xl">
-      {/* Back Button & Actions */}
-      <div className="flex items-center justify-between mb-6">
-        <Link href="/events">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Events
-          </Button>
-        </Link>
-        <div className="flex gap-2">
-          {isEditing ? (
-            <>
+    <div className="bg-media-background text-media-on-background min-h-screen font-lexend">
+      <main className="max-w-7xl mx-auto px-4 md:px-12 py-8 pb-32">
+        {/* Navigation & Admin Actions */}
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/events" className="group flex items-center gap-2 text-media-on-surface-variant hover:text-media-primary transition-colors">
+            <div className="p-2 rounded-full bg-media-surface-container group-hover:bg-media-primary group-hover:text-media-on-primary transition-all">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="font-bold uppercase tracking-widest text-[10px] text-media-on-surface-variant group-hover:text-media-primary transition-colors">Back to Timeline</span>
+          </Link>
+
+          {!isEditing && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full bg-media-surface-container hover:bg-media-primary hover:text-white transition-all">
+                  <MoreVertical className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-media-surface-container-lowest border-media-outline-variant">
+                <DropdownMenuItem onClick={handleStartEdit} className="gap-2 cursor-pointer">
+                  <Edit2 className="w-4 h-4" />
+                  Edit Journey
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDelete} className="gap-2 cursor-pointer text-media-error hover:text-media-error">
+                  <Trash2 className="w-4 h-4" />
+                  Dissolve Event
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
+          {isEditing && (
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleCancelEdit}
                 disabled={isSaving}
+                className="rounded-full border-media-outline text-media-on-surface hover:bg-media-surface-variant h-9 px-6"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-              <Button size="sm" onClick={handleSaveEdit} disabled={isSaving}>
+              <Button 
+                size="sm" 
+                onClick={handleSaveEdit} 
+                disabled={isSaving}
+                className="rounded-full bg-media-primary text-media-on-primary hover:opacity-90 h-9 px-6"
+              >
                 {isSaving ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
                   <Save className="w-4 h-4 mr-2" />
                 )}
-                {isSaving ? 'Saving...' : 'Save'}
+                {isSaving ? 'Saving...' : 'Save Changes'}
               </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="outline" size="sm" onClick={handleStartEdit}>
-                <Edit2 className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
-              <Button variant="destructive" size="sm" onClick={handleDelete}>
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
-            </>
+            </div>
           )}
         </div>
-      </div>
 
-      {isEditing ? (
-        /* Edit Mode */
-        <div className="space-y-6">
-          {/* Event Details Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Event Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                {/* Title */}
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    value={editForm.title}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, title: e.target.value })
-                    }
-                    required
-                  />
-                </div>
+        {isEditing ? (
+          /* Edit Mode - Re-styled to fit the theme */
+          <div className="space-y-12 max-w-4xl mx-auto">
+            <section className="space-y-6">
+              <h2 className="text-3xl font-black text-media-primary tracking-tight uppercase border-b-4 border-media-secondary inline-block pb-1">Update Journey</h2>
+              <div className="grid gap-8 p-8 rounded-[2.5rem] bg-media-surface-container-low border border-media-outline-variant editorial-shadow">
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Event Title</Label>
+                    <Input
+                      id="title"
+                      value={editForm.title}
+                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                      className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                      required
+                    />
+                  </div>
 
-                {/* Description */}
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={editForm.description}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, description: e.target.value })
-                    }
-                    rows={2}
-                  />
-                </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Summary (Short)</Label>
+                    <Textarea
+                      id="description"
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      className="bg-media-surface border-media-outline-variant focus:ring-media-primary min-h-[80px] rounded-xl"
+                    />
+                  </div>
 
-                {/* Location */}
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    value={editForm.location}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, location: e.target.value })
-                    }
-                  />
-                </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="location" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Venue / Landscape</Label>
+                    <Input
+                      id="location"
+                      value={editForm.location}
+                      onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                      className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                    />
+                  </div>
 
-                {/* Date */}
-                <div className="space-y-2">
-                  <Label htmlFor="date">Start Date *</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={editForm.date}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, date: e.target.value })
-                    }
-                    required
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="date" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Origin Date</Label>
+                    <Input
+                      id="date"
+                      type="date"
+                      value={editForm.date}
+                      onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                      className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                      required
+                    />
+                  </div>
 
-                {/* End Date */}
-                <div className="space-y-2">
-                  <Label htmlFor="end_date">End Date</Label>
-                  <Input
-                    id="end_date"
-                    type="date"
-                    value={editForm.end_date}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, end_date: e.target.value })
-                    }
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="end_date" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Final Horizon (Optional)</Label>
+                    <Input
+                      id="end_date"
+                      type="date"
+                      value={editForm.end_date}
+                      onChange={(e) => setEditForm({ ...editForm, end_date: e.target.value })}
+                      className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                    />
+                  </div>
 
-                {/* All Day */}
-                <div className="flex items-center space-x-2 sm:col-span-2">
-                  <Checkbox
-                    id="all_day"
-                    checked={editForm.all_day}
-                    onCheckedChange={(checked) =>
-                      setEditForm({ ...editForm, all_day: checked === true })
-                    }
-                  />
-                  <Label htmlFor="all_day" className="cursor-pointer">
-                    All Day Event
-                  </Label>
-                </div>
+                  {!editForm.all_day && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="start_time" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Commencement</Label>
+                        <Input
+                          id="start_time"
+                          type="time"
+                          value={editForm.start_time}
+                          onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })}
+                          className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="end_time" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Conclusion</Label>
+                        <Input
+                          id="end_time"
+                          type="time"
+                          value={editForm.end_time}
+                          onChange={(e) => setEditForm({ ...editForm, end_time: e.target.value })}
+                          className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                        />
+                      </div>
+                    </>
+                  )}
 
-                {/* Time fields (only show if not all day) */}
-                {!editForm.all_day && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="start_time">Start Time</Label>
-                      <Input
-                        id="start_time"
-                        type="time"
-                        value={editForm.start_time}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, start_time: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="space-y-2t">
-                      <Label htmlFor="end_time">End Time</Label>
-                      <Input
-                        id="end_time"
-                        type="time"
-                        value={editForm.end_time}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, end_time: e.target.value })
-                        }
-                      />
-                    </div>
-                  </>
-                )}
-
-                {/* Category */}
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={editForm.category || 'none'}
-                    onValueChange={(value) =>
-                      setEditForm({ ...editForm, category: value === 'none' ? '' : value })
-                    }
-                  >
-                    <SelectTrigger id="category">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No category</SelectItem>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.name}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Content Editor Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <FileText className="w-5 h-5" />
-                  Event Content
-                </CardTitle>
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('# ')}
-                  >
-                    H1
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('## ')}
-                  >
-                    H2
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('**', '**')}
-                  >
-                    Bold
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('*', '*')}
-                  >
-                    Italic
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertMarkdown('- ')}
-                  >
-                    List
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                ref={contentRef}
-                value={editForm.content}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, content: e.target.value })
-                }
-                placeholder="Write detailed event notes in Markdown..."
-                className="min-h-[300px] font-mono"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Photo Gallery (still editable) */}
-          <EventPhotoGallery event={event} photos={photos} onUpdate={handleUpdate} />
-        </div>
-      ) : (
-        /* View Mode */
-        <>
-          {/* Event Header */}
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <CardTitle className="text-2xl mb-2">{event.title}</CardTitle>
-                  <div className="flex flex-wrap gap-2">
-                    {event.category && (
-                      <Badge variant="secondary">{event.category}</Badge>
-                    )}
-                    {event.all_day && <Badge variant="outline">All Day</Badge>}
+                  <div className="flex items-center space-x-3 sm:col-span-2 py-2">
+                    <Checkbox
+                      id="all_day"
+                      checked={editForm.all_day}
+                      onCheckedChange={(checked) => setEditForm({ ...editForm, all_day: checked === true })}
+                      className="border-media-primary data-[state=checked]:bg-media-primary rounded-md"
+                    />
+                    <Label htmlFor="all_day" className="cursor-pointer text-sm font-medium">All day duration</Label>
                   </div>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Date & Time */}
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="w-5 h-5" />
-                <span>
-                  {formatDate(event.date)}
-                  {event.end_date && event.end_date !== event.date && (
-                    <> - {formatDate(event.end_date)}</>
+            </section>
+
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-black text-media-primary tracking-tight uppercase border-b-4 border-media-secondary inline-block pb-1">Detailed Archive</h2>
+                <div className="flex gap-1">
+                   {['# ', '## ', '**', '- '].map((symbol) => (
+                     <Button
+                       key={symbol}
+                       type="button"
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => insertMarkdown(symbol, symbol === '**' ? '**' : '')}
+                       className="h-8 w-8 p-0 hover:bg-media-surface-variant rounded-md"
+                     >
+                       <span className="text-[10px] font-black">{symbol.trim() || 'L'}</span>
+                     </Button>
+                   ))}
+                </div>
+              </div>
+              <Textarea
+                ref={contentRef}
+                value={editForm.content}
+                onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                placeholder="Transcribe the full journey narrative in Markdown..."
+                className="min-h-[400px] bg-media-surface-container-low border-media-outline-variant focus:ring-media-primary font-mono text-sm leading-relaxed p-8 rounded-[2.5rem] editorial-shadow"
+              />
+            </section>
+
+            <section className="pt-8 border-t border-media-outline-variant">
+              <EventPhotoGallery event={event} photos={photos} onUpdate={handleUpdate} />
+            </section>
+          </div>
+        ) : (
+          /* View Mode - The Editorial Experience */
+          <div className="space-y-16">
+            {/* Hero Section */}
+            <section className="relative rounded-[2.5rem] overflow-hidden min-h-[600px] md:h-[716px] flex items-end p-8 md:p-16 editorial-shadow">
+              <div className="absolute inset-0 z-0">
+                <img 
+                  alt={event.title} 
+                  className="w-full h-full object-cover grayscale-[20%] contrast-[1.1]" 
+                  src={heroImage}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-media-primary/95 via-media-primary/40 to-transparent"></div>
+              </div>
+              <div className="relative z-10 w-full flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="space-y-4 max-w-4xl">
+                  <div className={cn(
+                    "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase",
+                    isUpcoming ? "bg-media-secondary text-media-on-secondary" : "bg-media-surface-variant text-media-on-surface-variant"
+                  )}>
+                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      {isUpcoming ? 'event_available' : 'history'}
+                    </span>
+                    {isUpcoming ? 'Upcoming Journey' : 'Archived Chapter'}
+                  </div>
+                  <h1 className="text-5xl md:text-8xl font-black text-media-surface tracking-tighter leading-[0.85]">
+                    {event.title.split(' ').map((word, i) => (
+                      <span key={i} className="block">{word}</span>
+                    ))}
+                  </h1>
+                  <div className="flex flex-wrap gap-x-8 gap-y-4 pt-6 text-media-surface/80 font-medium text-sm md:text-base">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-media-secondary" style={{ fontSize: '20px' }}>calendar_month</span>
+                      <span>{formatDate(event.date)}</span>
+                    </div>
+                    {!event.all_day && event.start_time && (
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-media-secondary" style={{ fontSize: '20px' }}>schedule</span>
+                        <span>{formatTime(event.start_time)}</span>
+                      </div>
+                    )}
+                    {event.location && (
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-media-secondary" style={{ fontSize: '20px' }}>location_on</span>
+                        <span>{event.location}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="hidden md:flex items-center gap-4">
+                  <button 
+                    onClick={handleStartEdit}
+                    className="bg-media-secondary text-white px-8 py-4 rounded-xl font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 editorial-shadow text-[10px]"
+                  >
+                    Narrative Control
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit_note</span>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+              {/* Left Column: Narrative */}
+              <div className="lg:col-span-7 space-y-20">
+                <div className="space-y-8">
+                  <h2 className="text-3xl font-black text-media-primary tracking-tight uppercase border-b-4 border-media-secondary inline-block pb-1">
+                    Editorial Reflection
+                  </h2>
+                  <div className="text-media-on-surface-variant text-lg leading-relaxed space-y-8 max-w-2xl">
+                    {event.description && (
+                      <p className="first-letter:text-7xl first-letter:font-black first-letter:text-media-secondary first-letter:mr-3 first-letter:float-left first-letter:leading-[1]">
+                        {event.description}
+                      </p>
+                    )}
+                    
+                    {event.content && (
+                      <div className="prose prose-lg prose-stone dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:text-media-primary prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight">
+                        {event.content.split('\n\n').map((paragraph, index) => {
+                          if (paragraph.startsWith('## ')) {
+                            return <h3 key={index} className="text-2xl mt-8 mb-4">{paragraph.replace('## ', '')}</h3>;
+                          }
+                          if (paragraph.startsWith('# ')) {
+                            return <h2 key={index} className="text-3xl mt-12 mb-6">{paragraph.replace('# ', '')}</h2>;
+                          }
+                          return <p key={index} className="mb-6">{paragraph}</p>;
+                        })}
+                      </div>
+                    )}
+
+                    {!event.description && !event.content && (
+                      <div className="py-12 px-8 rounded-[2.5rem] bg-media-surface-container-low border-2 border-dashed border-media-outline-variant text-center editorial-shadow">
+                        <FileText className="w-12 h-12 mx-auto mb-4 opacity-20 text-media-primary" />
+                        <p className="text-media-on-surface-variant italic">The narrative for this chapter remains unwritten.</p>
+                        <Button variant="link" className="text-media-secondary font-black uppercase tracking-tighter" onClick={handleStartEdit}>
+                          Begin Transcription
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Event Memories Gallery */}
+                <div className="space-y-8">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-3xl font-black text-media-primary tracking-tight uppercase border-b-4 border-media-secondary inline-block pb-1">
+                      Event Memories
+                    </h2>
+                    <Button variant="ghost" size="sm" onClick={handleStartEdit} className="text-media-secondary hover:bg-media-secondary/10 font-bold uppercase tracking-widest text-[10px]">
+                      <Plus className="w-4 h-4 mr-1" /> Add Frame
+                    </Button>
+                  </div>
+                  
+                  {photos.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {photos.map((photo, i) => (
+                        <div 
+                          key={photo.id} 
+                          className={cn(
+                            "overflow-hidden rounded-2xl bg-media-surface-container relative group editorial-shadow",
+                            i % 4 === 1 ? "aspect-[3/4]" : "aspect-square",
+                            i % 4 === 2 && "md:col-span-2 md:aspect-[16/9]",
+                            i % 4 === 3 && "aspect-square"
+                          )}
+                        >
+                          <img 
+                            alt={photo.caption || `Memory ${i+1}`} 
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                            src={photo.url} 
+                          />
+                          {photo.caption && (
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                              <p className="text-white text-xs font-medium leading-snug">{photo.caption}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="aspect-[3/4] bg-media-surface-container-high rounded-2xl animate-pulse"></div>
+                      <div className="aspect-square md:col-span-2 bg-media-surface-container rounded-2xl animate-pulse"></div>
+                    </div>
                   )}
-                </span>
+                </div>
               </div>
 
-              {!event.all_day && event.start_time && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="w-5 h-5" />
-                  <span>
-                    {formatTime(event.start_time)}
-                    {event.end_time && ` - ${formatTime(event.end_time)}`}
-                  </span>
+              {/* Right Column: Sidebar */}
+              <div className="lg:col-span-5 space-y-16">
+                {/* The Guest List */}
+                <div className="bg-media-surface-container-low p-10 rounded-[2.5rem] border-l-8 border-media-secondary editorial-shadow">
+                  <div className="flex items-center justify-between mb-10">
+                    <h3 className="text-xl font-black text-media-primary uppercase tracking-widest">The Guest List</h3>
+                    <div className="bg-media-secondary/10 text-media-secondary px-3 py-1 rounded-full text-[10px] font-black">
+                      {people.length} ADMITTED
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-8">
+                    {people.length > 0 ? (
+                      people.map((person) => (
+                        <div key={person.id} className="flex items-center gap-5 group">
+                          <Avatar className="w-16 h-16 border-4 border-media-surface editorial-shadow transition-transform group-hover:scale-110 duration-300">
+                            {person.photo ? (
+                              <AvatarImage src={person.photo} alt={person.name} className="object-cover" />
+                            ) : (
+                              <AvatarFallback className="bg-media-primary text-media-on-primary font-black text-xl">
+                                {person.name.charAt(0)}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          <div>
+                            <p className="font-black text-media-primary text-xl leading-tight group-hover:text-media-secondary transition-colors cursor-default">
+                              {person.name}
+                            </p>
+                            <p className="text-[11px] text-media-secondary font-black uppercase tracking-widest mt-1 opacity-80">
+                              {person.relationshipTypeName || person.relationship || 'Companion'}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-media-on-surface-variant italic text-sm py-4">Solitary journey. No companions logged.</p>
+                    )}
+                    
+                    <Link href={`/events/${event.slug}/people`} className="inline-flex items-center gap-2 mt-4 text-media-secondary font-black uppercase tracking-widest text-[10px] hover:underline">
+                       Manage Attendees <Plus className="w-3 h-3" />
+                    </Link>
+                  </div>
                 </div>
-              )}
 
-              {/* Location */}
-              {event.location && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="w-5 h-5" />
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline"
-                  >
-                    {event.location}
-                  </a>
+                {/* Linked Discoveries (Restaurants) */}
+                <div className="space-y-8">
+                  <h3 className="text-xl font-black text-media-primary uppercase tracking-widest border-b-2 border-media-outline-variant pb-2">
+                    Linked Discoveries
+                  </h3>
+                  <div className="grid grid-cols-1 gap-5">
+                    {restaurantVisits.length > 0 ? (
+                      restaurantVisits.map((visit) => (
+                        <Link 
+                          key={visit.id}
+                          href={`/restaurants/${visit.restaurantSlug}`}
+                          className="group flex items-center gap-5 p-5 rounded-3xl bg-media-surface-container-lowest hover:bg-media-primary hover:text-white transition-all duration-500 editorial-shadow border border-media-outline-variant/30"
+                        >
+                          <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border-2 border-media-surface group-hover:border-transparent transition-all">
+                            <div className="w-full h-full bg-media-secondary/20 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                              <span className="material-symbols-outlined text-media-secondary group-hover:text-white text-3xl">restaurant</span>
+                            </div>
+                          </div>
+                          <div className="flex-grow">
+                            <h4 className="font-black text-lg group-hover:text-white transition-colors">{visit.restaurantName}</h4>
+                            <p className="text-[11px] text-media-on-surface-variant group-hover:text-white/70 font-bold uppercase tracking-tighter mt-1">
+                              {visit.rating ? `${visit.rating}/10 Rating` : 'Curated Destination'}
+                            </p>
+                            {visit.notes && <p className="text-xs mt-2 line-clamp-1 group-hover:text-white/60">{visit.notes}</p>}
+                          </div>
+                          <span className="material-symbols-outlined text-media-secondary group-hover:text-white transition-all group-hover:translate-x-1" style={{ fontSize: '20px' }}>
+                            open_in_new
+                          </span>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="p-8 rounded-[2.5rem] bg-media-surface-container-lowest border-2 border-dashed border-media-outline-variant text-center opacity-60 editorial-shadow">
+                         <span className="material-symbols-outlined text-media-primary/30 text-4xl block mb-2">restaurant_menu</span>
+                         <p className="text-sm">No culinary chapters linked.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
 
-              {/* Description */}
-              {event.description && (
-                <div className="pt-4 border-t">
-                  <p className="text-muted-foreground">{event.description}</p>
+                {/* Event Location Map */}
+                <div className="space-y-6">
+                   <h3 className="text-xl font-black text-media-primary uppercase tracking-widest border-b-2 border-media-outline-variant pb-2">
+                    Coordinates
+                   </h3>
+                   <div className="rounded-[2.5rem] overflow-hidden grayscale contrast-[1.2] opacity-90 h-72 relative bg-media-surface-container-high editorial-shadow group cursor-pointer"
+                        onClick={() => event.location && window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`, '_blank')}>
+                    <div className="absolute inset-0 bg-media-primary/10 group-hover:bg-transparent transition-colors z-10"></div>
+                    <img 
+                      alt="Map location" 
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                      src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=1200" 
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center z-20">
+                      <div className="bg-media-primary text-media-on-primary w-16 h-16 rounded-full flex items-center justify-center editorial-shadow kinetic-hover border-4 border-media-surface scale-110 group-hover:bg-media-secondary group-hover:scale-125 transition-all">
+                        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '32px' }}>location_on</span>
+                      </div>
+                    </div>
+                    {event.location && (
+                      <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md p-4 rounded-2xl z-20 opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0">
+                         <p className="text-media-primary font-black text-xs uppercase tracking-widest">{event.location}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Markdown Content */}
-          {event.content ? (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <FileText className="w-5 h-5" />
-                  Event Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  {event.content.split('\n\n').map((paragraph, index) => (
-                    <p key={index} className="mb-4 whitespace-pre-wrap">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="mb-6">
-              <CardContent className="py-8 text-center text-muted-foreground">
-                <FileText className="w-10 h-10 mx-auto mb-3 opacity-50" />
-                <p>No event details yet</p>
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="mt-2"
-                  onClick={handleStartEdit}
-                >
-                  Add details
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Attendees */}
-          <EventPeopleSection
-            eventSlug={event.slug}
-            people={people}
-            onUpdate={handleUpdate}
-          />
-
-          {/* Restaurants */}
-          <EventRestaurantSection
-            eventId={event.id}
-            eventDate={event.date}
-            visits={restaurantVisits}
-            onUpdate={handleUpdate}
-          />
-
-          {/* Photo Gallery */}
-          <EventPhotoGallery event={event} photos={photos} onUpdate={handleUpdate} />
-        </>
-      )}
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

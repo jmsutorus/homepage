@@ -13,12 +13,14 @@ interface MoodSelectorProps {
   onMoodUpdated?: () => void;
 }
 
+import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
+
 const MOODS = [
-  { rating: 1, icon: Frown, color: "text-red-500", label: "Awful" },
-  { rating: 2, icon: Frown, color: "text-orange-500", label: "Bad" },
-  { rating: 3, icon: Meh, color: "text-yellow-500", label: "Okay" },
-  { rating: 4, icon: Smile, color: "text-green-500", label: "Good" },
-  { rating: 5, icon: Smile, color: "text-emerald-500", label: "Great" },
+  { rating: 1, icon: "sentiment_very_dissatisfied", color: "bg-media-error text-white", label: "Awful" },
+  { rating: 2, icon: "sentiment_dissatisfied", color: "bg-media-secondary text-white", label: "Bad" },
+  { rating: 3, icon: "sentiment_neutral", color: "bg-media-surface-container-high text-media-on-surface-variant", label: "Okay" },
+  { rating: 4, icon: "sentiment_satisfied", color: "bg-blue-400 text-white", label: "Good" },
+  { rating: 5, icon: "mood", color: "bg-media-secondary text-white", label: "Great" },
 ];
 
 export function MoodSelector({ date, currentMood, onMoodUpdated }: MoodSelectorProps) {
@@ -66,41 +68,32 @@ export function MoodSelector({ date, currentMood, onMoodUpdated }: MoodSelectorP
   };
 
   return (
-    <div className="relative min-h-[88px] flex justify-between gap-2 p-4 rounded-lg border bg-card">
+    <div className="relative min-h-[72px] flex flex-wrap gap-4 items-center">
       {isSaving && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+        <div className="absolute inset-0 bg-white/20 backdrop-blur-sm z-10 flex items-center justify-center rounded-full">
           <CuteLoader size={16} />
         </div>
       )}
-      {MOODS.map(({ rating, icon: Icon, color, label }) => {
+      {MOODS.map(({ rating, icon, color, label }) => {
         const isSelected = currentMood === rating;
         return (
-          <div key={rating} className="flex flex-col items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleMoodSelect(rating)}
-              className={cn(
-                "h-10 w-10 rounded-full transition-all hover:scale-110 cursor-pointer",
-                isSelected ? "bg-accent ring-2 ring-primary" : "hover:bg-accent/50"
-              )}
-              title={label}
-              disabled={isSaving}
-            >
-              <Icon 
-                className={cn(
-                  "h-6 w-6 transition-colors", 
-                  isSelected ? color : "text-muted-foreground"
-                )} 
-              />
-            </Button>
-            <span className={cn(
-              "text-xs font-medium",
-              isSelected ? "text-foreground" : "text-muted-foreground"
-            )}>
-              {label}
-            </span>
-          </div>
+          <button
+            key={rating}
+            onClick={() => handleMoodSelect(rating)}
+            disabled={isSaving}
+            className={cn(
+              "w-14 h-14 rounded-full flex items-center justify-center hover:scale-110 transition-all cursor-pointer",
+              isSelected ? color : "bg-media-surface-container-high text-media-on-surface-variant",
+              "shadow-sm"
+            )}
+            title={label}
+          >
+            <MaterialSymbol 
+              icon={icon} 
+              fill={isSelected} 
+              className={cn("text-2xl transition-transform", isSelected && "scale-110")}
+            />
+          </button>
         );
       })}
     </div>

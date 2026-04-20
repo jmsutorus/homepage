@@ -80,7 +80,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, birthday, relationship, photo, email, phone, notes, gift_ideas, anniversary, relationship_type_id, is_partner } = body;
+    const { name, birthday, relationship, photo, email, phone, notes, gift_ideas, anniversary, relationship_type_id, is_partner, slug } = body;
 
     // Validate required fields
     if (!name || !birthday) {
@@ -101,7 +101,7 @@ export async function PUT(
 
     // Validate relationship category
     const validRelationships: RelationshipCategory[] = ['family', 'friends', 'work', 'other'];
-    const relationshipValue = relationship || 'other';
+    const relationshipValue = (relationship || 'other') as RelationshipCategory;
     if (!validRelationships.includes(relationshipValue)) {
       return NextResponse.json(
         { error: "Invalid relationship category. Must be: family, friends, work, or other." },
@@ -115,6 +115,12 @@ export async function PUT(
         { error: "Invalid anniversary format. Use YYYY-MM-DD or 0000-MM-DD for unknown year." },
         { status: 400 }
       );
+    }
+
+    // Get existing person to preserve slug if not provided
+    const existingPerson = await getPersonById(personId, userId);
+    if (!existingPerson) {
+      return NextResponse.json({ error: "Person not found" }, { status: 404 });
     }
 
     // Update person
@@ -131,11 +137,12 @@ export async function PUT(
       anniversary,
       userId,
       relationship_type_id,
-      is_partner
+      is_partner,
+      slug || existingPerson.slug
     );
 
     if (!success) {
-      return NextResponse.json({ error: "Person not found" }, { status: 404 });
+      return NextResponse.json({ error: "Failed to update person" }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

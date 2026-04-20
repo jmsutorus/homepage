@@ -2,55 +2,52 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Pencil, Globe, DollarSign, Pause, Play } from 'lucide-react';
+import { Plus, Trash2, Pencil, Wand2 } from 'lucide-react';
 import type { Subscription } from '@/lib/db/subscriptions';
 import { toMonthly, toYearly } from '@/lib/utils/finances';
-import type { SubscriptionCycle } from '@/lib/utils/finances';
 import { SubscriptionFormDialog } from './subscription-form-dialog';
+import { SubscriptionEditorialCard } from './subscription-editorial-card';
+import { cn } from '@/lib/utils';
 
 interface SubscriptionsTabProps {
   subscriptions: Subscription[];
 }
 
-const cycleLabels: Record<SubscriptionCycle, string> = {
-  weekly: '/wk',
-  monthly: '/mo',
-  quarterly: '/qtr',
-  yearly: '/yr',
-};
-
-function formatCurrency(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
-  } catch {
-    return `${currency} ${amount.toFixed(2)}`;
-  }
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(amount);
 }
 
-export function SubscriptionsTab({ subscriptions: initialSubs }: SubscriptionsTabProps) {
+export function SubscriptionsTab({ subscriptions: subs }: SubscriptionsTabProps) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [editData, setEditData] = useState<Subscription | undefined>();
 
-  const subs = initialSubs;
   const activeSubs = subs.filter(s => s.active);
   const inactiveSubs = subs.filter(s => !s.active);
 
-  // Calculate totals by currency
-  const totals = new Map<string, { monthly: number; yearly: number }>();
-  for (const sub of activeSubs) {
-    const curr = sub.currency;
-    const current = totals.get(curr) || { monthly: 0, yearly: 0 };
-    current.monthly += toMonthly(sub.price, sub.cycle);
-    current.yearly += toYearly(sub.price, sub.cycle);
-    totals.set(curr, current);
-  }
+  // Totals
+  const totalMonthly = activeSubs.reduce((acc, sub) => acc + toMonthly(sub.price, sub.cycle), 0);
+  const totalYearly = activeSubs.reduce((acc, sub) => acc + toYearly(sub.price, sub.cycle), 0);
+  
+  // Top Category
+  const categorySpend = activeSubs.reduce((acc, sub) => {
+    const cat = sub.category || 'Other';
+    acc[cat] = (acc[cat] || 0) + toMonthly(sub.price, sub.cycle);
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const topCategory = Object.entries(categorySpend).sort((a, b) => b[1] - a[1])[0]?.[0] || 'None';
 
-  // Find max monthly cost for proportional sizing
-  const maxMonthlyCost = Math.max(...activeSubs.map(s => toMonthly(s.price, s.cycle)), 1);
+  // Efficiency Score: (Active Monthly / Total Possible)
+  const totalPossibleMonthly = subs.reduce((acc, sub) => acc + toMonthly(sub.price, sub.cycle), 0);
+  const efficiencyScore = totalPossibleMonthly > 0 
+    ? Math.round((totalMonthly / totalPossibleMonthly) * 100) 
+    : 100;
 
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this subscription?')) return;
@@ -59,19 +56,6 @@ export function SubscriptionsTab({ subscriptions: initialSubs }: SubscriptionsTa
       router.refresh();
     } catch (error) {
       console.error('Error deleting:', error);
-    }
-  };
-
-  const handleToggleActive = async (sub: Subscription) => {
-    try {
-      await fetch(`/api/finances/subscriptions/${sub.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ active: !sub.active }),
-      });
-      router.refresh();
-    } catch (error) {
-      console.error('Error toggling:', error);
     }
   };
 
@@ -87,196 +71,139 @@ export function SubscriptionsTab({ subscriptions: initialSubs }: SubscriptionsTa
   };
 
   return (
-    <div className="space-y-6">
-      {/* Summary Bar */}
-      <div className="flex flex-wrap items-center gap-4">
-        {Array.from(totals.entries()).map(([currency, data]) => (
-          <Card key={currency} className="flex-1 min-w-[200px]">
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Monthly Total</p>
-                  <p className="text-2xl font-bold tracking-tight">
-                    {formatCurrency(data.monthly, currency)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Yearly Total</p>
-                  <p className="text-lg font-semibold text-muted-foreground">
-                    {formatCurrency(data.yearly, currency)}
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {activeSubs.filter(s => s.currency === currency).length} active subscriptions
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-        {totals.size === 0 && (
-          <Card className="flex-1">
-            <CardContent className="py-4 text-center text-muted-foreground">
-              <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p>No active subscriptions yet</p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Add Button */}
-      <div className="flex justify-end">
-        <Button onClick={() => { setEditData(undefined); setShowForm(true); }}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Subscription
-        </Button>
-      </div>
-
-      {/* Proportional Grid */}
-      {activeSubs.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 auto-rows-fr">
-          {activeSubs
-            .sort((a, b) => toMonthly(b.price, b.cycle) - toMonthly(a.price, a.cycle))
-            .map((sub) => {
-              const monthlyCost = toMonthly(sub.price, sub.cycle);
-              const proportion = monthlyCost / maxMonthlyCost;
-              // Scale from 1 to 3 rows based on proportion
-              const span = Math.max(1, Math.ceil(proportion * 3));
-
-              return (
-                <Card
-                  key={sub.id}
-                  className="relative group overflow-hidden transition-all hover:shadow-md border-l-4"
-                  style={{
-                    gridRow: `span ${span}`,
-                    borderLeftColor: `hsl(${(sub.id * 47) % 360}, 70%, 55%)`,
-                  }}
-                >
-                  <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <div className="flex items-start gap-2">
-                      {/* Icon */}
-                      {sub.icon_url ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={sub.icon_url}
-                          alt=""
-                          className="w-6 h-6 rounded flex-shrink-0"
-                        />
-                      ) : sub.website ? (
-                        <Globe className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                      ) : (
-                        <DollarSign className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{sub.name}</p>
-                        {sub.website && (
-                          <a
-                            href={sub.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-muted-foreground hover:text-brand truncate block"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {new URL(sub.website).hostname}
-                          </a>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="mt-2">
-                      <p className="text-lg font-bold">
-                        {formatCurrency(sub.price, sub.currency)}
-                        <span className="text-xs font-normal text-muted-foreground ml-1">
-                          {cycleLabels[sub.cycle]}
-                        </span>
-                      </p>
-                      {sub.cycle !== 'monthly' && (
-                        <p className="text-xs text-muted-foreground">
-                          ≈ {formatCurrency(monthlyCost, sub.currency)}/mo
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Actions (visible on hover) */}
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => handleEdit(sub)}
-                      >
-                        <Pencil className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => handleToggleActive(sub)}
-                      >
-                        <Pause className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive"
-                        onClick={() => handleDelete(sub.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-        </div>
-      )}
-
-      {/* Inactive Subscriptions */}
-      {inactiveSubs.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Paused ({inactiveSubs.length})
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {inactiveSubs.map((sub) => (
-              <Card key={sub.id} className="opacity-60 group">
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {sub.icon_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={sub.icon_url} alt="" className="w-5 h-5 rounded grayscale" />
-                    ) : (
-                      <DollarSign className="w-4 h-4 text-muted-foreground" />
-                    )}
-                    <span className="text-sm truncate">{sub.name}</span>
-                    <Badge variant="secondary" className="text-xs">Paused</Badge>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {formatCurrency(sub.price, sub.currency)}{cycleLabels[sub.cycle]}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 opacity-0 group-hover:opacity-100"
-                      onClick={() => handleToggleActive(sub)}
-                    >
-                      <Play className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive opacity-0 group-hover:opacity-100"
-                      onClick={() => handleDelete(sub.id)}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start mt-8 pb-20">
+      <section className="md:col-span-9 space-y-16">
+        {/* Header Hero */}
+        <div className="bg-media-surface-container-lowest p-12 rounded-[2.5rem] relative overflow-hidden flex flex-col md:flex-row justify-between items-center md:items-end gap-8 editorial-shadow">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-media-surface-container-low rounded-full -mr-20 -mt-20 blur-3xl"></div>
+          <div className="relative z-10 space-y-4 text-center md:text-left">
+            <h1 className="text-5xl font-bold tracking-tight text-media-primary max-w-md font-lexend">The Monthly Overview</h1>
+            <p className="text-media-on-surface-variant max-w-sm font-medium">A consolidated view of your recurring digital and physical memberships.</p>
+          </div>
+          <div className="relative z-10 text-center md:text-right">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-media-secondary mb-1">Total Recurring</div>
+            <div className="text-7xl font-black tracking-tighter text-media-primary font-lexend">{formatCurrency(totalMonthly)}</div>
           </div>
         </div>
-      )}
+
+        {/* Subscription Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {activeSubs.map((sub, idx) => (
+            <div key={sub.id} className="relative group">
+              <SubscriptionEditorialCard 
+                subscription={sub} 
+                onEdit={handleEdit}
+                variant={idx === 0 ? 'primary' : 'surface'}
+              />
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-20">
+                <Button variant="ghost" size="icon" className="h-8 w-8 bg-media-error/20 backdrop-blur hover:bg-media-error/40 text-white border-0" onClick={(e) => { e.stopPropagation(); handleDelete(sub.id); }}>
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          ))}
+
+          {/* Add Subscription Button Card */}
+          <div 
+            onClick={() => { setEditData(undefined); setShowForm(true); }}
+            className="border-2 border-dashed border-media-outline-variant p-6 rounded-2xl flex flex-col items-center justify-center min-h-[200px] hover:bg-media-surface-container hover:border-media-outline transition-all cursor-pointer group"
+          >
+            <span className="material-symbols-outlined text-media-outline text-3xl mb-2 group-hover:text-media-primary transition-colors">add</span>
+            <span className="text-media-on-surface-variant text-[10px] font-bold uppercase tracking-widest group-hover:text-media-primary transition-colors">Add Subscription</span>
+          </div>
+        </div>
+
+        {/* Paused Section */}
+        {inactiveSubs.length > 0 && (
+          <div className="pt-8 space-y-6">
+            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-media-on-surface-variant flex items-center gap-2 px-1">
+              Paused Commitments
+              <span className="h-px flex-1 bg-media-outline-variant/30 ml-2"></span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {inactiveSubs.map((sub) => (
+                <div key={sub.id} className="relative group opacity-60 hover:opacity-100 transition-opacity">
+                  <SubscriptionEditorialCard 
+                    subscription={sub} 
+                    onEdit={handleEdit}
+                    variant="surface"
+                  />
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-20">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 bg-media-error/20 backdrop-blur hover:bg-media-error/40 text-media-error border-0" onClick={(e) => { e.stopPropagation(); handleDelete(sub.id); }}>
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <footer className="pt-24 flex flex-col items-center">
+          <div className="max-w-xl text-center">
+            <p className="text-media-on-surface-variant font-medium italic leading-relaxed text-lg">
+              &quot;Ownership is not defined by the sum of our subscriptions, but by the intention behind our commitments.&quot;
+            </p>
+            <div className="mt-4 text-[10px] font-bold uppercase tracking-[0.3em] text-media-secondary">The Curator&apos;s Journal</div>
+          </div>
+        </footer>
+      </section>
+
+      {/* Sidebar */}
+      <aside className="md:col-span-3 sticky top-32 space-y-12 h-fit">
+        <div className="space-y-6">
+          <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-media-secondary px-1">Subscription Insights</h2>
+          <div className="space-y-8">
+            <div className="group px-1">
+              <div className="text-xs text-media-on-surface-variant mb-1 font-medium">Annual Commitment</div>
+              <div className="text-3xl font-bold tracking-tighter text-media-primary font-lexend">{formatCurrency(totalYearly)}</div>
+              <div className="h-1.5 w-8 bg-media-secondary mt-3 rounded-full"></div>
+            </div>
+            
+            <div className="p-8 bg-media-surface-container-low rounded-[2rem] border border-media-outline-variant/30 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-media-secondary/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+              <div className="space-y-6 relative z-10">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-media-on-surface-variant uppercase tracking-wider">Top Category</span>
+                  <span className="text-sm font-bold text-media-primary bg-media-primary/5 px-3 py-1 rounded-full">{topCategory}</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs font-semibold text-media-on-surface-variant uppercase tracking-wider">
+                    <span>Efficiency Score</span>
+                    <span className="text-media-primary">{efficiencyScore}%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-media-surface-container-high rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-media-secondary transition-all duration-1000" 
+                      style={{ width: `${efficiencyScore}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Audit Card */}
+        <div className="relative overflow-hidden rounded-[2.5rem] aspect-[4/5] bg-media-primary flex flex-col justify-end p-8 group cursor-pointer shadow-2xl shadow-media-primary/20">
+          <img 
+            className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50 group-hover:scale-105 transition-transform duration-700" 
+            src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2670&auto=format&fit=crop" 
+            alt="Security"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+          <div className="relative z-10 space-y-4">
+            <div className="w-12 h-12 bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center">
+              <Wand2 className="text-white w-6 h-6" />
+            </div>
+            <h3 className="text-2xl font-bold text-media-surface-bright leading-tight font-lexend">Optimize Your Portfolio</h3>
+            <p className="text-sm text-media-on-primary-container leading-relaxed font-medium">Discover hidden overlaps in your digital life with our AI audit.</p>
+            <Button className="w-full bg-media-secondary hover:bg-media-secondary/90 text-media-on-secondary border-0 rounded-xl py-6 font-bold uppercase tracking-widest text-[10px]">
+              Run Audit
+            </Button>
+          </div>
+        </div>
+      </aside>
 
       {/* Form Dialog */}
       <SubscriptionFormDialog
@@ -286,7 +213,10 @@ export function SubscriptionsTab({ subscriptions: initialSubs }: SubscriptionsTa
           if (!open) setEditData(undefined);
         }}
         onSuccess={handleSuccess}
-        editData={editData}
+        editData={editData ? {
+          ...editData,
+          billingDay: editData.billing_day || null
+        } : undefined}
       />
     </div>
   );

@@ -2,7 +2,7 @@ import { query, queryOne } from "./index";
 import type { MoodEntry } from "./mood";
 import type { MediaContent } from "./media";
 import type { Task } from "./tasks";
-import { type Event, getEventsInRange as getEvents } from "./events";
+import { type Event, type EventWithCoverPhoto, getEventsInRange as getEvents } from "./events";
 import type { ParkContent } from "./parks";
 import type { JournalContent } from "./journals";
 import type { WorkoutActivity } from "./workout-activities";
@@ -86,6 +86,8 @@ export interface CalendarRestaurantVisit extends RestaurantVisit {
   restaurantName: string;
   restaurantSlug: string;
   cuisine: string | null;
+  city: string | null;
+  poster: string | null;
 }
 
 export interface CalendarDayData {
@@ -93,7 +95,7 @@ export interface CalendarDayData {
   mood: MoodEntry | null;
   media: MediaContent[];
   tasks: Task[];
-  events: Event[];
+  events: EventWithCoverPhoto[];
   parks: ParkContent[];
   journals: JournalContent[];
   workoutActivities: WorkoutActivity[];
@@ -140,6 +142,11 @@ export interface CalendarDaySummary {
   };
   eventCount: number;
   eventFirstTitle: string | null;
+  eventFirstImage: string | null;
+  hasMovie: boolean;
+  hasTV: boolean;
+  hasBook: boolean;
+  hasGame: boolean;
   parkCount: number;
   parkFirstTitle: string | null;
   journalCount: number;
@@ -334,13 +341,18 @@ export async function getWorkoutActivitiesInRange(
   endDate: string,
   userId: string
 ): Promise<WorkoutActivity[]> {
-  return await query<WorkoutActivity>(
-    `SELECT * FROM workout_activities
+  const rows = await query<any>(
+    `SELECT *, length as duration_minutes FROM workout_activities
      WHERE date BETWEEN ? AND ?
      AND userId = ?
      ORDER BY date ASC, time ASC`,
     [startDate, endDate, userId]
   );
+
+  return rows.map(row => ({
+    ...row,
+    length: row.duration_minutes || row.length,
+  })) as WorkoutActivity[];
 }
 
 /**
@@ -536,7 +548,7 @@ export async function getRestaurantVisitsInRange(
   userId: string
 ): Promise<CalendarRestaurantVisit[]> {
   const rows = await query<CalendarRestaurantVisit>(
-    `SELECT rv.*, r.name as restaurantName, r.slug as restaurantSlug, r.cuisine
+    `SELECT rv.*, r.name as restaurantName, r.slug as restaurantSlug, r.cuisine, r.city, r.poster
     FROM restaurant_visits rv
     JOIN restaurants r ON r.id = rv.restaurantId
     WHERE rv.visit_date BETWEEN ? AND ?
@@ -1298,6 +1310,11 @@ export function convertToSummary(
     },
     eventCount: data.events.length,
     eventFirstTitle: data.events[0]?.title ?? null,
+    eventFirstImage: data.events[0]?.cover_photo ?? null,
+    hasMovie: data.media.some(m => m.type === 'movie'),
+    hasTV: data.media.some(m => m.type === 'tv'),
+    hasBook: data.media.some(m => m.type === 'book'),
+    hasGame: data.media.some(m => m.type === 'game'),
     parkCount: data.parks.length,
     parkFirstTitle: data.parks[0]?.title ?? null,
     journalCount: data.journals.length,

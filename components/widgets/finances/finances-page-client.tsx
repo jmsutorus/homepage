@@ -11,7 +11,7 @@ import type { BudgetIncome, BudgetFixedCost } from '@/lib/db/budget';
 import { SubscriptionsTab } from './subscriptions-tab';
 import { SavingsTab } from './savings-tab';
 import { DebtsTab } from './debts-tab';
-import { BudgetTab } from './budget-tab';
+import { EditorialBudget } from './editorial-budget';
 
 interface FinancesPageClientProps {
   subscriptions: Subscription[];
@@ -31,38 +31,31 @@ export function FinancesPageClient({
   const [activeTab, setActiveTab] = useState('budget');
 
   return (
-    <div className="container mx-auto py-6 sm:py-8 px-4 max-w-6xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <DollarSign className="w-7 h-7" />
-            Finances
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Track your budget, subscriptions, savings, and debts
-          </p>
-        </div>
+    <div className="container mx-auto py-6 sm:py-10 px-4 max-w-7xl">
+      <div className="mb-10">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight flex items-center gap-3 font-lexend">
+          <div className="bg-primary text-white p-2 rounded-xl">
+            <DollarSign className="w-6 h-6" />
+          </div>
+          Finances
+        </h1>
+        <p className="text-muted-foreground text-sm sm:text-base mt-2 font-medium">
+          Control center for your monthly capital, obligations, and growth.
+        </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
         <PageTabsList
           tabs={[
-            { value: 'budget', label: 'Budget', icon: Receipt, showLabel: true },
+            { value: 'budget', label: 'Overview', icon: Receipt, showLabel: true },
             { value: 'subscriptions', label: 'Subscriptions', icon: DollarSign, showLabel: true },
             { value: 'savings', label: 'Savings', icon: PiggyBank, showLabel: true },
             { value: 'debts', label: 'Debts', icon: CreditCard, showLabel: true },
           ]}
-          actionButton={{
-            label: 'Add',
-            onClick: () => {
-              window.dispatchEvent(new CustomEvent('finances-add', { detail: activeTab }));
-            },
-            icon: Plus,
-          }}
         />
 
-        <TabsContent value="budget" className="mt-6 sm:mt-8 pb-20 md:pb-0">
-          <BudgetTab
+        <TabsContent value="budget" className="mt-0 pb-20 md:pb-0">
+          <EditorialBudget
             income={income}
             fixedCosts={fixedCosts}
             subscriptions={subscriptions}
@@ -70,15 +63,15 @@ export function FinancesPageClient({
           />
         </TabsContent>
 
-        <TabsContent value="subscriptions" className="mt-6 sm:mt-8 pb-20 md:pb-0">
+        <TabsContent value="subscriptions" className="mt-0 pb-20 md:pb-0">
           <SubscriptionsTab subscriptions={subscriptions} />
         </TabsContent>
 
-        <TabsContent value="savings" className="mt-6 sm:mt-8 pb-20 md:pb-0">
+        <TabsContent value="savings" className="mt-0 pb-20 md:pb-0">
           <SavingsTab accounts={savingsAccounts} />
         </TabsContent>
 
-        <TabsContent value="debts" className="mt-6 sm:mt-8 pb-20 md:pb-0">
+        <TabsContent value="debts" className="mt-0 pb-20 md:pb-0">
           <DebtsTab debts={debts} />
         </TabsContent>
       </Tabs>

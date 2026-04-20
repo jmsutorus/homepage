@@ -170,244 +170,273 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{editingPerson ? "Edit Person" : "Add Person"}</DialogTitle>
-          <DialogDescription>
-            {editingPerson
-              ? "Update the person's information"
-              : "Add a new person to track their birthday and important dates"}
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Name *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-              placeholder="John Doe"
-            />
-          </div>
-
-          {/* Birthday */}
-          <div className="space-y-2">
-            <Label htmlFor="birthday">Birthday *</Label>
-            <Input
-              id="birthday"
-              type="date"
-              value={formData.birthday}
-              onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
-              required
-              disabled={formData.yearUnknown}
-            />
-            <div className="flex items-center space-x-2 mt-2">
-              <Checkbox
-                id="yearUnknown"
-                checked={formData.yearUnknown}
-                onCheckedChange={(checked) => setFormData({ ...formData, yearUnknown: checked === true })}
-              />
-              <Label htmlFor="yearUnknown" className="text-sm font-normal cursor-pointer">
-                Year unknown
-              </Label>
-            </div>
-          </div>
-
-          {/* Relationship */}
-          <div className="space-y-2">
-            <Label htmlFor="relationship">Category</Label>
-            <Select
-              value={formData.relationship}
-              onValueChange={(value) => setFormData({ ...formData, relationship: value as RelationshipCategory })}
-            >
-              <SelectTrigger id="relationship">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {RELATIONSHIP_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Relationship Type */}
-          <div className="space-y-2">
-            <Label htmlFor="relationship_type">Relationship Type</Label>
-            <Select
-              value={formData.relationship_type_id?.toString() || "none"}
-              onValueChange={(value) => setFormData({ ...formData, relationship_type_id: value === "none" ? null : parseInt(value, 10) })}
-            >
-              <SelectTrigger id="relationship_type">
-                <SelectValue placeholder="Select a type..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {relationshipTypes.map((type) => (
-                  <SelectItem key={type.id} value={type.id.toString()}>
-                    {type.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              e.g., Father, Mother, Partner, etc.
+      <DialogContent className="p-0 border-none max-w-xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden bg-media-surface font-lexend show-close-button-false">
+        {/* Modal Header */}
+        <div className="px-8 py-6 border-b border-media-outline-variant/30 flex justify-between items-center bg-media-surface-container-low shrink-0">
+          <div>
+            <h2 className="text-2xl font-bold text-media-primary tracking-tight">
+              {editingPerson ? "Edit Person" : "Add Person"}
+            </h2>
+            <p className="text-sm text-media-on-surface-variant font-medium">
+              {editingPerson ? "Curate the details of your connection." : "Add a new person to track their birthday and important dates."}
             </p>
           </div>
+          <button 
+            onClick={() => onOpenChange(false)}
+            className="cursor-pointer p-2 hover:bg-media-surface-container-highest rounded-full transition-colors text-media-on-surface-variant"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
 
-          {/* Is Partner */}
-          <div className="flex items-center space-x-2 p-3 rounded-lg border bg-rose-500/5 border-rose-500/20">
-            <Checkbox
-              id="is_partner"
-              checked={formData.is_partner}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_partner: checked === true })}
-            />
-            <div className="flex items-center gap-2">
-              <Heart className="h-4 w-4 text-rose-500" />
-              <Label htmlFor="is_partner" className="text-sm font-normal cursor-pointer">
-                Mark as Current Romantic Partner
-              </Label>
+        {/* Scrollable Form Area */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-10">
+          {/* Section: Basic Information */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 border-b border-media-outline-variant/20 pb-2">
+              <span className="material-symbols-outlined text-media-secondary text-xl">person</span>
+              <h3 className="text-xs font-bold tracking-widest uppercase text-media-secondary">Basic Profile</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-6">
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-sm font-bold text-media-primary ml-1">Name <span className="text-media-secondary">*</span></Label>
+                <input
+                  id="name"
+                  className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none text-media-on-surface"
+                  placeholder="Enter full name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="birthday" className="text-sm font-bold text-media-primary ml-1">Birthday <span className="text-media-secondary">*</span></Label>
+                  <div className="relative">
+                    <input
+                      id="birthday"
+                      className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none text-media-on-surface disabled:opacity-50"
+                      type="date"
+                      value={formData.birthday}
+                      onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+                      required
+                      disabled={formData.yearUnknown}
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 mt-2 cursor-pointer group">
+                    <Checkbox
+                      id="yearUnknown"
+                      checked={formData.yearUnknown}
+                      onCheckedChange={(checked) => setFormData({ ...formData, yearUnknown: checked === true })}
+                      className="rounded text-media-secondary focus:ring-media-secondary border-media-outline-variant"
+                    />
+                    <span className="text-xs text-media-on-surface-variant group-hover:text-media-primary transition-colors">Year unknown</span>
+                  </label>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="photo" className="text-sm font-bold text-media-primary ml-1">Photo URL</Label>
+                  <div className="relative">
+                    <input
+                      id="photo"
+                      className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none text-media-on-surface"
+                      placeholder="Image URL"
+                      type="text"
+                      value={formData.photo}
+                      onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+                    />
+                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-media-on-surface-variant">image</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Contact Information - Collapsible */}
-          <Collapsible open={isContactOpen} onOpenChange={setIsContactOpen}>
-            <CollapsibleTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-between font-semibold"
-              >
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Contact Information
+          {/* Section: Relationship */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 border-b border-media-outline-variant/20 pb-2">
+              <span className="material-symbols-outlined text-media-secondary text-xl">favorite</span>
+              <h3 className="text-xs font-bold tracking-widest uppercase text-media-secondary">Relationship</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="relationship" className="text-sm font-bold text-media-primary ml-1">Category</Label>
+                <div className="relative">
+                  <select
+                    id="relationship"
+                    className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none appearance-none text-media-on-surface"
+                    value={formData.relationship}
+                    onChange={(e) => setFormData({ ...formData, relationship: e.target.value as RelationshipCategory })}
+                  >
+                    {RELATIONSHIP_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-media-on-surface-variant pointer-events-none">expand_more</span>
                 </div>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isContactOpen ? 'rotate-180' : ''}`} />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-4 pt-4">
-              {/* Photo URL */}
-              <div className="space-y-2">
-                <Label htmlFor="photo" className="flex items-center gap-2">
-                  <ImageIcon className="h-3 w-3" />
-                  Photo URL
-                </Label>
-                <Input
-                  id="photo"
-                  value={formData.photo}
-                  onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
-                  placeholder="https://example.com/photo.jpg"
-                />
               </div>
 
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="h-3 w-3" />
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="john@example.com"
-                />
-              </div>
-
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-3 w-3" />
-                  Phone
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="(555) 123-4567"
-                />
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-
-          {/* Additional Details - Collapsible */}
-          <Collapsible open={isAdditionalOpen} onOpenChange={setIsAdditionalOpen}>
-            <CollapsibleTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-between font-semibold"
-              >
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Additional Details
+              <div className="space-y-1.5">
+                <Label htmlFor="relationship_type" className="text-sm font-bold text-media-primary ml-1">Type</Label>
+                <div className="relative">
+                  <select
+                    id="relationship_type"
+                    className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none appearance-none text-media-on-surface"
+                    value={formData.relationship_type_id?.toString() || "none"}
+                    onChange={(e) => setFormData({ ...formData, relationship_type_id: e.target.value === "none" ? null : parseInt(e.target.value, 10) })}
+                  >
+                    <option value="none">None</option>
+                    {relationshipTypes.map((type) => (
+                      <option key={type.id} value={type.id.toString()}>
+                        {type.name}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-media-on-surface-variant pointer-events-none">expand_more</span>
                 </div>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isAdditionalOpen ? 'rotate-180' : ''}`} />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-4 pt-4">
-              {/* Anniversary */}
-              <div className="space-y-2">
-                <Label htmlFor="anniversary" className="flex items-center gap-2">
-                  <Heart className="h-3 w-3" />
-                  Anniversary
-                </Label>
-                <Input
-                  id="anniversary"
-                  type="date"
-                  value={formData.anniversary}
-                  onChange={(e) => setFormData({ ...formData, anniversary: e.target.value })}
+              </div>
+            </div>
+
+            <div 
+              className="bg-media-secondary-fixed/30 border border-media-secondary/10 rounded-xl p-4 flex items-center gap-4 group hover:bg-media-secondary-fixed/50 transition-colors cursor-pointer"
+              onClick={() => setFormData({ ...formData, is_partner: !formData.is_partner })}
+            >
+              <div className="relative w-6 h-6 flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  className="peer absolute inset-0 opacity-0 cursor-pointer z-10"
+                  checked={formData.is_partner}
+                  onChange={() => {}} // Controlled by parent div click for better experience
+                  aria-label="Is Partner"
                 />
+                <div className={`w-6 h-6 border-2 rounded-md transition-all flex items-center justify-center ${formData.is_partner ? 'bg-media-secondary border-media-secondary' : 'border-media-secondary/40'}`}>
+                  {formData.is_partner && (
+                    <span className="material-symbols-outlined text-white text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-media-secondary" style={{ fontVariationSettings: formData.is_partner ? "'FILL' 1" : "'FILL' 0" }}>
+                  favorite
+                </span>
+                <span className="text-sm font-bold text-media-on-secondary-fixed-variant">Mark as Current Romantic Partner</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Contact Details */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 border-b border-media-outline-variant/20 pb-2">
+              <span className="material-symbols-outlined text-media-secondary text-xl">contact_page</span>
+              <h3 className="text-xs font-bold tracking-widest uppercase text-media-secondary">Contact Details</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-sm font-bold text-media-primary ml-1">Email</Label>
+                <div className="relative">
+                  <input
+                    id="email"
+                    className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none text-media-on-surface"
+                    placeholder="john@example.com"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-media-on-surface-variant">mail</span>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="phone" className="text-sm font-bold text-media-primary ml-1">Phone</Label>
+                <div className="relative">
+                  <input
+                    id="phone"
+                    className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none text-media-on-surface"
+                    placeholder="(555) 123-4567"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-media-on-surface-variant">call</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Additional Notes */}
+          <div className="space-y-6 pb-4">
+            <div className="flex items-center gap-2 border-b border-media-outline-variant/20 pb-2">
+              <span className="material-symbols-outlined text-media-secondary text-xl">event_note</span>
+              <h3 className="text-xs font-bold tracking-widest uppercase text-media-secondary">Anniversaries & Notes</h3>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="anniversary" className="text-sm font-bold text-media-primary ml-1">Anniversary</Label>
+                <div className="relative">
+                  <input
+                    id="anniversary"
+                    className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none text-media-on-surface"
+                    type="date"
+                    value={formData.anniversary}
+                    onChange={(e) => setFormData({ ...formData, anniversary: e.target.value })}
+                  />
+                </div>
               </div>
 
-              {/* Gift Ideas */}
-              <div className="space-y-2">
-                <Label htmlFor="gift_ideas" className="flex items-center gap-2">
-                  <Gift className="h-3 w-3" />
-                  Gift Ideas
-                </Label>
-                <Textarea
+              <div className="space-y-1.5">
+                <Label htmlFor="gift_ideas" className="text-sm font-bold text-media-primary ml-1">Gift Ideas</Label>
+                <textarea
                   id="gift_ideas"
+                  className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none resize-none text-media-on-surface"
+                  placeholder="Books, coffee, gadgets..."
+                  rows={2}
                   value={formData.gift_ideas}
                   onChange={(e) => setFormData({ ...formData, gift_ideas: e.target.value })}
-                  placeholder="Gift ideas for this person (e.g., books, coffee, gadgets)..."
-                  rows={3}
-                />
+                ></textarea>
               </div>
 
-              {/* Notes */}
-              <div className="space-y-2">
-                <Label htmlFor="notes" className="flex items-center gap-2">
-                  <FileText className="h-3 w-3" />
-                  Notes
-                </Label>
-                <Textarea
+              <div className="space-y-1.5">
+                <Label htmlFor="notes" className="text-sm font-bold text-media-primary ml-1">Personal Notes</Label>
+                <textarea
                   id="notes"
+                  className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none resize-none text-media-on-surface"
+                  placeholder="Additional thoughts or milestones..."
+                  rows={3}
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Additional notes about this person..."
-                  rows={4}
-                />
+                ></textarea>
               </div>
-            </CollapsibleContent>
-          </Collapsible>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : editingPerson ? "Update" : "Add Person"}
-            </Button>
-          </DialogFooter>
+            </div>
+          </div>
+          <button type="submit" className="hidden" id="submit-form-button" />
         </form>
+
+        {/* Modal Footer Actions */}
+        <div className="p-6 bg-media-surface-container-low border-t border-media-outline-variant/30 flex justify-end gap-3 shrink-0">
+          <button 
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="cursor-pointer px-6 py-3 rounded-xl font-bold text-media-on-surface-variant hover:bg-media-surface-container-highest transition-colors"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+          <button 
+            type="button"
+            onClick={() => document.getElementById('submit-form-button')?.click()}
+            disabled={isSubmitting}
+            className="cursor-pointer bg-media-secondary text-white px-10 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-media-secondary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
+          >
+            <span>{isSubmitting ? "Saving..." : editingPerson ? "Update Profile" : "Add to Directory"}</span>
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -25,9 +25,27 @@ interface NavSection {
 }
 
 export function MobileNav() {
+  const [mounted, setMounted] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
   const [currentYear] = React.useState(new Date().getFullYear());
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="md:hidden"
+        aria-label="Open navigation menu"
+      >
+        <span className="material-symbols-outlined text-2xl">menu</span>
+      </Button>
+    );
+  }
 
   const navSections: NavSection[] = [
     {

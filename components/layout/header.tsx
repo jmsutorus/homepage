@@ -17,9 +17,11 @@ import {
 export function Header() {
   const { user, isAuthenticated } = useAuth();
   const [isMac, setIsMac] = React.useState(true);
+  const [mounted, setMounted] = React.useState(false);
 
   // Detect OS on mount
   React.useEffect(() => {
+    setMounted(true);
     setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0);
   }, []);
 
@@ -68,7 +70,7 @@ export function Header() {
               }}
             />
             <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-              <span className="text-[10px]">{isMac ? "⌘" : "Ctrl"}</span>K
+              <span className="text-[10px]">{mounted ? (isMac ? "⌘" : "Ctrl") : ""}</span>K
             </kbd>
           </div>
         </div>

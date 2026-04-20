@@ -167,108 +167,172 @@ export function MealForm({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Recipe Name *</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Chicken Stir Fry"
-                required
-              />
+      <DialogContent 
+        showCloseButton={false} 
+        className="p-0 border-none sm:max-w-4xl bg-media-surface-container-lowest overflow-hidden shadow-[0_32px_64px_-12px_rgba(6,27,14,0.12)] rounded-3xl max-h-[90vh] flex flex-col"
+      >
+        {/* Premium Header */}
+        <div className="bg-media-primary-container px-10 py-12 flex flex-col gap-2 relative shrink-0">
+          <div className="flex justify-between items-start z-10 relative">
+            <h2 className="text-3xl font-bold tracking-tight text-media-on-primary-container font-lexend">
+              {initialData ? 'Refine Blueprint' : 'Define New Recipe'}
+            </h2>
+            <button 
+              type="button"
+              onClick={() => setOpen(false)}
+              className="text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <p className="text-media-on-primary-container/80 text-sm max-w-md z-10 relative font-medium leading-relaxed">
+            Configure the essence, ingredients, and procedural steps for your next culinary creation.
+          </p>
+          {/* Decorative element */}
+          <div className="absolute bottom-0 right-0 w-64 h-64 bg-media-secondary opacity-10 blur-[80px] rounded-full translate-x-16 translate-y-16"></div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-10 space-y-12">
+          {/* Section 1: The Essence */}
+          <div className="space-y-8">
+            <div className="flex items-center gap-4">
+              <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 01</span>
+              <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">The Essence</h3>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="A quick and healthy weeknight dinner..."
-                rows={2}
-              />
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+              <div className="md:col-span-12 space-y-3">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Recipe Identity</label>
+                <div className="relative">
+                  <input 
+                    autoFocus
+                    required
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-2xl font-lexend placeholder:text-media-on-surface-variant/20"
+                    placeholder="e.g. Oak-Smoked Forest Risotto"
+                  />
+                </div>
+              </div>
+
+              <div className="md:col-span-12 space-y-3">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Narrative Context (Description)</label>
+                <div className="relative">
+                  <textarea 
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={2}
+                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg resize-none placeholder:text-media-on-surface-variant/20 font-lexend"
+                    placeholder="Describe the soul of this dish..."
+                  />
+                </div>
+              </div>
+
+              <div className="md:col-span-4 space-y-3">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Intended Servings</label>
+                <div className="relative">
+                  <input 
+                    type="number"
+                    min="1"
+                    value={servings}
+                    onChange={(e) => setServings(parseInt(e.target.value) || 1)}
+                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-xl font-lexend"
+                  />
+                </div>
+              </div>
+
+              <div className="md:col-span-4 space-y-3">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Prep Phase (Min)</label>
+                <div className="relative">
+                  <input 
+                    type="number"
+                    min="0"
+                    value={prepTime}
+                    onChange={(e) => setPrepTime(parseInt(e.target.value) || 0)}
+                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-xl font-lexend"
+                  />
+                </div>
+              </div>
+
+              <div className="md:col-span-4 space-y-3">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Active Fire (Min)</label>
+                <div className="relative">
+                  <input 
+                    type="number"
+                    min="0"
+                    value={cookTime}
+                    onChange={(e) => setCookTime(parseInt(e.target.value) || 0)}
+                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-xl font-lexend"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="servings">Servings</Label>
-                <Input
-                  id="servings"
-                  type="number"
-                  min="1"
-                  value={servings}
-                  onChange={(e) => setServings(parseInt(e.target.value) || 1)}
-                />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="space-y-3">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Visual Asset (Image URL)</label>
+                <div className="relative">
+                  <input 
+                    type="text"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-base font-lexend placeholder:text-media-on-surface-variant/20"
+                    placeholder="https://images.unsplash.com/..."
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="prepTime">Prep Time (min)</Label>
-                <Input
-                  id="prepTime"
-                  type="number"
-                  min="0"
-                  value={prepTime}
-                  onChange={(e) => setPrepTime(parseInt(e.target.value) || 0)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="cookTime">Cook Time (min)</Label>
-                <Input
-                  id="cookTime"
-                  type="number"
-                  min="0"
-                  value={cookTime}
-                  onChange={(e) => setCookTime(parseInt(e.target.value) || 0)}
-                />
+
+              <div className="space-y-3">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Culinary Rating</label>
+                <div className="h-[68px] flex items-center justify-between px-8 bg-media-surface-container-low rounded-2xl border-2 border-transparent">
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRating(rating === star ? 0 : star)}
+                        className="cursor-pointer transition-all hover:scale-125"
+                      >
+                        <Star
+                          className={`h-6 w-6 transition-colors ${
+                            star <= rating
+                              ? "text-media-secondary fill-media-secondary"
+                              : "text-media-on-surface-variant/20"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  {rating > 0 && (
+                    <span className="text-sm font-black text-media-secondary uppercase tracking-widest">
+                      {rating} / 5
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label>Rating</Label>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setRating(rating === star ? 0 : star)}
-                    className="cursor-pointer p-1 hover:scale-110 transition-transform"
-                  >
-                    <Star
-                      className={`h-6 w-6 ${
-                        star <= rating
-                          ? "text-yellow-400 fill-yellow-400"
-                          : "text-muted-foreground"
-                      }`}
-                    />
-                  </button>
+
+            <div className="space-y-3">
+              <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Classification (Tags)</label>
+              <div className="flex flex-wrap gap-3 p-6 bg-media-surface-container-low rounded-2xl border-2 border-transparent">
+                {tags.map((tag) => (
+                  <div key={tag} className="flex items-center gap-2 px-4 py-2 bg-media-secondary/10 text-media-secondary rounded-full text-xs font-bold uppercase tracking-wider group border border-media-secondary/20">
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => setTags(tags.filter((t) => t !== tag))}
+                      className="cursor-pointer hover:text-media-error transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
                 ))}
-                {rating > 0 && (
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    {rating}/5
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="imageUrl">Image URL</Label>
-              <Input
-                id="imageUrl"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Tags</Label>
-              <div className="flex gap-2">
-                <Input
+                <input
                   value={newTagInput}
                   onChange={(e) => setNewTagInput(e.target.value)}
-                  placeholder="Add a tag..."
-                  className="flex-1"
+                  placeholder="+ Add Classification"
+                  className="bg-transparent border-none focus:ring-0 text-sm font-bold text-media-primary placeholder:text-media-on-surface-variant/40 w-40"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -280,156 +344,164 @@ export function MealForm({
                     }
                   }}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const tag = newTagInput.trim();
-                    if (tag && !tags.includes(tag)) {
-                      setTags([...tags, tag]);
-                      setNewTagInput("");
-                    }
-                  }}
-                  disabled={!newTagInput.trim()}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
               </div>
-              {tags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="gap-1">
-                      {tag}
+            </div>
+          </div>
+
+          {/* Section 2: Ingredients */}
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 02</span>
+                <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Ingredients</h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={addIngredient}
+                className="text-[10px] font-black uppercase tracking-widest text-media-secondary hover:text-media-primary flex items-center gap-2 transition-colors px-4 py-2 bg-media-secondary/5 rounded-lg border border-media-secondary/10"
+              >
+                <Plus className="h-4 w-4" /> Add Ingredient
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {ingredients.map((ing, index) => (
+                <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-media-surface-container-low/50 p-4 rounded-2xl border border-media-outline-variant/5">
+                  <div className="md:col-span-1 flex justify-center">
+                    <GripVertical className="h-5 w-5 text-media-on-surface-variant/20 shrink-0" />
+                  </div>
+                  <div className="md:col-span-5 relative">
+                    <input
+                      value={ing.name}
+                      onChange={(e) => handleIngredientChange(index, "name", e.target.value)}
+                      placeholder="Element Name"
+                      className="w-full bg-media-surface-container-low px-4 py-3 rounded-xl border border-transparent focus:border-media-secondary text-media-primary font-bold text-sm"
+                    />
+                  </div>
+                  <div className="md:col-span-2 flex gap-2">
+                    <input
+                      value={ing.quantity || ""}
+                      onChange={(e) =>
+                        handleIngredientChange(index, "quantity", parseFloat(e.target.value) || 0)
+                      }
+                      placeholder="Qty"
+                      className="w-full bg-media-surface-container-low px-4 py-3 rounded-xl border border-transparent focus:border-media-secondary text-media-primary font-bold text-sm text-center"
+                      type="number"
+                      step="0.25"
+                    />
+                    <input
+                      value={ing.unit || ""}
+                      onChange={(e) => handleIngredientChange(index, "unit", e.target.value)}
+                      placeholder="Unit"
+                      className="w-full bg-media-surface-container-low px-4 py-3 rounded-xl border border-transparent focus:border-media-secondary text-media-primary font-medium text-xs text-center"
+                    />
+                  </div>
+                  <div className="md:col-span-3">
+                    <Select
+                      value={ing.category || "other"}
+                      onValueChange={(value) =>
+                        handleIngredientChange(index, "category", value as IngredientCategory)
+                      }
+                    >
+                      <SelectTrigger className="bg-media-surface-container-low border-transparent focus:ring-0 rounded-xl text-xs font-bold uppercase tracking-widest text-media-primary">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-media-surface-container border-media-outline-variant">
+                        {INGREDIENT_CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat} className="text-xs font-bold uppercase tracking-widest">
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="md:col-span-1 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => removeIngredient(index)}
+                      disabled={ingredients.length === 1}
+                      className="p-2 text-media-on-surface-variant/40 hover:text-media-error disabled:opacity-0 transition-colors"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 3: Steps */}
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 03</span>
+                <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Steps</h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={addStep}
+                className="text-[10px] font-black uppercase tracking-widest text-media-secondary hover:text-media-primary flex items-center gap-2 transition-colors px-4 py-2 bg-media-secondary/5 rounded-lg border border-media-secondary/10"
+              >
+                <Plus className="h-4 w-4" /> Add Step
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              {steps.map((step, index) => (
+                <div key={index} className="flex gap-8 group">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-media-primary text-media-on-primary flex items-center justify-center text-sm font-black font-lexend shadow-lg shadow-media-primary/20 shrink-0">
+                      {(index + 1).toString().padStart(2, '0')}
+                    </div>
+                    {index < steps.length - 1 && <div className="w-px h-full bg-media-outline-variant/30"></div>}
+                  </div>
+                  <div className="flex-1 space-y-2 pb-6">
+                    <div className="relative">
+                      <textarea
+                        value={step}
+                        onChange={(e) => handleStepChange(index, e.target.value)}
+                        placeholder={`Execute step ${(index + 1)}...`}
+                        rows={2}
+                        className="w-full bg-media-surface-container-low px-6 py-5 rounded-2xl border-2 border-transparent focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-base resize-none placeholder:text-media-on-surface-variant/20 font-lexend"
+                      />
                       <button
                         type="button"
-                        onClick={() => setTags(tags.filter((t) => t !== tag))}
-                        className="cursor-pointer ml-1 hover:text-destructive"
+                        onClick={() => removeStep(index)}
+                        disabled={steps.length === 1}
+                        className="absolute -right-2 top-0 p-2 text-media-on-surface-variant/0 group-hover:text-media-on-surface-variant/40 hover:!text-media-error disabled:!hidden transition-all translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
                       >
-                        <X className="h-3 w-3" />
+                        <Trash2 className="h-5 w-5" />
                       </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Ingredients */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Ingredients</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addIngredient}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Ingredient
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {ingredients.map((ing, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <Input
-                    value={ing.name}
-                    onChange={(e) => handleIngredientChange(index, "name", e.target.value)}
-                    placeholder="Name"
-                    className="flex-1"
-                  />
-                  <Input
-                    value={ing.quantity || ""}
-                    onChange={(e) =>
-                      handleIngredientChange(index, "quantity", parseFloat(e.target.value) || 0)
-                    }
-                    placeholder="Qty"
-                    className="w-16"
-                    type="number"
-                    step="0.25"
-                  />
-                  <Input
-                    value={ing.unit || ""}
-                    onChange={(e) => handleIngredientChange(index, "unit", e.target.value)}
-                    placeholder="Unit"
-                    className="w-20"
-                  />
-                  <Select
-                    value={ing.category || "other"}
-                    onValueChange={(value) =>
-                      handleIngredientChange(index, "category", value as IngredientCategory)
-                    }
-                  >
-                    <SelectTrigger className="w-28">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INGREDIENT_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeIngredient(index)}
-                    disabled={ingredients.length === 1}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Steps */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Steps</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addStep}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Step
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {steps.map((step, index) => (
-                <div key={index} className="flex items-start gap-2">
-                  <span className="mt-2 text-sm text-muted-foreground w-6 shrink-0">
-                    {index + 1}.
-                  </span>
-                  <Textarea
-                    value={step}
-                    onChange={(e) => handleStepChange(index, e.target.value)}
-                    placeholder={`Step ${index + 1}...`}
-                    rows={2}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeStep(index)}
-                    disabled={steps.length === 1}
-                    className="mt-1"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Submit */}
-          <div className="flex justify-end gap-2">
-            <Button
+          {/* Action Footer */}
+          <div className="flex items-center justify-end gap-10 pt-10 border-t border-media-outline-variant/10 shrink-0">
+            <button 
               type="button"
-              variant="outline"
               onClick={() => setOpen(false)}
-              disabled={loading}
+              className="text-[10px] font-black uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
             >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading || !name.trim()}>
-              {loading ? "Saving..." : initialData ? "Update Recipe" : "Create Recipe"}
-            </Button>
+              Terminate
+            </button>
+            <button 
+              type="submit"
+              disabled={loading || !name.trim()}
+              className="px-10 py-5 bg-media-secondary text-media-on-secondary rounded-2xl font-bold tracking-tight shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-3 font-lexend uppercase"
+            >
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 rounded-full border-2 border-media-on-secondary/30 border-t-media-on-secondary animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                initialData ? 'Update Blueprint' : 'Establish Protocol'
+              )}
+            </button>
           </div>
         </form>
       </DialogContent>

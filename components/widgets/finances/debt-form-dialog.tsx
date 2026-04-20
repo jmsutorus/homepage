@@ -8,10 +8,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, Sparkles, Calendar, Landmark, Info } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface DebtFormDialogProps {
   open: boolean;
@@ -101,164 +100,191 @@ export function DebtFormDialog({
     }
   };
 
+  const inputClasses = "w-full bg-transparent border-none focus:ring-0 p-0 text-[#061b0e] placeholder:text-[#434843]/40 font-medium";
+  const sectionClasses = "p-4 rounded-xl border border-[#e9e8e5] bg-[#f4f3f1]/50 focus-within:border-[#061b0e] focus-within:bg-white transition-all duration-200";
+  const labelClasses = "text-[10px] font-bold text-[#434843] uppercase tracking-widest mb-1 block";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {editData ? 'Edit Debt' : 'Add Debt'}
-          </DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="debt-name">Name *</Label>
-              <Input
-                id="debt-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Mortgage, Car Loan, etc."
-                required
-              />
+      <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden border-none bg-transparent shadow-2xl">
+        <div className="bg-[#faf9f6] flex flex-col h-full max-h-[90vh]">
+          <DialogHeader className="p-8 pb-4 bg-[#061b0e] text-white">
+            <div className="flex items-center gap-3 mb-2">
+              <Landmark className="w-5 h-5 text-emerald-400" />
+              <DialogTitle className="text-2xl font-bold tracking-tight">
+                {editData ? 'Adjust Instrument' : 'Draft New Debt'}
+              </DialogTitle>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="debt-category">Category</Label>
-              <select
-                id="debt-category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            <p className="text-emerald-100/60 text-sm">Define the architecture of your liability.</p>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-8 space-y-8">
+            {/* Identity Section */}
+            <section className="space-y-4">
+              <h3 className="text-xs font-bold text-[#061b0e] uppercase tracking-[0.2em] flex items-center gap-2">
+                <Info className="w-3 h-3" /> Identity & Classification
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className={sectionClasses}>
+                  <label className={labelClasses}>Instrument Name</label>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Primary Mortgage"
+                    className={inputClasses}
+                    required
+                  />
+                </div>
+                <div className={sectionClasses}>
+                  <label className={labelClasses}>Category</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className={cn(inputClasses, "appearance-none bg-transparent cursor-pointer")}
+                  >
+                    <option value="mortgage">Mortgage</option>
+                    <option value="car">Car Loan</option>
+                    <option value="student_loan">Student Loan</option>
+                    <option value="credit_card">Credit Card</option>
+                    <option value="personal">Personal Loan</option>
+                    <option value="medical">Medical</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            {/* Financials Section */}
+            <section className="space-y-4">
+              <h3 className="text-xs font-bold text-[#061b0e] uppercase tracking-[0.2em] flex items-center gap-2">
+                <Sparkles className="w-3 h-3 text-[#9f402d]" /> Principal & Rate
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className={sectionClasses}>
+                  <label className={labelClasses}>Original Amount</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#434843] font-bold text-sm">$</span>
+                    <input
+                      value={originalAmount}
+                      onChange={(e) => setOriginalAmount(e.target.value)}
+                      placeholder="0.00"
+                      type="number"
+                      step="0.01"
+                      className={inputClasses}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className={sectionClasses}>
+                  <label className={labelClasses}>Current Balance</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#434843] font-bold text-sm">$</span>
+                    <input
+                      value={currentBalance}
+                      onChange={(e) => setCurrentBalance(e.target.value)}
+                      placeholder="0.00"
+                      type="number"
+                      step="0.01"
+                      className={cn(inputClasses, "text-[#9f402d]")}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className={sectionClasses}>
+                  <label className={labelClasses}>Interest Rate (%)</label>
+                  <input
+                    value={interestRate}
+                    onChange={(e) => setInterestRate(e.target.value)}
+                    placeholder="6.50"
+                    type="number"
+                    step="0.01"
+                    className={inputClasses}
+                  />
+                </div>
+                <div className={sectionClasses}>
+                  <label className={labelClasses}>Currency</label>
+                  <input
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+                    placeholder="USD"
+                    maxLength={3}
+                    className={inputClasses}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* Payments Section */}
+            <section className="space-y-4">
+              <h3 className="text-xs font-bold text-[#061b0e] uppercase tracking-[0.2em] flex items-center gap-2">
+                <Calendar className="w-3 h-3 text-emerald-600" /> Velocity & Timing
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className={sectionClasses}>
+                  <label className={labelClasses}>Minimum Payment</label>
+                  <input
+                    value={monthlyPayment}
+                    onChange={(e) => setMonthlyPayment(e.target.value)}
+                    placeholder="0.00"
+                    type="number"
+                    step="0.01"
+                    className={inputClasses}
+                    required
+                  />
+                </div>
+                <div className={sectionClasses}>
+                  <label className={labelClasses}>Extra Payment</label>
+                  <input
+                    value={extraPayment}
+                    onChange={(e) => setExtraPayment(e.target.value)}
+                    placeholder="0.00"
+                    type="number"
+                    step="0.01"
+                    className={cn(inputClasses, "text-emerald-600")}
+                  />
+                </div>
+                <div className={sectionClasses}>
+                  <label className={labelClasses}>Origination Date</label>
+                  <input
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    type="date"
+                    className={cn(inputClasses, "text-sm")}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* Commentary Section */}
+            <section className={sectionClasses}>
+              <label className={labelClasses}>Strategic Notes</label>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Describe the purpose or terms of this instrument..."
+                className="bg-transparent border-none focus:ring-0 p-0 text-[#061b0e] placeholder:text-[#434843]/40 font-medium min-h-[80px]"
+              />
+            </section>
+
+            <div className="flex justify-end gap-4 pb-4">
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="px-6 py-3 rounded-xl font-bold text-sm text-[#434843] hover:bg-[#e9e8e5] transition-colors"
               >
-                <option value="mortgage">Mortgage</option>
-                <option value="car">Car Loan</option>
-                <option value="student_loan">Student Loan</option>
-                <option value="credit_card">Credit Card</option>
-                <option value="personal">Personal Loan</option>
-                <option value="medical">Medical</option>
-                <option value="other">Other</option>
-              </select>
+                Discard Changes
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !name || !originalAmount || !currentBalance || !monthlyPayment}
+                className="px-8 py-3 rounded-xl bg-[#061b0e] text-white font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-all shadow-lg flex items-center gap-2"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (editData ? <Sparkles className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
+                {editData ? 'Update Instrument' : 'Commission Debt'}
+              </button>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="debt-original">Original Amount *</Label>
-              <Input
-                id="debt-original"
-                value={originalAmount}
-                onChange={(e) => setOriginalAmount(e.target.value)}
-                placeholder="250000"
-                type="number"
-                step="0.01"
-                min="0"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="debt-balance">Current Balance *</Label>
-              <Input
-                id="debt-balance"
-                value={currentBalance}
-                onChange={(e) => setCurrentBalance(e.target.value)}
-                placeholder="200000"
-                type="number"
-                step="0.01"
-                min="0"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="debt-rate">Interest Rate %</Label>
-              <Input
-                id="debt-rate"
-                value={interestRate}
-                onChange={(e) => setInterestRate(e.target.value)}
-                placeholder="6.5"
-                type="number"
-                step="0.01"
-                min="0"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="debt-monthly">Monthly Payment *</Label>
-              <Input
-                id="debt-monthly"
-                value={monthlyPayment}
-                onChange={(e) => setMonthlyPayment(e.target.value)}
-                placeholder="1500"
-                type="number"
-                step="0.01"
-                min="0"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="debt-extra">Extra Payment</Label>
-              <Input
-                id="debt-extra"
-                value={extraPayment}
-                onChange={(e) => setExtraPayment(e.target.value)}
-                placeholder="200"
-                type="number"
-                step="0.01"
-                min="0"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="debt-start">Start Date</Label>
-              <Input
-                id="debt-start"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                type="date"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="debt-currency">Currency</Label>
-              <Input
-                id="debt-currency"
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value.toUpperCase())}
-                placeholder="USD"
-                maxLength={3}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="debt-notes">Notes</Label>
-            <Textarea
-              id="debt-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Any notes..."
-              rows={2}
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading || !name || !originalAmount || !currentBalance || !monthlyPayment}
-            >
-              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {editData ? 'Update' : 'Add'}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

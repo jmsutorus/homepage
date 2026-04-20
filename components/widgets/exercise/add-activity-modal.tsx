@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Plus, Dumbbell } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Dumbbell, X } from "lucide-react";
 import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { SuccessCheck } from "@/components/ui/animations/success-check";
@@ -47,12 +46,10 @@ export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActiv
   }, [isModalOpen, resetSuccess]);
 
   const handleSuccess = () => {
-    // If editing, just close and refresh without animation
     if (editActivity) {
       setIsModalOpen(false);
       onActivityAdded?.();
     } else {
-      // If adding, show success animation
       triggerSuccess();
     }
   };
@@ -62,61 +59,74 @@ export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActiv
     onActivityDeleted?.();
   };
 
-  const dialogContent = (
-    <>
-      <div className={cn(isDesktop ? "px-6 pt-6" : "")}>
-        {isDesktop ? (
-            <DialogHeader>
-            <DialogTitle>{editActivity ? "Edit Workout Activity" : "Add Workout Activity"}</DialogTitle>
-            <DialogDescription>
-                {editActivity ? "Update your workout activity details" : "Create a new workout activity with exercises and details"}
-            </DialogDescription>
-            </DialogHeader>
-        ) : (
-            <SheetHeader className="px-6 pt-6 pb-4 border-b text-left">
-            <SheetTitle>{editActivity ? "Edit Workout Activity" : "Add Workout Activity"}</SheetTitle>
-            <SheetDescription className="hidden">
-                 {/* Hidden description for accessibility but visual design matches task sheet */}
-                {editActivity ? "Update details" : "Create new"}
-            </SheetDescription>
-            </SheetHeader>
-        )}
+  const dialogHeader = (
+    <div className="bg-media-primary-container px-10 py-12 flex flex-col gap-2 relative overflow-hidden">
+      <div className="flex justify-between items-start z-10 relative">
+        <h2 className="text-3xl font-bold tracking-tight text-media-on-primary-container font-lexend">
+          {editActivity ? "Edit Workout Session" : "Log New Session"}
+        </h2>
+        <button 
+          onClick={() => setIsModalOpen(false)}
+          className="text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
+        >
+          <X className="w-6 h-6" />
+        </button>
       </div>
+      <p className="text-media-on-primary-container/80 text-sm max-w-sm z-10 relative font-medium leading-relaxed">
+        {editActivity 
+          ? "Update your progress metrics and session details to maintain accurate historical tracking."
+          : "Document your physical output to establish performance benchmarks and visualize consistency."}
+      </p>
+      {/* Decorative blurred circle */}
+      <div className="absolute bottom-0 right-0 w-48 h-48 bg-media-secondary opacity-10 blur-3xl rounded-full translate-x-12 translate-y-12"></div>
+    </div>
+  );
 
-      <div className={cn(isDesktop ? "px-6 py-4 overflow-y-auto max-h-[80vh]" : "flex-1 min-h-0")}>
-        {showSuccess ? (
-          <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-in fade-in slide-in-from-bottom-4">
-            <SuccessCheck size={120} />
-            <h3 className="text-2xl font-semibold text-green-500">Activity Logged!</h3>
-            <p className="text-muted-foreground text-center">
-              Keep up the momentum!
-            </p>
-          </div>
-        ) : (
-          <ActivityForm 
-            editActivity={editActivity} 
-            onSuccess={handleSuccess} 
-            onCancel={() => setIsModalOpen(false)} 
-            onDelete={editActivity ? handleDelete : undefined}
-            isDesktop={isDesktop}
-          />
-        )}
+  const successContent = (
+    <div className="flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
+      <div className="relative">
+        <SuccessCheck size={160} />
+        <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
       </div>
-    </>
+      <div className="text-center space-y-3">
+        <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight">Activity Logged</h3>
+        <p className="text-media-on-surface-variant font-medium max-w-[240px]">
+          Target metrics achieved. Your progress has been documented.
+        </p>
+      </div>
+    </div>
+  );
+
+  const contentBody = (
+    <div className={cn(
+      "overflow-y-auto",
+      isDesktop ? "px-10 py-8 max-h-[70vh]" : "flex-1 px-10 py-8"
+    )}>
+      {showSuccess ? successContent : (
+        <ActivityForm 
+          editActivity={editActivity} 
+          onSuccess={handleSuccess} 
+          onCancel={() => setIsModalOpen(false)} 
+          onDelete={editActivity ? handleDelete : undefined}
+          isDesktop={isDesktop}
+        />
+      )}
+    </div>
   );
 
   if (isDesktop) {
     return (
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         {!editActivity && showButton && (
-          <DialogTrigger asChild>
+          <div className="inline-block" onClick={() => setIsModalOpen(true)}>
             <HomePageButton icon={<Dumbbell className="h-5 w-5" />}>
               Log Activity
             </HomePageButton>
-          </DialogTrigger>
+          </div>
         )}
-        <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden">
-          {dialogContent}
+        <DialogContent showCloseButton={false} className="p-0 border-none sm:max-w-3xl overflow-hidden bg-media-surface-container-lowest shadow-[0_32px_64px_-12px_rgba(6,27,14,0.12)] rounded-3xl">
+          {dialogHeader}
+          {contentBody}
         </DialogContent>
       </Dialog>
     );
@@ -125,23 +135,22 @@ export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActiv
   // Mobile view
   return (
     <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
-      {/* FAB for Mobile - rendered via Portal or just fixed if showButton is true */}
       {!editActivity && showButton && (
-        <SheetTrigger asChild>
-          <HomePageButton 
-            className="fixed bottom-6 right-6 h-14 rounded-full shadow-lg z-50 md:hidden !px-6"
-            icon={<Dumbbell className="h-6 w-6" />}
-          >
-            Log Activity
-          </HomePageButton>
-        </SheetTrigger>
+        <div 
+          onClick={() => setIsModalOpen(true)}
+          className="fixed bottom-6 right-6 h-14 rounded-full shadow-lg z-50 md:hidden flex items-center justify-center bg-media-primary text-media-on-primary px-6 gap-2 font-bold"
+        >
+          <Dumbbell className="h-6 w-6" />
+          Log Activity
+        </div>
       )}
       <SheetContent 
         side="bottom" 
-        className="h-[90vh] max-h-[90vh] p-0 rounded-t-3xl flex flex-col"
+        className="h-[95vh] max-h-[95vh] p-0 border-none rounded-t-[40px] overflow-hidden bg-media-surface-container-lowest flex flex-col [&>button:last-child]:hidden"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        {dialogContent}
+        {dialogHeader}
+        {contentBody}
       </SheetContent>
     </Sheet>
   );

@@ -10,6 +10,7 @@ export type SearchResult = {
   url: string;
   description?: string;
   date?: string;
+  image?: string;
 };
 
 export type SearchResults = {
@@ -104,7 +105,7 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
     let media: SearchResult[] = [];
     if (shouldSearch("media")) {
       const mediaResults = await query<any>(
-        `SELECT id, title, slug, type as mediaType, description FROM media_content WHERE userId = ? AND (title LIKE ? OR description LIKE ?) ${buildTagClause()} ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
+        `SELECT id, title, slug, type as mediaType, description, poster FROM media_content WHERE userId = ? AND (title LIKE ? OR description LIKE ?) ${buildTagClause()} ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
         [userId, searchTerm, searchTerm, limit]
       );
       media = mediaResults.map(m => ({
@@ -112,14 +113,15 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
         title: m.title,
         type: "media" as const,
         url: `/media/${m.mediaType}/${m.slug}`,
-        description: m.description ? m.description.substring(0, 100) + "..." : ""
+        description: m.description ? m.description.substring(0, 100) + "..." : "",
+        image: m.poster
       }));
     }
 
     let parks: SearchResult[] = [];
     if (shouldSearch("park")) {
       const parkResults = await query<any>(
-        `SELECT id, title, slug, description FROM parks WHERE userId = ? AND (title LIKE ? OR description LIKE ?) ${buildTagClause()} ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
+        `SELECT id, title, slug, description, poster FROM parks WHERE userId = ? AND (title LIKE ? OR description LIKE ?) ${buildTagClause()} ${buildDateClause('created_at')} ORDER BY created_at DESC LIMIT ?`,
         [userId, searchTerm, searchTerm, limit]
       );
       parks = parkResults.map(p => ({
@@ -127,7 +129,8 @@ export async function searchGlobal(queryStr: string, filters?: SearchFilters): P
         title: p.title,
         type: "park" as const,
         url: `/parks/${p.slug}`,
-        description: p.description ? p.description.substring(0, 100) + "..." : ""
+        description: p.description ? p.description.substring(0, 100) + "..." : "",
+        image: p.poster
       }));
     }
 

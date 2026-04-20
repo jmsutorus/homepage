@@ -30,7 +30,11 @@ import { addToQueue } from "@/lib/pwa/offline-queue";
 import { generateTempId } from "@/lib/pwa/optimistic-updates";
 import { toast } from "sonner";
 
-export function CreateHabitForm() {
+interface CreateHabitFormProps {
+  children?: React.ReactNode;
+}
+
+export function CreateHabitForm({ children }: CreateHabitFormProps) {
   const { isOnline } = useNetworkStatus();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -103,10 +107,12 @@ export function CreateHabitForm() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="cursor-pointer">
-          <Plus className="h-4 w-4 mr-2" />
-          New Habit
-        </Button>
+        {children || (
+          <Button className="cursor-pointer">
+            <Plus className="h-4 w-4 mr-2" />
+            New Habit
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         {showSuccess ? (

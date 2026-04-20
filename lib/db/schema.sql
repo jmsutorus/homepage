@@ -1467,6 +1467,8 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     CHECK(cycle IN ('weekly', 'monthly', 'quarterly', 'yearly')),
   currency TEXT NOT NULL DEFAULT 'USD',
   active INTEGER DEFAULT 1,
+  category TEXT,
+  billing_day INTEGER,
   notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
-import { MediaEditor } from "@/components/widgets/media/media-editor";
+import { MediaEditorialEditor } from "@/components/widgets/media/media-editorial-editor";
 import { getMediaBySlug } from "@/lib/db/media";
-import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { getUserId } from "@/lib/auth/server";
 
 interface EditMediaPageProps {
@@ -57,37 +56,17 @@ export default async function EditMediaPage({ params }: EditMediaPageProps) {
     timeSpent: media.time_spent || undefined,
     featured: media.featured === 1,
     published: media.published === 1,
+    description: media.description || undefined,
   };
 
-  // Format media type for display (capitalize first letter)
-  const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
-
   return (
-    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-5xl">
-      <div className="mb-6 sm:mb-8 space-y-4">
-        <PageBreadcrumb
-          items={[
-            { label: "Media", href: "/media" },
-            { label: formattedType, href: `/media?type=${type}` },
-            { label: media.title, href: `/media/${type}/${slug}` },
-            { label: "Edit" },
-          ]}
-        />
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Edit Media Entry</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Update the details for {media.title}.
-          </p>
-        </div>
-      </div>
-
-      <MediaEditor
-        mode="edit"
-        existingType={apiType}
-        existingSlug={slug}
-        initialFrontmatter={frontmatter}
-        initialContent={media.content}
-      />
-    </div>
+    <MediaEditorialEditor
+      mode="edit"
+      existingType={apiType}
+      existingSlug={slug}
+      initialFrontmatter={frontmatter}
+      initialContent={media.content}
+    />
   );
 }
+

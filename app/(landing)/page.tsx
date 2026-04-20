@@ -1,143 +1,168 @@
 import Link from "next/link";
-import { Film, Activity, CheckSquare, Calendar, Shield, Zap, Network, Rss, Home } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <>
-        {/* Hero Section */}
-        <section className="relative overflow-hidden pt-24 pb-32">
-          {/* Decorative Glows */}
-          <div className="absolute top-0 -left-20 w-96 h-96 bg-[#81ecff]/10 blur-[120px] rounded-full"></div>
-          <div className="absolute bottom-0 -right-20 w-96 h-96 bg-[#ff8f00]/10 blur-[120px] rounded-full"></div>
-          <div className="max-w-7xl mx-auto px-8 grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8 relative z-10">
-              <h1 className="font-headline text-6xl md:text-7xl font-extrabold tracking-tighter leading-none text-[#f6f6fc]">
-                Your Entire Life, <br /><span className="text-[#81ecff] italic">Integrated.</span>
+    <div className="bg-media-background text-media-on-background font-lexend selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed">
+      {/* TopAppBar */}
+      <header className="bg-media-surface/80 backdrop-blur-xl font-lexend tracking-tight font-medium top-0 sticky z-50 border-b border-media-primary/5">
+        <div className="flex justify-between items-center px-8 py-6 w-full max-w-screen-2xl mx-auto">
+          <div className="text-2xl font-black tracking-tighter text-media-primary">Earthbound</div>
+          <nav className="hidden md:flex gap-8">
+            <Link href="#" className="text-media-secondary font-bold border-b-2 border-media-secondary pb-1 scale-102 active:scale-98 transition-transform duration-200">Wellness</Link>
+            <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary transition-all duration-300 ease-in-out">Travel</Link>
+            <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary transition-all duration-300 ease-in-out">Relationships</Link>
+            <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary transition-all duration-300 ease-in-out">Media</Link>
+            <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary transition-all duration-300 ease-in-out">Tasks</Link>
+          </nav>
+          <div className="flex items-center gap-6">
+            <Link href="/sign-in">
+              <button className="text-media-on-surface-variant font-medium hover:text-media-secondary transition-colors">Login</button>
+            </Link>
+            <Link href="/sign-up">
+              <button className="bg-media-secondary text-media-on-secondary px-6 py-2.5 rounded-lg font-bold hover:opacity-90 transition-all scale-102 active:scale-98">Create Account</button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        {/* Cinematic Hero Section */}
+        <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              className="w-full h-full object-cover brightness-75" 
+              alt="cinematic wide shot of a misty sun-drenched ancient forest with towering trees and soft atmospheric light filtering through the canopy" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqCDLalc2fmr_g7qCQSryj2h8LN5PWmfylb3r7siag12qkIDc_mWwMaCv3cL5-LJbm_9J-ZbrFBq9bh_UAdor48Gu_rDff_E3BZ0eIdNxcs9WVkSg0kvcwLjCDg50W-JJ2HTwDCvgfiVfIHNeuxlAHsCbmBL3aMvbNq5CWYXeuowkfiUzIeDhsx9bJoyhlYfPSZxTrhqh6BHzLwZtJ5h4xUu9FhGFQtaUkAwkjx7J3oVNYMQdVyUnv8ajwdDRnUqkMlU4gp-xtDN0"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-media-primary/40 to-transparent"></div>
+          </div>
+          <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-8 md:px-12">
+            <div className="max-w-3xl">
+              <h1 className="text-6xl md:text-8xl font-black text-media-surface tracking-tighter leading-tight mb-8">
+                Curate a Life of <span className="text-media-secondary-fixed">Intention.</span>
               </h1>
-              <p className="text-xl text-[#aaabb0] max-w-lg leading-relaxed">
-                The ultimate dashboard to track your media, exercise, habits, and tasks—all in one place. Connect your digital world into a single kinetic flow.
+              <p className="text-xl md:text-2xl text-media-surface/90 mb-12 font-light leading-relaxed max-w-xl">
+                A digital sanctuary for the modern archivist. Track your evolution through the chapters of wellness, travel, and connection.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/sign-up">
-                  <button className="cursor-pointer bg-gradient-to-br from-[#ff8f00] to-[#eb8300] text-[#462300] font-bold px-8 py-4 rounded-lg text-lg hover:shadow-[0_0_25px_rgba(255,143,0,0.3)] transition-all transform active:scale-95 hover:scale-105">
-                    Get Started
+                  <button className="bg-media-secondary text-media-on-secondary px-10 py-5 rounded-lg text-lg font-bold kinetic-hover editorial-shadow">
+                    Start Your Collection
                   </button>
                 </Link>
                 <Link href="/sign-in">
-                  <button className="cursor-pointer bg-[#23262c]/40 backdrop-blur-md border border-[#46484d]/30 text-[#f6f6fc] px-8 py-4 rounded-lg text-lg hover:bg-[#23262c]/60 transition-all hover:scale-105">
-                    Sign In
+                  <button className="bg-media-surface/10 backdrop-blur-md border border-media-surface/20 text-media-surface px-10 py-5 rounded-lg text-lg font-bold hover:bg-media-surface/20 transition-all">
+                    Member Login
                   </button>
                 </Link>
               </div>
-              <div className="flex items-center gap-4 pt-4 text-sm text-[#aaabb0]/60">
-                <span>Made by Joseph Sutorus</span>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="relative z-10 glass-card p-4 rounded-2xl transform rotate-2 hover:rotate-0 transition-transform duration-700">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="Dashboard Mockup" className="rounded-xl shadow-2xl border border-[#46484d]/20 w-full object-cover aspect-video" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKBRGdmWT0IkTsAzQnK95F3G2DuSNKe52Y1BLtV2YyIsIZkhwddEV0PQSv8GeltwmwC0AMboGQLPmOsdoTRH59hCnUx61d3YF3EhklePL4w1m2CpboF9Qm_7Kk4zB4QfhNh_M-6oL-xI3DI68xhm_tT4M1NA4pdX8h4CfFDkIDtymYHmkEQ-3D1Cu5yJ9fE9YFfrxm7zkVWGBnGm8ApgxRsyLBSYRZEfS_RrpCPMRrHWvj-Ty_J__jqwjyURTXTah0-12tG1UOYYx5" />
-              </div>
-              <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#81ecff]/20 rounded-full blur-3xl"></div>
-              <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-[#a68cff]/20 rounded-full blur-3xl"></div>
             </div>
           </div>
         </section>
 
-        {/* Feature Showcase */}
-        <section className="py-24 bg-[#111318]/30">
-          <div className="max-w-7xl mx-auto px-8">
-            <div className="mb-16">
-              <h2 className="font-headline text-4xl font-bold tracking-tight mb-4">Master Your <span className="text-[#ff8f00]">Ecosystem</span></h2>
-              <p className="text-[#aaabb0] text-lg max-w-xl">Every data point has a home. Homepage connects with the tools you already love.</p>
+        {/* The Manifesto */}
+        <section className="py-24 md:py-40 bg-media-surface">
+          <div className="max-w-screen-xl mx-auto px-8 flex flex-col md:flex-row items-center gap-16">
+            <div className="md:w-1/2">
+              <span className="text-media-secondary font-bold tracking-[0.2em] uppercase text-sm mb-6 block">Our Manifesto</span>
+              <h2 className="text-4xl md:text-6xl font-black text-media-primary tracking-tighter mb-8 leading-none">The Kinetic Life.</h2>
+              <ul className="space-y-6">
+                <li>
+                  <p className="text-media-on-surface-variant text-xl leading-relaxed">
+                    In an age of endless scrolling and digital noise, Earthbound serves as an anchor. We believe intentionality isn&apos;t a destination, but a movement—a kinetic harmony between where you&apos;ve been and where you are going.
+                  </p>
+                </li>
+                <li>
+                  <p className="text-media-on-surface-variant text-xl leading-relaxed italic border-l-4 border-media-secondary/30 pl-6">
+                    &quot;Your life is not a feed to be consumed, but a gallery to be curated.&quot;
+                  </p>
+                </li>
+              </ul>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="md:w-1/2 relative">
+              <div className="aspect-[4/5] bg-media-surface-container-high rounded-xl overflow-hidden kinetic-hover editorial-shadow">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  className="w-full h-full object-cover grayscale opacity-80 mix-blend-multiply" 
+                  alt="high-end architectural detail showing clean lines and minimal concrete geometry with dramatic light and shadow play" 
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBF2QEssdb_3gohEuYgeQWsaf2G1k-auIG7ud58QICTQW85MxzKoqkT8CTf2J3SQnGRvifX6opJiy6r6cq61lql6EhKqsOnuUbClJFVHT1YnPxbE0mZtii35XOPcPCo-NYaMyJOpzW-ja7e1ECOhQN7M6neIsZhwu0DFgYoK58dqkOR02pOIgPipVCc6335-Q1ekkvMDM99i_xPq70DIawDPy5a0QpqEHd_2YNHVdXNPp4NOQTYzUT6_-sKaWHOVQ104ysxwH5PwPM"
+                />
+              </div>
+              <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-media-primary-fixed rounded-lg -z-10"></div>
+            </div>
+          </div>
+        </section>
+
+        {/* The Narrative: Chapters Bento Grid */}
+        <section className="py-24 bg-media-surface-container-low overflow-hidden">
+          <div className="max-w-screen-2xl mx-auto px-8">
+            <div className="mb-20">
+              <h2 className="text-5xl font-black text-media-primary tracking-tighter mb-4">The Chapters.</h2>
+              <p className="text-media-on-surface-variant text-lg">Define your journey across our curated focal points.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 h-auto md:h-[800px]">
+              {/* Wellness Card */}
+              <div className="md:col-span-7 bg-media-surface-container-lowest p-10 rounded-xl flex flex-col justify-between kinetic-hover editorial-shadow group overflow-hidden relative">
+                <div className="relative z-10">
+                  <span className="material-symbols-outlined text-4xl text-media-secondary mb-6">self_improvement</span>
+                  <h3 className="text-3xl font-black text-media-primary mb-4">Wellness</h3>
+                  <p className="text-media-on-surface-variant max-w-sm">Chronicle your physical and mental rituals. From sunrise meditation to evening endurance.</p>
+                </div>
+                <div className="absolute right-0 bottom-0 w-2/3 h-2/3 opacity-20 group-hover:opacity-40 transition-opacity">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    className="w-full h-full object-cover rounded-tl-full" 
+                    alt="serene close-up of a person practicing yoga in a minimal sunlit studio with soft linen textures" 
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGimQFISSLUqu0pc49nlPPiZdcbR3ocbIerfvj9-pChPGyuSKkrLmTnBFyvjjm26xS7n9lF4Fif5D_5GEQRLqaqJ2RTAQWRPhkrUn2UOO2H-gUTDDfnE81d0dRXqpUgK3MsSCf8cbyf5t32ZynT8akdeH7bf6eY2EFVqYNtRX9Q85GiMZhAVgi5zFaS0Ut3GqtPLheCmGI24C-gBEqv-mpe4AGkZqnZZkD7WkyMXZ5D8UsntAvNWkfOMp8i-qyiv1KnjmC93YfvB0"
+                  />
+                </div>
+              </div>
+              {/* Travel Card */}
+              <div className="md:col-span-5 bg-media-primary p-10 rounded-xl flex flex-col justify-end kinetic-hover editorial-shadow relative overflow-hidden group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-110 transition-transform duration-700" 
+                  alt="aerial view of a luxury yacht sailing through turquoise alpine lake waters surrounded by pine forests" 
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJ0TYsRxI608ROrSWHxtihLkOFuD6S1ZFugvU32zSP-Xfn_EC1ZYbDTrI9bDTLF8XW7BdPuPQ79gvsN9JjkrqSWKl2sIQ2B9_U0KsqMf13dOHWz0Jvojf6ET61SE2yWcnY31eO8YCf6WqapkqM8dQWp4vb4S4GNmBYMrq589XP8S6hxmUOQbL9byHMOIMzXyfGK3jRrJ1HVdNKPVYCi1yxis3vCb9BLY4NFN4ilQenVIGW1nnn2cNnnHdhGjYqEl8KHy6FIKGXLt0"
+                />
+                <div className="relative z-10">
+                  <span className="material-symbols-outlined text-4xl text-media-secondary-fixed mb-6">explore</span>
+                  <h3 className="text-3xl font-black text-media-surface mb-2">Travel</h3>
+                  <p className="text-media-surface/70">Map the geographies that changed your perspective.</p>
+                </div>
+              </div>
+              {/* Relationships Card */}
+              <div className="md:col-span-5 bg-media-secondary p-10 rounded-xl flex flex-col justify-between kinetic-hover editorial-shadow">
+                <div>
+                  <span className="material-symbols-outlined text-4xl text-media-surface mb-6">diversity_1</span>
+                  <h3 className="text-3xl font-black text-media-surface mb-4">Relationships</h3>
+                </div>
+                <p className="text-media-surface/90 text-lg">Archive the people, the dates, and the connections that form your social fabric.</p>
+              </div>
               {/* Media Card */}
-              <div className="glass-card p-8 rounded-2xl flex flex-col gap-6 hover:translate-y-[-8px] transition-all duration-300 group">
-                <div className="w-14 h-14 rounded-full bg-[#00e3fd]/20 flex items-center justify-center neon-glow-primary">
-                  <Film className="text-[#81ecff] w-8 h-8" />
+              <div className="md:col-span-7 bg-media-surface-container-high p-10 rounded-xl flex items-center gap-12 kinetic-hover editorial-shadow">
+                <div className="flex-1">
+                  <span className="material-symbols-outlined text-4xl text-media-primary mb-6">auto_stories</span>
+                  <h3 className="text-3xl font-black text-media-primary mb-4">Media</h3>
+                  <p className="text-media-on-surface-variant">Your library of influence. Books, cinema, and soundscapes that soundtrack your life.</p>
                 </div>
-                <div className="space-y-3">
-                  <h3 className="font-headline text-xl font-bold">Media</h3>
-                  <p className="text-[#aaabb0] text-sm leading-relaxed">Keep track of what you&apos;re watching.</p>
-                </div>
-              </div>
-              
-              {/* Exercise Card */}
-              <div className="glass-card p-8 rounded-2xl flex flex-col gap-6 hover:translate-y-[-8px] transition-all duration-300 group">
-                <div className="w-14 h-14 rounded-full bg-[#8f4e00]/20 flex items-center justify-center neon-glow-secondary">
-                  <Activity className="text-[#ff8f00] w-8 h-8" />
-                </div>
-                <div className="space-y-3">
-                  <h3 className="font-headline text-xl font-bold">Exercise</h3>
-                  <p className="text-[#aaabb0] text-sm leading-relaxed">Track your your workouts and fitness progress.</p>
-                </div>
-              </div>
-
-              {/* Tasks Card */}
-              <div className="glass-card p-8 rounded-2xl flex flex-col gap-6 hover:translate-y-[-8px] transition-all duration-300 group">
-                <div className="w-14 h-14 rounded-full bg-[#7c4dff]/20 flex items-center justify-center shadow-[0_0_20px_rgba(166,140,255,0.2)]">
-                  <CheckSquare className="text-[#a68cff] w-8 h-8" />
-                </div>
-                <div className="space-y-3">
-                  <h3 className="font-headline text-xl font-bold">Tasks</h3>
-                  <p className="text-[#aaabb0] text-sm leading-relaxed">Manage your daily to-dos and stay organized with a simple, effective list.</p>
-                </div>
-                {/* <div className="mt-auto pt-4 border-t border-[#46484d]/10">
-                  <span className="text-xs font-bold text-[#a68cff] tracking-widest uppercase">Focus Mode</span>
-                </div> */}
-              </div>
-
-              {/* Habits Card */}
-              <div className="glass-card p-8 rounded-2xl flex flex-col gap-6 hover:translate-y-[-8px] transition-all duration-300 group">
-                <div className="w-14 h-14 rounded-full bg-[#00e3fd]/20 flex items-center justify-center neon-glow-primary">
-                  <Calendar className="text-[#81ecff] w-8 h-8" />
-                </div>
-                <div className="space-y-3">
-                  <h3 className="font-headline text-xl font-bold">Habits</h3>
-                  <p className="text-[#aaabb0] text-sm leading-relaxed">Log your daily mood and visualize trends over time to understand your well-being.</p>
-                </div>
-                {/* <div className="mt-auto pt-4 border-t border-[#46484d]/10">
-                  <span className="text-xs font-bold text-[#81ecff] tracking-widest uppercase">Daily Streaks</span>
-                </div> */}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Bento Grid Section */}
-        <section className="py-24">
-          <div className="max-w-7xl mx-auto px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
-              <div className="md:col-span-2 glass-card rounded-3xl p-10 relative overflow-hidden flex flex-col justify-end group">
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0c0e12] via-transparent to-transparent z-10"></div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="Data Visualization" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuk7Y2fwmawxO3IKU9NIAtCJ1mRDnZKcijp5Zgad2fHsppd8ukpY2CdCFK5wGphUUFjYHW_pdaeKvhSTSvOJSCGYY1OC4ygJboRY_DkXaV2V7MkZern3NNmskELtGke7Yaw5HLTi41houRFuc6XHnJWcm7UaRpvfJpBq2GL3pVLN0YvPv6xfuZ29_eFV7-_ZJJsWaaXyptI_rFHxs2LXmpNp93HMxpMsykHsvoWiOxZKt_ikhli_InNz5ByCbAGsuqzKArff7sOABK" />
-                <div className="relative z-20">
-                  <h4 className="font-headline text-3xl font-bold mb-2">Deep Insights</h4>
-                  <p className="text-[#aaabb0]">Analyze your lifestyle trends over months and years.</p>
-                </div>
-              </div>
-              <div className="glass-card rounded-3xl p-8 flex flex-col justify-center items-center text-center bg-[#81ecff]/5">
-                <Shield className="text-[#81ecff] w-12 h-12 mb-4" />
-                <h4 className="font-headline text-xl font-bold mb-2">Privacy First</h4>
-                <p className="text-[#aaabb0] text-sm">Your data never leaves your devices without your explicit consent.</p>
-              </div>
-              <div className="glass-card rounded-3xl p-8 flex flex-col justify-center items-center text-center bg-[#ff8f00]/5">
-                <Zap className="text-[#ff8f00] w-12 h-12 mb-4" />
-                <h4 className="font-headline text-xl font-bold mb-2">Instant Sync</h4>
-                <p className="text-[#aaabb0] text-sm">Real-time updates across all your connected accounts.</p>
-              </div>
-              <div className="md:col-span-2 glass-card rounded-3xl p-10 flex flex-col justify-center bg-gradient-to-br from-[#171a1f] to-[#23262c]">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                  <div>
-                    <h4 className="font-headline text-3xl font-bold mb-2">Hyper-Connected</h4>
-                    <p className="text-[#aaabb0] max-w-sm">Connect APIs, RSS feeds, and smart home devices into your global control center.</p>
+                <div className="hidden sm:grid grid-cols-2 gap-4 w-1/2">
+                  <div className="aspect-square bg-media-primary-fixed rounded shadow-lg overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      className="w-full h-full object-cover" 
+                      alt="stack of vintage leather-bound books on a dark oak table with a small glass of whiskey" 
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4PvwWvmAwmKDbGJCmKb4O06bKxokZA4Ut5IEe35vgIb1dBpDPdkupdNFYia8jCpEVFNJFjNeR4wX0iClrWPDjQdzhtrfNZMTCo-DAme5asqaC1gF1b4JT8HXpZubrCPjS6rPzsP5EHCZ7BnYNQxixWs0O6lklKr4QOMGUNPFVkaw3rjHkHXA05ANcTmbSKROo_sePZHm5GsfKS6pTTTLfwlFjPPTrFb7qLkC5EGoMdeEXY5XZRR6TtS43QLaWKCeDjice5FVZNno"
+                    />
                   </div>
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-[#0c0e12] flex items-center justify-center border border-[#46484d]/30"><Network className="w-6 h-6 text-[#aaabb0]" /></div>
-                    <div className="w-12 h-12 rounded-lg bg-[#0c0e12] flex items-center justify-center border border-[#46484d]/30"><Rss className="w-6 h-6 text-[#aaabb0]" /></div>
-                    <div className="w-12 h-12 rounded-lg bg-[#0c0e12] flex items-center justify-center border border-[#46484d]/30"><Home className="w-6 h-6 text-[#aaabb0]" /></div>
+                  <div className="aspect-square bg-media-secondary-fixed rounded shadow-lg overflow-hidden mt-8">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      className="w-full h-full object-cover" 
+                      alt="high-quality audio headphones resting on a minimalist marble surface with warm natural lighting" 
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpZbH5wqtqrSkXjRIFZWz-iYxzBZcj0EglpInq5lIB4Q3D-ruK29P2r96AM2O1jfgsunb8cfnc9htokJMWbpStcdhwqTg4Cca2E1ycivDk-7J-9fQq_0Xh9S1tJgzO8BsRlbIyhvVhBikHufdHuVCe_HxUTGOEtXYkVwn3X-AtD2XFC10ZKDj0CMX1HtuEPMCYE7jJYFiF6kaFuNuYs3VK9X-S9twJN0nF3uCbDvQHIYX6hNVBKZvsNRnZNNOYJL1JgLZ_kumxdlU"
+                    />
                   </div>
                 </div>
               </div>
@@ -145,23 +170,43 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Call to Action Section */}
-        <section className="py-32 relative">
-          <div className="absolute inset-0 bg-[#81ecff]/5 pointer-events-none"></div>
-          <div className="max-w-4xl mx-auto px-8 text-center relative z-10">
-            <h2 className="font-headline text-5xl md:text-6xl font-extrabold tracking-tighter mb-8 leading-tight">
-              Take control of your data and your day.
+        {/* Final CTA Section */}
+        <section className="py-32 bg-media-primary relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-media-secondary-container via-transparent to-transparent"></div>
+          </div>
+          <div className="max-w-screen-xl mx-auto px-8 text-center relative z-10">
+            <h2 className="text-5xl md:text-7xl font-black text-media-surface tracking-tighter mb-10 leading-tight">
+              Your life is a masterpiece.<br />Begin the next chapter.
             </h2>
-            <p className="text-xl text-[#aaabb0] mb-12">
-              Join thousands of users today and experience the clarity of a unified personal life dashboard.
-            </p>
-            <Link href="/sign-up">
-              <button className="cursor-pointer bg-gradient-to-r from-[#81ecff] via-[#00d4ec] to-[#a68cff] text-[#005762] font-black px-12 py-6 rounded-xl text-xl hover:shadow-[0_0_40px_rgba(129,236,255,0.4)] transition-all transform hover:scale-105 active:scale-95 uppercase tracking-wider">
-                Get Started Now
-              </button>
-            </Link>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
+              <Link href="/sign-up">
+                <button className="bg-media-secondary text-media-on-secondary px-12 py-6 rounded-lg text-xl font-black kinetic-hover editorial-shadow">
+                  Begin Your Chapter
+                </button>
+              </Link>
+              <p className="text-media-primary-fixed-dim text-lg italic max-w-xs text-left hidden md:block">
+                Join 24,000+ curators living with intention.
+              </p>
+            </div>
           </div>
         </section>
-    </>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-media-surface-container-highest flex flex-col md:flex-row justify-between items-center px-12 py-16 w-full border-t border-media-primary/5 text-sm uppercase tracking-widest">
+        <div className="flex flex-col items-center md:items-start gap-4 mb-8 md:mb-0">
+          <div className="font-black text-media-primary text-xl">Earthbound</div>
+          <p className="text-media-on-surface-variant opacity-90 lowercase normal-case">© 2024 Earthbound. Kinetic Harmony in Curation.</p>
+        </div>
+        <nav className="flex flex-wrap justify-center gap-8">
+          <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">About</Link>
+          <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">Philosophy</Link>
+          <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">Privacy</Link>
+          <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">Terms</Link>
+          <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">Support</Link>
+        </nav>
+      </footer>
+    </div>
   );
 }
