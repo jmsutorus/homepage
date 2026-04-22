@@ -29,17 +29,7 @@ export function MediaActiveJourneys({ items }: MediaActiveJourneysProps) {
           // I will look for a number in frontmatter or use a default if not found.
           // Actually, let's assume `timeSpent` is current and `length` (parsed for numbers) is total.
           
-          let progress = 0;
-          if (frontmatter.timeSpent && frontmatter.length) {
-            const total = parseInt(frontmatter.length.replace(/\D/g, ''));
-            if (!isNaN(total) && total > 0) {
-              progress = Math.min(Math.round((frontmatter.timeSpent / total) * 100), 100);
-            }
-          } else {
-            // Default deterministic progress based on title if data is missing
-            const seed = frontmatter.title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            progress = (seed % 60) + 15;
-          }
+          const progress = frontmatter.progress || 0;
 
           return (
             <Link key={slug} href={href} className="group cursor-pointer">

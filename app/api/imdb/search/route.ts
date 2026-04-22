@@ -102,16 +102,31 @@ export async function POST(request: NextRequest) {
 
     // Parse creators (directors for movies, creators for TV shows)
     const creators: string[] = [];
+    
+    // Add Directors
     if (data.Director && data.Director !== 'N/A') {
       creators.push(...data.Director.split(',').map((d: string) => d.trim()));
     }
+    
+    // Check for explicit Creator field (some OMDb responses or future versions might have this)
+    if (data.Creator && data.Creator !== 'N/A') {
+      const explicitCreators = data.Creator.split(',').map((c: string) => c.trim());
+      explicitCreators.forEach((c: string) => {
+        if (!creators.includes(c)) {
+          creators.push(c);
+        }
+      });
+    }
+
     // For TV shows, also add writers/creators if available
     if (mediaType === 'tv' && data.Writer && data.Writer !== 'N/A') {
       const writers = data.Writer.split(',').map((w: string) => w.trim());
       // Avoid duplicates
       writers.forEach((writer: string) => {
-        if (!creators.includes(writer)) {
-          creators.push(writer);
+        // Remove "(creator)" or other parenthetical notes if present
+        const cleanWriter = writer.replace(/\s*\([^)]*\)/g, '').trim();
+        if (cleanWriter && !creators.includes(cleanWriter)) {
+          creators.push(cleanWriter);
         }
       });
     }

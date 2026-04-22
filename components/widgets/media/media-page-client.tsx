@@ -47,6 +47,7 @@ function dbToMediaItem(dbMedia: MediaContent): MediaItem {
       featured: dbMedia.featured === 1,
       published: dbMedia.published === 1,
       timeSpent: dbMedia.time_spent,
+      progress: dbMedia.progress,
     },
     // Content might be undefined if not selected for performance
     content: dbMedia.content ?? "",

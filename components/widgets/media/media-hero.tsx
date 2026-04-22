@@ -62,7 +62,7 @@ export function MediaHero({ item }: MediaHeroProps) {
             <div className="text-right">
               <p className="text-white/50 text-[10px] uppercase font-bold tracking-widest mb-1">Progress</p>
               <p className="text-white font-semibold">
-                {frontmatter.status === "completed" ? "Finished" : frontmatter.status === "in-progress" ? "In Progress" : "Planned"}
+                {frontmatter.status === "completed" ? "Finished" : frontmatter.status === "in-progress" ? `${frontmatter.progress || 0}% Complete` : "Planned"}
               </p>
             </div>
           </div>

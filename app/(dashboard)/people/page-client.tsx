@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { Plus, User, Users, UserPlus, Briefcase, Mail, Phone, Trash2, Edit, Cake, Heart, Settings, ListTodo, Search, X, Copy, Sparkles, Gift } from "lucide-react";
 import { type Person, type RelationshipCategory } from "@/lib/db/people";
-import { calculateAge, calculateDaysUntilBirthday } from "@/lib/people-utils";
+import { calculateAge, calculateDaysUntilBirthday, formatPhoneNumber } from "@/lib/people-utils";
 import { PersonFormDialog } from "@/components/widgets/people/person-form-dialog";
 import { DeletePersonDialog } from "@/components/widgets/people/delete-person-dialog";
 import { RelationshipTypeManager } from "@/components/widgets/people/relationship-type-manager";
@@ -437,7 +437,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
                             <button 
                               onClick={() => copyToClipboard(person.phone!, "Phone")}
                               className="cursor-pointer text-media-outline hover:text-media-primary transition-colors"
-                              title={person.phone}
+                              title={formatPhoneNumber(person.phone)}
                             >
                               <span className="material-symbols-outlined text-lg">call</span>
                             </button>

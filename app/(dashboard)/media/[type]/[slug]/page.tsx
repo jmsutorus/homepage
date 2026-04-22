@@ -12,6 +12,7 @@ import { getRelatedMedia } from "@/lib/actions/related-content";
 import { getUserId } from "@/lib/auth/server";
 import { cn } from "@/lib/utils";
 import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
+import { MediaProgressSlider } from "@/components/widgets/media/media-progress-slider";
 
 interface MediaDetailPageProps {
   params: Promise<{
@@ -98,36 +99,26 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
           )}
 
           <div className="flex flex-wrap justify-center gap-4 mb-16">
-            <HomePageButton asChild variant="primary" className="bg-media-secondary">
-              <Link href={`/media/${type}/${slug}/edit`}>
-                <span className="material-symbols-outlined text-sm">edit</span>
-                <span className="text-sm uppercase tracking-widest text-white">Edit Entry</span>
+            <HomePageButton asChild variant="primary" className="bg-media-secondary h-[60px] px-8 shadow-xl">
+              <Link href={`/media/${type}/${slug}/edit`} className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-base">edit</span>
+                <span className="text-[10px] uppercase tracking-widest text-white font-bold">Edit Entry</span>
               </Link>
             </HomePageButton>
             
-            <div className="flex items-center gap-4">
-              <DeleteMediaButton 
-                slug={slug} 
-                mediaType={type} 
-              />
-              
-              {/* <MediaStatusSelect
-                status={frontmatter.status}
-                slug={slug}
-                type={frontmatter.type}
-                frontmatter={frontmatter}
+            <DeleteMediaButton 
+              slug={slug} 
+              mediaType={type} 
+              className="h-[60px] px-8 shadow-xl font-bold uppercase tracking-widest text-[10px] gap-3"
+            />
+            
+            {content && (
+              <ExportButton
                 content={content}
-                className="h-[60px] bg-media-surface-container border-none font-bold uppercase tracking-widest text-[10px] px-8 rounded-xl shadow-xl"
-              /> */}
-              
-              {content && (
-                <ExportButton
-                  content={content}
-                  filename={slug}
-                  className="h-[60px] bg-media-surface-container border-none text-media-on-surface-variant hover:bg-media-primary hover:text-white transition-colors px-8 rounded-xl shadow-xl"
-                />
-              )}
-            </div>
+                filename={slug}
+                className="h-[60px] bg-media-surface-container border-none text-media-on-surface-variant hover:bg-media-primary hover:text-white transition-colors px-8 rounded-xl shadow-xl font-bold uppercase tracking-widest text-[10px] flex items-center gap-3"
+              />
+            )}
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-10 border-t border-media-surface-variant max-w-3xl mx-auto">
@@ -213,23 +204,33 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
             </div>
             
             <div className="flex-grow max-w-md w-full px-4">
-              <div className="flex justify-between items-end mb-3">
-                <span className="text-3xl font-black">
-                  {frontmatter.status === 'completed' ? (frontmatter.length || 'Done') : 'Processing'} 
-                  <span className="text-sm font-normal opacity-60 ml-1">
-                    {frontmatter.type === 'book' ? 'Pages' : 'Progress'}
-                  </span>
-                </span>
-                <span className="text-sm font-bold text-media-secondary">
-                  {frontmatter.status === 'completed' ? '100% Complete' : 'In Progress'}
-                </span>
-              </div>
-              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-media-secondary rounded-full" 
-                  style={{ width: frontmatter.status === 'completed' ? '100%' : '35%' }}
-                ></div>
-              </div>
+              {frontmatter.status === 'in-progress' ? (
+                <MediaProgressSlider 
+                  initialProgress={frontmatter.progress || 0}
+                  slug={slug}
+                  type={type}
+                />
+              ) : (
+                <>
+                  <div className="flex justify-between items-end mb-3">
+                    <span className="text-3xl font-black">
+                      {frontmatter.status === 'completed' ? (frontmatter.length || 'Done') : (frontmatter.progress ? `${frontmatter.progress}%` : 'Processing')} 
+                      <span className="text-sm font-normal opacity-60 ml-1">
+                        {frontmatter.type === 'book' ? 'Pages' : 'Progress'}
+                      </span>
+                    </span>
+                    <span className="text-sm font-bold text-media-secondary">
+                      {frontmatter.status === 'completed' ? '100% Complete' : `${frontmatter.progress || 0}% Complete`}
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-media-secondary rounded-full" 
+                      style={{ width: frontmatter.status === 'completed' ? '100%' : `${frontmatter.progress || 0}%` }}
+                    ></div>
+                  </div>
+                </>
+              )}
             </div>
             
             <div className="hidden lg:block text-right">

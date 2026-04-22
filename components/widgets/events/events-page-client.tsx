@@ -331,39 +331,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
                       </Link>
                     );
                   })}
-                </div>
-
-                {/* Location Services Mockup */}
-                <div className="bg-[#f4f3f1] rounded-3xl overflow-hidden relative border border-[#c3c8c1]/10 shadow-xl">
-                  <div className="flex flex-col lg:flex-row">
-                    <div className="lg:w-2/5 p-12 md:p-16 flex flex-col justify-center">
-                      <h3 className="text-3xl font-bold tracking-tight text-[#061b0e] mb-6">Location Services</h3>
-                      <p className="text-[#434843] text-lg font-light mb-10 leading-relaxed">
-                        Your events are automatically mapped to optimize your travel time. We analyze traffic patterns to suggest the best departure times for your upcoming appointments.
-                      </p>
-                      <div className="flex items-center gap-6">
-                        <div className="flex -space-x-3">
-                          {[1, 2, 3].map(i => (
-                            <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-[#d0e9d4] flex items-center justify-center text-[10px] font-bold text-[#061b0e]">
-                              JS
-                            </div>
-                          ))}
-                        </div>
-                        <span className="text-sm text-[#434843] italic font-medium">Smart routing enabled</span>
-                      </div>
-                    </div>
-                    <div className="lg:w-3/5 h-[300px] lg:h-auto min-h-[400px] relative bg-[#e3e2e0] overflow-hidden">
-                      <div className="absolute inset-0 bg-[#9f402d]/5 z-10 pointer-events-none"></div>
-                      <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                         <MapPin className="w-64 h-64 text-[#061b0e]" />
-                      </div>
-                      <div className="absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                        <div className="w-6 h-6 bg-[#9f402d] rounded-full ring-[12px] ring-[#9f402d]/20 animate-pulse"></div>
-                        <div className="bg-[#061b0e] text-white text-[10px] font-bold uppercase px-3 py-1.5 rounded-md mt-4 shadow-xl">Active Location</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                </div>                
 
                 <div className="w-full">
                   <div className="rounded-3xl w-full h-[400px] md:h-[500px] bg-[#e3e2e2] flex items-center justify-center text-[#434843] font-light italic text-xl border border-[#c3c8c1]/20">

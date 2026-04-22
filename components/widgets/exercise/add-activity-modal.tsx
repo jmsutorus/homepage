@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Dumbbell, X } from "lucide-react";
 import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
@@ -72,9 +72,9 @@ export function AddActivityModal({
   const dialogHeader = (
     <div className="bg-media-primary-container px-10 py-12 flex flex-col gap-2 relative overflow-hidden">
       <div className="flex justify-between items-start z-10 relative">
-        <h2 className="text-3xl font-bold tracking-tight text-media-on-primary-container font-lexend">
+        <DialogTitle className="text-3xl font-bold tracking-tight text-media-on-primary-container font-lexend">
           {editActivity ? "Edit Workout Session" : "Log New Session"}
-        </h2>
+        </DialogTitle>
         <button 
           onClick={() => setIsModalOpen(false)}
           className="cursor-pointer text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"

@@ -1,7 +1,7 @@
 import { getVacationBySlug } from "@/lib/db/vacations";
 import { getUserId } from "@/lib/auth/server";
 import { notFound } from "next/navigation";
-import { VacationEditor } from "@/components/widgets/vacations/vacation-editor";
+import { EditorialVacationEditor } from "@/components/widgets/vacations/editorial-vacation-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -38,20 +38,11 @@ export default async function EditVacationPage({ params }: EditVacationPageProps
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Edit Vacation</h1>
-        <p className="text-muted-foreground">
-          Update your vacation details
-        </p>
-      </div>
-
-      <VacationEditor
-        mode="edit"
-        existingSlug={slug}
-        initialFrontmatter={frontmatter}
-        initialContent={vacation.content || ''}
-      />
-    </div>
+    <EditorialVacationEditor
+      mode="edit"
+      existingSlug={slug}
+      initialFrontmatter={frontmatter}
+      initialContent={vacation.content || ''}
+    />
   );
 }

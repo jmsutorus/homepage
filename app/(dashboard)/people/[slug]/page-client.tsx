@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { type Person } from "@/lib/db/people";
-import { calculateAge } from "@/lib/people-utils";
+import { calculateAge, formatPhoneNumber } from "@/lib/people-utils";
 import { getZodiacSignFromBirthday } from "@/lib/zodiac";
 import { PersonFormDialog } from "@/components/widgets/people/person-form-dialog";
 import { useRouter } from "next/navigation";
@@ -85,7 +85,7 @@ export function PersonDetailClient({ person, sharedHistory }: PersonDetailClient
           <span className="text-media-secondary font-bold tracking-widest uppercase text-xs">Contact Information</span>
           <div className="space-y-1">
             <p className="text-xl font-bold text-media-primary">{person.email || "No email documented"}</p>
-            <p className="text-media-on-surface-variant">{person.phone || "No phone documented"}</p>
+            <p className="text-media-on-surface-variant">{formatPhoneNumber(person.phone)}</p>
           </div>
         </div>
         

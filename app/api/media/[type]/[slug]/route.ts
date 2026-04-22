@@ -70,6 +70,7 @@ export async function GET(
         featured: media.featured === 1,
         published: media.published === 1,
         timeSpent: media.time_spent,
+        progress: media.progress,
       },
       content: media.content,
       slug: media.slug,
@@ -114,19 +115,11 @@ export async function PATCH(
       );
     }
 
-    // Validate required fields
-    if (!frontmatter?.title || !frontmatter?.type || !frontmatter?.status) {
-      return NextResponse.json(
-        { error: "Title, type, and status are required" },
-        { status: 400 }
-      );
-    }
-
     // Build update object (allow null for optional fields)
     const updateData: Partial<MediaContentInput> = {
-      title: frontmatter.title,
-      type: frontmatter.type,
-      status: frontmatter.status,
+      title: frontmatter?.title,
+      type: frontmatter?.type,
+      status: frontmatter?.status,
       rating: frontmatter.rating || undefined,
       started: frontmatter.started || undefined,
       completed: frontmatter.completed || undefined,
@@ -140,6 +133,7 @@ export async function PATCH(
       featured: frontmatter.featured,
       published: frontmatter.published,
       timeSpent: frontmatter.timeSpent !== undefined ? frontmatter.timeSpent : undefined,
+      progress: frontmatter.progress !== undefined ? frontmatter.progress : undefined,
       content: content || "",
     };
 

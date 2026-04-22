@@ -6,14 +6,7 @@ export default function LandingPage() {
       {/* TopAppBar */}
       <header className="bg-media-surface/80 backdrop-blur-xl font-lexend tracking-tight font-medium top-0 sticky z-50 border-b border-media-primary/5">
         <div className="flex justify-between items-center px-8 py-6 w-full max-w-screen-2xl mx-auto">
-          <div className="text-2xl font-black tracking-tighter text-media-primary">Earthbound</div>
-          <nav className="hidden md:flex gap-8">
-            <Link href="#" className="text-media-secondary font-bold border-b-2 border-media-secondary pb-1 scale-102 active:scale-98 transition-transform duration-200">Wellness</Link>
-            <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary transition-all duration-300 ease-in-out">Travel</Link>
-            <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary transition-all duration-300 ease-in-out">Relationships</Link>
-            <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary transition-all duration-300 ease-in-out">Media</Link>
-            <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary transition-all duration-300 ease-in-out">Tasks</Link>
-          </nav>
+          <div className="text-2xl font-black tracking-tighter text-media-primary">Homepage</div>
           <div className="flex items-center gap-6">
             <Link href="/sign-in">
               <button className="cursor-pointer text-media-on-surface-variant font-medium hover:text-media-secondary transition-colors">Login</button>
@@ -196,8 +189,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="bg-media-surface-container-highest flex flex-col md:flex-row justify-between items-center px-12 py-16 w-full border-t border-media-primary/5 text-sm uppercase tracking-widest">
         <div className="flex flex-col items-center md:items-start gap-4 mb-8 md:mb-0">
-          <div className="font-black text-media-primary text-xl">Earthbound</div>
-          <p className="text-media-on-surface-variant opacity-90 lowercase normal-case">© 2024 Earthbound. Kinetic Harmony in Curation.</p>
+          <div className="font-black text-media-primary text-xl">Homepage</div>
         </div>
         <nav className="flex flex-wrap justify-center gap-8">
           <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">About</Link>

@@ -25,6 +25,7 @@ export interface MediaFrontmatter {
   featured?: boolean;
   published?: boolean;
   timeSpent?: number; // Time spent in minutes
+  progress?: number; // Completion percentage (0-100)
 }
 
 // Interface matching the old MediaItem structure
@@ -67,6 +68,7 @@ function dbToMediaItem(dbMedia: MediaContent): MediaItem {
       featured: dbMedia.featured === 1,
       published: dbMedia.published === 1,
       timeSpent: dbMedia.time_spent,
+      progress: dbMedia.progress,
     },
     // Content might be undefined if not selected for performance
     content: dbMedia.content ?? "",

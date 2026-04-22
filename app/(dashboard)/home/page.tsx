@@ -124,7 +124,7 @@ export default async function DashboardPage({
     isHomeAssistantEnabledPromise,
     isWeatherEnabledPromise,
     getActiveVacation(userId, todayStr),
-    getUpcomingVacations(userId, todayStr, 30),
+    getUpcomingVacations(userId, todayStr, 365),
     queryOne<{ birthday: string | null }>(
       "SELECT birthday FROM user WHERE id = ?",
       [userId]
@@ -294,7 +294,7 @@ export default async function DashboardPage({
         </div>
 
         {/* Next Odyssey (Vacations) */}
-        <div className="relative rounded-2xl overflow-hidden group cursor-pointer h-full min-h-[220px]">
+        <Link href={nextVacation ? `/vacations/${nextVacation.slug}` : "/vacations/new"} className="relative rounded-2xl overflow-hidden group cursor-pointer h-full min-h-[220px]">
           {nextVacation && nextVacation.poster ? (
              <img className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={nextVacation.destination} src={nextVacation.poster} />
           ) : (
@@ -309,7 +309,7 @@ export default async function DashboardPage({
                {nextVacation ? `Departing to ${nextVacation.destination}` : "Plan your next getaway"}
             </p>
           </div>
-        </div>
+        </Link>
       </section>
 
       {/* Section 5: Recent Media */}

@@ -213,6 +213,7 @@ CREATE TABLE IF NOT EXISTS media_content (
   published BOOLEAN DEFAULT 1, -- Whether to show publicly
   time_spent INTEGER NOT NULL DEFAULT 0, -- Time spent in minutes
   content TEXT NOT NULL, -- Markdown content (body)
+  progress INTEGER DEFAULT 0 CHECK(progress BETWEEN 0 AND 100), -- Completion percentage
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,

@@ -157,6 +157,7 @@ export function MediaFormDialog({
             if (data.genres) setGenres(data.genres);
             if (data.poster) setPoster(data.poster);
             if (data.description) setDescription(data.description);
+            if (data.creator) setCreator(data.creator);
           }}
         />
         <BookSearchModal
@@ -170,6 +171,7 @@ export function MediaFormDialog({
             if (data.genres) setGenres(data.genres);
             if (data.poster) setPoster(data.poster);
             if (data.description) setDescription(data.description);
+            if (data.creator) setCreator(data.creator);
           }}
         />
 

@@ -706,6 +706,7 @@ export function MediaEditor({
       poster: data.poster || frontmatter.poster,
       description: data.description || frontmatter.description,
       length: data.length || frontmatter.length,
+      creator: data.creator && data.creator.length > 0 ? data.creator : frontmatter.creator,
     });
 
     // Show success message
@@ -730,6 +731,7 @@ export function MediaEditor({
       poster: data.poster || frontmatter.poster,
       description: data.description || frontmatter.description,
       length: data.length || frontmatter.length,
+      creator: data.creator && data.creator.length > 0 ? data.creator : frontmatter.creator,
     });
 
     // Show success message

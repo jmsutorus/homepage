@@ -6,7 +6,7 @@ import type { CalendarDaySummary } from "@/lib/db/calendar";
 interface CalendarPageClientProps {
   year: number;
   month: number;
-  summaryData: Map<string, CalendarDaySummary>;
+  summaryData: Record<string, CalendarDaySummary>;
   colors: any;
   editorialData: {
     upcomingEvents: any[];
@@ -23,10 +23,13 @@ interface CalendarPageClientProps {
 export function CalendarPageClient({
   year,
   month,
-  summaryData,
+  summaryData: summaryObject,
   colors,
   editorialData,
 }: CalendarPageClientProps) {
+  // Convert back to Map for child components that expect it
+  const summaryData = new Map(Object.entries(summaryObject));
+
   return (
     <div className="pb-20 md:pb-0 font-lexend">
       <CalendarEditorial

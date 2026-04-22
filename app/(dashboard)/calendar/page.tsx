@@ -88,13 +88,16 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     return eventDate >= startDate.split('T')[0] && eventDate <= rangeEndDate.split('T')[0];
   });
 
+  // Convert Map to plain object for serialization
+  const summaryObject = Object.fromEntries(summaryData);
+
   return (
     <CalendarPageClient
       year={currentYear}
       month={currentMonth}
-      summaryData={summaryData}
+      summaryData={summaryObject}
       colors={calendarColors}
-      editorialData={{
+      editorialData={JSON.parse(JSON.stringify({
         upcomingEvents,
         peopleEvents,
         vacations,
@@ -103,7 +106,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
           media: pastMedia,
           journals: pastJournals
         }
-      }}
+      }))}
     />
   );
 }

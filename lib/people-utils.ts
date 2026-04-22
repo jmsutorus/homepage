@@ -146,3 +146,43 @@ export function calculateDaysUntilAnniversary(anniversary: string): number {
 
   return diffDays;
 }
+
+/**
+ * Format a phone number string to a standard format
+ * Examples: +1 (123) 345-3212 or (123) 345-3212
+ */
+export function formatPhoneNumber(phoneNumber: string | null): string {
+  if (!phoneNumber) return "No phone documented";
+
+  // Clean the input: remove all non-numeric characters except for leading +
+  const cleaned = phoneNumber.replace(/(?!\+)\D/g, '');
+  
+  // If it's empty after cleaning, return original or default
+  if (!cleaned) return phoneNumber;
+
+  // Handle +1 prefix or just 1 prefix for US numbers
+  if (cleaned.startsWith('+1') && cleaned.length === 12) {
+    const areaCode = cleaned.substring(2, 5);
+    const prefix = cleaned.substring(5, 8);
+    const lineNumber = cleaned.substring(8, 12);
+    return `+1 (${areaCode}) ${prefix}-${lineNumber}`;
+  }
+  
+  if (cleaned.startsWith('1') && cleaned.length === 11) {
+    const areaCode = cleaned.substring(1, 4);
+    const prefix = cleaned.substring(4, 7);
+    const lineNumber = cleaned.substring(7, 11);
+    return `+1 (${areaCode}) ${prefix}-${lineNumber}`;
+  }
+
+  // Handle standard 10 digit US numbers
+  if (cleaned.length === 10) {
+    const areaCode = cleaned.substring(0, 3);
+    const prefix = cleaned.substring(3, 6);
+    const lineNumber = cleaned.substring(6, 10);
+    return `(${areaCode}) ${prefix}-${lineNumber}`;
+  }
+
+  // If we can't format it reliably, return the original
+  return phoneNumber;
+}

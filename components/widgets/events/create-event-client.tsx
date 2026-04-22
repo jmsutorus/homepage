@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,9 +20,12 @@ import {
   Loader2,
   FileText,
   Save,
+  X,
+  Plus,
 } from 'lucide-react';
 import type { EventCategory } from '@/lib/db/events';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 export function CreateEventClient() {
   const router = useRouter();
@@ -75,35 +77,32 @@ export function CreateEventClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          description: form.description || undefined,
-          location: form.location || undefined,
-          start_time: form.start_time || undefined,
-          end_time: form.end_time || undefined,
-          end_date: form.end_date || undefined,
-          category: form.category || undefined,
-          content: form.content || undefined,
+          description: form.description || null,
+          location: form.location || null,
+          start_time: form.start_time || null,
+          end_time: form.end_time || null,
+          end_date: form.end_date || null,
+          category: form.category || null,
+          content: form.content || null,
         }),
       });
 
       if (response.ok) {
         const event = await response.json();
-        toast.success('Event created successfully');
+        toast.success('Journey commenced successfully');
         router.push(`/events/${event.slug}`);
       } else {
         const error = await response.json();
-        toast.error(`Failed to create event: ${error.error}`);
+        toast.error(`Failed to commence journey: ${error.error}`);
       }
     } catch (error) {
       console.error('Error creating event:', error);
-      toast.error('An error occurred while creating the event');
+      toast.error('A rift occurred while commencing the journey');
     } finally {
       setIsSaving(false);
     }
   };
 
-
-
-  // Markdown toolbar functions
   const insertMarkdown = (before: string, after: string = '') => {
     const textarea = contentRef.current;
     if (!textarea) return;
@@ -128,255 +127,209 @@ export function CreateEventClient() {
   };
 
   return (
-    <div className="container mx-auto py-6 sm:py-8 px-4 max-w-4xl">
-      {/* Back Button & Actions */}
-      <div className="flex items-center justify-between mb-6">
-        <Link href="/events">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Events
-          </Button>
-        </Link>
-        <Button size="sm" onClick={handleSave} disabled={isSaving} className="hidden sm:flex">
-          {isSaving ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4 mr-2" />
-          )}
-          {isSaving ? 'Creating...' : 'Create Event'}
-        </Button>
-      </div>
+    <div className="bg-media-background text-media-on-background min-h-screen font-lexend">
+      <main className="max-w-7xl mx-auto px-4 md:px-12 py-8 pb-32">
+        {/* Navigation & Actions */}
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/events" className="group flex items-center gap-2 text-media-on-surface-variant hover:text-media-primary transition-colors">
+            <div className="p-2 rounded-full bg-media-surface-container group-hover:bg-media-primary group-hover:text-media-on-primary transition-all">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="font-bold uppercase tracking-widest text-[10px] text-media-on-surface-variant group-hover:text-media-primary transition-colors">Back to Timeline</span>
+          </Link>
 
-      <div className="space-y-6">
-        {/* Event Details Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">New Event Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {/* Title */}
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="title">Title *</Label>
-                <Input
-                  id="title"
-                  value={form.title}
-                  onChange={(e) =>
-                    setForm({ ...form, title: e.target.value })
-                  }
-                  required
-                  placeholder="Event title"
-                />
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
-                  }
-                  rows={2}
-                  placeholder="Brief description"
-                />
-              </div>
-
-              {/* Location */}
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={form.location}
-                  onChange={(e) =>
-                    setForm({ ...form, location: e.target.value })
-                  }
-                  placeholder="Event location"
-                />
-              </div>
-
-              {/* Date */}
-              <div className="space-y-2">
-                <Label htmlFor="date">Start Date *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={form.date}
-                  onChange={(e) =>
-                    setForm({ ...form, date: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              {/* End Date */}
-              <div className="space-y-2">
-                <Label htmlFor="end_date">End Date</Label>
-                <Input
-                  id="end_date"
-                  type="date"
-                  value={form.end_date}
-                  onChange={(e) =>
-                    setForm({ ...form, end_date: e.target.value })
-                  }
-                />
-              </div>
-
-              {/* All Day */}
-              <div className="flex items-center space-x-2 sm:col-span-2">
-                <Checkbox
-                  id="all_day"
-                  checked={form.all_day}
-                  onCheckedChange={(checked) =>
-                    setForm({ ...form, all_day: checked === true })
-                  }
-                />
-                <Label htmlFor="all_day" className="cursor-pointer">
-                  All Day Event
-                </Label>
-              </div>
-
-              {/* Time fields (only show if not all day) */}
-              {!form.all_day && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="start_time">Start Time</Label>
-                    <Input
-                      id="start_time"
-                      type="time"
-                      value={form.start_time}
-                      onChange={(e) =>
-                        setForm({ ...form, start_time: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="end_time">End Time</Label>
-                    <Input
-                      id="end_time"
-                      type="time"
-                      value={form.end_time}
-                      onChange={(e) =>
-                        setForm({ ...form, end_time: e.target.value })
-                      }
-                    />
-                  </div>
-                </>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.back()}
+              disabled={isSaving}
+              className="rounded-full border-media-outline text-media-on-surface hover:bg-media-surface-variant h-9 px-6"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={handleSave} 
+              disabled={isSaving}
+              className="rounded-full bg-media-primary text-media-on-primary hover:opacity-90 h-9 px-6"
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
               )}
+              {isSaving ? 'Commencing...' : 'Commence Journey'}
+            </Button>
+          </div>
+        </div>
 
-              {/* Category */}
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={form.category || 'none'}
-                  onValueChange={(value) =>
-                    setForm({ ...form, category: value === 'none' ? '' : value })
-                  }
-                >
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No category</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.name}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+        <div className="space-y-12 max-w-4xl mx-auto">
+          {/* Main Details Section */}
+          <section className="space-y-6">
+            <h2 className="text-3xl font-black text-media-primary tracking-tight uppercase border-b-4 border-media-secondary inline-block pb-1">
+              New Journey
+            </h2>
+            <div className="grid gap-8 p-8 rounded-[2.5rem] bg-media-surface-container-low border border-media-outline-variant editorial-shadow">
+              <div className="grid gap-6 sm:grid-cols-2">
+                {/* Title */}
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Event Title</Label>
+                  <Input
+                    id="title"
+                    value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                    required
+                    placeholder="What shall we call this chapter?"
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Summary (Short)</Label>
+                  <Textarea
+                    id="description"
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    className="bg-media-surface border-media-outline-variant focus:ring-media-primary min-h-[80px] rounded-xl"
+                    placeholder="A brief overview of the experience..."
+                  />
+                </div>
+
+                {/* Location */}
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="location" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Venue / Landscape</Label>
+                  <Input
+                    id="location"
+                    value={form.location}
+                    onChange={(e) => setForm({ ...form, location: e.target.value })}
+                    className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                    placeholder="Where did this take place?"
+                  />
+                </div>
+
+                {/* Date */}
+                <div className="space-y-2">
+                  <Label htmlFor="date" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Origin Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={form.date}
+                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                    className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                    required
+                  />
+                </div>
+
+                {/* End Date */}
+                <div className="space-y-2">
+                  <Label htmlFor="end_date" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Final Horizon (Optional)</Label>
+                  <Input
+                    id="end_date"
+                    type="date"
+                    value={form.end_date}
+                    onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                    className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                  />
+                </div>
+
+                {/* All Day */}
+                <div className="flex items-center space-x-3 sm:col-span-2 py-2">
+                  <Checkbox
+                    id="all_day"
+                    checked={form.all_day}
+                    onCheckedChange={(checked) => setForm({ ...form, all_day: checked === true })}
+                    className="border-media-primary data-[state=checked]:bg-media-primary rounded-md"
+                  />
+                  <Label htmlFor="all_day" className="cursor-pointer text-sm font-medium">All day duration</Label>
+                </div>
+
+                {/* Time fields (only show if not all day) */}
+                {!form.all_day && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="start_time" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Commencement</Label>
+                      <Input
+                        id="start_time"
+                        type="time"
+                        value={form.start_time}
+                        onChange={(e) => setForm({ ...form, start_time: e.target.value })}
+                        className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="end_time" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Conclusion</Label>
+                      <Input
+                        id="end_time"
+                        type="time"
+                        value={form.end_time}
+                        onChange={(e) => setForm({ ...form, end_time: e.target.value })}
+                        className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Category */}
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="category" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Category / Theme</Label>
+                  <Select
+                    value={form.category || 'none'}
+                    onValueChange={(value) =>
+                      setForm({ ...form, category: value === 'none' ? '' : value })
+                    }
+                  >
+                    <SelectTrigger id="category" className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-media-surface-container-lowest border-media-outline-variant">
+                      <SelectItem value="none">No category</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </section>
 
-        {/* Content Editor Card */}
-        <Card>
-          <CardHeader>
+          {/* Content Editor Section */}
+          <section className="space-y-6">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <FileText className="w-5 h-5" />
-                Event Content
-              </CardTitle>
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => insertMarkdown('# ')}
-                >
-                  H1
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => insertMarkdown('## ')}
-                >
-                  H2
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => insertMarkdown('**', '**')}
-                >
-                  Bold
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => insertMarkdown('*', '*')}
-                >
-                  Italic
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => insertMarkdown('- ')}
-                >
-                  List
-                </Button>
+              <h2 className="text-3xl font-black text-media-primary tracking-tight uppercase border-b-4 border-media-secondary inline-block pb-1">
+                Detailed Archive
+              </h2>
+              <div className="flex gap-1">
+                {['# ', '## ', '**', '- '].map((symbol) => (
+                  <Button
+                    key={symbol}
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => insertMarkdown(symbol, symbol === '**' ? '**' : '')}
+                    className="h-8 w-8 p-0 hover:bg-media-surface-variant rounded-md"
+                  >
+                    <span className="text-[10px] font-black">{symbol.trim() || 'L'}</span>
+                  </Button>
+                ))}
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
             <Textarea
               ref={contentRef}
               value={form.content}
-              onChange={(e) =>
-                setForm({ ...form, content: e.target.value })
-              }
-              placeholder="Write detailed event notes in Markdown..."
-              className="min-h-[300px] font-mono"
+              onChange={(e) => setForm({ ...form, content: e.target.value })}
+              placeholder="Transcribe the full journey narrative in Markdown..."
+              className="min-h-[400px] bg-media-surface-container-low border-media-outline-variant focus:ring-media-primary font-mono text-sm leading-relaxed p-8 rounded-[2.5rem] editorial-shadow"
             />
-          </CardContent>
-        </Card>
-        
-        {/* Action Buttons */}
-        <div className="flex gap-4 justify-end mt-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={isSaving}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4 mr-2" />
-            )}
-            {isSaving ? 'Creating...' : 'Create Event'}
-          </Button>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

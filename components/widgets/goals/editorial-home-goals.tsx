@@ -20,7 +20,7 @@ export function EditorialHomeGoals({ goals }: EditorialHomeGoalsProps) {
         <div className="space-y-6 flex-1">
           {goals.map((goal) => {
             return (
-              <Link key={goal.id} href={`/goals/${goal.id}`} className="group block">
+              <Link key={goal.id} href={`/goals/${goal.title.toLowerCase()}`} className="group block">
                 <p className="text-[10px] text-media-secondary font-bold tracking-widest uppercase mb-1">
                   {goal.category || "General"}
                 </p>

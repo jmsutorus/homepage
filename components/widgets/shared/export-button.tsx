@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ExportButtonProps {
   content: string;
@@ -37,10 +38,10 @@ export function ExportButton({
       variant={variant}
       size={size}
       onClick={handleExport}
-      className={className}
+      className={cn("gap-2", className)}
       title="Download Markdown file"
     >
-      <Download className="h-4 w-4 mr-2" />
+      <Download className="h-4 w-4" />
       {label}
     </Button>
   );

@@ -191,6 +191,7 @@ export async function POST(request: NextRequest) {
       featured: frontmatter.featured,
       published: frontmatter.published,
       timeSpent: frontmatter.timeSpent,
+      progress: frontmatter.progress,
       content: content || "",
     };
 

@@ -619,9 +619,6 @@ export function CommandPalette({ className }: CommandPaletteProps) {
 
           {/* Content Area */}
           <Command.List className="flex-1 overflow-y-auto no-scrollbar max-h-[600px]">
-            <Command.Empty className="py-20 text-center text-sm text-media-on-surface-variant font-medium">
-              Start typing to see results...
-            </Command.Empty>
             {currentPage === "home" && renderHome()}
             {currentPage === "shortcuts" && renderShortcuts()}
           </Command.List>

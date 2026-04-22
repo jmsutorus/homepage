@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -103,9 +104,9 @@ export function SavingsFormDialog({
             <span className="text-[10px] uppercase tracking-[0.3em] font-black opacity-60 mb-2 block font-lexend">
               Asset Registry
             </span>
-            <h2 className="text-3xl font-black tracking-tighter font-lexend">
+            <DialogTitle className="text-3xl font-black tracking-tighter font-lexend">
               {editData ? 'Refine Account' : 'Establish Fund'}
-            </h2>
+            </DialogTitle>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 md:p-10 space-y-8 bg-media-surface-bright">

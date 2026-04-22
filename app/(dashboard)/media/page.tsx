@@ -28,6 +28,7 @@ function serializePaginatedResult(result: Awaited<ReturnType<typeof getPaginated
       featured: item.featured,
       published: item.published,
       time_spent: item.time_spent,
+      progress: item.progress,
       content: item.content,
       created_at: item.created_at,
       updated_at: item.updated_at,

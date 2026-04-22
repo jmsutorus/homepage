@@ -163,9 +163,9 @@ export function RestaurantFormDialog({
         {/* Premium Header */}
         <div className="bg-media-primary-container px-10 py-12 flex flex-col gap-2 relative shrink-0">
           <div className="flex justify-between items-start z-10 relative">
-            <h2 className="text-3xl font-bold tracking-tight text-media-on-primary-container font-lexend uppercase">
+            <DialogTitle className="text-3xl font-bold tracking-tight text-media-on-primary-container font-lexend uppercase">
               {isEditing ? 'Refine Registry' : 'Define New Entry'}
-            </h2>
+            </DialogTitle>
             <button 
               type="button"
               onClick={() => onOpenChange(false)}

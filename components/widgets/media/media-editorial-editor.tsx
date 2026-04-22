@@ -52,6 +52,7 @@ interface MediaFrontmatter {
   featured?: boolean;
   published?: boolean;
   creator?: string[];
+  progress?: number;
 }
 
 interface MediaEditorialEditorProps {
@@ -83,6 +84,7 @@ export function MediaEditorialEditor({
       creator: [],
       featured: false,
       published: true,
+      progress: 0,
     }
   );
   const [content, setContent] = useState(initialContent);
@@ -234,6 +236,7 @@ export function MediaEditorialEditor({
             poster: data.poster || prev.poster,
             description: data.description || prev.description,
             length: data.length || prev.length,
+            creator: data.creator && data.creator.length > 0 ? data.creator : prev.creator,
           }));
         }}
       />
@@ -251,6 +254,7 @@ export function MediaEditorialEditor({
             poster: data.poster || prev.poster,
             description: data.description || prev.description,
             length: data.length || prev.length,
+            creator: data.creator && data.creator.length > 0 ? data.creator : prev.creator,
           }));
         }}
       />
@@ -424,6 +428,20 @@ export function MediaEditorialEditor({
                     onChange={(e) => setFrontmatter(prev => ({ ...prev, length: e.target.value }))}
                     className="w-full bg-media-surface-container-low border-none rounded-xl p-2.5 text-sm font-medium focus:ring-2 focus:ring-media-secondary/10"
                     placeholder="e.g. 120m, 350p"
+                  />
+                </div>
+
+                {/* Progress */}
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase tracking-[0.2em] font-black text-media-secondary/70 ml-1">Progress (%)</label>
+                  <input 
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={frontmatter.progress !== undefined ? frontmatter.progress : ''}
+                    onChange={(e) => setFrontmatter(prev => ({ ...prev, progress: parseInt(e.target.value) || 0 }))}
+                    className="w-full bg-media-surface-container-low border-none rounded-xl p-2.5 text-sm font-medium focus:ring-2 focus:ring-media-secondary/10"
+                    placeholder="e.g. 50"
                   />
                 </div>
 
