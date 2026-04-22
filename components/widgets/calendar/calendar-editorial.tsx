@@ -149,7 +149,7 @@ export function CalendarEditorial({
                 setTargetDate(new Date().toISOString().split('T')[0]);
                 setIsEventModalOpen(true);
               }}
-              className="flex items-center gap-2 px-6 py-4 rounded-full bg-media-primary text-white font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all shadow-sm"
+              className="cursor-pointer flex items-center gap-2 px-6 py-4 rounded-full bg-media-primary text-white font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all shadow-sm"
             >
               <MaterialSymbol icon="add" size={18} />
               New Entry
@@ -157,13 +157,13 @@ export function CalendarEditorial({
             <div className="flex gap-2">
               <button 
                 onClick={handlePrevMonth}
-                className="p-4 rounded-full bg-media-surface-container-low hover:bg-media-surface-container text-media-primary transition-all"
+                className="cursor-pointer p-4 rounded-full bg-media-surface-container-low hover:bg-media-surface-container text-media-primary transition-all"
               >
                 <MaterialSymbol icon="chevron_left" size={24} />
               </button>
               <button 
                 onClick={handleNextMonth}
-                className="p-4 rounded-full bg-media-surface-container-low hover:bg-media-surface-container text-media-primary transition-all"
+                className="cursor-pointer p-4 rounded-full bg-media-surface-container-low hover:bg-media-surface-container text-media-primary transition-all"
               >
                 <MaterialSymbol icon="chevron_right" size={24} />
               </button>

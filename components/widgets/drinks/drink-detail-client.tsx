@@ -177,14 +177,14 @@ export function DrinkDetailClient({ drink }: DrinkDetailClientProps) {
           <div className="mt-12 flex gap-4">
             <button 
               onClick={() => setShowEditDialog(true)}
-              className="bg-media-secondary text-media-on-secondary px-8 py-4 rounded-xl font-bold tracking-tight hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-media-secondary/10"
+              className="cursor-pointer bg-media-secondary text-media-on-secondary px-8 py-4 rounded-xl font-bold tracking-tight hover:opacity-90 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-media-secondary/10"
             >
               <Pencil className="w-4 h-4" />
               Edit Profile
             </button>
             <button 
               onClick={handleDelete}
-              className="bg-media-primary-fixed text-media-on-primary-fixed px-6 py-4 rounded-xl font-bold tracking-tight hover:bg-destructive hover:text-destructive-foreground transition-all active:scale-95 flex items-center justify-center group border border-media-outline-variant/20"
+              className="cursor-pointer bg-media-primary-fixed text-media-on-primary-fixed px-6 py-4 rounded-xl font-bold tracking-tight hover:bg-destructive hover:text-destructive-foreground transition-all active:scale-95 flex items-center justify-center group border border-media-outline-variant/20"
             >
               <Trash2 className="w-5 h-5 transition-transform group-hover:rotate-12" />
             </button>
@@ -237,7 +237,7 @@ export function DrinkDetailClient({ drink }: DrinkDetailClientProps) {
               setEditingLog(null);
               setShowLogDialog(true);
             }}
-            className="text-media-secondary font-bold flex items-center gap-2 hover:opacity-70 transition-opacity active:scale-95"
+            className="cursor-pointer text-media-secondary font-bold flex items-center gap-2 hover:opacity-70 transition-opacity active:scale-95"
           >
             <Plus className="w-5 h-5 bg-media-secondary/10 rounded-full p-1" />
             Add Chapter
@@ -286,13 +286,13 @@ export function DrinkDetailClient({ drink }: DrinkDetailClientProps) {
                           setEditingLog(log);
                           setShowLogDialog(true);
                         }}
-                        className="p-2 hover:bg-media-secondary/10 rounded-lg text-media-on-surface-variant hover:text-media-secondary transition-colors"
+                        className="cursor-pointer p-2 hover:bg-media-secondary/10 rounded-lg text-media-on-surface-variant hover:text-media-secondary transition-colors"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => handleDeleteLog(log.id)}
-                        className="p-2 hover:bg-destructive/10 rounded-lg text-media-on-surface-variant hover:text-destructive transition-colors"
+                        className="cursor-pointer p-2 hover:bg-destructive/10 rounded-lg text-media-on-surface-variant hover:text-destructive transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

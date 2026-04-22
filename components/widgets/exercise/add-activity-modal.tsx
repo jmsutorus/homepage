@@ -11,6 +11,7 @@ import { useSuccessDialog } from "@/hooks/use-success-dialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ActivityForm } from "./activity-form";
 import { cn } from "@/lib/utils";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 
 interface AddActivityModalProps {
   onActivityAdded?: () => void;
@@ -67,7 +68,7 @@ export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActiv
         </h2>
         <button 
           onClick={() => setIsModalOpen(false)}
-          className="text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
+          className="cursor-pointer text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
         >
           <X className="w-6 h-6" />
         </button>
@@ -118,11 +119,11 @@ export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActiv
     return (
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         {!editActivity && showButton && (
-          <div className="inline-block" onClick={() => setIsModalOpen(true)}>
-            <HomePageButton icon={<Dumbbell className="h-5 w-5" />}>
-              Log Activity
-            </HomePageButton>
-          </div>
+          <FloatingActionButton 
+            onClick={() => setIsModalOpen(true)}
+            tooltipText="Log Activity"
+            icon={<Dumbbell className="h-8 w-8 text-media-on-secondary" />}
+          />
         )}
         <DialogContent showCloseButton={false} className="p-0 border-none sm:max-w-3xl overflow-hidden bg-media-surface-container-lowest shadow-[0_32px_64px_-12px_rgba(6,27,14,0.12)] rounded-3xl">
           {dialogHeader}
@@ -136,13 +137,12 @@ export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActiv
   return (
     <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
       {!editActivity && showButton && (
-        <div 
+        <FloatingActionButton 
           onClick={() => setIsModalOpen(true)}
-          className="fixed bottom-6 right-6 h-14 rounded-full shadow-lg z-50 md:hidden flex items-center justify-center bg-media-primary text-media-on-primary px-6 gap-2 font-bold"
-        >
-          <Dumbbell className="h-6 w-6" />
-          Log Activity
-        </div>
+          tooltipText="Log Activity"
+          icon={<Dumbbell className="h-8 w-8 text-media-on-secondary" />}
+          className="md:hidden"
+        />
       )}
       <SheetContent 
         side="bottom" 

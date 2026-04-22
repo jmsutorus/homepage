@@ -7,6 +7,7 @@ import { TaskList } from "@/components/widgets/tasks/task-list";
 import { Plus, Settings } from "lucide-react";
 import { MobileTaskSheet } from "@/components/widgets/tasks/mobile-task-sheet";
 import Link from "next/link";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 
 interface TasksPageClientProps {
   initialTasks: Task[];
@@ -139,13 +140,10 @@ export function TasksPageClient({ initialTasks }: TasksPageClientProps) {
       </section>
 
       {/* Floating Action Button: New Task */}
-      <button 
+      <FloatingActionButton 
         onClick={() => setMobileSheetOpen(true)}
-        className="cursor-pointer fixed bottom-10 right-1/2 translate-x-1/2 md:right-10 md:translate-x-0 px-8 py-4 bg-media-secondary text-media-on-secondary rounded-full flex items-center gap-3 shadow-2xl shadow-media-secondary/40 kinetic-hover z-50 group active:scale-95 transition-all"
-      >
-        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-        <span className="font-lexend uppercase tracking-widest text-xs font-bold whitespace-nowrap">New Task</span>
-      </button>
+        tooltipText="New Task"
+      />
 
       {/* Mobile Task Sheet */}
       <MobileTaskSheet

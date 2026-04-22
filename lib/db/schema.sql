@@ -374,6 +374,7 @@ CREATE TABLE IF NOT EXISTS journals (
   featured BOOLEAN DEFAULT 0, -- Whether to feature on homepage
   published BOOLEAN DEFAULT 1, -- Whether to show publicly
   content TEXT NOT NULL, -- Markdown content (body)
+  image_url TEXT, -- Hero image URL (optional)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,

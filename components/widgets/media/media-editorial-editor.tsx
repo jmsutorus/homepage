@@ -199,7 +199,7 @@ export function MediaEditorialEditor({
                   key={star}
                   type="button"
                   onClick={() => onChange(star === value ? star - 1 : star)} // Toggle logic if clicking same star
-                  className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
+                  className="cursor-pointer focus:outline-none transition-transform hover:scale-110 active:scale-95"
                 >
                   <span 
                     className="material-symbols-outlined text-xl" 
@@ -267,7 +267,9 @@ export function MediaEditorialEditor({
                 {frontmatter.type.charAt(0).toUpperCase() + frontmatter.type.slice(1)}s
               </span>
               <span className="opacity-30">/</span>
-              <span className="text-media-primary opacity-50">Editing</span>
+              <span className="text-media-primary opacity-50">
+                {mode === 'create' ? 'New Entry' : 'Editing'}
+              </span>
             </nav>
             
             <div className="space-y-1">
@@ -291,17 +293,17 @@ export function MediaEditorialEditor({
           <div className="flex items-center gap-3">
             <button 
               onClick={handleCancel}
-              className="px-6 py-2.5 rounded-xl text-media-primary font-semibold hover:bg-media-surface-container-low transition-colors duration-300"
+              className="cursor-pointer px-6 py-2.5 rounded-xl text-media-primary font-semibold hover:bg-media-surface-container-low transition-colors duration-300"
             >
               Cancel
             </button>
             <button 
               onClick={() => handleSave()}
               disabled={isSaving}
-              className="group relative px-8 py-2.5 rounded-xl bg-media-secondary text-media-on-secondary font-bold shadow-xl shadow-media-secondary/10 hover:brightness-110 active:scale-95 transition-all duration-300 disabled:opacity-50"
+              className="cursor-pointer group relative px-8 py-2.5 rounded-xl bg-media-secondary text-media-on-secondary font-bold shadow-xl shadow-media-secondary/10 hover:brightness-110 active:scale-95 transition-all duration-300 disabled:opacity-50"
             >
               <span className="flex items-center gap-2">
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? 'Saving...' : (mode === 'create' ? 'Create Entry' : 'Save Changes')}
                 {!isSaving && <Save className="w-4 h-4 transition-transform group-hover:rotate-12" />}
               </span>
             </button>
@@ -343,13 +345,13 @@ export function MediaEditorialEditor({
               <div className="mt-4 flex gap-2">
                 <button 
                   onClick={() => setIsIMDBModalOpen(true)}
-                  className="flex-1 py-2 rounded-lg bg-media-surface-container text-[10px] font-bold uppercase tracking-wider hover:bg-media-surface-container-high transition-colors flex items-center justify-center gap-1"
+                  className="cursor-pointer flex-1 py-2 rounded-lg bg-media-surface-container text-[10px] font-bold uppercase tracking-wider hover:bg-media-surface-container-high transition-colors flex items-center justify-center gap-1"
                 >
                   IMDB
                 </button>
                 <button 
                   onClick={() => setIsBookModalOpen(true)}
-                  className="flex-1 py-2 rounded-lg bg-media-surface-container text-[10px] font-bold uppercase tracking-wider hover:bg-media-surface-container-high transition-colors flex items-center justify-center gap-1"
+                  className="cursor-pointer flex-1 py-2 rounded-lg bg-media-surface-container text-[10px] font-bold uppercase tracking-wider hover:bg-media-surface-container-high transition-colors flex items-center justify-center gap-1"
                 >
                   Books
                 </button>
@@ -510,14 +512,14 @@ export function MediaEditorialEditor({
                 <button 
                   type="button"
                   onClick={() => insertMarkdown('# ', '')}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl">format_h1</span>
                 </button>
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('## ', '')}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl">format_h2</span>
                 </button>
@@ -525,21 +527,21 @@ export function MediaEditorialEditor({
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('**', '**')}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl font-bold">format_bold</span>
                 </button>
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('*', '*')}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl italic">format_italic</span>
                 </button>
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('> ', '')}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl">format_quote</span>
                 </button>
@@ -547,14 +549,14 @@ export function MediaEditorialEditor({
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('- ', '')}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl">format_list_bulleted</span>
                 </button>
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('[', '](url)')}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl">link</span>
                 </button>
@@ -590,10 +592,10 @@ export function MediaEditorialEditor({
                 </span>
               </div>
               <div className="flex gap-2">
-                <button className="p-2 rounded-xl text-media-primary hover:bg-media-secondary/10 hover:text-media-secondary transition-all duration-300">
+                <button className="cursor-pointer p-2 rounded-xl text-media-primary hover:bg-media-secondary/10 hover:text-media-secondary transition-all duration-300">
                   <Eye className="w-5 h-5" />
                 </button>
-                <button className="p-2 rounded-xl text-media-primary hover:bg-media-secondary/10 hover:text-media-secondary transition-all duration-300">
+                <button className="cursor-pointer p-2 rounded-xl text-media-primary hover:bg-media-secondary/10 hover:text-media-secondary transition-all duration-300">
                   <Maximize2 className="w-5 h-5" />
                 </button>
               </div>

@@ -1,12 +1,10 @@
 'use client';
 
-import { useState, useRef, FormEvent, useEffect } from 'react';
+import { useState, useRef, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -14,24 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { DBParkCategory, ParkCategoryValue, PARK_CATEGORIES } from '@/lib/db/enums/park-enums';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { TagInput } from '@/components/search/tag-input';
 import { 
-  Upload, 
-  FileText, 
   CheckCircle2, 
   AlertCircle, 
   Trash2, 
-  Save, 
   X, 
   Image as ImageIcon,
-  Plus,
-  Clock,
-  Star,
-  ChevronRight,
-  ArrowLeft
+  Plus
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -44,7 +34,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { cn } from '@/lib/utils';
 
 interface ParkFrontmatter {
   title: string;
@@ -321,7 +310,7 @@ export function ParkEditorialEditor({
                   key={star}
                   type="button"
                   onClick={() => onChange(star === value ? star - 1 : star)}
-                  className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
+                  className="cursor-pointer focus:outline-none transition-transform hover:scale-110 active:scale-95"
                 >
                   <span 
                     className="material-symbols-outlined text-xl" 
@@ -391,7 +380,7 @@ export function ParkEditorialEditor({
           <div className="flex items-center gap-4">
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="group flex items-center gap-2 px-6 py-3 bg-media-primary-fixed text-media-on-primary-fixed rounded-lg font-medium hover:scale-105 active:scale-95 transition-all shadow-sm"
+              className="cursor-pointer group flex items-center gap-2 px-6 py-3 bg-media-primary-fixed text-media-on-primary-fixed rounded-lg font-medium hover:scale-105 active:scale-95 transition-all shadow-sm"
             >
               <span className="material-symbols-outlined text-sm">upload_file</span>
               Import Markdown
@@ -405,7 +394,7 @@ export function ParkEditorialEditor({
             <div className="bg-media-error-container/20 border border-media-error text-media-error px-6 py-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
               <AlertCircle className="h-5 w-5" />
               <p className="text-sm font-medium">{error}</p>
-              <button onClick={() => setError(null)} className="ml-auto opacity-50 hover:opacity-100 transition-opacity">
+              <button onClick={() => setError(null)} className="cursor-pointer ml-auto opacity-50 hover:opacity-100 transition-opacity">
                  <X className="h-4 w-4" />
               </button>
             </div>
@@ -414,7 +403,7 @@ export function ParkEditorialEditor({
             <div className="bg-media-primary-container/20 border border-media-primary text-media-primary px-6 py-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
               <CheckCircle2 className="h-5 w-5" />
               <p className="text-sm font-medium">{uploadMessage}</p>
-              <button onClick={() => setUploadMessage(null)} className="ml-auto opacity-50 hover:opacity-100 transition-opacity">
+              <button onClick={() => setUploadMessage(null)} className="cursor-pointer ml-auto opacity-50 hover:opacity-100 transition-opacity">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -486,20 +475,21 @@ export function ParkEditorialEditor({
 
             {/* Visual Element / Poster Preview */}
             <div 
-              className="relative group hidden md:block overflow-hidden rounded-xl bg-media-surface-container border border-media-outline-variant/10 shadow-xl cursor-pointer"
+              className="relative group hidden md:block overflow-hidden rounded-xl bg-media-surface-container border border-media-outline-variant/10 shadow-xl cursor-pointer aspect-[3/4]"
               onClick={() => {
                 const url = prompt('Enter Hero Photo URL:', frontmatter.poster);
                 if (url !== null) setFrontmatter(prev => ({ ...prev, poster: url }));
               }}
             >
               {frontmatter.poster ? (
-                <img 
+                <Image 
                   src={frontmatter.poster} 
                   alt="Park Preview" 
-                  className="w-full aspect-[3/4] object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000" 
+                  fill
+                  className="object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000" 
                 />
               ) : (
-                <div className="w-full aspect-[3/4] flex flex-col items-center justify-center gap-4 text-media-on-surface-variant/30">
+                <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-media-on-surface-variant/30">
                   <ImageIcon className="w-16 h-16 stroke-[1]" />
                   <span className="text-xs uppercase font-bold tracking-widest">No Visual Reference</span>
                 </div>
@@ -520,7 +510,7 @@ export function ParkEditorialEditor({
               <section className="pt-12 border-t border-media-outline-variant/10">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <button type="button" className="flex items-center gap-2 text-media-error opacity-40 hover:opacity-100 transition-opacity font-bold uppercase tracking-widest text-[10px]">
+                    <button type="button" className="cursor-pointer flex items-center gap-2 text-media-error opacity-40 hover:opacity-100 transition-opacity font-bold uppercase tracking-widest text-[10px]">
                       <Trash2 className="w-4 h-4" />
                       Deconstruct Narrative
                     </button>
@@ -602,7 +592,7 @@ export function ParkEditorialEditor({
                   <button 
                     type="button" 
                     onClick={() => insertMarkdown('# ')} 
-                    className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-media-surface-container-low text-media-on-surface-variant transition-colors"
+                    className="cursor-pointer w-9 h-9 flex items-center justify-center rounded-lg hover:bg-media-surface-container-low text-media-on-surface-variant transition-colors"
                     title="Heading 1"
                   >
                     <span className="material-symbols-outlined text-xl">format_h1</span>
@@ -610,7 +600,7 @@ export function ParkEditorialEditor({
                   <button 
                     type="button" 
                     onClick={() => insertMarkdown('## ')} 
-                    className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-media-surface-container-low text-media-on-surface-variant transition-colors"
+                    className="cursor-pointer w-9 h-9 flex items-center justify-center rounded-lg hover:bg-media-surface-container-low text-media-on-surface-variant transition-colors"
                     title="Heading 2"
                   >
                     <span className="material-symbols-outlined text-xl">format_h2</span>
@@ -619,7 +609,7 @@ export function ParkEditorialEditor({
                   <button 
                     type="button" 
                     onClick={() => insertMarkdown('**', '**')} 
-                    className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-media-surface-container-low text-media-on-surface-variant transition-colors"
+                    className="cursor-pointer w-9 h-9 flex items-center justify-center rounded-lg hover:bg-media-surface-container-low text-media-on-surface-variant transition-colors"
                     title="Bold"
                   >
                     <span className="material-symbols-outlined text-xl">format_bold</span>
@@ -627,7 +617,7 @@ export function ParkEditorialEditor({
                   <button 
                     type="button" 
                     onClick={() => insertMarkdown('*', '*')} 
-                    className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-media-surface-container-low text-media-on-surface-variant transition-colors"
+                    className="cursor-pointer w-9 h-9 flex items-center justify-center rounded-lg hover:bg-media-surface-container-low text-media-on-surface-variant transition-colors"
                     title="Italic"
                   >
                     <span className="material-symbols-outlined text-xl">format_italic</span>
@@ -656,7 +646,7 @@ export function ParkEditorialEditor({
                     setTimeout(() => handleSave(), 0);
                   }}
                   disabled={isSaving}
-                  className="w-full md:w-auto px-8 py-4 text-media-secondary font-semibold hover:bg-media-secondary-container/10 rounded-lg transition-colors disabled:opacity-50"
+                  className="cursor-pointer w-full md:w-auto px-8 py-4 text-media-secondary font-semibold hover:bg-media-secondary-container/10 rounded-lg transition-colors disabled:opacity-50"
                 >
                   Save Draft
                 </button>
@@ -667,7 +657,7 @@ export function ParkEditorialEditor({
                     setTimeout(() => handleSave(), 0);
                   }}
                   disabled={isSaving || !frontmatter.title}
-                  className="w-full md:w-auto px-10 py-4 bg-media-secondary text-media-on-secondary rounded-lg font-bold shadow-lg shadow-media-secondary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center"
+                  className="cursor-pointer w-full md:w-auto px-10 py-4 bg-media-secondary text-media-on-secondary rounded-lg font-bold shadow-lg shadow-media-secondary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center"
                 >
                   {isSaving ? 'Preserving...' : (mode === 'create' ? 'Publish to Journal' : 'Save Changes')}
                 </button>
@@ -681,27 +671,27 @@ export function ParkEditorialEditor({
       <footer className="md:hidden fixed bottom-0 left-0 w-full bg-[#faf9f6] dark:bg-[#061b0e] h-24 px-4 flex justify-around items-center z-50 shadow-[0_-8px_40px_rgba(0,0,0,0.03)] border-t border-media-outline-variant/5">
         <button 
           onClick={() => router.push('/')}
-          className="flex flex-col items-center justify-center text-media-on-surface-variant/40 px-4 py-2 hover:text-media-secondary transition-all"
+          className="cursor-pointer flex flex-col items-center justify-center text-media-on-surface-variant/40 px-4 py-2 hover:text-media-secondary transition-all"
         >
           <span className="material-symbols-outlined mb-1">home_max</span>
           <span className="text-[10px] uppercase font-bold tracking-[0.1em]">Home</span>
         </button>
         <button 
-          className="flex flex-col items-center justify-center text-media-secondary bg-media-secondary-container/10 rounded-2xl px-6 py-2 transition-all"
+          className="cursor-pointer flex flex-col items-center justify-center text-media-secondary bg-media-secondary-container/10 rounded-2xl px-6 py-2 transition-all"
         >
           <span className="material-symbols-outlined mb-1">park</span>
           <span className="text-[10px] uppercase font-bold tracking-[0.1em]">Parks</span>
         </button>
         <button 
           onClick={() => router.push('/journals')}
-          className="flex flex-col items-center justify-center text-media-on-surface-variant/40 px-4 py-2 hover:text-media-secondary transition-all"
+          className="cursor-pointer flex flex-col items-center justify-center text-media-on-surface-variant/40 px-4 py-2 hover:text-media-secondary transition-all"
         >
           <span className="material-symbols-outlined mb-1">menu_book</span>
           <span className="text-[10px] uppercase font-bold tracking-[0.1em]">Journal</span>
         </button>
         <button 
           onClick={() => router.push('/recipes')}
-          className="flex flex-col items-center justify-center text-media-on-surface-variant/40 px-4 py-2 hover:text-media-secondary transition-all"
+          className="cursor-pointer flex flex-col items-center justify-center text-media-on-surface-variant/40 px-4 py-2 hover:text-media-secondary transition-all"
         >
           <span className="material-symbols-outlined mb-1">restaurant</span>
           <span className="text-[10px] uppercase font-bold tracking-[0.1em]">Kitchen</span>

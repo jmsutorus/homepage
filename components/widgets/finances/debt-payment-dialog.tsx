@@ -126,7 +126,7 @@ export function DebtPaymentDialog({
               <button
                 type="submit"
                 disabled={loading || !amount}
-                className="w-full py-4 rounded-xl bg-[#061b0e] text-white font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2"
+                className="cursor-pointer w-full py-4 rounded-xl bg-[#061b0e] text-white font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 Execute Payment
@@ -134,7 +134,7 @@ export function DebtPaymentDialog({
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="w-full py-3 rounded-xl font-bold text-sm text-[#434843] hover:bg-[#e9e8e5] transition-colors"
+                className="cursor-pointer w-full py-3 rounded-xl font-bold text-sm text-[#434843] hover:bg-[#e9e8e5] transition-colors"
               >
                 Cancel
               </button>

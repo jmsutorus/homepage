@@ -180,7 +180,7 @@ export function MealForm({
             <button 
               type="button"
               onClick={() => setOpen(false)}
-              className="text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
+              className="cursor-pointer text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -358,7 +358,7 @@ export function MealForm({
               <button 
                 type="button" 
                 onClick={addIngredient}
-                className="text-[10px] font-black uppercase tracking-widest text-media-secondary hover:text-media-primary flex items-center gap-2 transition-colors px-4 py-2 bg-media-secondary/5 rounded-lg border border-media-secondary/10"
+                className="cursor-pointer text-[10px] font-black uppercase tracking-widest text-media-secondary hover:text-media-primary flex items-center gap-2 transition-colors px-4 py-2 bg-media-secondary/5 rounded-lg border border-media-secondary/10"
               >
                 <Plus className="h-4 w-4" /> Add Ingredient
               </button>
@@ -420,7 +420,7 @@ export function MealForm({
                       type="button"
                       onClick={() => removeIngredient(index)}
                       disabled={ingredients.length === 1}
-                      className="p-2 text-media-on-surface-variant/40 hover:text-media-error disabled:opacity-0 transition-colors"
+                      className="cursor-pointer p-2 text-media-on-surface-variant/40 hover:text-media-error disabled:opacity-0 transition-colors"
                     >
                       <Trash2 className="h-5 w-5" />
                     </button>
@@ -440,7 +440,7 @@ export function MealForm({
               <button 
                 type="button" 
                 onClick={addStep}
-                className="text-[10px] font-black uppercase tracking-widest text-media-secondary hover:text-media-primary flex items-center gap-2 transition-colors px-4 py-2 bg-media-secondary/5 rounded-lg border border-media-secondary/10"
+                className="cursor-pointer text-[10px] font-black uppercase tracking-widest text-media-secondary hover:text-media-primary flex items-center gap-2 transition-colors px-4 py-2 bg-media-secondary/5 rounded-lg border border-media-secondary/10"
               >
                 <Plus className="h-4 w-4" /> Add Step
               </button>
@@ -468,7 +468,7 @@ export function MealForm({
                         type="button"
                         onClick={() => removeStep(index)}
                         disabled={steps.length === 1}
-                        className="absolute -right-2 top-0 p-2 text-media-on-surface-variant/0 group-hover:text-media-on-surface-variant/40 hover:!text-media-error disabled:!hidden transition-all translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                        className="cursor-pointer absolute -right-2 top-0 p-2 text-media-on-surface-variant/0 group-hover:text-media-on-surface-variant/40 hover:!text-media-error disabled:!hidden transition-all translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
@@ -484,14 +484,14 @@ export function MealForm({
             <button 
               type="button"
               onClick={() => setOpen(false)}
-              className="text-[10px] font-black uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
+              className="cursor-pointer text-[10px] font-black uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
             >
               Terminate
             </button>
             <button 
               type="submit"
               disabled={loading || !name.trim()}
-              className="px-10 py-5 bg-media-secondary text-media-on-secondary rounded-2xl font-bold tracking-tight shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-3 font-lexend uppercase"
+              className="cursor-pointer px-10 py-5 bg-media-secondary text-media-on-secondary rounded-2xl font-bold tracking-tight shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-3 font-lexend uppercase"
             >
               {loading ? (
                 <>

@@ -288,7 +288,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
             type="button" 
             onClick={handleDelete} 
             disabled={loading || deleting}
-            className="group flex items-center gap-2 text-red-500 font-bold text-xs uppercase tracking-widest hover:opacity-70 transition-opacity"
+            className="cursor-pointer group flex items-center gap-2 text-red-500 font-bold text-xs uppercase tracking-widest hover:opacity-70 transition-opacity"
           >
             <Trash2 className="w-4 h-4" />
             {deleting ? "Removing..." : "Delete Session"}
@@ -301,14 +301,14 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
           <button 
             type="button" 
             onClick={onCancel} 
-            className="text-[10px] font-bold uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
+            className="cursor-pointer text-[10px] font-bold uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
           >
             Cancel
           </button>
           <button 
             type="submit"
             disabled={loading || deleting}
-            className="px-10 py-4 bg-media-secondary text-media-on-secondary rounded-xl font-bold tracking-tight shadow-xl shadow-media-secondary/20 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-2 font-lexend"
+            className="cursor-pointer px-10 py-4 bg-media-secondary text-media-on-secondary rounded-xl font-bold tracking-tight shadow-xl shadow-media-secondary/20 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-2 font-lexend"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {activityId ? "Update Session" : "Log Session"}

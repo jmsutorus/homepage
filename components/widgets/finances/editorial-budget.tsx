@@ -193,7 +193,7 @@ export function EditorialBudget({
             </div>
             <button 
               onClick={() => { setEditCost(undefined); setShowCostForm(true); }}
-              className="text-media-secondary font-bold text-[10px] tracking-widest flex items-center gap-1 hover:opacity-80 transition-opacity"
+              className="cursor-pointer text-media-secondary font-bold text-[10px] tracking-widest flex items-center gap-1 hover:opacity-80 transition-opacity"
             >
               ADD NEW <Plus className="w-4 h-4" />
             </button>
@@ -255,7 +255,7 @@ export function EditorialBudget({
             
             <button 
               onClick={() => { setEditIncome(undefined); setShowIncomeForm(true); }}
-              className="group p-6 border-2 border-dashed border-media-outline-variant/30 rounded-2xl flex justify-center items-center gap-3 text-media-on-surface-variant hover:bg-media-surface-container-high hover:border-media-secondary/40 transition-all"
+              className="cursor-pointer group p-6 border-2 border-dashed border-media-outline-variant/30 rounded-2xl flex justify-center items-center gap-3 text-media-on-surface-variant hover:bg-media-surface-container-high hover:border-media-secondary/40 transition-all"
             >
               <Plus className="w-5 h-5 group-hover:text-media-secondary transition-colors" />
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] group-hover:text-media-primary transition-colors">Connect New Source</span>
@@ -364,7 +364,7 @@ export function EditorialBudget({
             </div>
             
             <div className="mt-12 z-10 relative">
-              <button className="bg-media-secondary text-media-on-secondary w-full py-4 rounded-xl text-[10px] font-bold tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg">
+              <button className="cursor-pointer bg-media-secondary text-media-on-secondary w-full py-4 rounded-xl text-[10px] font-bold tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg">
                 OPTIMIZATIONS <span className="material-symbols-outlined text-lg">insights</span>
               </button>
             </div>
@@ -386,7 +386,7 @@ export function EditorialBudget({
           <h2 className="text-4xl font-bold leading-tight text-media-primary font-lexend max-w-2xl">
             Strategic growth begins with transparency of fixed obligations.
           </h2>
-          <button className="group flex items-center gap-2 text-media-primary font-bold text-sm border-b-2 border-media-primary/20 pb-1 hover:border-media-secondary transition-all">
+          <button className="cursor-pointer group flex items-center gap-2 text-media-primary font-bold text-sm border-b-2 border-media-primary/20 pb-1 hover:border-media-secondary transition-all">
             READ FULL ANALYSIS 
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>

@@ -96,7 +96,7 @@ export function SideNav() {
           {explorationLinks.map(renderLink)}
         </nav>
 
-        <div className="px-6 mt-auto pt-4">
+        {/* <div className="px-6 mt-auto pt-4">
           <div className="bg-[#1b3022] dark:bg-[#1b3022]/40 p-4 rounded-xl flex items-center gap-3">
             <div className="w-10 h-10 rounded-full border-2 border-[#b4cdb8] bg-[#061b0e] flex items-center justify-center text-[#ffffff] overflow-hidden shrink-0">
                {user?.image ? (
@@ -114,7 +114,7 @@ export function SideNav() {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </aside>
   );

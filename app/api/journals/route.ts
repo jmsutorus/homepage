@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
       tags: frontmatter.tags,
       featured: frontmatter.featured,
       published: frontmatter.published,
+      image_url: frontmatter.image_url,
     };
 
     if (journalType === "daily") {

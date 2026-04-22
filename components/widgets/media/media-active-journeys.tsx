@@ -15,13 +15,6 @@ export function MediaActiveJourneys({ items }: MediaActiveJourneysProps) {
     <section className="px-8 mb-12 font-lexend">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-black tracking-tight text-media-primary dark:text-media-surface">Active Journeys</h2>
-        <Link 
-          href="/media?status=in-progress" 
-          className="text-media-secondary font-bold text-sm tracking-wide uppercase flex items-center gap-1 hover:underline group"
-        >
-          View All 
-          <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
-        </Link>
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">

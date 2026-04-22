@@ -96,7 +96,7 @@ export function SavingsFormDialog({
             <button 
               type="button"
               onClick={() => onOpenChange(false)}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 transition-colors"
+              className="cursor-pointer absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>

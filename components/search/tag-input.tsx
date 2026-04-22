@@ -19,19 +19,24 @@ import {
 } from "@/components/ui/popover";
 import { getTagsWithFrequency, TagFrequency } from "@/lib/actions/tags";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 interface TagInputProps {
   selectedTags: string[];
   onTagsChange: (tags: string[]) => void;
   label?: string;
   placeholder?: string;
+  className?: string;
+  hideLabel?: boolean;
 }
 
 export function TagInput({
   selectedTags,
   onTagsChange,
   label = "Tags",
-  placeholder = "Enter tag or search existing tags..."
+  placeholder = "Enter tag or search existing tags...",
+  className,
+  hideLabel = false,
 }: TagInputProps) {
   const [open, setOpen] = React.useState(false);
   const [tags, setTags] = React.useState<TagFrequency[]>([]);
@@ -162,8 +167,8 @@ export function TagInput({
   };
 
   return (
-    <div className="space-y-2">
-      {label && <Label>{label}</Label>}
+    <div className={cn("space-y-2", className)}>
+      {label && !hideLabel && <Label>{label}</Label>}
 
       <Popover open={open} onOpenChange={setOpen}>
         <div className="flex gap-2">

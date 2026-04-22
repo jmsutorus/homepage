@@ -1,5 +1,5 @@
 import { execute, query, queryOne } from "./index";
-export { 
+import { 
   calculateAge, 
   calculateNextBirthday, 
   calculateDaysUntilBirthday, 
@@ -7,6 +7,15 @@ export {
   calculateNextAnniversary, 
   calculateDaysUntilAnniversary 
 } from "@/lib/people-utils";
+
+export { 
+  calculateAge, 
+  calculateNextBirthday, 
+  calculateDaysUntilBirthday, 
+  calculateYearsTogether, 
+  calculateNextAnniversary, 
+  calculateDaysUntilAnniversary 
+};
 
 // ============================================================================
 // Interfaces

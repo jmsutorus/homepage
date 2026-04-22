@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { PageTabsList } from '@/components/ui/page-tabs-list';
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
 
 interface DrinksPageClientProps {
   drinks: (Drink & { logCount: number, lastLogDate: string | null })[];
@@ -274,12 +275,10 @@ export function DrinksPageClient({ drinks }: DrinksPageClientProps) {
       </main>
 
       {/* Floating Action Button */}
-      <button 
+      <FloatingActionButton 
         onClick={() => setShowForm(true)}
-        className="cursor-pointer fixed bottom-10 right-10 bg-[var(--color-media-primary)] text-[var(--color-media-on-primary)] w-16 lg:w-20 h-16 lg:h-20 rounded-full shadow-2xl flex items-center justify-center kinetic-hover active:scale-95 transition-all z-50 group hover:bg-[var(--color-media-secondary)]"
-      >
-        <Plus className="w-8 h-8 lg:w-10 lg:h-10 transition-transform group-hover:rotate-90" />
-      </button>
+        tooltipText="New Drink"
+      />
 
       <DrinkFormDialog open={showForm} onOpenChange={setShowForm} onSuccess={handleCreated} />
     </div>

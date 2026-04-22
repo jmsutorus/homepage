@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/sheet';
 import { toast } from 'sonner';
 import { Drink, DrinkType, DrinkStatus } from '@/lib/db/drinks';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, X, Infinity } from 'lucide-react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 interface DrinkFormDialogProps {
@@ -315,22 +315,248 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{initialData ? 'Edit Drink' : 'Add Drink'}</DialogTitle>
-            <DialogDescription>
-              {initialData ? 'Update the details of this drink.' : 'Add a new drink to your collection.'}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent 
+          className="p-0 border-none sm:max-w-3xl bg-media-surface-container-lowest overflow-hidden shadow-[0_32px_64px_-12px_rgba(6,27,14,0.12)] rounded-3xl max-h-[90vh] flex flex-col font-lexend"
+        >
+          {/* Premium Header */}
+          <div className="bg-media-primary-container px-10 py-12 flex flex-col gap-2 relative shrink-0">
+            <div className="flex justify-between items-start z-10 relative">
+              <h2 className="text-3xl font-bold tracking-tight text-media-on-primary-container font-lexend uppercase">
+                {initialData ? 'Refine Entry' : 'Record Your Selection'}
+              </h2>
+              <button 
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="cursor-pointer text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <p className="text-media-on-primary-container/80 text-sm max-w-md z-10 relative font-medium leading-relaxed">
+              Document the nuances of your selection, from the producer&apos;s terroir to the aromatic finish.
+            </p>
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-media-secondary opacity-10 blur-[80px] rounded-full translate-x-16 translate-y-16"></div>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {formFields}
-            <DialogFooter>
-              <Button type="submit" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {buttonText}
-              </Button>
-            </DialogFooter>
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-10 space-y-12">
+            {/* Section 01: Core Identity */}
+            <div className="space-y-8">
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 01</span>
+                <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Drink Identity</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                <div className="md:col-span-12 space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Drink Name *</label>
+                  <input 
+                    autoFocus
+                    required
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-2xl font-lexend placeholder:text-media-on-surface-variant/20"
+                    placeholder="e.g. Chateau Margaux 2015"
+                  />
+                </div>
+
+                <div className="md:col-span-6 space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Type</label>
+                  <Select value={type} onValueChange={(v) => setType(v as DrinkType)}>
+                    <SelectTrigger className="w-full px-8 py-8 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-lg font-lexend">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-media-surface-container border-media-outline-variant">
+                      <SelectItem value="beer" className="font-lexend">Beer</SelectItem>
+                      <SelectItem value="wine" className="font-lexend">Wine</SelectItem>
+                      <SelectItem value="cocktail" className="font-lexend">Cocktail</SelectItem>
+                      <SelectItem value="spirit" className="font-lexend">Spirit</SelectItem>
+                      <SelectItem value="coffee" className="font-lexend">Coffee</SelectItem>
+                      <SelectItem value="tea" className="font-lexend">Tea</SelectItem>
+                      <SelectItem value="other" className="font-lexend">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="md:col-span-6 space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Status</label>
+                  <Select value={status} onValueChange={(v) => setStatus(v as DrinkStatus)}>
+                    <SelectTrigger className="w-full px-8 py-8 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-lg font-lexend">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-media-surface-container border-media-outline-variant">
+                      <SelectItem value="tasted" className="font-lexend">Tasted</SelectItem>
+                      <SelectItem value="want_to_try" className="font-lexend">Want to Try</SelectItem>
+                      <SelectItem value="stocked" className="font-lexend">Stocked</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="md:col-span-8 space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Producer</label>
+                  <input 
+                    type="text"
+                    value={producer}
+                    onChange={(e) => setProducer(e.target.value)}
+                    className="w-full px-8 py-4 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg font-lexend placeholder:text-media-on-surface-variant/20"
+                    placeholder="Estate name or producer"
+                  />
+                </div>
+
+                <div className="md:col-span-4 space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Year</label>
+                  <input 
+                    type="number"
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                    className="w-full px-8 py-4 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg font-lexend placeholder:text-media-on-surface-variant/20"
+                    placeholder="2023"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 02: Technicals */}
+            <div className="space-y-8">
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 02</span>
+                <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Technical Specs</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">ABV %</label>
+                  <input 
+                    type="text"
+                    value={abv}
+                    onChange={(e) => setAbv(e.target.value)}
+                    className="w-full px-8 py-4 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg font-lexend"
+                    placeholder="13.5"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Serving Temp</label>
+                  <input 
+                    type="text"
+                    value={servingTemp}
+                    onChange={(e) => setServingTemp(e.target.value)}
+                    className="w-full px-8 py-4 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg font-lexend"
+                    placeholder="18°C"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Rating</label>
+                  <input 
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={rating}
+                    onChange={(e) => setRating(e.target.value)}
+                    className="w-full px-8 py-4 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg font-lexend"
+                    placeholder="1-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 03: Profile */}
+            <div className="space-y-8">
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 03</span>
+                <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Sensory Profile</h3>
+              </div>
+
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Body & Feel</label>
+                    <input 
+                      type="text"
+                      value={bodyFeel}
+                      onChange={(e) => setBodyFeel(e.target.value)}
+                      className="w-full px-8 py-4 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg font-lexend"
+                      placeholder="Full-bodied, tannic..."
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Pairings</label>
+                    <input 
+                      type="text"
+                      value={pairings}
+                      onChange={(e) => setPairings(e.target.value)}
+                      className="w-full px-8 py-4 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg font-lexend"
+                      placeholder="Roasted lamb..."
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Aromatic Notes</label>
+                  <textarea 
+                    rows={3}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg resize-none placeholder:text-media-on-surface-variant/20 font-lexend"
+                    placeholder="Additional tasting notes..."
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Temporal Nature</label>
+                  <div 
+                    className="flex items-center justify-between px-8 py-6 bg-media-surface-container-low rounded-2xl border-2 border-transparent cursor-pointer group"
+                    onClick={() => setFavorite(!favorite)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-xl transition-colors ${favorite ? 'bg-media-secondary/20' : 'bg-media-secondary/10'}`}>
+                        <Infinity className={`h-6 w-6 transition-colors ${favorite ? 'text-media-secondary' : 'text-media-on-surface-variant/40'}`} />
+                      </div>
+                      <div>
+                        <span className="block text-media-primary font-bold font-lexend">Favorite Selection</span>
+                        <span className="text-xs text-media-on-surface-variant/60 font-medium">Mark this as a priority in your collection.</span>
+                      </div>
+                    </div>
+                    <Switch checked={favorite} onCheckedChange={setFavorite} />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Visual Reference (URL)</label>
+                  <input 
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    className="w-full px-8 py-4 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg font-lexend placeholder:text-media-on-surface-variant/20"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Action Footer */}
+            <div className="flex items-center justify-end gap-10 pt-10 border-t border-media-outline-variant/10 shrink-0">
+              <button 
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="cursor-pointer text-[10px] font-black uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
+              >
+                Terminate
+              </button>
+              <button 
+                type="submit"
+                disabled={loading}
+                className="cursor-pointer px-10 py-5 bg-media-secondary text-media-on-secondary rounded-2xl font-bold tracking-tight shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-3 font-lexend uppercase"
+              >
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 rounded-full border-2 border-media-on-secondary/30 border-t-media-on-secondary animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  initialData ? 'Refine Protocol' : 'Establish Protocol'
+                )}
+              </button>
+            </div>
           </form>
         </DialogContent>
       </Dialog>

@@ -77,7 +77,7 @@ export function RecipePickerModal({
                 key={recipe.id}
                 onClick={() => onSelect(recipe.id)}
                 disabled={isSubmitting}
-                className="flex flex-col text-left group bg-media-surface-container-low hover:bg-media-surface-container-high border border-media-outline-variant/10 hover:border-media-primary/30 rounded-2xl overflow-hidden transition-all duration-300 kinetic-hover disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                className="cursor-pointer flex flex-col text-left group bg-media-surface-container-low hover:bg-media-surface-container-high border border-media-outline-variant/10 hover:border-media-primary/30 rounded-2xl overflow-hidden transition-all duration-300 kinetic-hover disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
                 <div className="h-40 w-full relative overflow-hidden bg-media-surface-container">
                   {recipe.image_url ? (

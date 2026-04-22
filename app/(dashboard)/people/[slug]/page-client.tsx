@@ -34,7 +34,7 @@ export function PersonDetailClient({ person, sharedHistory }: PersonDetailClient
       {/* Back Button */}
       <button 
         onClick={() => router.push('/people')}
-        className="flex items-center gap-2 text-media-on-surface-variant hover:text-media-primary transition-colors font-bold text-sm tracking-tight"
+        className="cursor-pointer flex items-center gap-2 text-media-on-surface-variant hover:text-media-primary transition-colors font-bold text-sm tracking-tight"
       >
         <ChevronLeft className="w-4 h-4" />
         BACK TO DIRECTORY

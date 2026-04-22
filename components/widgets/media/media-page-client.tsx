@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, X } from "lucide-react";
+import { Plus, ChevronDown, X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import type { MediaTimelineData, PaginatedMediaResult, MediaContent } from "@/lib/db/media";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils";
 import { MediaHero } from "./media-hero";
 import { MediaActiveJourneys } from "./media-active-journeys";
 import { MediaCuratedBento } from "./media-curated-bento";
+import { MediaFormDialog } from "./media-form-dialog";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 
 // Convert MediaContent to MediaItem
 function dbToMediaItem(dbMedia: MediaContent): MediaItem {
@@ -80,6 +82,7 @@ export function MediaPageClient({
   const [sortBy, setSortBy] = useState<SortOption>("completed-desc");
   const [genreSearch, setGenreSearch] = useState("");
   const [tagSearch, setTagSearch] = useState("");
+  const [showForm, setShowForm] = useState(false);
   
   // Read genres and tags directly from URL parameters on initialization
   const [activeGenres, setActiveGenres] = useState<string[]>(() => {
@@ -165,6 +168,12 @@ export function MediaPageClient({
 
   return (
     <div className="flex bg-media-surfacedark:bg-media-primary min-h-screen font-lexend -mx-4 -my-8 sm:-mx-6 md:-mx-8">
+      {/* Floating Action Button */}
+      <FloatingActionButton 
+        onClick={() => isMobile ? setShowForm(true) : router.push("/media/new")}
+        tooltipText="New Media"
+      />
+
       <main className="flex-1 min-h-screen pb-24 transition-all duration-300">
         {/* Top Content (Hero + Filters) */}
         <div className="w-full max-w-[1440px] mx-auto pt-8">
@@ -332,15 +341,7 @@ export function MediaPageClient({
           </div>
         </div>
       </main>
-
-      {/* Mobile Nav Overlay (Prototype style) */}
-      <nav className="fixed bottom-0 left-0 w-full bg-media-surface-container-lowest flex md:hidden items-center justify-around py-4 z-50 border-t border-media-outline-variant/20 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        {(["subscriptions", "category", "queue_music", "history"] as const).map((icon) => (
-          <button key={icon} className="cursor-pointer flex flex-col items-center gap-1 text-media-on-surface-variant transition-all hover:text-media-secondary border-none bg-transparent">
-            <span className="material-symbols-outlined text-2xl">{icon}</span>
-          </button>
-        ))}
-      </nav>
+    <MediaFormDialog open={showForm} onOpenChange={setShowForm} />
     </div>
   );
 }

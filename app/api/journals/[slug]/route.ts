@@ -54,6 +54,7 @@ export async function GET(
         tags: journal.tags,
         featured: journal.featured,
         published: journal.published,
+        image_url: journal.image_url,
       },
       content: journal.content,
       slug: journal.slug,
@@ -106,6 +107,7 @@ export async function PATCH(
       tags: frontmatter.tags || undefined,
       featured: frontmatter.featured,
       published: frontmatter.published,
+      image_url: frontmatter.image_url !== undefined ? frontmatter.image_url : undefined,
     };
 
     // For daily journals, handle daily_date changes but not title

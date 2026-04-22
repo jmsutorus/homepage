@@ -415,7 +415,7 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
               </div>
             </div>
           </div>
-          <button type="submit" className="hidden" id="submit-form-button" />
+          <button type="submit" className="cursor-pointer hidden" id="submit-form-button" />
         </form>
 
         {/* Modal Footer Actions */}

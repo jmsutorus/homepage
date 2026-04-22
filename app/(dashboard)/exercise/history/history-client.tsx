@@ -19,7 +19,9 @@ import {
   Star,
   ChevronRight,
   TrendingUp,
-  BicepsFlexed
+  BicepsFlexed,
+  CheckCircle2,
+  Circle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WorkoutActivity, Exercise } from "@/lib/db/workout-activities";
@@ -33,6 +35,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
   const [typeFilter, setTypeFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("All Time");
   const [intensityFilter, setIntensityFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   // PR detection
   const personalRecords = useMemo(() => {
@@ -103,9 +106,14 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
         matchesDate = isAfter(activityDate, subDays(new Date(), 90));
       }
 
-      return matchesSearch && matchesType && matchesIntensity && matchesDate;
+      // Status
+      const matchesStatus = statusFilter === "All" || 
+        (statusFilter === "Completed" && activity.completed) ||
+        (statusFilter === "Planned" && !activity.completed);
+
+      return matchesSearch && matchesType && matchesIntensity && matchesDate && matchesStatus;
     });
-  }, [initialActivities, searchTerm, typeFilter, dateFilter, intensityFilter]);
+  }, [initialActivities, searchTerm, typeFilter, dateFilter, intensityFilter, statusFilter]);
 
   // Statistics for "Weekly Highlight"
   const weeklyHighlight = useMemo(() => {
@@ -181,6 +189,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
     setTypeFilter("All");
     setDateFilter("All Time");
     setIntensityFilter("All");
+    setStatusFilter("All");
   };
 
   return (
@@ -258,6 +267,16 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
                 <option>Hard</option>
                 <option>Very Hard</option>
               </select>
+              <div className="w-px h-4 bg-border"></div>
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-transparent border-none py-1.5 px-3 text-xs font-bold focus:ring-0 cursor-pointer"
+              >
+                <option value="All">All Statuses</option>
+                <option value="Completed">Completed</option>
+                <option value="Planned">Planned</option>
+              </select>
             </div>
 
             <button 
@@ -280,6 +299,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
                   <th className="px-6 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Type</th>
                   <th className="px-6 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Duration</th>
                   <th className="px-6 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Intensity</th>
+                  <th className="px-6 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Status</th>
                   <th className="px-6 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Burn/Volume</th>
                   <th className="px-6 py-5"></th>
                 </tr>
@@ -287,7 +307,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
               <tbody className="divide-y divide-border">
                 {filteredActivities.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground font-medium">
+                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground font-medium">
                       No activities found matching your filters.
                     </td>
                   </tr>
@@ -353,6 +373,19 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
                           )}>
                             {activity.difficulty.charAt(0).toUpperCase() + activity.difficulty.slice(1)}
                           </span>
+                        </td>
+                        <td className="px-6 py-5">
+                          {activity.completed ? (
+                            <span className="flex items-center gap-1.5 text-xs font-bold text-sage-green">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              Completed
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground/60">
+                              <Circle className="h-3.5 w-3.5" />
+                              Planned
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-5 text-right">
                           <p className="text-sm font-bold text-foreground">

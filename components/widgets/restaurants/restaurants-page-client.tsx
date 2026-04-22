@@ -8,6 +8,7 @@ import { Search, Star, ArrowRight, Heart, Plus } from 'lucide-react';
 import type { Restaurant } from '@/lib/db/restaurants';
 import { RestaurantFormDialog } from './restaurant-form-dialog';
 import { cn } from '@/lib/utils';
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
 
 interface RestaurantsPageClientProps {
   restaurants: (Restaurant & { visitCount: number; lastVisitDate: string | null })[];
@@ -292,12 +293,10 @@ export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProp
       </footer>
 
       {/* Floating Action Button */}
-      <button 
+      <FloatingActionButton 
         onClick={() => setShowForm(true)}
-        className="cursor-pointer fixed bottom-10 right-10 bg-media-primary text-media-on-primary w-16 lg:w-20 h-16 lg:h-20 rounded-full shadow-2xl flex items-center justify-center kinetic-hover active:scale-95 transition-all z-50 group hover:bg-media-secondary"
-      >
-        <Plus className="w-8 h-8 lg:w-10 lg:h-10 transition-transform group-hover:rotate-90" />
-      </button>
+        tooltipText="New Restaurant"
+      />
 
       {/* Add Restaurant Dialog */}
       <RestaurantFormDialog

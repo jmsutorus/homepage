@@ -14,6 +14,7 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { PageTabsList } from '@/components/ui/page-tabs-list';
 import { cn } from '@/lib/utils';
 import { HomePageButton } from '@/Shared/Components/Buttons/HomePageButton';
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
 
 interface EventsPageClientProps {
   events: EventWithCoverPhoto[];
@@ -385,6 +386,11 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
           </Tabs>
         </div>
       </main>
+
+      <FloatingActionButton 
+        onClick={() => router.push('/events/new')} 
+        tooltipText="New Event"
+      />
       
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar {

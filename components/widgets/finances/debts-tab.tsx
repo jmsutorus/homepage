@@ -287,7 +287,7 @@ export function DebtsTab({ debts: initialDebts }: DebtsTabProps) {
           <h3 className="text-3xl font-bold text-[#061b0e] tracking-tight">Active Portfolio</h3>
           <button 
             onClick={() => { setEditData(undefined); setShowForm(true); }}
-            className="text-[#9f402d] font-bold flex items-center gap-2 hover:opacity-80 transition-opacity text-sm group"
+            className="cursor-pointer text-[#9f402d] font-bold flex items-center gap-2 hover:opacity-80 transition-opacity text-sm group"
           >
             Add Instrument <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
           </button>
@@ -372,13 +372,13 @@ export function DebtsTab({ debts: initialDebts }: DebtsTabProps) {
                   <div className="flex flex-col md:flex-row items-center gap-6 pt-8 border-t border-[#e9e8e5]">
                     <button 
                       onClick={() => setPaymentDialog({ debtId: debt.id, debtName: debt.name })}
-                      className="w-full md:w-auto px-10 bg-[#061b0e] text-white py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity shadow-lg"
+                      className="cursor-pointer w-full md:w-auto px-10 bg-[#061b0e] text-white py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity shadow-lg"
                     >
                       Log Payment
                     </button>
                     <button 
                       onClick={() => setExpandedDebt(isExpanded ? null : debt.id)}
-                      className="w-full md:w-auto px-10 bg-[#f4f3f1] text-[#061b0e] py-4 rounded-xl font-bold text-sm hover:bg-[#e9e8e5] transition-colors"
+                      className="cursor-pointer w-full md:w-auto px-10 bg-[#f4f3f1] text-[#061b0e] py-4 rounded-xl font-bold text-sm hover:bg-[#e9e8e5] transition-colors"
                     >
                       {isExpanded ? 'Hide History' : `View History (${debt.payments.length})`}
                     </button>

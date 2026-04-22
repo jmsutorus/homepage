@@ -352,7 +352,7 @@ export function CommandPalette({ className }: CommandPaletteProps) {
                   <span className="material-symbols-outlined text-media-outline-variant">north_west</span>
                   <button
                     onClick={(e) => handleDeleteSavedSearch(e, savedSearch.id)}
-                    className="p-1 hover:text-red-500 transition-colors"
+                    className="cursor-pointer p-1 hover:text-red-500 transition-colors"
                   >
                     <span className="material-symbols-outlined text-sm">delete</span>
                   </button>
@@ -450,7 +450,7 @@ export function CommandPalette({ className }: CommandPaletteProps) {
               <button
                 key={cmd.id}
                 onClick={cmd.action}
-                className="flex flex-col items-center justify-center p-4 rounded-xl bg-media-surface-container-lowest border border-media-outline-variant/10 hover:bg-media-primary-fixed-dim transition-all group"
+                className="cursor-pointer flex flex-col items-center justify-center p-4 rounded-xl bg-media-surface-container-lowest border border-media-outline-variant/10 hover:bg-media-primary-fixed-dim transition-all group"
               >
                 <div className="w-10 h-10 rounded-lg bg-media-surface-container flex items-center justify-center text-media-primary mb-3 group-hover:bg-white/50 transition-colors">
                   {cmd.icon}
@@ -500,7 +500,7 @@ export function CommandPalette({ className }: CommandPaletteProps) {
             ))}
             <button 
               onClick={() => setPages(["home"])}
-              className="mt-6 w-full py-2 bg-media-primary text-media-on-primary rounded-lg text-xs font-bold kinetic-hover"
+              className="cursor-pointer mt-6 w-full py-2 bg-media-primary text-media-on-primary rounded-lg text-xs font-bold kinetic-hover"
             >
               Back to Home
             </button>
@@ -589,7 +589,7 @@ export function CommandPalette({ className }: CommandPaletteProps) {
                 />
                 <Popover open={saveOpen} onOpenChange={setSaveOpen}>
                   <PopoverTrigger asChild>
-                    <button className="p-2 rounded-full bg-media-surface-container-highest text-media-on-surface-variant hover:text-media-primary transition-colors">
+                    <button className="cursor-pointer p-2 rounded-full bg-media-surface-container-highest text-media-on-surface-variant hover:text-media-primary transition-colors">
                       <span className="material-symbols-outlined text-sm">save</span>
                     </button>
                   </PopoverTrigger>

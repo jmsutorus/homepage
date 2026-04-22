@@ -23,6 +23,7 @@ import {
 import type { TimelineEvent } from '@/lib/db/events';
 import { cn } from '@/lib/utils';
 import { HomePageButton } from '@/Shared/Components/Buttons/HomePageButton';
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
 
 interface EventsTimelineClientProps {
   events: TimelineEvent[];
@@ -425,13 +426,11 @@ export function EventsTimelineClient({ events }: EventsTimelineClientProps) {
       </main>
 
       {/* FAB for mobile */}
-      <HomePageButton 
+      <FloatingActionButton 
         onClick={() => router.push('/events/new')}
-        icon={<Plus className="w-6 h-6" />}
-        className="fixed bottom-8 right-8 w-14 h-14 rounded-full p-0 flex items-center justify-center md:hidden"
-      >
-        <span className="sr-only">New Event</span>
-      </HomePageButton>
+        tooltipText="New Event"
+        className="md:hidden"
+      />
 
       {/* Navigation section at the bottom to return home */}
       <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 mt-24 mb-12">

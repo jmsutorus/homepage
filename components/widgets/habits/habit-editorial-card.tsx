@@ -106,14 +106,14 @@ export function HabitEditorialCard({ habit }: HabitEditorialCardProps) {
             <div className="flex gap-2">
               <button 
                 onClick={handleArchive}
-                className="material-symbols-outlined text-media-outline-variant hover:text-media-secondary transition-colors"
+                className="cursor-pointer material-symbols-outlined text-media-outline-variant hover:text-media-secondary transition-colors"
                 title="Archive"
               >
                 archive
               </button>
               <button 
                 onClick={handleDelete}
-                className="material-symbols-outlined text-media-outline-variant hover:text-media-error transition-colors"
+                className="cursor-pointer material-symbols-outlined text-media-outline-variant hover:text-media-error transition-colors"
                 title="Delete"
               >
                 delete

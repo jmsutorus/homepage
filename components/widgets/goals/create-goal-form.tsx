@@ -1,20 +1,23 @@
 "use client";
 
 import { createGoalAction } from "@/lib/actions/goals";
-import { Button } from "@/components/ui/button";
-import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Plus, X, CalendarIcon, Flag, Target } from "lucide-react";
+import { useState } from "react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { SuccessCheck } from "@/components/ui/animations/success-check";
+import { useRouter } from "next/navigation";
+import type { GoalPriority } from "@/lib/db/goals";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -22,27 +25,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Plus, CalendarIcon } from "lucide-react";
-import { useState } from "react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { SuccessCheck } from "@/components/ui/animations/success-check";
-import { useRouter } from "next/navigation";
-import type { GoalPriority } from "@/lib/db/goals";
 
 interface CreateGoalFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onCreated?: () => void;
 }
 
-export function CreateGoalForm({ onCreated }: CreateGoalFormProps) {
+export function CreateGoalForm({ open, onOpenChange, onCreated }: CreateGoalFormProps) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [targetDate, setTargetDate] = useState<Date | undefined>(undefined);
@@ -67,14 +58,12 @@ export function CreateGoalForm({ onCreated }: CreateGoalFormProps) {
       });
 
       setShowSuccess(true);
-      // Wait for animation to play before closing
       setTimeout(() => {
-        setOpen(false);
+        onOpenChange(false);
         setShowSuccess(false);
         setTargetDate(undefined);
         setPriority("medium");
         onCreated?.();
-        // Navigate to the new goal's edit page
         router.push(`/goals/${goal.slug}/edit`);
       }, 1500);
     } catch (error) {
@@ -85,98 +74,162 @@ export function CreateGoalForm({ onCreated }: CreateGoalFormProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <HomePageButton icon={<Plus className="h-4 w-4" />}>
-          New Goal
-        </HomePageButton>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent 
+        showCloseButton={false}
+        className="p-0 border-none sm:max-w-3xl bg-media-surface-container-lowest overflow-hidden shadow-[0_32px_64px_-12px_rgba(6,27,14,0.12)] rounded-3xl max-h-[90vh] flex flex-col font-lexend"
+      >
         {showSuccess ? (
-          <div className="flex flex-col items-center justify-center py-10 space-y-4">
+          <div className="flex flex-col items-center justify-center py-24 space-y-4">
             <SuccessCheck size={120} />
-            <h3 className="text-xl font-semibold text-green-600 dark:text-green-400 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              Goal Created!
+            <h3 className="text-3xl font-bold text-media-primary tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-500">
+              Vision Manifested
             </h3>
-            <p className="text-muted-foreground text-center animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
-              Opening editor to add details...
+            <p className="text-media-on-surface-variant text-center animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
+              Opening the tactical editor to refine your trajectory...
             </p>
           </div>
         ) : (
-          <form onSubmit={onSubmit}>
-            <DialogHeader>
-              <DialogTitle>Create New Goal</DialogTitle>
-              <DialogDescription>
-                Start by adding basic info. You can add milestones and notes in the editor.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  placeholder="e.g. Learn Spanish"
-                  required
-                />
+          <>
+            {/* Premium Header */}
+            <div className="bg-media-primary-container px-10 py-12 flex flex-col gap-2 relative shrink-0">
+              <div className="flex justify-between items-start z-10 relative">
+                <h2 className="text-3xl font-bold tracking-tight text-media-on-primary-container uppercase">
+                  Establish New Vision
+                </h2>
+                <button 
+                  type="button"
+                  onClick={() => onOpenChange(false)}
+                  className="cursor-pointer text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="description">Short Description (Optional)</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  placeholder="e.g. Become conversational in Spanish by the end of the year"
-                  rows={2}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label>Target Date (Optional)</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "justify-start text-left font-normal cursor-pointer",
-                          !targetDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {targetDate ? format(targetDate, "PPP") : "Pick a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={targetDate}
-                        onSelect={setTargetDate}
-                        initialFocus
-                        disabled={(date) => date < new Date()}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="grid gap-2">
-                  <Label>Priority</Label>
-                  <Select value={priority} onValueChange={(v) => setPriority(v as GoalPriority)}>
-                    <SelectTrigger className="cursor-pointer">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              <p className="text-media-on-primary-container/80 text-sm max-w-lg z-10 relative font-medium leading-relaxed">
+                Define the terminal state of your ambition. Setting clear parameters is the first stage of transmutation from dream to reality.
+              </p>
+              <div className="absolute bottom-0 right-0 w-64 h-64 bg-media-secondary opacity-10 blur-[80px] rounded-full translate-x-16 translate-y-16"></div>
             </div>
-            <DialogFooter>
-              <Button type="submit" disabled={loading} className="cursor-pointer">
-                {loading ? "Creating..." : "Create & Edit"}
-              </Button>
-            </DialogFooter>
-          </form>
+
+            <form onSubmit={onSubmit} className="flex-1 overflow-y-auto p-10 space-y-12">
+              {/* Section 01: The Essence */}
+              <div className="space-y-8">
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 01</span>
+                  <h3 className="text-xl font-bold text-media-primary tracking-tight">The Essence</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+                  <div className="md:col-span-12 space-y-3">
+                    <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Vision Identity</label>
+                    <div className="relative">
+                      <input 
+                        autoFocus
+                        required
+                        type="text"
+                        name="title"
+                        className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-2xl placeholder:text-media-on-surface-variant/20"
+                        placeholder="e.g. Master the Spanish Language"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-12 space-y-3">
+                    <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Narrative Context (Optional)</label>
+                    <div className="relative">
+                      <textarea 
+                        name="description"
+                        rows={2}
+                        className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg resize-none placeholder:text-media-on-surface-variant/20"
+                        placeholder="Describe the magnitude of this achievement..."
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 02: Parameters */}
+              <div className="space-y-8">
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 02</span>
+                  <h3 className="text-xl font-bold text-media-primary tracking-tight">Parameters</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="space-y-3">
+                    <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Terminal Date (Optional)</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={cn(
+                            "w-full px-8 py-5 flex items-center justify-between bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all font-bold text-lg",
+                            !targetDate && "text-media-on-surface-variant/40"
+                          )}
+                        >
+                          <span className="flex items-center gap-3">
+                            <CalendarIcon className="h-5 w-5" />
+                            {targetDate ? format(targetDate, "PPP") : "Select target date"}
+                          </span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 border-media-outline-variant bg-media-surface-container" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={targetDate}
+                          onSelect={setTargetDate}
+                          initialFocus
+                          disabled={(date) => date < new Date()}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Strategic Priority</label>
+                    <Select value={priority} onValueChange={(v) => setPriority(v as GoalPriority)}>
+                      <SelectTrigger className="w-full px-8 py-8 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-lg">
+                        <div className="flex items-center gap-3">
+                          <Flag className="h-5 w-5" />
+                          <SelectValue />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent className="bg-media-surface-container border-media-outline-variant">
+                        <SelectItem value="low">Low Priority</SelectItem>
+                        <SelectItem value="medium">Medium Priority</SelectItem>
+                        <SelectItem value="high">Critical High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Footer */}
+              <div className="flex items-center justify-end gap-10 pt-10 border-t border-media-outline-variant/10 shrink-0">
+                <button 
+                  type="button"
+                  onClick={() => onOpenChange(false)}
+                  className="cursor-pointer text-[10px] font-black uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors"
+                >
+                  Terminate
+                </button>
+                <button 
+                  type="submit"
+                  disabled={loading}
+                  className="cursor-pointer px-10 py-5 bg-media-secondary text-media-on-secondary rounded-2xl font-bold tracking-tight shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-3 uppercase"
+                >
+                  {loading ? (
+                    <>
+                      <span className="w-4 h-4 rounded-full border-2 border-media-on-secondary/30 border-t-media-on-secondary animate-spin" />
+                      Initializing...
+                    </>
+                  ) : (
+                    'Establish Vision'
+                  )}
+                </button>
+              </div>
+            </form>
+          </>
         )}
       </DialogContent>
     </Dialog>

@@ -156,7 +156,7 @@ export function SavingsTab({ accounts }: SavingsTabProps) {
               {chartData.length > 1 && (
                 <button 
                   onClick={() => setShowChart(!showChart)}
-                  className="text-media-on-surface-variant text-xs font-bold uppercase tracking-widest hover:text-media-primary transition-colors flex items-center gap-2"
+                  className="cursor-pointer text-media-on-surface-variant text-xs font-bold uppercase tracking-widest hover:text-media-primary transition-colors flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined text-base">
                     {showChart ? 'grid_view' : 'query_stats'}

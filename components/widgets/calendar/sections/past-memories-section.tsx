@@ -43,7 +43,7 @@ export function PastMemoriesSection({ media, journals }: PastMemoriesSectionProp
           <h3 className="text-2xl font-bold text-media-primary tracking-tight">Past Memories</h3>
           <p className="text-xs text-media-on-surface-variant opacity-60">Relive the highlights of last month</p>
         </div>
-        <button className="text-[10px] font-bold uppercase tracking-widest text-media-secondary flex items-center gap-2 hover:opacity-70 transition-opacity">
+        <button className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-media-secondary flex items-center gap-2 hover:opacity-70 transition-opacity">
           View Full Archive
           <MaterialSymbol icon="arrow_forward" size={14} />
         </button>

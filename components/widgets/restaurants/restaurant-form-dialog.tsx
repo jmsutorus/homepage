@@ -169,7 +169,7 @@ export function RestaurantFormDialog({
             <button 
               type="button"
               onClick={() => onOpenChange(false)}
-              className="text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
+              className="cursor-pointer text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -382,14 +382,14 @@ export function RestaurantFormDialog({
             <button 
               type="button"
               onClick={() => onOpenChange(false)}
-              className="text-[10px] font-black uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
+              className="cursor-pointer text-[10px] font-black uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
             >
               Terminate
             </button>
             <button 
               type="submit"
               disabled={loading || !name.trim()}
-              className="px-10 py-5 bg-media-secondary text-media-on-secondary rounded-2xl font-bold tracking-tight shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-3 font-lexend uppercase"
+              className="cursor-pointer px-10 py-5 bg-media-secondary text-media-on-secondary rounded-2xl font-bold tracking-tight shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-3 font-lexend uppercase"
             >
               {loading ? (
                 <>

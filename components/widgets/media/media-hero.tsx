@@ -42,15 +42,10 @@ export function MediaHero({ item }: MediaHeroProps) {
             </p>
             
             <div className="flex gap-4">
-              <Button asChild className="px-8 py-6 bg-white text-media-primary font-bold rounded-xl hover:scale-105 transition-all active:scale-95 flex items-center gap-2 border-none shadow-xl">
+              <Button asChild className="px-8 py-6 bg-white text-media-primary font-bold rounded-xl hover:scale-105 hover:bg-media-secondary hover:text-media-on-secondary transition-all duration-300 active:scale-95 flex items-center gap-2 border-none shadow-xl hover:shadow-2xl hover:shadow-media-secondary/30">
                 <Link href={href}>
                   <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
                   Continue Journey
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="px-8 py-6 bg-white/10 backdrop-blur-xl text-white font-bold rounded-xl hover:bg-white/20 transition-all border border-white/20 shadow-lg">
-                <Link href={href}>
-                  Details
                 </Link>
               </Button>
             </div>

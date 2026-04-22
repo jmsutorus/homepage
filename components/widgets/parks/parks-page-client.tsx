@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { Button } from '@/components/ui/button';
 import { Plus, TreePine, MapPin, ArrowRight } from 'lucide-react';
 import { ParkFormDialog } from './park-form-dialog';
@@ -9,6 +11,7 @@ import { NationalParksMap } from './national-parks-map';
 import { ParkCardEditorial } from './editorial/park-card-editorial';
 import { ParkCard } from './park-card';
 import { ParkContent } from '@/lib/db/parks';
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
 
 interface ParksPageClientProps {
   parks: ParkContent[];
@@ -18,6 +21,8 @@ interface ParksPageClientProps {
 export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps) {
   const [showForm, setShowForm] = useState(false);
   const fullCollectionRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   // Calculate stats
   const totalVisits = parks.length;
@@ -42,14 +47,10 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
   return (
     <div className="min-h-screen bg-media-background font-lexend -mt-8 -mx-4 md:-mx-8">
       {/* Floating Action Button */}
-      <div className="fixed bottom-8 right-8 z-50">
-        <Button 
-          onClick={() => setShowForm(true)} 
-          className="w-14 h-14 rounded-full bg-media-secondary text-media-on-secondary shadow-2xl hover:scale-110 transition-transform duration-300 border-none"
-        >
-          <Plus className="h-6 w-6" />
-        </Button>
-      </div>
+      <FloatingActionButton 
+        onClick={() => isMobile ? setShowForm(true) : router.push('/parks/new')}
+        tooltipText="New Park"
+      />
 
       <div className="max-w-[1440px] mx-auto px-8 pb-20 pt-12">
         {/* Hero & Stats Header */}

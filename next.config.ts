@@ -228,6 +228,12 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      // Coppermind images
+      {
+        protocol: "https",
+        hostname: "uploads.coppermind.net",
+        pathname: "/**",
+      },
       // Add your custom Tautulli/Home Assistant domains here if needed
       // Example:
       // {

@@ -135,7 +135,7 @@ export function EventEditDialog({
               type="button"
               onClick={handleDelete}
               disabled={isDeleting || isSubmitting}
-              className="p-3 rounded-full bg-media-error-container/10 text-media-error hover:bg-media-error-container/20 transition-all active:scale-95 disabled:opacity-50"
+              className="cursor-pointer p-3 rounded-full bg-media-error-container/10 text-media-error hover:bg-media-error-container/20 transition-all active:scale-95 disabled:opacity-50"
               title="Delete Event"
             >
               <MaterialSymbol icon="delete" size={24} />

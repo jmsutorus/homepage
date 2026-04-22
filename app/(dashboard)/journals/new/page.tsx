@@ -1,4 +1,4 @@
-import { JournalEditor } from '@/components/widgets/journal/journal-editor';
+import { JournalEditorialEditor } from '@/components/widgets/journal/journal-editorial-editor';
 
 export const dynamic = "force-dynamic";
 
@@ -24,19 +24,6 @@ export default async function NewJournalPage({ searchParams }: NewJournalPagePro
   };
 
   return (
-    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-5xl">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-          {journalType === 'daily' ? 'New Daily Journal Entry' : 'New Journal Entry'}
-        </h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
-          {journalType === 'daily'
-            ? `Create a daily journal entry${dailyDate ? ` for ${dailyDate}` : ''}.`
-            : 'Create a new journal entry to document your thoughts and experiences.'}
-        </p>
-      </div>
-
-      <JournalEditor mode="create" initialFrontmatter={initialFrontmatter} />
-    </div>
+    <JournalEditorialEditor mode="create" initialFrontmatter={initialFrontmatter} />
   );
 }

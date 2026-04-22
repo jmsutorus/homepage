@@ -11,6 +11,7 @@ import { Vacation, VacationStatus, VACATION_STATUSES, VACATION_STATUS_NAMES, cal
 import { EditorialVacationCard } from './editorial-vacation-card';
 import { TreasuryCard } from './treasury-card';
 import { cn } from '@/lib/utils';
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
 
 interface VacationPageClientProps {
   vacations: Vacation[];
@@ -211,6 +212,11 @@ export function VacationPageClient({ vacations }: VacationPageClientProps) {
           </div>
         </section>
       </main>
+
+      <FloatingActionButton 
+        onClick={() => router.push('/vacations/new')} 
+        tooltipText="New Vacation" 
+      />
     </div>
   );
 }

@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { EventPhotoGallery } from './event-photo-gallery';
 import { EventPeopleSection } from './event-people-section';
+import { AddPersonToEventDialog } from './add-person-to-event-dialog';
 import { EventRestaurantSection } from '@/components/widgets/restaurants/event-restaurant-section';
 import type { Event, EventPhoto, EventWithDetails, EventCategory } from '@/lib/db/events';
 import type { RestaurantVisit } from '@/lib/db/restaurants';
@@ -55,6 +56,7 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
   const [data, setData] = useState<EventWithDetails>(initialData);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAddPersonDialogOpen, setIsAddPersonDialogOpen] = useState(false);
   const { event, photos, people } = data;
   const isUpcoming = new Date(event.date) >= new Date(new Date().setHours(0, 0, 0, 0));
   const heroImage = photos.length > 0 ? photos[0].url : 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=1200';
@@ -445,7 +447,7 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                 <div className="absolute inset-0 bg-gradient-to-t from-media-primary/95 via-media-primary/40 to-transparent"></div>
               </div>
               <div className="relative z-10 w-full flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div className="space-y-4 max-w-4xl">
+                <div className="space-y-4 max-w-5xl">
                   <div className={cn(
                     "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase",
                     isUpcoming ? "bg-media-secondary text-media-on-secondary" : "bg-media-surface-variant text-media-on-surface-variant"
@@ -455,10 +457,8 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                     </span>
                     {isUpcoming ? 'Upcoming Journey' : 'Archived Chapter'}
                   </div>
-                  <h1 className="text-5xl md:text-8xl font-black text-media-surface tracking-tighter leading-[0.85]">
-                    {event.title.split(' ').map((word, i) => (
-                      <span key={i} className="block">{word}</span>
-                    ))}
+                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-media-surface tracking-tighter leading-[0.9] max-w-5xl">
+                    {event.title}
                   </h1>
                   <div className="flex flex-wrap gap-x-8 gap-y-4 pt-6 text-media-surface/80 font-medium text-sm md:text-base">
                     <div className="flex items-center gap-2">
@@ -482,7 +482,7 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                 <div className="hidden md:flex items-center gap-4">
                   <button 
                     onClick={handleStartEdit}
-                    className="bg-media-secondary text-white px-8 py-4 rounded-xl font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 editorial-shadow text-[10px]"
+                    className="cursor-pointer bg-media-secondary text-white px-8 py-4 rounded-xl font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 editorial-shadow text-[10px]"
                   >
                     Narrative Control
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit_note</span>
@@ -615,11 +615,23 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                       <p className="text-media-on-surface-variant italic text-sm py-4">Solitary journey. No companions logged.</p>
                     )}
                     
-                    <Link href={`/events/${event.slug}/people`} className="inline-flex items-center gap-2 mt-4 text-media-secondary font-black uppercase tracking-widest text-[10px] hover:underline">
+                    <button 
+                      onClick={() => setIsAddPersonDialogOpen(true)}
+                      className="cursor-pointer inline-flex items-center gap-2 mt-4 text-media-secondary font-black uppercase tracking-widest text-[10px] hover:underline"
+                    >
                        Manage Attendees <Plus className="w-3 h-3" />
-                    </Link>
+                    </button>
                   </div>
                 </div>
+
+                {/* Add Person Dialog */}
+                <AddPersonToEventDialog
+                  eventSlug={event.slug}
+                  existingPeople={people}
+                  open={isAddPersonDialogOpen}
+                  onOpenChange={setIsAddPersonDialogOpen}
+                  onSuccess={handleUpdate}
+                />
 
                 {/* Linked Discoveries (Restaurants) */}
                 <div className="space-y-8">

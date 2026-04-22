@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vinter — Add New Drink</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e3e2e0",
+                    "surface-bright": "#faf9f6",
+                    "outline-variant": "#c3c8c1",
+                    "inverse-primary": "#b4cdb8",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed-variant": "#474836",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed": "#3e0500",
+                    "on-background": "#1a1c1a",
+                    "surface-variant": "#e3e2e0",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f4f3f1",
+                    "inverse-surface": "#2f312f",
+                    "surface-container-high": "#e9e8e5",
+                    "on-tertiary-fixed": "#1b1d0e",
+                    "secondary-container": "#fd876f",
+                    "on-surface-variant": "#434843",
+                    "on-secondary-fixed-variant": "#802918",
+                    "tertiary-fixed-dim": "#c8c8b0",
+                    "secondary-fixed": "#ffdad3",
+                    "primary-fixed-dim": "#b4cdb8",
+                    "outline": "#737973",
+                    "secondary": "#9f402d",
+                    "background": "#faf9f6",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#0b2013",
+                    "error": "#ba1a1a",
+                    "tertiary": "#17180a",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#e4e4cc",
+                    "surface-container": "#efeeeb",
+                    "surface": "#faf9f6",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#4d6453",
+                    "surface-dim": "#dbdad7",
+                    "on-primary-fixed-variant": "#364c3c",
+                    "on-surface": "#1a1c1a",
+                    "inverse-on-surface": "#f2f1ee",
+                    "tertiary-container": "#2b2d1d",
+                    "primary-container": "#1b3022",
+                    "on-secondary-container": "#732010",
+                    "primary-fixed": "#d0e9d4",
+                    "secondary-fixed-dim": "#ffb4a5",
+                    "primary": "#061b0e",
+                    "on-tertiary-container": "#93947f",
+                    "on-primary-container": "#819986",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Lexend', sans-serif; }
+        
+        /* Custom scrollbar for editorial feel */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #faf9f6; }
+        ::-webkit-scrollbar-thumb { background: #061b0e; border-radius: 10px; }
+        
+        .modal-overlay {
+            background: rgba(250, 249, 246, 0.85);
+            backdrop-filter: blur(12px);
+        }
+
+        .no-line-input {
+            border: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-secondary/30">
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-[70] flex items-center justify-center p-4 modal-overlay overflow-y-auto">
+<div class="relative w-full max-w-5xl bg-surface-container-lowest rounded-xl shadow-[0_32px_64px_rgba(6,27,14,0.08)] overflow-hidden flex flex-col md:flex-row min-h-[819px]">
+<!-- Close Button -->
+<button class="absolute top-4 right-4 z-50 p-2 hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined text-primary">close</span>
+</button>
+<!-- Left Editorial Image/Identity Section -->
+<div class="w-full md:w-2/5 bg-primary-container relative flex flex-col justify-end p-8 text-surface-bright">
+<div class="absolute inset-0 overflow-hidden">
+<img alt="" class="w-full h-full object-cover opacity-40" data-alt="atmospheric close-up of a wine glass being filled in a dim cellar with moody lighting and dark green background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2HX-Gb2TcLdWKDdF8uqnr48VZsWScjFJJuwzozJ7dtI5C5ZnYoh4DoraT6U9ta2g-gswkwJua7YwcbMi3PPvEQpORfa9fzOBAycZGlMoC60dHVJpL0B-FqDFNDK7Mm3iCIt7nHr4W4LGP4worAnnx14iuZk6rMFBsLokJnJ3RcCnQvni36_ki2cvqzYn7-UgB6lJOOFnLlLRAoUJQnAcPQelOLKQmGdIVlRAkW3s0Id9dyO6vitxOlid1-40zkz-20sQg8Tbq95c"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary via-transparent to-transparent"></div>
+</div>
+<div class="relative z-10">
+<span class="text-secondary font-bold tracking-[0.2em] text-xs uppercase mb-2 block">New Entry</span>
+<h2 class="text-4xl font-black tracking-tight leading-none mb-4">Record Your Selection</h2>
+<p class="text-on-primary-container/80 text-sm max-w-xs">Document the nuances, from the terroir of the producer to the aromatic finish.</p>
+</div>
+</div>
+<!-- Right Form Section -->
+<div class="w-full md:w-3/5 p-8 md:p-12 overflow-y-auto max-h-[870px]">
+<form class="space-y-10">
+<!-- Section: Core Identity -->
+<div class="space-y-6">
+<h3 class="text-xs font-bold tracking-[0.1em] uppercase text-outline">01 Identity</h3>
+<div class="space-y-4">
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Drink Name</label>
+<input class="no-line-input w-full bg-surface-container-low p-4 rounded-lg text-primary placeholder:text-outline/50 focus:ring-0 focus:bg-surface-container-high transition-all" placeholder="e.g., Chateau Margaux 2015" type="text"/>
+<div class="h-0.5 w-0 group-focus-within:w-full bg-secondary transition-all duration-300"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Type</label>
+<select class="no-line-input w-full bg-surface-container-low p-4 rounded-lg text-primary focus:ring-0 focus:bg-surface-container-high transition-all">
+<option>Red Wine</option>
+<option>White Wine</option>
+<option>Champagne</option>
+<option>Craft Beer</option>
+<option>Spirits</option>
+</select>
+</div>
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Year</label>
+<input class="no-line-input w-full bg-surface-container-low p-4 rounded-lg text-primary focus:ring-0 focus:bg-surface-container-high transition-all" placeholder="2023" type="number"/>
+</div>
+</div>
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Producer (Brewery / Winery)</label>
+<input class="no-line-input w-full bg-surface-container-low p-4 rounded-lg text-primary focus:ring-0 focus:bg-surface-container-high transition-all" placeholder="Estate name or producer" type="text"/>
+</div>
+</div>
+</div>
+<!-- Section: Technical Specs -->
+<div class="space-y-6">
+<h3 class="text-xs font-bold tracking-[0.1em] uppercase text-outline">02 Technicals</h3>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">ABV %</label>
+<input class="no-line-input w-full bg-surface-container-low p-4 rounded-lg text-primary focus:ring-0 focus:bg-surface-container-high transition-all" placeholder="13.5" type="text"/>
+</div>
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Serving Temp</label>
+<input class="no-line-input w-full bg-surface-container-low p-4 rounded-lg text-primary focus:ring-0 focus:bg-surface-container-high transition-all" placeholder="18°C" type="text"/>
+</div>
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Rating</label>
+<input class="no-line-input w-full bg-surface-container-low p-4 rounded-lg text-primary focus:ring-0 focus:bg-surface-container-high transition-all" max="10" min="1" placeholder="1-10" type="number"/>
+</div>
+</div>
+</div>
+<!-- Section: Sensory Profile -->
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-xs font-bold tracking-[0.1em] uppercase text-outline">03 Experience</h3>
+<label class="flex items-center gap-2 cursor-pointer group">
+<span class="text-[10px] uppercase tracking-widest text-outline group-hover:text-secondary transition-colors">Favorite</span>
+<div class="relative inline-flex items-center">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-high rounded-full peer-checked:bg-secondary transition-colors"></div>
+<div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
+</div>
+</label>
+</div>
+<div class="space-y-4">
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Body &amp; Feel</label>
+<input class="no-line-input w-full bg-surface-container-low p-4 rounded-lg text-primary focus:ring-0 focus:bg-surface-container-high transition-all" placeholder="Full-bodied, velvety, tannic..." type="text"/>
+</div>
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Pairings</label>
+<input class="no-line-input w-full bg-surface-container-low p-4 rounded-lg text-primary focus:ring-0 focus:bg-surface-container-high transition-all" placeholder="Roasted lamb, dark chocolate..." type="text"/>
+</div>
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Notes</label>
+<textarea class="no-line-input w-full bg-surface-container-low p-4 rounded-lg text-primary focus:ring-0 focus:bg-surface-container-high transition-all resize-none" placeholder="Additional tasting notes..." rows="3"></textarea>
+</div>
+</div>
+</div>
+<!-- Image URL -->
+<div class="group">
+<label class="block text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Image Reference URL</label>
+<div class="flex gap-2">
+<input class="no-line-input flex-1 bg-surface-container-low p-4 rounded-lg text-primary focus:ring-0 focus:bg-surface-container-high transition-all" placeholder="https://..." type="url"/>
+<button class="bg-surface-container-high px-4 rounded-lg text-primary hover:bg-surface-container-highest transition-colors" type="button">
+<span class="material-symbols-outlined align-middle">add_photo_alternate</span>
+</button>
+</div>
+</div>
+<!-- CTA Actions -->
+<div class="flex flex-col sm:flex-row items-center gap-4 pt-6">
+<button class="w-full sm:w-auto bg-secondary text-on-secondary px-10 py-4 rounded-lg font-bold tracking-tight hover:opacity-90 active:scale-95 transition-all text-lg shadow-xl shadow-secondary/20" type="submit">
+                            Create Drink
+                        </button>
+<button class="w-full sm:w-auto px-10 py-4 text-outline font-medium hover:text-primary transition-colors" type="button">
+                            Discard Draft
+                        </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</body></html>

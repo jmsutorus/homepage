@@ -270,14 +270,14 @@ export function DebtFormDialog({
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="px-6 py-3 rounded-xl font-bold text-sm text-[#434843] hover:bg-[#e9e8e5] transition-colors"
+                className="cursor-pointer px-6 py-3 rounded-xl font-bold text-sm text-[#434843] hover:bg-[#e9e8e5] transition-colors"
               >
                 Discard Changes
               </button>
               <button
                 type="submit"
                 disabled={loading || !name || !originalAmount || !currentBalance || !monthlyPayment}
-                className="px-8 py-3 rounded-xl bg-[#061b0e] text-white font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-all shadow-lg flex items-center gap-2"
+                className="cursor-pointer px-8 py-3 rounded-xl bg-[#061b0e] text-white font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-all shadow-lg flex items-center gap-2"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (editData ? <Sparkles className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
                 {editData ? 'Update Instrument' : 'Commission Debt'}

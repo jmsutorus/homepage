@@ -1,36 +1,14 @@
-import { MediaEditor } from '@/components/widgets/media/media-editor';
+import { MediaEditorialEditor } from '@/components/widgets/media/media-editorial-editor';
 
 export const dynamic = "force-dynamic";
-import { Suspense } from 'react';
 
-export default function NewMediaPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ type?: string }>;
-}) {
-  return (
-    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-5xl">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Create New Media Entry</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
-          Add a new movie, TV show, or book to your media library.
-        </p>
-      </div>
-
-      <Suspense fallback={<div>Loading...</div>}>
-        <NewMediaForm searchParams={searchParams} />
-      </Suspense>
-    </div>
-  );
-}
-
-async function NewMediaForm({
+export default async function NewMediaPage({
   searchParams,
 }: {
   searchParams: Promise<{ type?: string }>;
 }) {
   const params = await searchParams;
-  const initialType = params.type as 'movie' | 'tv' | 'book' | undefined;
+  const initialType = params.type as 'movie' | 'tv' | 'book' | 'game' | 'album' | undefined;
 
   const initialFrontmatter = initialType
     ? {
@@ -38,11 +16,15 @@ async function NewMediaForm({
         type: initialType,
         status: 'planned' as const,
         genres: [],
+        tags: [],
+        creator: [],
+        featured: false,
+        published: true,
       }
     : undefined;
 
   return (
-    <MediaEditor
+    <MediaEditorialEditor
       mode="create"
       initialFrontmatter={initialFrontmatter}
       initialContent=""

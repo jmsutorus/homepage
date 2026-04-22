@@ -16,10 +16,10 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-6">
             <Link href="/sign-in">
-              <button className="text-media-on-surface-variant font-medium hover:text-media-secondary transition-colors">Login</button>
+              <button className="cursor-pointer text-media-on-surface-variant font-medium hover:text-media-secondary transition-colors">Login</button>
             </Link>
             <Link href="/sign-up">
-              <button className="bg-media-secondary text-media-on-secondary px-6 py-2.5 rounded-lg font-bold hover:opacity-90 transition-all scale-102 active:scale-98">Create Account</button>
+              <button className="cursor-pointer bg-media-secondary text-media-on-secondary px-6 py-2.5 rounded-lg font-bold hover:opacity-90 transition-all scale-102 active:scale-98">Create Account</button>
             </Link>
           </div>
         </div>
@@ -47,12 +47,12 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/sign-up">
-                  <button className="bg-media-secondary text-media-on-secondary px-10 py-5 rounded-lg text-lg font-bold kinetic-hover editorial-shadow">
+                  <button className="cursor-pointer bg-media-secondary text-media-on-secondary px-10 py-5 rounded-lg text-lg font-bold kinetic-hover editorial-shadow">
                     Start Your Collection
                   </button>
                 </Link>
                 <Link href="/sign-in">
-                  <button className="bg-media-surface/10 backdrop-blur-md border border-media-surface/20 text-media-surface px-10 py-5 rounded-lg text-lg font-bold hover:bg-media-surface/20 transition-all">
+                  <button className="cursor-pointer bg-media-surface/10 backdrop-blur-md border border-media-surface/20 text-media-surface px-10 py-5 rounded-lg text-lg font-bold hover:bg-media-surface/20 transition-all">
                     Member Login
                   </button>
                 </Link>
@@ -181,7 +181,7 @@ export default function LandingPage() {
             </h2>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
               <Link href="/sign-up">
-                <button className="bg-media-secondary text-media-on-secondary px-12 py-6 rounded-lg text-xl font-black kinetic-hover editorial-shadow">
+                <button className="cursor-pointer bg-media-secondary text-media-on-secondary px-12 py-6 rounded-lg text-xl font-black kinetic-hover editorial-shadow">
                   Begin Your Chapter
                 </button>
               </Link>

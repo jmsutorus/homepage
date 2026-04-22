@@ -269,9 +269,6 @@ export function ExercisePageClient({
           </p>
         </div>
         <div className="flex gap-4">
-          <HomePageButton variant="secondary" icon={<PlusCircle className="h-5 w-5 text-sage-green" />}>
-            New Goal
-          </HomePageButton>
           <AddActivityModal onActivityAdded={handleActivityAdded} showButton={true} />
         </div>
       </div>

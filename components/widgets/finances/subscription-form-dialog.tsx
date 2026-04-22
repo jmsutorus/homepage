@@ -115,7 +115,7 @@ export function SubscriptionFormDialog({
             <button 
               type="button"
               onClick={() => onOpenChange(false)}
-              className="text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
+              className="cursor-pointer text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -273,14 +273,14 @@ export function SubscriptionFormDialog({
             <button 
               type="button"
               onClick={() => onOpenChange(false)}
-              className="text-[10px] font-bold uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
+              className="cursor-pointer text-[10px] font-bold uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
             >
               Cancel
             </button>
             <button 
               type="submit"
               disabled={loading || !name || !price}
-              className="px-10 py-4 bg-media-secondary text-media-on-secondary rounded-xl font-bold tracking-tight shadow-xl shadow-media-secondary/20 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-2 font-lexend"
+              className="cursor-pointer px-10 py-4 bg-media-secondary text-media-on-secondary rounded-xl font-bold tracking-tight shadow-xl shadow-media-secondary/20 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-2 font-lexend"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {editData ? 'Update Enrollment' : 'Enlist Subscription'}

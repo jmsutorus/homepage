@@ -273,7 +273,7 @@ export default function DailyPageClient({
                               e.stopPropagation();
                               handleDeleteMeal(type);
                             }}
-                            className="absolute top-2 right-2 p-1.5 bg-media-error/10 hover:bg-media-error text-media-error hover:text-white backdrop-blur-sm rounded-lg transition-all opacity-0 group-hover:opacity-100 z-10"
+                            className="cursor-pointer absolute top-2 right-2 p-1.5 bg-media-error/10 hover:bg-media-error text-media-error hover:text-white backdrop-blur-sm rounded-lg transition-all opacity-0 group-hover:opacity-100 z-10"
                             title={`Remove ${label}`}
                           >
                              <MaterialSymbol icon="delete" className="text-sm" />
@@ -287,7 +287,7 @@ export default function DailyPageClient({
                     ) : (
                       <button 
                         onClick={() => openRecipePicker(type)}
-                        className="flex flex-col items-center w-full h-full justify-center"
+                        className="cursor-pointer flex flex-col items-center w-full h-full justify-center"
                       >
                         <MaterialSymbol icon="add_circle" className="text-media-outline text-3xl group-hover:scale-110 transition-transform mb-2" />
                         <p className="text-xs font-bold uppercase tracking-widest text-media-outline underline-offset-4 group-hover:underline">Add {label}</p>

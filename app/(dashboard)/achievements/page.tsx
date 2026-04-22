@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function AchievementsPage() {
   const session = await requireAuth();
 
-  const userAchievements = await await getUserAchievements(session.user.id);
+  const userAchievements = await getUserAchievements(session.user.id);
   
   // Calculate total stats
   const totalPoints = ACHIEVEMENTS.reduce((sum, a) => {
@@ -20,34 +20,46 @@ export default async function AchievementsPage() {
   }, 0);
   
   const totalUnlocked = Object.values(userAchievements).filter(a => a.unlocked).length;
+  const progressPercent = ACHIEVEMENTS.length > 0 ? (totalUnlocked / ACHIEVEMENTS.length) : 0;
+  
+  // Calculate stroke dashoffset for a circle with r=28 (circumference = 2 * PI * 28 ≈ 175.9)
+  const circleCircumference = 175.9;
+  const strokeDashoffset = circleCircumference - (progressPercent * circleCircumference);
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Trophy className="text-yellow-500" size={32} />
-            Achievements
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Track your milestones and earn badges.
-          </p>
-        </div>
+    <div className="max-w-4xl mx-auto flex flex-col items-center w-full pb-12 md:pb-20">
+      <section className="text-center mb-20 w-full">
+        <span className="text-sm uppercase tracking-[0.2em] text-media-secondary font-semibold mb-4 block font-label">Legacy & Mastery</span>
+        <h2 className="text-5xl md:text-7xl font-bold text-media-primary tracking-tight leading-[0.95] mb-6 font-headline">Your Personal Archive.</h2>
+        <p className="text-media-on-surface-variant text-lg max-w-2xl mx-auto mb-12 font-body">Every thought captured, every habit formed, every book finished—meticulously curated for your growth.</p>
         
-        <div className="flex gap-6 bg-muted/50 p-4 rounded-xl border">
-          <div className="text-center">
-            <div className="text-2xl font-bold">{totalUnlocked} / {ACHIEVEMENTS.length}</div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wider">Unlocked</div>
+        <div className="flex flex-col md:flex-row gap-4 justify-center w-full">
+          <div className="bg-media-surface-container-low p-6 rounded-xl flex items-center gap-8 flex-1 justify-center">
+            <div className="text-left">
+              <div className="text-3xl font-bold text-media-primary font-headline">{totalUnlocked} / {ACHIEVEMENTS.length}</div>
+              <div className="text-sm font-label uppercase tracking-widest text-media-on-surface-variant opacity-70 mt-1">Unlocked Milestones</div>
+            </div>
+            <div className="w-16 h-16 relative flex items-center justify-center">
+              <svg className="w-full h-full -rotate-90">
+                <circle className="text-media-surface-container-high" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeWidth="6"></circle>
+                <circle className="text-media-secondary" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeDasharray={circleCircumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" strokeWidth="6" style={{ transition: "stroke-dashoffset 1s ease-in-out" }}></circle>
+              </svg>
+              <span className="absolute text-[10px] font-bold font-label text-media-primary">{Math.round(progressPercent * 100)}%</span>
+            </div>
           </div>
-          <div className="w-px bg-border" />
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-500">{totalPoints}</div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wider">Points</div>
+          <div className="bg-media-primary text-white p-6 rounded-xl flex items-center gap-8 flex-1 justify-center">
+            <div className="text-left">
+              <div className="text-3xl font-bold font-headline">{totalPoints}</div>
+              <div className="text-sm font-label uppercase tracking-widest text-white/70 mt-1">Curator Points</div>
+            </div>
+            <Trophy className="w-10 h-10 text-media-secondary" strokeWidth={1.5} />
           </div>
         </div>
-      </div>
+      </section>
 
-      <AchievementsList userAchievements={userAchievements} />
+      <div className="w-full space-y-24">
+        <AchievementsList userAchievements={userAchievements} />
+      </div>
     </div>
   );
 }
