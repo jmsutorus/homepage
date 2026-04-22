@@ -19,7 +19,9 @@ import {
   Star,
   ChevronRight,
   TrendingUp,
-  BicepsFlexed
+  BicepsFlexed,
+  CheckCircle2,
+  Circle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WorkoutActivity, Exercise } from "@/lib/db/workout-activities";
@@ -33,6 +35,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
   const [typeFilter, setTypeFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("All Time");
   const [intensityFilter, setIntensityFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   // PR detection
   const personalRecords = useMemo(() => {
@@ -103,9 +106,14 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
         matchesDate = isAfter(activityDate, subDays(new Date(), 90));
       }
 
-      return matchesSearch && matchesType && matchesIntensity && matchesDate;
+      // Status
+      const matchesStatus = statusFilter === "All" || 
+        (statusFilter === "Completed" && activity.completed) ||
+        (statusFilter === "Planned" && !activity.completed);
+
+      return matchesSearch && matchesType && matchesIntensity && matchesDate && matchesStatus;
     });
-  }, [initialActivities, searchTerm, typeFilter, dateFilter, intensityFilter]);
+  }, [initialActivities, searchTerm, typeFilter, dateFilter, intensityFilter, statusFilter]);
 
   // Statistics for "Weekly Highlight"
   const weeklyHighlight = useMemo(() => {
@@ -181,6 +189,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
     setTypeFilter("All");
     setDateFilter("All Time");
     setIntensityFilter("All");
+    setStatusFilter("All");
   };
 
   return (
@@ -199,10 +208,10 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
             <p className="text-muted-foreground font-medium text-lg">Review your performance and track your growth.</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="bg-card p-3 rounded-xl shadow-sm border border-border text-muted-foreground hover:text-primary transition-colors">
+            <button className="cursor-pointer bg-card p-3 rounded-xl shadow-sm border border-border text-muted-foreground hover:text-primary transition-colors">
               <Download className="h-5 w-5" />
             </button>
-            <button className="bg-card p-3 rounded-xl shadow-sm border border-border text-muted-foreground hover:text-primary transition-colors">
+            <button className="cursor-pointer bg-card p-3 rounded-xl shadow-sm border border-border text-muted-foreground hover:text-primary transition-colors">
               <Printer className="h-5 w-5" />
             </button>
           </div>
@@ -258,11 +267,21 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
                 <option>Hard</option>
                 <option>Very Hard</option>
               </select>
+              <div className="w-px h-4 bg-border"></div>
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-transparent border-none py-1.5 px-3 text-xs font-bold focus:ring-0 cursor-pointer"
+              >
+                <option value="All">All Statuses</option>
+                <option value="Completed">Completed</option>
+                <option value="Planned">Planned</option>
+              </select>
             </div>
 
             <button 
               onClick={clearFilters}
-              className="text-primary text-xs font-bold flex items-center gap-1.5 hover:opacity-80 transition-opacity ml-auto"
+              className="cursor-pointer text-primary text-xs font-bold flex items-center gap-1.5 hover:opacity-80 transition-opacity ml-auto"
             >
               <RefreshCcw className="h-3 w-3" />
               Clear Filters
@@ -280,6 +299,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
                   <th className="px-6 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Type</th>
                   <th className="px-6 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Duration</th>
                   <th className="px-6 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Intensity</th>
+                  <th className="px-6 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Status</th>
                   <th className="px-6 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Burn/Volume</th>
                   <th className="px-6 py-5"></th>
                 </tr>
@@ -287,7 +307,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
               <tbody className="divide-y divide-border">
                 {filteredActivities.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground font-medium">
+                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground font-medium">
                       No activities found matching your filters.
                     </td>
                   </tr>
@@ -354,6 +374,19 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
                             {activity.difficulty.charAt(0).toUpperCase() + activity.difficulty.slice(1)}
                           </span>
                         </td>
+                        <td className="px-6 py-5">
+                          {activity.completed ? (
+                            <span className="flex items-center gap-1.5 text-xs font-bold text-sage-green">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              Completed
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground/60">
+                              <Circle className="h-3.5 w-3.5" />
+                              Planned
+                            </span>
+                          )}
+                        </td>
                         <td className="px-6 py-5 text-right">
                           <p className="text-sm font-bold text-foreground">
                             {volume > 0 ? (
@@ -367,7 +400,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
                           </p>
                         </td>
                         <td className="px-6 py-5 text-right">
-                          <button className="p-2 text-muted-foreground/40 hover:text-primary transition-colors">
+                          <button className="cursor-pointer p-2 text-muted-foreground/40 hover:text-primary transition-colors">
                             <MoreVertical className="h-5 w-5" />
                           </button>
                         </td>
@@ -388,7 +421,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
               <span className="bg-white/20 text-white px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase mb-4 inline-block">Weekly Highlight</span>
               <h3 className="text-3xl font-extrabold mb-2">{weeklyHighlight.title}</h3>
               <p className="text-primary-foreground/80 font-medium mb-6">{weeklyHighlight.description}</p>
-              <button className="bg-background text-primary font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg">
+              <button className="cursor-pointer bg-background text-primary font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg">
                 View Analytics
               </button>
             </div>
@@ -403,7 +436,7 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
         {/* Pagination/Load More */}
         {filteredActivities.length > 20 && (
           <div className="flex justify-center mt-12 mb-20">
-            <button className="bg-card text-foreground font-bold py-4 px-12 rounded-2xl hover:scale-105 transition-all shadow-sm border border-border">
+            <button className="cursor-pointer bg-card text-foreground font-bold py-4 px-12 rounded-2xl hover:scale-105 transition-all shadow-sm border border-border">
               Load more activities
             </button>
           </div>

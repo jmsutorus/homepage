@@ -18,7 +18,7 @@ export interface WorkoutActivity {
   length: number; // Total duration in minutes
   distance?: number; // Distance in miles
   difficulty: "easy" | "moderate" | "hard" | "very hard";
-  type: "run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
+  type: "run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other" | "swim" | "yoga" | "pilates";
   exercises: string; // JSON string of Exercise[]
   notes?: string | null;
   completed: boolean;
@@ -26,6 +26,7 @@ export interface WorkoutActivity {
   completion_notes?: string | null; // Post-activity notes
   created_at: string;
   updated_at: string;
+  pace?: number;
 }
 
 export interface CreateWorkoutActivity {

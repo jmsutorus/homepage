@@ -87,6 +87,7 @@ export async function POST(
         location: dayData.location,
         activities: dayData.activities,
         notes: dayData.notes,
+        photo: dayData.photo,
         budget_planned: dayData.budget_planned,
         budget_actual: dayData.budget_actual,
       };

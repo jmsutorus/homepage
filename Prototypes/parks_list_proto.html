@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>National Parks - View Full Collection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#2b2d1d",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c3c8c1",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "surface-tint": "#4d6453",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#e4e4cc",
+                        "on-surface": "#1a1c1a",
+                        "inverse-on-surface": "#f2f1ee",
+                        "surface-container": "#efeeeb",
+                        "on-primary-fixed": "#0b2013",
+                        "background": "#faf9f6",
+                        "surface-bright": "#faf9f6",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#faf9f6",
+                        "primary-fixed-dim": "#b4cdb8",
+                        "primary-fixed": "#d0e9d4",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#1b3022",
+                        "surface-container-highest": "#e3e2e0",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "on-surface-variant": "#434843",
+                        "inverse-surface": "#2f312f",
+                        "surface-dim": "#dbdad7",
+                        "secondary-container": "#fd876f",
+                        "on-secondary-fixed-variant": "#802918",
+                        "on-secondary-container": "#732010",
+                        "secondary": "#9f402d",
+                        "on-background": "#1a1c1a",
+                        "surface-variant": "#e3e2e0",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "outline": "#737973",
+                        "on-secondary-fixed": "#3e0500",
+                        "inverse-primary": "#b4cdb8",
+                        "secondary-fixed": "#ffdad3",
+                        "on-tertiary-container": "#93947f",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#819986",
+                        "on-primary-fixed-variant": "#364c3c",
+                        "surface-container-low": "#f4f3f1",
+                        "surface-container-high": "#e9e8e5",
+                        "on-primary": "#ffffff",
+                        "primary": "#061b0e",
+                        "tertiary": "#17180a",
+                        "secondary-fixed-dim": "#ffb4a5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Lexend"],
+                        "label": ["Lexend"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-surface selection:bg-secondary-fixed">
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-0 md:ml-64 bg-background min-h-screen px-8 py-12">
+<!-- Header Section with Asymmetry -->
+<header class="mb-16 relative">
+<div class="max-w-4xl">
+<span class="text-secondary font-label uppercase tracking-[0.2em] text-xs font-bold mb-4 block">Archive 2024</span>
+<h1 class="text-6xl md:text-8xl font-headline font-extrabold text-primary tracking-tighter leading-none mb-8">
+                        The Great <br/> <span class="text-secondary">Expedition</span>
+</h1>
+<p class="text-on-surface-variant text-lg max-w-xl leading-relaxed">
+                        A curated anthology of wild frontiers, ancient monoliths, and the quiet moments between the pines. Your personal journey through the American wilderness.
+                    </p>
+</div>
+</header>
+<!-- Search & Filter Cluster -->
+<section class="mb-12 space-y-6">
+<div class="relative group max-w-2xl">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl py-5 pl-14 pr-6 focus:ring-2 focus:ring-secondary/20 focus:bg-surface-container-high transition-all outline-none text-on-surface" placeholder="Search parks, memories, or states..." type="text"/>
+</div>
+<div class="flex flex-wrap gap-3 items-center">
+<span class="text-xs font-label uppercase tracking-widest text-on-surface-variant mr-2">Filters:</span>
+<button class="bg-tertiary-fixed text-on-tertiary-fixed px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-tertiary-fixed-dim transition-all">Type: National</button>
+<button class="bg-surface-container-highest text-on-surface-variant px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-outline-variant/20 transition-all">Price: All</button>
+<button class="bg-surface-container-highest text-on-surface-variant px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-outline-variant/20 transition-all">Rating: 4.5+</button>
+<button class="bg-surface-container-highest text-on-surface-variant px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-outline-variant/20 transition-all">Year: 2024</button>
+<button class="text-secondary text-xs font-bold uppercase tracking-widest ml-auto border-b border-secondary/30 pb-0.5">Reset All</button>
+</div>
+</section>
+<!-- Editorial Grid of Parks -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-12">
+<!-- Entry 1: Grand Teton -->
+<article class="group flex flex-col md:flex-row gap-8 bg-surface rounded-2xl overflow-hidden hover:translate-y-[-4px] transition-transform duration-500">
+<div class="w-full md:w-1/2 h-80 relative overflow-hidden rounded-xl">
+<img alt="Grand Teton National Park" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Majestic jagged mountain peaks reflecting in a calm crystal clear lake at dawn with soft orange sunlight touching the summits" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxZLAQdfiLk2tNO2ZuA-y1xKqZPz-unRh-34QziPUCYxESFn5u6fAGVorEgL70wIyDHozhdLkgT2tdwmj5hoJjVBqYyU6wVRntvK_2nunXMf6fXu1vC5WCknj_8e3zyoZXa4LYYPNEM2_ihjAGXyzcG-OGnJa9MWKHbmAt21wrE_HNHCCpjIYEFZqM2ZE22KHzrMjfQU0wqzXoDbnPxqS0B2M5POsIh5YUuBjLzQrDGMj8RyXoBdAqdy8EwnXwzUE87O-EWuYmqZ4"/>
+<div class="absolute top-4 left-4 bg-primary/80 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                            4.9/5
+                        </div>
+</div>
+<div class="w-full md:w-1/2 flex flex-col justify-center py-4">
+<span class="text-xs font-label text-secondary uppercase tracking-[0.15em] mb-2">Wyoming, USA</span>
+<h3 class="text-3xl font-headline font-bold text-primary tracking-tight mb-4">Grand Teton</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6 italic">
+                            "The mountains didn't just rise; they roared. Waking up to the reflection in Jenny Lake felt like seeing the world for the first time again."
+                        </p>
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Visited June 2024</span>
+<div class="h-[1px] flex-grow bg-outline-variant/30"></div>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:text-secondary transition-colors" data-icon="arrow_outward">arrow_outward</span>
+</div>
+</div>
+</article>
+<!-- Entry 2: Carlsbad Caverns -->
+<article class="group flex flex-col md:flex-row gap-8 bg-surface rounded-2xl overflow-hidden hover:translate-y-[-4px] transition-transform duration-500">
+<div class="w-full md:w-1/2 h-80 relative overflow-hidden rounded-xl">
+<img alt="Carlsbad Caverns" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Breathtaking limestone cavern interior with massive stalactites and stalagmites dramatically lit by soft amber artificial lighting creating deep shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDtcRA2tmKJlOvU9OCvMM-1GgVkHfgpK6XdGc_do8K8v-0jnwbWqZEKJ-8X6dJ81Wpfx7lY972Sq6htNFgCO-CJe_rt8Dpr_P3wiTJwqhJDoI8oSlkzP17F0BSM8VtlGKBzRwcQZ8-9zd57NkpYOJ9MGfbj8MXp4LHXHts8dTikXTRzTGxy4cd15r1-D-QkBWhFfsocPkU0_G38bKRjj9moZm70REOUk-GEh12vKECWGbYH97JEAkKPciSczoKl8or7FHG6CAcP6Q"/>
+<div class="absolute top-4 left-4 bg-primary/80 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                            4.8/5
+                        </div>
+</div>
+<div class="w-full md:w-1/2 flex flex-col justify-center py-4">
+<span class="text-xs font-label text-secondary uppercase tracking-[0.15em] mb-2">New Mexico, USA</span>
+<h3 class="text-3xl font-headline font-bold text-primary tracking-tight mb-4">Carlsbad Caverns</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6 italic">
+                            "Descended into the earth's throat. The silence in the Big Room is heavy, ancient, and perfectly humbling. A cathedral made of stone."
+                        </p>
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Visited April 2024</span>
+<div class="h-[1px] flex-grow bg-outline-variant/30"></div>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:text-secondary transition-colors" data-icon="arrow_outward">arrow_outward</span>
+</div>
+</div>
+</article>
+<!-- Entry 3: Gateway Arch -->
+<article class="group flex flex-col md:flex-row gap-8 bg-surface rounded-2xl overflow-hidden hover:translate-y-[-4px] transition-transform duration-500">
+<div class="w-full md:w-1/2 h-80 relative overflow-hidden rounded-xl">
+<img alt="Gateway Arch" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Sleek stainless steel arch monument gleaming against a brilliant blue sky with lush green park grass in the foreground at high noon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNCW-a4hCrp8df-vzGfnnaQUuJP10UO8Tt9PkfIwaolw8Kv9-jSVvQA3ZOJhC0stKSUwbQZolD0gheS0bcO2Z4CLt0HadlKJ-ty7Ukkyv0lRMHuqHSdh_XkOULSVeOHzvvzODTBBnuI7_jwhGHxpZ1YcPyRm-GrM1CQUPOzaXoQumcI2U4E2DA8K5ZG_qeEChHbcmlmesJ8A9PV4tuTFSiz9HnNq24JlsPLC-y-8A6XLbldmtQlbA2s1Ce-L_t0C4vPbzWirn39F0"/>
+<div class="absolute top-4 left-4 bg-primary/80 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                            4.2/5
+                        </div>
+</div>
+<div class="w-full md:w-1/2 flex flex-col justify-center py-4">
+<span class="text-xs font-label text-secondary uppercase tracking-[0.15em] mb-2">Missouri, USA</span>
+<h3 class="text-3xl font-headline font-bold text-primary tracking-tight mb-4">Gateway Arch</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6 italic">
+                            "A different kind of peak. Architecture meeting the horizon. The view from the top looks out over the Mississippi like a gateway to the unknown."
+                        </p>
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Visited Feb 2024</span>
+<div class="h-[1px] flex-grow bg-outline-variant/30"></div>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:text-secondary transition-colors" data-icon="arrow_outward">arrow_outward</span>
+</div>
+</div>
+</article>
+<!-- Entry 4: Zion -->
+<article class="group flex flex-col md:flex-row gap-8 bg-surface rounded-2xl overflow-hidden hover:translate-y-[-4px] transition-transform duration-500">
+<div class="w-full md:w-1/2 h-80 relative overflow-hidden rounded-xl">
+<img alt="Zion National Park" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Tall towering red sandstone cliffs under a clear blue sky with a winding river and autumn foliage at the base of the canyon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlyjv-Ihyc8ozTHFxi2wpmVWaKnZE_QPU_st0jNHpWfHuD_xevHFytQcn1kJrB1SIjwyUA5MHbyyGIc3PXQ4v0rWU5TCuSGSkU8Z-xclWK-4HLm__b5bYGIRyLTGn2_bjczIqHG4TeRBU6k3xWq4d3goKBbCxuSlTRlA9xd5bqaLuQhDJN7HdkXijr5TFiApdIpMyrQYoBcC-7ZVPfGL_xM-asPT_X8BAnuV_KPoRQfrSe-brZJvdJ_Bpk_yitKiMU8ysO9lTyx7w"/>
+<div class="absolute top-4 left-4 bg-primary/80 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                            5.0/5
+                        </div>
+</div>
+<div class="w-full md:w-1/2 flex flex-col justify-center py-4">
+<span class="text-xs font-label text-secondary uppercase tracking-[0.15em] mb-2">Utah, USA</span>
+<h3 class="text-3xl font-headline font-bold text-primary tracking-tight mb-4">Zion Canyon</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6 italic">
+                            "Hiking the Narrows felt like a pilgrimage. Every step through the Virgin River was a lesson in patience and the sheer power of water."
+                        </p>
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Visited March 2024</span>
+<div class="h-[1px] flex-grow bg-outline-variant/30"></div>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:text-secondary transition-colors" data-icon="arrow_outward">arrow_outward</span>
+</div>
+</div>
+</article>
+</div>
+<!-- Empty State / Footer -->
+<footer class="mt-24 pt-12 border-t-0 text-center">
+<div class="inline-block p-12 rounded-3xl bg-surface-container-low max-w-lg">
+<span class="material-symbols-outlined text-4xl text-primary-container mb-4" data-icon="menu_book">menu_book</span>
+<h4 class="text-xl font-headline font-bold text-primary mb-2">Continue the Journal</h4>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">You've recorded 4 adventures this year. The horizon is calling for more. Ready to log your next discovery?</p>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-xl font-bold text-sm tracking-widest uppercase hover:bg-primary-container transition-all">New Entry</button>
+</div>
+</footer>
+</main>
+</div>
+<!-- Mobile Navigation Shell -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface-container-highest flex justify-around items-center h-16 z-50 px-4">
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="text-[10px] font-bold">Explore</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-secondary">
+<span class="material-symbols-outlined" data-icon="park" style="font-variation-settings: 'FILL' 1;">park</span>
+<span class="text-[10px] font-bold">Parks</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="text-[10px] font-bold">Journal</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-[10px] font-bold">More</span>
+</div>
+</nav>
+</body></html>

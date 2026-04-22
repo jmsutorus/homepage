@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { MediaItem } from "@/lib/media";
 import { formatDateSafe } from "@/lib/utils";
 import { Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MediaCardProps {
   item: MediaItem;
@@ -13,75 +12,55 @@ export function MediaCard({ item }: MediaCardProps) {
   const { slug, frontmatter } = item;
 
   // Determine the directory based on type
-  const directory = frontmatter.type === "movie" ? "movies" : frontmatter.type === "tv" ? "tv" : "books";
+  const directory = frontmatter.type === "movie" ? "movies" : frontmatter.type === "tv" ? "tv" : frontmatter.type === "book" ? "books" : "albums";
   const href = `/media/${directory}/${slug}`;
 
-  // Status color mapping
-  const statusColors: Record<string, string> = {
-    completed: "bg-green-500/10 text-green-500 hover:bg-green-500/20",
-    watching: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
-    planned: "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20",
-  };
-
   return (
-    <Link href={href} className="block group">
-      <Card className="overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02]">
-        {/* Image */}
-        {frontmatter.poster && (
-          <div className="relative aspect-[2/3] overflow-hidden bg-muted">
-            <img
-              src={frontmatter.poster}
-              alt={frontmatter.title}
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
+    <Link href={href} className="block group font-lexend">
+      <div className="relative aspect-[2/3] rounded-2xl overflow-hidden bg-media-surface-container mb-4 transition-all duration-500 group-hover:scale-102 group-hover:-translate-y-2 shadow-sm hover:shadow-xl">
+        {frontmatter.poster ? (
+          <img
+            src={frontmatter.poster}
+            alt={frontmatter.title}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="w-full h-full bg-media-primary/5 flex items-center justify-center">
+            <span className="material-symbols-outlined text-4xl text-media-primary/20">image</span>
           </div>
         )}
-
-        <CardContent className="p-4 space-y-2">
-          {/* Title */}
-          <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">
-            {frontmatter.title.replace(/-/g, ' ')}
-          </h3>
-
-          {/* Status and Rating */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge
-              variant="secondary"
-              className={statusColors[frontmatter.status]}
-            >
-              {frontmatter.status}
-            </Badge>
-
-            {frontmatter.rating && (
-              <div className="flex items-center gap-1 text-sm">
-                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                <span className="font-medium">{frontmatter.rating}</span>
-              </div>
-            )}
+        
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-media-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-white text-media-primary flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
+            <span className="material-symbols-outlined font-bold">visibility</span>
           </div>
+        </div>
 
-          {/* Genres */}
+        {/* Rating Badge */}
+        {frontmatter.rating && (
+          <div className="absolute top-3 right-3 px-2 py-1 bg-media-surface/90 backdrop-blur-md text-media-primary text-[10px] font-black rounded-lg shadow-sm flex items-center gap-1">
+            <Star className="h-3 w-3 fill-media-secondary text-media-secondary" />
+            {frontmatter.rating}
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <h3 className="font-bold truncate tracking-tight group-hover:text-media-secondary transition-colors">
+          {frontmatter.title.replace(/-/g, ' ')}
+        </h3>
+        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-60">
+          <span>{frontmatter.type}</span>
           {frontmatter.genres && frontmatter.genres.length > 0 && (
-            <div className="flex gap-1 flex-wrap">
-              {frontmatter.genres.slice(0, 2).map((genre) => (
-                <Badge key={genre} variant="outline" className="text-xs">
-                  {genre}
-                </Badge>
-              ))}
-            </div>
+            <>
+              <span className="w-1 h-1 rounded-full bg-media-outline-variant"></span>
+              <span className="truncate">{frontmatter.genres[0]}</span>
+            </>
           )}
-
-          {/* Date */}
-          {(frontmatter.completed || frontmatter.started) && (
-            <p className="text-xs text-muted-foreground">
-              {frontmatter.completed
-                ? `Completed: ${formatDateSafe(frontmatter.completed)}`
-                : `Started: ${formatDateSafe(frontmatter.started!)}`}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </Link>
   );
 }

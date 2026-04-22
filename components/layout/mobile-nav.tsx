@@ -11,13 +11,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Calendar, CalendarDays, CalendarCheck, CheckSquare, Heart, Dumbbell, Smile, BookOpen, Image as ImageIcon, MapPin, Target, Trophy, TrendingUp, UtensilsCrossed, Plane, Users, Wine } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavLink {
   href: string;
   label: string;
-  icon: React.ReactNode;
+  icon: string;
 }
 
 interface NavSection {
@@ -26,62 +25,55 @@ interface NavSection {
 }
 
 export function MobileNav() {
+  const [mounted, setMounted] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
-  
-  // Use stable date values to prevent hydration mismatch
-  // These are computed once on mount to ensure consistency
-  const [todayStr, setTodayStr] = React.useState<string>("");
-  const [currentYear, setCurrentYear] = React.useState<number>(new Date().getFullYear());
-  
+  const [currentYear] = React.useState(new Date().getFullYear());
+
   React.useEffect(() => {
-    const today = new Date();
-    setTodayStr(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
-    setCurrentYear(today.getFullYear());
+    setMounted(true);
   }, []);
+
+  if (!mounted) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="md:hidden"
+        aria-label="Open navigation menu"
+      >
+        <span className="material-symbols-outlined text-2xl">menu</span>
+      </Button>
+    );
+  }
 
   const navSections: NavSection[] = [
     {
-      title: "Calendar",
+      title: "Core Tracking",
       links: [
-        { href: "/calendar", label: "Calendar", icon: <Calendar className="h-5 w-5" /> },
-        { href: todayStr ? `/daily/${todayStr}` : "/calendar", label: "Today", icon: <CalendarDays className="h-5 w-5" /> },
-        { href: "/events", label: "Events", icon: <CalendarCheck className="h-5 w-5" /> },
+        { href: "/tasks", label: "Tasks", icon: "check_circle" },
+        { href: "/habits", label: "Habits", icon: "repeat" },
+        { href: "/goals", label: "Goals", icon: "flag" },
+        { href: "/exercise", label: "Exercise", icon: "fitness_center" },
+        { href: "/mood", label: "Mood", icon: "mood" },
+        { href: "/relationship", label: "Relationship", icon: "favorite" },
+        { href: "/people", label: "People", icon: "groups" },
+        { href: "/finances", label: "Finances", icon: "payments" },
+        { href: "/media", label: "Media", icon: "movie" },
       ],
     },
     {
-      title: "Track",
+      title: "Exploration",
       links: [
-        { href: "/tasks", label: "Tasks", icon: <CheckSquare className="h-5 w-5" /> },
-        { href: "/habits", label: "Habits", icon: <Heart className="h-5 w-5" /> },
-        { href: "/exercise", label: "Exercise", icon: <Dumbbell className="h-5 w-5" /> },
-        { href: "/mood", label: "Mood", icon: <Smile className="h-5 w-5" /> },
-        { href: "/relationship", label: "Relationship", icon: <Heart className="h-5 w-5" /> },
-        { href: "/people", label: "People", icon: <Users className="h-5 w-5" /> },
-        { href: "/goals", label: "Goals", icon: <Target className="h-5 w-5" /> },
-      ],
-    },
-    {
-      title: "Library",
-      links: [
-        { href: "/media", label: "Media", icon: <ImageIcon className="h-5 w-5" /> },
-        { href: "/parks", label: "Parks", icon: <MapPin className="h-5 w-5" /> },
-        { href: "/journals", label: "Journals", icon: <BookOpen className="h-5 w-5" /> },
-        { href: "/recipes", label: "Recipes", icon: <UtensilsCrossed className="h-5 w-5" /> },
-        { href: "/restaurants", label: "Restaurants", icon: <UtensilsCrossed className="h-5 w-5" /> },
-        { href: "/drinks", label: "Drinks", icon: <Wine className="h-5 w-5" /> },
-        { href: "/vacations", label: "Vacations", icon: <Plane className="h-5 w-5" /> },
-      ],
-    },
-    {
-      title: "Progress",
-      links: [
-        { href: "/achievements", label: "Achievements", icon: <Trophy className="h-5 w-5" /> },
-        {
-          href: `/year/${currentYear}`,
-          label: "Year in Review",
-          icon: <TrendingUp className="h-5 w-5" />,
-        },
+        { href: "/parks", label: "Parks", icon: "park" },
+        { href: "/journals", label: "Journals", icon: "menu_book" },
+        { href: "/recipes", label: "Recipes", icon: "restaurant" },
+        { href: "/restaurants", label: "Restaurants", icon: "storefront" },
+        { href: "/drinks", label: "Drinks", icon: "local_bar" },
+        { href: "/vacations", label: "Vacations", icon: "flight" },
+        { href: "/events", label: "Events", icon: "event" },
+        { href: "/achievements", label: "Achievements", icon: "emoji_events" },
+        { href: `/year/${currentYear}`, label: "Year in Review", icon: "calendar_month" },
       ],
     },
   ];
@@ -95,17 +87,22 @@ export function MobileNav() {
           className="md:hidden"
           aria-label="Open navigation menu"
         >
-          <Menu className="h-6 w-6" />
+          <span className="material-symbols-outlined text-2xl">menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] sm:w-[320px]">
-        <SheetHeader>
-          <SheetTitle>Navigation</SheetTitle>
+      <SheetContent side="left" className="w-[300px] p-0 bg-[#faf9f6] dark:bg-[#061b0e]">
+        <SheetHeader className="p-6 border-b border-outline-variant/10">
+          <SheetTitle className="text-left flex items-center gap-2">
+            <div className="w-8 h-8 rounded bg-[#061b0e] flex items-center justify-center text-[#ffffff]">
+              <span className="material-symbols-outlined text-sm">temp_preferences_custom</span>
+            </div>
+            <span className="font-bold tracking-tighter">Homepage</span>
+          </SheetTitle>
         </SheetHeader>
-        <nav className="mt-6 flex flex-col space-y-6 overflow-y-auto flex-1 pb-4">
+        <nav className="flex flex-col gap-6 overflow-y-auto h-[calc(100vh-80px)] p-4 no-scrollbar">
           {navSections.map((section) => (
             <div key={section.title} className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground px-2">
+              <h3 className="text-[10px] uppercase tracking-[0.2em] text-[#737973] font-bold px-2">
                 {section.title}
               </h3>
               <div className="space-y-1">
@@ -117,15 +114,13 @@ export function MobileNav() {
                       href={link.href}
                       onClick={() => setOpen(false)}
                       className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors",
-                        "hover:bg-accent hover:text-accent-foreground",
-                        "min-h-[44px]", // Ensure minimum touch target
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
                         isActive
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground"
+                          ? "bg-[#9f402d] text-[#faf9f6] font-semibold"
+                          : "text-[#434843] dark:text-[#e3e2e0] hover:bg-emerald-100/30 dark:hover:bg-emerald-900/20"
                       )}
                     >
-                      {link.icon}
+                      <span className="material-symbols-outlined text-lg">{link.icon}</span>
                       {link.label}
                     </Link>
                   );

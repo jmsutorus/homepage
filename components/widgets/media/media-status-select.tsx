@@ -9,9 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MediaStatusSelectProps {
   status: string;
@@ -19,6 +19,7 @@ interface MediaStatusSelectProps {
   type: string;
   frontmatter: any;
   content: string | undefined;
+  className?: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -34,6 +35,7 @@ export function MediaStatusSelect({
   type,
   frontmatter,
   content,
+  className,
 }: MediaStatusSelectProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const router = useRouter();
@@ -91,7 +93,11 @@ export function MediaStatusSelect({
       onValueChange={handleStatusChange}
       disabled={isUpdating}
     >
-      <SelectTrigger className={`!h-6 !min-h-0 !text-xs !px-2.5 !py-0 font-medium ${statusColors[status] || statusColors.planned} w-auto inline-flex !rounded-full gap-1.5 [&>svg]:!size-3 shadow-none transition-colors`}>
+      <SelectTrigger className={cn(
+        "!h-6 !min-h-0 !text-xs !px-2.5 !py-0 font-medium w-auto inline-flex !rounded-full gap-1.5 [&>svg]:!size-3 shadow-none transition-colors",
+        statusColors[status] || statusColors.planned,
+        className
+      )}>
         {isUpdating ? <Loader2 className="!w-3 !h-3 animate-spin mr-1" /> : null}
         <SelectValue placeholder={status} />
       </SelectTrigger>

@@ -1,32 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import type { Task, TaskVelocityData, VelocityPeriod, TaskCategory, TaskStatusRecord } from "@/lib/db/tasks";
+import { useState, useEffect, useCallback } from "react";
+import type { Task, TaskCategory, TaskStatusRecord, TaskVelocityData } from "@/lib/db/tasks";
 import { TaskForm } from "@/components/widgets/tasks/task-form";
 import { TaskList } from "@/components/widgets/tasks/task-list";
-import { CategoryManager } from "@/components/widgets/tasks/category-manager";
-import { StatusManager } from "@/components/widgets/tasks/status-manager";
-import { TaskTemplateManager } from "@/components/widgets/tasks/task-template-manager";
-import { TaskVelocityChart } from "@/components/widgets/tasks/task-velocity-chart";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { PageTabsList } from "@/components/ui/page-tabs-list";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ListTodo, Settings, TrendingUp, ChevronDown, MoreHorizontal } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, Settings } from "lucide-react";
 import { MobileTaskSheet } from "@/components/widgets/tasks/mobile-task-sheet";
-import { MobileFilterSheet } from "@/components/widgets/tasks/mobile-filter-sheet";
-
-type FilterType = "all" | "active" | "completed";
-type ViewTab = "tasks" | "manage" | "analytics";
+import Link from "next/link";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 
 interface TasksPageClientProps {
   initialTasks: Task[];
@@ -35,45 +16,15 @@ interface TasksPageClientProps {
 
 export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPageClientProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [filter] = useState<FilterType>("all");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categories, setCategories] = useState<TaskCategory[]>([]);
   const [statuses, setStatuses] = useState<TaskStatusRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [velocityData, setVelocityData] = useState<TaskVelocityData | null>(initialVelocityData);
-  const [velocityPeriod, setVelocityPeriod] = useState<VelocityPeriod>("week");
-  const [viewTab, setViewTab] = useState<ViewTab>("tasks");
-  const [showTaskForm, setShowTaskForm] = useState(false);
-  const [completedTasksOpen, setCompletedTasksOpen] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
-  const [showDetails, setShowDetails] = useState(true);
-  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-
-  // Actually, useRef is better for this pattern.
-  const isMounted = useRef(false);
 
   const fetchTasks = useCallback(async () => {
     try {
       setIsLoading(true);
-      const params = new URLSearchParams();
-
-      if (filter === "active") {
-        params.append("completed", "false");
-      } else if (filter === "completed") {
-        params.append("completed", "true");
-      }
-
-      if (categoryFilter !== "all") {
-        params.append("category", categoryFilter);
-      }
-
-      if (statusFilter !== "all") {
-        params.append("status", statusFilter);
-      }
-
-      const url = `/api/tasks${params.toString() ? `?${params.toString()}` : ""}`;
-      const response = await fetch(url);
+      const response = await fetch("/api/tasks");
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
@@ -82,18 +33,6 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
       console.error("Failed to fetch tasks:", error);
     } finally {
       setIsLoading(false);
-    }
-  }, [filter, categoryFilter, statusFilter]);
-
-  const fetchVelocityData = useCallback(async (period: VelocityPeriod) => {
-    try {
-      const response = await fetch(`/api/tasks/velocity?period=${period}`);
-      if (response.ok) {
-        const data = await response.json();
-        setVelocityData(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch velocity data:", error);
     }
   }, []);
 
@@ -122,272 +61,90 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
     fetchCategoriesAndStatuses();
   }, [fetchCategoriesAndStatuses]);
 
-  useEffect(() => {
-    if (!isMounted.current) {
-      isMounted.current = true;
-      return;
-    }
-    fetchTasks();
-  }, [fetchTasks]);
-
-  useEffect(() => {
-    // Only fetch if period changes (initial fetch is handled by server)
-    // But velocityPeriod is state, so it's "week" initially.
-    // We need to skip the first one if it matches initial.
-    if (velocityPeriod === "week" && initialVelocityData) {
-       // Check if we are mounting?
-       // If we use the same isMounted ref, it might be tricky if effects run in different order?
-       // Actually, simpler:
-       // We can just check if we have data for the current period? No, we don't store it by period.
-       return;
-    }
-    fetchVelocityData(velocityPeriod);
-  }, [velocityPeriod, fetchVelocityData, initialVelocityData]);
-
-  const handlePeriodChange = (period: VelocityPeriod) => {
-    setVelocityPeriod(period);
-  };
-
   const handleTasksChanged = () => {
     fetchTasks();
-    fetchVelocityData(velocityPeriod);
-    fetchCategoriesAndStatuses();
   };
 
-  const handleMobileFilterApply = (category: string, status: string) => {
-    setCategoryFilter(category);
-    setStatusFilter(status);
-    setMobileFilterOpen(false);
-  };
+  const activeTasks = tasks.filter((t) => !t.completed);
+  const completedTasks = tasks.filter((t) => t.completed);
 
-  const stats = {
-    total: tasks.length,
-    active: tasks.filter((t) => !t.completed).length,
-    completed: tasks.filter((t) => t.completed).length,
-  };
+  // Pick a featured task: highest priority or first in progress
+  const featuredTask = activeTasks.find(t => t.priority === 'high') || activeTasks[0];
 
   return (
-    <div className="md:space-y-6">
-      {/* Header and Actions */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Manage your todo list with priorities and due dates
+    <main className="max-w-3xl mx-auto px-6 py-16 space-y-24 font-lexend">
+      {/* Hero Section: Draft Your Next Action */}
+      <section className="text-center">
+        <div className="mb-10">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-media-primary mb-6">Draft Your Next Action.</h2>
+          <p className="text-media-on-surface-variant text-lg leading-relaxed max-w-xl mx-auto">
+            Every great project begins with a single, clearly defined entry in the journal. Define the scope, set the priority, and begin the flow.
           </p>
         </div>
         
-        {/* Desktop: New Task Button */}
-        <Button
-          onClick={() => setShowTaskForm(!showTaskForm)}
-          size="sm"
-          className="mt-1 hidden md:flex"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {showTaskForm ? "Hide Form" : "New Task"}
-        </Button>
+        <TaskForm onTaskAdded={handleTasksChanged} />
+      </section>
 
-        {/* Mobile: Options Menu */}
-        <div className="md:hidden mt-1">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setMobileFilterOpen(true)}>
-                Sort / Filter...
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowDetails(!showDetails)}>
-                {showDetails ? "Hide Details" : "Show Details"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+      {/* In Progress Section */}
+      <section>
+        <div className="flex items-baseline justify-between mb-10 border-b border-media-outline-variant/20 pb-4">
+          <h3 className="text-3xl font-bold tracking-tighter text-media-primary">In Progress</h3>
+          <span className="font-lexend text-xs uppercase tracking-[0.2em] text-media-secondary font-bold">
+            {activeTasks.length} Ongoing {activeTasks.length === 1 ? 'Chapter' : 'Chapters'}
+          </span>
         </div>
-      </div>
 
-      <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as ViewTab)}>
-        <PageTabsList
-          tabs={[
-            { value: "tasks", label: "Tasks", icon: ListTodo, showLabel: false },
-            { value: "manage", label: "Manage", icon: Settings, showLabel: false },
-            { value: "analytics", label: "Analytics", icon: TrendingUp, showLabel: false },
-          ]}
-          actionButton={{
-            label: "New Task",
-            onClick: () => setMobileSheetOpen(true),
-            icon: Plus,
-          }}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-media-primary"></div>
+          </div>
+        ) : (
+          <TaskList 
+            tasks={activeTasks} 
+            onTasksChanged={handleTasksChanged}
+            featuredTaskId={featuredTask?.id}
+          />
+        )}
+      </section>
+
+      {/* Archived Flow Section */}
+      <section className="pb-12">
+        <div className="flex items-baseline gap-6 mb-10">
+          <h3 className="text-3xl font-bold tracking-tighter text-media-primary opacity-30">Archived Flow</h3>
+          <div className="h-px flex-1 bg-media-outline-variant/20"></div>
+        </div>
+
+        <TaskList 
+          tasks={completedTasks.slice(0, 5)} 
+          onTasksChanged={handleTasksChanged}
+          variant="archived"
         />
 
-        <TabsContent value="tasks" className="space-y-6 mt-6 pb-20 md:pb-0">
-          {/* Task Form - Desktop Only */}
-          {showTaskForm && (
-            <Card className="hidden md:block">
-              <CardHeader>
-                <CardTitle>Add New Task</CardTitle>
-                <CardDescription>Create a task with optional due date and priority</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TaskForm onTaskAdded={handleTasksChanged} />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Active Tasks - Desktop View (Card) */}
-          <div className="hidden md:block">
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center justify-between w-full sm:w-auto">
-                      <div>
-                        <CardTitle>Your Tasks</CardTitle>
-                        <CardDescription className="text-sm">
-                          {stats.active} active tasks
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Additional Filters */}
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex items-center gap-2 flex-1 sm:flex-none">
-                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                          <SelectValue placeholder="All Categories" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Categories</SelectItem>
-                          {categories.map((category) => (
-                            <SelectItem key={category.id} value={category.name}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-1 sm:flex-none">
-                      <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                          <SelectValue placeholder="All Statuses" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Statuses</SelectItem>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="in_progress">In Progress</SelectItem>
-                          <SelectItem value="blocked">Blocked</SelectItem>
-                          <SelectItem value="on_hold">On Hold</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                          {statuses.map((status) => (
-                            <SelectItem key={status.id} value={status.name}>
-                              {status.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
-                ) : (
-                  <TaskList 
-                    tasks={tasks.filter(t => !t.completed)} 
-                    onTasksChanged={handleTasksChanged}
-                    showDetails={showDetails}
-                  />
-                )}
-              </CardContent>
-            </Card>
+        {completedTasks.length > 5 && (
+          <div className="mt-16 text-center">
+            <button className="cursor-pointer text-[10px] font-lexend uppercase tracking-[0.3em] text-media-on-surface-variant/40 hover:text-media-primary transition-all font-bold border border-media-outline-variant/20 px-8 py-4 rounded-full hover:bg-media-surface-container-low">
+              View Entire Archive Library ({completedTasks.length})
+            </button>
           </div>
+        )}
+      </section>
 
-          {/* Active Tasks - Mobile View (No Card wrapper) */}
-          <div className="md:hidden">
-            {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
-            ) : (
-              <TaskList 
-                tasks={tasks.filter(t => !t.completed)} 
-                onTasksChanged={handleTasksChanged}
-                showDetails={showDetails}
-              />
-            )}
-          </div>
+      {/* Management Registry Link */}
+      <section className="pt-12 border-t border-media-outline-variant/10 text-center">
+        <Link 
+          href="/tasks/manage"
+          className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-media-on-surface-variant/60 hover:text-media-secondary transition-colors group"
+        >
+          <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
+          System Governance & Flow Registry
+        </Link>
+      </section>
 
-          {/* Completed Tasks */}
-          {stats.completed > 0 && (
-            <Collapsible open={completedTasksOpen} onOpenChange={setCompletedTasksOpen}>
-              <Card>
-                <CardHeader>
-                  <CollapsibleTrigger asChild>
-                    <div className="flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity">
-                      <div>
-                        <CardTitle>Completed Tasks</CardTitle>
-                        <CardDescription className="text-sm">
-                          {stats.completed} completed tasks
-                        </CardDescription>
-                      </div>
-                      <ChevronDown
-                        className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${
-                          completedTasksOpen ? 'rotate-180' : ''
-                        }`}
-                      />
-                    </div>
-                  </CollapsibleTrigger>
-                </CardHeader>
-                <CollapsibleContent>
-                  <CardContent>
-                    {isLoading ? (
-                      <div className="text-center py-8 text-muted-foreground">Loading tasks...</div>
-                    ) : (
-                      <TaskList 
-                        tasks={tasks.filter(t => t.completed)} 
-                        onTasksChanged={handleTasksChanged}
-                        showDetails={showDetails}
-                      />
-                    )}
-                  </CardContent>
-                </CollapsibleContent>
-              </Card>
-            </Collapsible>
-          )}
-        </TabsContent>
-
-        <TabsContent value="manage" className="space-y-6 md:mt-6 pb-20 md:pb-0">
-          {/* Task Templates */}
-          <TaskTemplateManager onTemplatesChanged={handleTasksChanged} />
-
-          {/* Category Manager */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Manage Categories</CardTitle>
-              <CardDescription>Add, edit, or remove task categories</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CategoryManager onCategoriesChanged={handleTasksChanged} />
-            </CardContent>
-          </Card>
-
-          {/* Status Manager */}
-          <StatusManager onStatusesChanged={handleTasksChanged} />
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-6 md:mt-6 pb-20 md:pb-0">
-          {/* Task Velocity Chart */}
-          {velocityData && (
-            <TaskVelocityChart
-              data={velocityData}
-              onPeriodChange={handlePeriodChange}
-            />
-          )}
-        </TabsContent>
-      </Tabs>
+      {/* Floating Action Button: New Task */}
+      <FloatingActionButton 
+        onClick={() => setMobileSheetOpen(true)}
+        tooltipText="New Task"
+      />
 
       {/* Mobile Task Sheet */}
       <MobileTaskSheet
@@ -395,16 +152,6 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
         onOpenChange={setMobileSheetOpen}
         onTaskAdded={handleTasksChanged}
       />
-
-      <MobileFilterSheet
-        open={mobileFilterOpen}
-        onOpenChange={setMobileFilterOpen}
-        categories={categories}
-        statuses={statuses}
-        currentCategory={categoryFilter}
-        currentStatus={statusFilter}
-        onApply={handleMobileFilterApply}
-      />
-    </div>
+    </main>
   );
 }

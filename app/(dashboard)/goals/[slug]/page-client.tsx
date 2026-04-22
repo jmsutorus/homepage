@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -330,332 +331,342 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
   }, [goal]);
 
   return (
-    <div className="container mx-auto py-4 sm:py-6 px-4 max-w-4xl">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4 sm:mb-6">
-        <div className="flex items-start gap-2 sm:gap-4">
-          <Link href="/goals">
-            <Button variant="ghost" size="icon" className="cursor-pointer mt-1">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-              <h1 className="text-xl sm:text-2xl font-bold">{goal.title}</h1>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="flex items-center gap-1 cursor-pointer focus:outline-none disabled:opacity-50"
-                    disabled={isUpdatingStatus}
+    <main className="pt-12 pb-32 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto bg-media-surface min-h-screen font-lexend">
+      {/* Editorial Hero Section */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-end mb-20 pt-12">
+        <div className="lg:col-span-8 space-y-6">
+          <div className="flex flex-wrap gap-3 items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="px-3 py-1 bg-media-primary text-media-on-primary text-[10px] uppercase tracking-widest font-bold rounded-full cursor-pointer hover:opacity-90 transition-opacity"
+                  disabled={isUpdatingStatus}
+                >
+                  {getStatusLabel(goal.status)}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {allStatuses.map((status) => (
+                  <DropdownMenuItem
+                    key={status}
+                    onClick={() => handleStatusChange(status)}
+                    className={cn(
+                      "cursor-pointer",
+                      status === goal.status && "bg-muted"
+                    )}
                   >
-                    <GoalStatusBadge status={goal.status} />
-                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  {allStatuses.map((status) => (
-                    <DropdownMenuItem
-                      key={status}
-                      onClick={() => handleStatusChange(status)}
-                      className={cn(
-                        "cursor-pointer",
-                        status === goal.status && "bg-muted"
-                      )}
-                    >
-                      <GoalStatusBadge status={status} className="mr-2" />
-                      {status === goal.status && (
-                        <span className="ml-auto text-xs text-muted-foreground">(current)</span>
-                      )}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <GoalStatusBadge status={status} className="mr-2" />
+                    {status === goal.status && (
+                      <span className="ml-auto text-xs text-muted-foreground">(current)</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <span className={cn(
+              "px-3 py-1 text-[10px] uppercase tracking-widest font-bold rounded-full",
+              goal.priority === "high" ? "bg-media-secondary text-media-on-secondary" :
+              goal.priority === "medium" ? "bg-media-tertiary-fixed text-media-on-tertiary-fixed" :
+              "bg-media-surface-container-highest text-media-on-surface-variant"
+            )}>
+              {priority.label}
+            </span>
+
+            {goal.tags?.map(tag => (
+              <span key={tag} className="px-3 py-1 bg-media-tertiary-fixed text-media-on-tertiary-fixed text-[10px] uppercase tracking-widest font-bold rounded-full">
+                {tag}
+              </span>
+            ))}
+          </div>
+          
+          <div className="space-y-4">
+            <Link href="/goals" className="inline-flex items-center text-xs uppercase tracking-widest font-bold text-media-outline hover:text-media-primary transition-colors mb-2">
+              <ArrowLeft className="h-3 w-3 mr-2" />
+              Back to Goals
+            </Link>
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-media-primary leading-[1.1] max-w-3xl">
+              {goal.title}
+            </h1>
+          </div>
+        </div>
+
+        <div className="lg:col-span-4 flex flex-col gap-6 text-media-on-surface-variant mb-2">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-media-outline">calendar_add_on</span>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider font-bold">Created</p>
+              <p className="text-sm font-medium">{format(parseISO(goal.created_at), "MMM d, yyyy")}</p>
             </div>
-            {goal.description && (
-              <p className="text-muted-foreground">{goal.description}</p>
+          </div>
+          
+          {goal.target_date && (
+            <div className={cn(
+              "flex items-center gap-3",
+              isOverdue ? "text-media-error" : "text-media-on-surface-variant"
+            )}>
+              <span className={cn(
+                "material-symbols-outlined",
+                isOverdue ? "text-media-error" : "text-media-secondary"
+              )}>event_upcoming</span>
+              <div>
+                <p className={cn(
+                  "text-[10px] uppercase tracking-wider font-bold",
+                  !isOverdue && "text-media-secondary"
+                )}>Target Completion</p>
+                <p className="text-sm font-medium">
+                  {format(parseISO(goal.target_date), "MMM d, yyyy")}
+                  {isOverdue && <span className="ml-2 text-xs font-bold">(Overdue)</span>}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 pt-4 border-t border-media-outline-variant/20">
+            <Link href={`/goals/${goal.slug}/edit`} className="flex-1">
+              <Button variant="outline" className="w-full bg-media-surface border-media-outline-variant hover:bg-media-surface-container-low text-media-on-surface-variant">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Goal
+              </Button>
+            </Link>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="border-media-outline-variant text-media-error hover:bg-media-error/10" size="icon">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-media-surface border-media-outline-variant">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-media-primary">Delete Goal</AlertDialogTitle>
+                  <AlertDialogDescription className="text-media-on-surface-variant">
+                    Are you sure you want to delete this goal? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="bg-media-surface-container border-media-outline-variant">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="bg-media-error text-media-on-error hover:bg-media-error/90"
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      </section>
+
+      {/* Bento Grid Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+        {/* Progress Visualization */}
+        <div className="md:col-span-12 lg:col-span-5 bg-media-surface-container-low rounded-xl p-10 flex flex-col items-center justify-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-media-primary-container/5 rounded-full -mr-16 -mt-16"></div>
+          <div className="relative w-64 h-64 flex items-center justify-center">
+            {/* SVG Progress Circle */}
+            <svg className="w-full h-full -rotate-90 transform">
+              <circle
+                className="text-media-surface-container-highest"
+                cx="128"
+                cy="128"
+                fill="transparent"
+                r="110"
+                stroke="currentColor"
+                strokeWidth="12"
+              ></circle>
+              <motion.circle
+                className="text-media-secondary"
+                cx="128"
+                cy="128"
+                fill="transparent"
+                r="110"
+                stroke="currentColor"
+                strokeWidth="12"
+                strokeDasharray="691"
+                initial={{ strokeDashoffset: 691 }}
+                animate={{ strokeDashoffset: 691 - (691 * calculatedProgress) / 100 }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                strokeLinecap="round"
+              ></motion.circle>
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-6xl font-bold text-media-primary">{calculatedProgress}%</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-media-on-surface-variant">Evolution</span>
+            </div>
+          </div>
+          <div className="mt-8 text-center">
+            <h3 className="text-xl font-semibold text-media-primary mb-2">
+              {calculatedProgress === 100 ? "Goal Achieved" : 
+               calculatedProgress >= 75 ? "Technical Mastery" :
+               calculatedProgress >= 50 ? "Steady Momentum" :
+               calculatedProgress >= 25 ? "Gaining Ground" : "Foundation Stage"}
+            </h3>
+            <p className="text-media-on-surface-variant text-sm leading-relaxed max-w-xs mx-auto">
+              {calculatedProgress === 100 ? "You have reached the final phase of mastery. The structure is complete." :
+               calculatedProgress >= 50 ? "Approaching the final phase of synthesis. The momentum is firm." :
+               "The journey of a thousand miles begins with a single step. Keep refining."}
+            </p>
+          </div>
+        </div>
+
+        {/* Milestones Timeline */}
+        <div className="md:col-span-7 lg:col-span-7 bg-media-surface-container-lowest rounded-xl p-8 border border-media-outline-variant/10 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-media-on-surface-variant">Milestones Timeline</h3>
+            <span className="text-xs font-bold text-media-primary bg-media-surface-container-high px-3 py-1 rounded-full">
+              {completedMilestones}/{goal.milestones.length}
+            </span>
+          </div>
+          
+          <div className="space-y-12 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-media-outline-variant/30">
+            {goal.milestones.length > 0 ? (
+              goal.milestones.map((milestone) => (
+                <div key={milestone.id} className="relative flex items-start gap-8 group">
+                  <button 
+                    onClick={() => handleToggleMilestone(milestone.id)}
+                    className={cn(
+                      "z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer hover:scale-110 shadow-sm",
+                      milestone.completed 
+                        ? "bg-media-primary text-media-on-primary" 
+                        : "bg-media-surface-container-highest text-media-on-surface-variant border-4 border-media-surface"
+                    )}
+                  >
+                    {milestone.completed ? (
+                      <span className="material-symbols-outlined text-sm font-bold">check</span>
+                    ) : (
+                      <div className={cn("w-2 h-2 rounded-full", milestone.completed ? "" : "bg-media-secondary")}></div>
+                    )}
+                  </button>
+                  <div className="flex-1">
+                    <div className="flex flex-col gap-1">
+                      <h4 className={cn(
+                        "font-bold text-lg text-media-primary transition-all",
+                        milestone.completed && "opacity-60 line-through decoration-media-secondary/30"
+                      )}>
+                        {milestone.title}
+                      </h4>
+                      {milestone.description && (
+                        <p className="text-sm text-media-on-surface-variant leading-relaxed">{milestone.description}</p>
+                      )}
+                      
+                      {/* Sub-checklist Indicator */}
+                      {milestone.checklist.length > 0 && (
+                        <div className="mt-4 space-y-2 ml-2 border-l-2 border-media-outline-variant/20 pl-4 py-1">
+                          {milestone.checklist.map((item) => (
+                            <div 
+                              key={item.id} 
+                              className="flex items-center gap-3 cursor-pointer group/item"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleMilestoneChecklistItem(milestone.id, item.id);
+                              }}
+                            >
+                              <span className={cn(
+                                "material-symbols-outlined text-xs transition-colors",
+                                item.completed ? "text-media-primary" : "text-media-outline group-hover/item:text-media-secondary"
+                              )}>
+                                {item.completed ? "check_circle" : "radio_button_unchecked"}
+                              </span>
+                              <span className={cn(
+                                "text-xs font-medium transition-all",
+                                item.completed ? "text-media-outline-variant" : "text-media-on-surface-variant group-hover/item:text-media-primary"
+                              )}>
+                                {item.text}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <p className="text-[10px] text-media-outline-variant mt-2 font-bold uppercase tracking-[0.1em]">
+                        {milestone.completed 
+                          ? `Phase Complete` 
+                          : milestone.target_date 
+                            ? `Projected Completion: ${format(parseISO(milestone.target_date), "MMM yyyy")}`
+                            : "Active Phase"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-10">
+                <p className="text-media-outline-variant italic text-sm">No milestones have been drafted for this journey.</p>
+              </div>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Link href={`/goals/${goal.slug}/edit`} className="flex-1 sm:flex-none">
-            <Button variant="outline" className="cursor-pointer w-full">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          </Link>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" className="cursor-pointer text-destructive hover:text-destructive" size="icon">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Goal</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this goal? This will also delete all
-                  milestones and checklists. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
-                >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Left column - Progress and details */}
-        <div className="space-y-6">
-          {/* Progress Card */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center">
-                <AnimatedProgressRing
-                  value={calculatedProgress}
-                  max={100}
-                  size={120}
-                  strokeWidth={8}
-                  showLabel={true}
-                  color={
-                    goal.status === "completed"
-                      ? "success"
-                      : calculatedProgress >= 75
-                        ? "success"
-                        : calculatedProgress >= 50
-                          ? "warning"
-                          : "primary"
-                  }
-                />
-                <p className="mt-3 text-sm text-muted-foreground">Overall Progress</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Details Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {goal.target_date && (
-                <div className={cn(
-                  "flex items-center gap-2 text-sm",
-                  isOverdue && "text-red-600"
-                )}>
-                  <Calendar className="h-4 w-4" />
-                  <span>Target: {format(parseISO(goal.target_date), "MMMM d, yyyy")}</span>
-                  {isOverdue && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
-                </div>
-              )}
-
-              {goal.completed_date && (
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>Completed: {format(parseISO(goal.completed_date), "MMMM d, yyyy")}</span>
-                </div>
-              )}
-
-              <div className={cn("flex items-center gap-2 text-sm", priority.className)}>
-                <Flag className="h-4 w-4" />
-                <span>{priority.label}</span>
-              </div>
-
-              {goal.tags && goal.tags.length > 0 && (
-                <div className="flex items-start gap-2">
-                  <Tag className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div className="flex flex-wrap gap-1">
-                    {goal.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="text-xs text-muted-foreground pt-2 border-t">
-                Created {format(parseISO(goal.created_at), "MMM d, yyyy")}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Checklist & Image Row */}
+        <div className="md:col-span-5 lg:col-span-4 space-y-8">
+          <div className="bg-media-surface-container rounded-xl p-8">
+            <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-media-on-surface-variant mb-6">Execution Checklist</h3>
+            {goal.checklist.length > 0 ? (
+              <ul className="space-y-4">
+                {goal.checklist.map((item) => (
+                  <li 
+                    key={item.id} 
+                    className="flex items-center gap-4 cursor-pointer group"
+                    onClick={() => handleToggleChecklistItem(item.id)}
+                  >
+                    <span className={cn(
+                      "material-symbols-outlined transition-colors",
+                      item.completed ? "text-media-primary" : "text-media-outline group-hover:text-media-primary"
+                    )}>
+                      {item.completed ? "check_box" : "check_box_outline_blank"}
+                    </span>
+                    <span className={cn(
+                      "text-sm font-medium transition-all",
+                      item.completed ? "line-through text-media-outline-variant" : "text-media-on-surface"
+                    )}>
+                      {item.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-media-outline-variant italic text-sm">No checklist items.</p>
+            )}
+          </div>
+          
+          <div className="aspect-square rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-700 cursor-pointer shadow-xl relative group">
+            <img 
+              alt="Goal Context" 
+              className="w-full h-full object-cover" 
+              src={goal.slug?.includes("piano") ? "https://lh3.googleusercontent.com/aida-public/AB6AXuB214UbpUWFuWmys_wFDBXh0T6m0uH2V3hMsMxE29F8l_EajPbUeHez0GMIbP2douBSC33u0v6cNGXiDGTYaY5ENnvP_RaFxpvIXlndHyJ0l6GgVWypON_QDnRLik3A5mqzLUK6S-0PgsSRVjO2A95vUhHFq2rcuohqf-3o7HKX7gIvy8qLRDobi9Lj0u3sK68LG-59tJ9aP3WyE-K1su1klYZxHBD_b_ZcLYCwSz6VG-yJMApaWWdxq_wRJc86pVOzKGWEeMV_8BA" : "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop"}
+            />
+            <div className="absolute inset-0 bg-media-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="text-white text-xs font-bold uppercase tracking-widest">Detail View</span>
+            </div>
+          </div>
         </div>
 
-        {/* Right column - Milestones, Checklist, Notes */}
-        <div className="md:col-span-2 space-y-6">
-          {/* Milestones */}
-          {goal.milestones.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Milestone className="h-5 w-5" />
-                  Milestones
-                  <span className="text-sm font-normal text-muted-foreground ml-auto">
-                    {completedMilestones}/{goal.milestones.length}
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {goal.milestones.map((milestone) => {
-                  const checklistDone = milestone.checklist.filter((c) => c.completed).length;
-                  const isExpanded = expandedMilestones.has(milestone.id);
-                  const hasChecklist = milestone.checklist.length > 0;
+        {/* Personal Reflections & Linked Items */}
+        <div className="md:col-span-7 lg:col-span-8 space-y-8">
+          <div className="bg-media-surface-container-low rounded-xl p-10 flex flex-col h-full border border-media-outline-variant/10">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-media-on-surface-variant">Editorial Reflections</h3>
+              <Link href={`/goals/${goal.slug}/edit`}>
+                <span className="material-symbols-outlined text-media-outline cursor-pointer hover:text-media-secondary transition-colors">edit_note</span>
+              </Link>
+            </div>
+            
+            <div className="flex-grow">
+              {goal.content ? (
+                <div className="prose prose-sm max-w-none text-media-on-surface-variant">
+                  <SimpleMarkdown content={goal.content} />
+                </div>
+              ) : (
+                <p className="text-media-outline-variant italic">No reflections or notes recorded for this aspiration.</p>
+              )}
+            </div>
 
-                  return (
-                    <Collapsible
-                      key={milestone.id}
-                      open={isExpanded}
-                      onOpenChange={() => hasChecklist && toggleMilestoneExpanded(milestone.id)}
-                    >
-                      <div
-                        className={cn(
-                          "p-3 rounded-lg border",
-                          milestone.completed && "bg-green-50/50 dark:bg-green-950/10 border-green-300/50"
-                        )}
-                      >
-                        <div className="flex items-start gap-3">
-                          <button
-                            onClick={() => handleToggleMilestone(milestone.id)}
-                            className="mt-0.5 cursor-pointer"
-                          >
-                            {milestone.completed ? (
-                              <CheckCircle2 className="h-5 w-5 text-green-600" />
-                            ) : (
-                              <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />
-                            )}
-                          </button>
-                          <div className="flex-1">
-                            <h4 className={cn(
-                              "font-medium",
-                              milestone.completed && "line-through text-muted-foreground"
-                            )}>
-                              {milestone.title}
-                            </h4>
-                            {milestone.description && (
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {milestone.description}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                              {milestone.target_date && (
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="h-3 w-3" />
-                                  {format(parseISO(milestone.target_date), "MMM d")}
-                                </span>
-                              )}
-                              {hasChecklist && (
-                                <CollapsibleTrigger asChild>
-                                  <button className="flex items-center gap-1 hover:text-foreground cursor-pointer transition-colors">
-                                    {isExpanded ? (
-                                      <ChevronDown className="h-3 w-3" />
-                                    ) : (
-                                      <ChevronRight className="h-3 w-3" />
-                                    )}
-                                    <span>{checklistDone}/{milestone.checklist.length} tasks</span>
-                                  </button>
-                                </CollapsibleTrigger>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Collapsible Checklist */}
-                        <CollapsibleContent>
-                          {hasChecklist && (
-                            <div className="mt-3 pt-3 border-t space-y-2 ml-8">
-                              {milestone.checklist
-                                .sort((a, b) => a.order_index - b.order_index)
-                                .map((item) => (
-                                  <div
-                                    key={item.id}
-                                    className="flex items-center gap-2"
-                                  >
-                                    <Checkbox
-                                      checked={item.completed}
-                                      onCheckedChange={() =>
-                                        handleToggleMilestoneChecklistItem(milestone.id, item.id)
-                                      }
-                                      className="cursor-pointer"
-                                    />
-                                    <span
-                                      className={cn(
-                                        "text-sm",
-                                        item.completed && "line-through text-muted-foreground"
-                                      )}
-                                    >
-                                      {item.text}
-                                    </span>
-                                  </div>
-                                ))}
-                            </div>
-                          )}
-                        </CollapsibleContent>
-                      </div>
-                    </Collapsible>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Checklist */}
-          {goal.checklist.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5" />
-                  Checklist
-                  <span className="text-sm font-normal text-muted-foreground ml-auto">
-                    {completedChecklist}/{goal.checklist.length}
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Checklist
-                  items={goal.checklist}
-                  onToggle={handleToggleChecklistItem}
-                  onAdd={async () => {}}
-                  onDelete={async () => {}}
-                  readOnly={true}
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Notes */}
-          {goal.content && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SimpleMarkdown content={goal.content} />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Linked Items */}
-          {links.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <LinkIcon className="h-5 w-5" />
-                  Linked Items
-                  <span className="text-sm font-normal text-muted-foreground ml-auto">
-                    {links.length}
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
+            {/* Linked Items Integration */}
+            {links.length > 0 && (
+              <div className="mt-12 pt-8 border-t border-media-outline-variant/20">
+                <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-media-on-surface-variant mb-6">Structural Linkages</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {links.map((link) => {
                     const key = `${link.linked_type}-${link.linked_id}`;
                     const details = linkDetails.get(key);
@@ -664,43 +675,35 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
                       <Link
                         key={key}
                         href={config.href(link)}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+                        className="flex items-center gap-4 p-4 rounded-xl bg-media-surface border border-media-outline-variant/10 hover:border-media-secondary hover:shadow-lg transition-all"
                       >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-media-surface-container-highest text-media-primary">
                           {config.icon}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">
+                          <p className="font-bold text-media-primary truncate text-sm">
                             {details?.title || link.linked_slug || `${config.label} #${link.linked_id}`}
                           </p>
-                          <p className="text-xs text-muted-foreground">{config.label}</p>
+                          <p className="text-[10px] uppercase tracking-widest font-bold text-media-outline-variant">{config.label}</p>
                         </div>
                       </Link>
                     );
                   })}
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Empty state if no content */}
-          {!goal.milestones.length && !goal.checklist.length && !goal.content && (
-            <Card className="border-dashed">
-              <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground mb-4">
-                  This goal doesn&apos;t have any milestones, checklists, or notes yet.
-                </p>
-                <Link href={`/goals/${goal.slug}/edit`}>
-                  <Button className="cursor-pointer">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Add Details
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            )}
+            
+            <div className="mt-12 flex gap-4">
+              <Link href={`/goals/${goal.slug}/edit`}>
+                <button className="cursor-pointer bg-media-secondary text-media-on-secondary px-6 py-3 rounded-lg font-bold text-sm tracking-tight hover:opacity-90 transition-all">Add Reflection</button>
+              </Link>
+              <Link href={`/goals/${goal.slug}/edit`}>
+                <button className="cursor-pointer bg-media-primary text-media-on-primary px-6 py-3 rounded-lg font-bold text-sm tracking-tight hover:opacity-90 transition-all">Update Strategy</button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

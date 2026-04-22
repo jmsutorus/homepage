@@ -1,24 +1,18 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Plus, User, Users, UserPlus, Briefcase, Mail, Phone, Trash2, Edit, Cake, Heart, Settings, ListTodo, Search, X, Copy, Sparkles, Gift } from "lucide-react";
 import { type Person, type RelationshipCategory } from "@/lib/db/people";
+import { calculateAge, calculateDaysUntilBirthday } from "@/lib/people-utils";
 import { PersonFormDialog } from "@/components/widgets/people/person-form-dialog";
 import { DeletePersonDialog } from "@/components/widgets/people/delete-person-dialog";
 import { RelationshipTypeManager } from "@/components/widgets/people/relationship-type-manager";
 import { getZodiacSignFromBirthday, getZodiacElementColor } from "@/lib/zodiac";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { PageTabsList } from "@/components/ui/page-tabs-list";
 import { toast } from "sonner";
-import { AnimatedProgressRing } from "@/components/ui/animations/animated-progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import Link from "next/link";
 
 interface PeoplePageClientProps {
   initialPeople: Person[];
@@ -70,42 +64,10 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
 
   // Set isClient to true after hydration to prevent hydration mismatch with date calculations
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setIsClient(true);
   }, []);
 
-  // Calculate days until birthday
-  const calculateDaysUntil = (birthday: string): number => {
-    const [year, month, day] = birthday.split('-');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const currentYear = today.getFullYear();
-
-    let nextBirthday = new Date(currentYear, parseInt(month) - 1, parseInt(day));
-    if (nextBirthday < today) {
-      nextBirthday = new Date(currentYear + 1, parseInt(month) - 1, parseInt(day));
-    }
-
-    const diffTime = nextBirthday.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
-  // Calculate age
-  const calculateAge = (birthday: string): number | null => {
-    const [year] = birthday.split('-');
-    if (year === '0000') return null;
-
-    const birthDate = new Date(birthday);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-
-    return age;
-  };
 
   // Apply filters and sorting
   const applyFiltersAndSort = (peopleList: Person[], filter: RelationshipCategory | "all", sort: SortOption, search: string) => {
@@ -138,7 +100,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
         return `${aMonth}-${aDay}`.localeCompare(`${bMonth}-${bDay}`);
       });
     } else if (sort === "upcoming") {
-      result.sort((a, b) => calculateDaysUntil(a.birthday) - calculateDaysUntil(b.birthday));
+      result.sort((a, b) => calculateDaysUntilBirthday(a.birthday) - calculateDaysUntilBirthday(b.birthday));
     }
 
     setFilteredPeople(result);
@@ -195,487 +157,323 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
     }
   };
 
+  // Summary metrics logic
+  const summaryMetrics = isClient ? (() => {
+    // Volume
+    const volume = people.length;
+
+    // Trends: Zodiac distribution
+    const zodiacCounts = new Map<string, { count: number; name: string }>();
+    people.forEach((p) => {
+      const sign = getZodiacSignFromBirthday(p.birthday);
+      if (sign) {
+        const existing = zodiacCounts.get(sign.name);
+        if (existing) {
+          existing.count++;
+        } else {
+          zodiacCounts.set(sign.name, { count: 1, name: sign.name });
+        }
+      }
+    });
+
+    let mostCommonZodiac = { name: 'None', count: 0 };
+    zodiacCounts.forEach((data) => {
+      if (data.count > mostCommonZodiac.count) {
+        mostCommonZodiac = data;
+      }
+    });
+
+    // Upcoming: Milestones and next birthday
+    let milestoneCount = 0;
+    let nextBirthdayDays = Infinity;
+    people.forEach((p) => {
+      const age = calculateAge(p.birthday);
+      if (age !== null) {
+        const upcomingAge = age + 1;
+        if (MILESTONE_AGES.includes(upcomingAge)) {
+          milestoneCount++;
+        }
+      }
+      const days = calculateDaysUntilBirthday(p.birthday);
+      if (days < nextBirthdayDays) {
+        nextBirthdayDays = days;
+      }
+    });
+
+    return {
+      volume,
+      trends: mostCommonZodiac.name,
+      milestones: milestoneCount,
+      nextBirthdayDays: nextBirthdayDays === Infinity ? null : nextBirthdayDays
+    };
+  })() : { volume: 0, trends: '...', milestones: 0, nextBirthdayDays: null };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-lexend text-media-on-surface">
+      {/* Hero & Editorial Title */}
+      <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">People</h1>
-          <p className="text-muted-foreground">Track birthdays and important dates for family and friends</p>
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-media-primary leading-none mb-4">The People Directory</h1>
+          <p className="text-media-on-surface-variant text-lg max-w-xl">A curated archive of your personal inner circle, milestones, and shared history.</p>
         </div>
-        {viewTab === "people" && (
-          <Button onClick={openAddDialog} className="w-full sm:w-auto hidden md:flex">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Person
-          </Button>
-        )}
+        <button 
+          onClick={openAddDialog}
+          className="cursor-pointer bg-media-primary text-white px-8 py-4 rounded-lg flex items-center gap-3 self-start md:self-auto hover:scale-105 transition-transform"
+        >
+          <span className="material-symbols-outlined">person_add</span>
+          <span className="font-bold tracking-tight">Add Person</span>
+        </button>
       </div>
 
-      <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as "people" | "manage")}>
-        <PageTabsList
-          tabs={[
-            { value: "people", label: "People", icon: ListTodo, showLabel: false },
-            { value: "manage", label: "Manage", icon: Settings, showLabel: false },
-          ]}
-          actionButton={viewTab === "people" ? {
-            label: "Add Person",
-            onClick: openAddDialog,
-            icon: Plus,
-          } : undefined}
-        />
+      <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as "people" | "manage")} className="space-y-8">
+        <div className="flex border-b border-media-outline-variant/20 mb-8">
+          <button 
+            onClick={() => setViewTab("people")}
+            className={`px-8 py-4 text-sm font-bold tracking-tight transition-all border-b-2 ${viewTab === "people" ? "border-media-secondary text-media-primary" : "border-transparent text-media-on-surface-variant hover:text-media-primary"}`}
+          >
+            DIRECTORY
+          </button>
+          <button 
+            onClick={() => setViewTab("manage")}
+            className={`px-8 py-4 text-sm font-bold tracking-tight transition-all border-b-2 ${viewTab === "manage" ? "border-media-secondary text-media-primary" : "border-transparent text-media-on-surface-variant hover:text-media-primary"}`}
+          >
+            MANAGE TYPES
+          </button>
+        </div>
 
-        <TabsContent value="people" className="space-y-6 mt-6 pb-20 md:pb-0">
-
-      {/* Birthday Countdown Widgets */}
-      {people.length > 0 && isClient && (() => {
-        // Get next 3 upcoming birthdays
-        const upcomingBirthdays = [...people]
-          .map(person => ({
-            ...person,
-            daysUntil: calculateDaysUntil(person.birthday)
-          }))
-          .sort((a, b) => a.daysUntil - b.daysUntil)
-          .slice(0, 3);
-
-        if (upcomingBirthdays.length === 0) return null;
-
-        return (
-          <div className="flex flex-wrap justify-center gap-8">
-            {upcomingBirthdays.map((person, index) => {
-              const age = calculateAge(person.birthday);
-              const upcomingAge = age !== null ? age + 1 : null;
-              const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-              const [, month, day] = person.birthday.split('-');
-              const birthdayDate = `${monthNames[parseInt(month) - 1]} ${parseInt(day)}`;
-
-              // Calculate progress (ring fills up as birthday approaches)
-              const maxDays = 30;
-              const progress = Math.max(0, maxDays - person.daysUntil);
-
-              return (
-                <TooltipProvider key={person.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex flex-col items-center cursor-help">
-                        <div className="relative">
-                          <AnimatedProgressRing
-                            value={progress}
-                            max={maxDays}
-                            size={100}
-                            strokeWidth={10}
-                            color={
-                              person.daysUntil === 0 ? "success" :
-                              person.daysUntil <= 7 ? "warning" :
-                              "primary"
-                            }
-                            showLabel={false}
-                            delay={index * 0.15}
-                          />
-                          {/* Days remaining in center */}
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <div className="text-2xl font-bold">
-                              {person.daysUntil === 0 ? '🎉' : person.daysUntil}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {person.daysUntil === 0 ? 'Today!' : person.daysUntil === 1 ? 'day' : 'days'}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-3 text-center">
-                          <div className="font-medium text-sm">{person.name}</div>
-                          <div className="text-xs text-muted-foreground">{birthdayDate}</div>
-                        </div>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="space-y-1">
-                        <p className="font-semibold">{person.name}</p>
-                        <p className="text-sm">Birthday: {birthdayDate}</p>
-                        {upcomingAge && <p className="text-sm">Turning {upcomingAge}</p>}
-                        <p className="text-sm text-muted-foreground">
-                          {person.daysUntil === 0 ? 'Today!' : `${person.daysUntil} day${person.daysUntil !== 1 ? 's' : ''} away`}
-                        </p>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              );
-            })}
+        <TabsContent value="people" className="space-y-12">
+          {/* Summary Widget */}
+          <div className="bg-media-surface-container-low rounded-xl p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex flex-col gap-1 border-r border-media-outline-variant/20 pr-4">
+              <span className="text-xs uppercase tracking-widest text-media-secondary font-bold">Volume</span>
+              <span className="text-4xl font-bold text-media-primary">{summaryMetrics.volume} people</span>
+              <span className="text-sm text-media-on-surface-variant">Archived in directory</span>
+            </div>
+            <div className="flex flex-col gap-1 border-r border-media-outline-variant/20 pr-4">
+              <span className="text-xs uppercase tracking-widest text-media-secondary font-bold">Trends</span>
+              <span className="text-4xl font-bold text-media-primary">{summaryMetrics.trends}</span>
+              <span className="text-sm text-media-on-surface-variant">Most common sign</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs uppercase tracking-widest text-media-secondary font-bold">Upcoming</span>
+              <span className="text-4xl font-bold text-media-primary">
+                {summaryMetrics.milestones} {summaryMetrics.milestones === 1 ? 'milestone' : 'milestones'}
+              </span>
+              <span className="text-sm text-media-on-surface-variant">
+                {summaryMetrics.nextBirthdayDays !== null 
+                  ? `Birthday in ${summaryMetrics.nextBirthdayDays} days` 
+                  : 'No upcoming birthdays'}
+              </span>
+            </div>
           </div>
-        );
-      })()}
 
-      {/* Fun Stats */}
-      {people.length > 0 && isClient && (
-        <Card className="border-dashed border-2">
-          <CardContent className="pt-6">
-            <div className="flex flex-wrap gap-6 text-sm">
-              {(() => {
-                // Calculate zodiac distribution
-                const zodiacCounts = new Map<string, { count: number; emoji: string; element: string }>();
-                people.forEach((p) => {
-                  const sign = getZodiacSignFromBirthday(p.birthday);
-                  if (sign) {
-                    const existing = zodiacCounts.get(sign.name);
-                    if (existing) {
-                      existing.count++;
-                    } else {
-                      zodiacCounts.set(sign.name, { count: 1, emoji: sign.emoji, element: sign.element });
-                    }
-                  }
-                });
+          {/* Search & Filter Cluster */}
+          <div className="flex flex-col gap-8">
+            <div className="relative w-full max-w-2xl group">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-media-outline group-focus-within:text-media-secondary">search</span>
+              <input 
+                className="w-full bg-media-surface-container border-none rounded-lg pl-14 pr-6 py-5 focus:ring-0 focus:bg-media-surface-container-high transition-all font-lexend" 
+                placeholder="Search the directory..." 
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+              <div className={`absolute bottom-0 left-4 right-4 h-0.5 bg-media-secondary transition-transform origin-left ${searchTerm ? 'scale-x-100' : 'scale-x-0 group-focus-within:scale-x-100'}`}></div>
+            </div>
+            
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              <div className="flex flex-wrap gap-3">
+                <button 
+                  onClick={() => handleFilterChange("all")}
+                  className={`px-6 py-2 rounded-full font-medium text-sm transition-colors ${selectedFilter === "all" ? "bg-media-primary text-white" : "bg-media-tertiary-fixed text-media-on-tertiary-fixed hover:bg-media-tertiary-fixed-dim"}`}
+                >
+                  All
+                </button>
+                {(Object.keys(RELATIONSHIP_CONFIG) as RelationshipCategory[]).map((rel) => (
+                  <button
+                    key={rel}
+                    onClick={() => handleFilterChange(rel)}
+                    className={`px-6 py-2 rounded-full font-medium text-sm transition-colors ${selectedFilter === rel ? "bg-media-primary text-white" : "bg-media-tertiary-fixed text-media-on-tertiary-fixed hover:bg-media-tertiary-fixed-dim"}`}
+                  >
+                    {RELATIONSHIP_CONFIG[rel].label}
+                  </button>
+                ))}
+              </div>
 
-                // Find most common zodiac
-                let mostCommonZodiac = { name: '', count: 0, emoji: '', element: '' };
-                zodiacCounts.forEach((data, name) => {
-                  if (data.count > mostCommonZodiac.count) {
-                    mostCommonZodiac = { name, count: data.count, emoji: data.emoji, element: data.element };
-                  }
-                });
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold tracking-tight text-media-on-surface-variant uppercase">Sort by</span>
+                <Select value={sortBy} onValueChange={(value) => handleSortChange(value as SortOption)}>
+                  <SelectTrigger className="w-[160px] bg-media-surface-container border-none rounded-lg focus:ring-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-media-surface-container-high border-media-outline-variant/20">
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="birthday">Birthday</SelectItem>
+                    <SelectItem value="upcoming">Upcoming</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
 
-                // Calculate most common birth month
-                const monthCounts = new Map<number, number>();
-                people.forEach((p) => {
-                  const [, month] = p.birthday.split('-');
-                  const monthNum = parseInt(month, 10);
-                  monthCounts.set(monthNum, (monthCounts.get(monthNum) || 0) + 1);
-                });
-
-                let mostCommonMonth = { num: 0, count: 0 };
-                monthCounts.forEach((count, monthNum) => {
-                  if (count > mostCommonMonth.count) {
-                    mostCommonMonth = { num: monthNum, count };
-                  }
-                });
-
-                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-                // Calculate milestone birthdays
-                let milestoneCount = 0;
-                people.forEach((p) => {
-                  const age = calculateAge(p.birthday);
-                  if (age !== null) {
-                    const upcomingAge = age + 1;
-                    if (MILESTONE_AGES.includes(upcomingAge)) {
-                      milestoneCount++;
-                    }
-                  }
-                });
+          {/* Directory Grid */}
+          {filteredPeople.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-32 bg-media-surface-container-lowest rounded-xl border border-dashed border-media-outline-variant/30">
+              <span className="material-symbols-outlined text-6xl text-media-outline/30 mb-4">person_search</span>
+              <h3 className="text-2xl font-bold text-media-primary mb-2">No people found</h3>
+              <p className="text-media-on-surface-variant text-center max-w-md">
+                {searchTerm
+                  ? `No results for "${searchTerm}". Try a different name or relationship type.`
+                  : "Start building your editorial directory by adding your first contact."}
+              </p>
+              {searchTerm && (
+                <button 
+                  onClick={clearSearch}
+                  className="cursor-pointer mt-6 text-media-secondary font-bold hover:underline"
+                >
+                  Clear search
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16 pt-12">
+              {filteredPeople.map((person) => {
+                const config = RELATIONSHIP_CONFIG[person.relationship];
+                const daysUntil = isClient ? calculateDaysUntilBirthday(person.birthday) : null;
+                const zodiacSign = isClient ? getZodiacSignFromBirthday(person.birthday) : null;
+                const initials = person.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
                 return (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">👥</span>
-                      <span className="font-medium">{people.length}</span>
-                      <span className="text-muted-foreground">
-                        {people.length === 1 ? 'person tracked' : 'people tracked'}
-                      </span>
+                  <div key={person.id} className="group flex flex-col bg-media-surface-container-lowest p-6 rounded-lg shadow-sm hover:scale-[1.02] transition-all duration-300 editorial-shadow">
+                    <div className="relative mb-6 -mt-12 ml-4">
+                      {person.photo ? (
+                        <img 
+                          alt={person.name} 
+                          className="w-24 h-24 rounded-lg object-cover shadow-lg border-4 border-media-surface" 
+                          src={person.photo} 
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-lg bg-media-primary-fixed flex items-center justify-center text-media-primary text-3xl font-bold shadow-lg border-4 border-media-surface">
+                          {initials}
+                        </div>
+                      )}
+                      <div className={`absolute -bottom-2 -right-2 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded shadow-sm ${
+                        person.relationship === 'family' ? 'bg-rose-500' :
+                        person.relationship === 'friends' ? 'bg-blue-500' :
+                        person.relationship === 'work' ? 'bg-media-tertiary-container' :
+                        'bg-purple-500'
+                      }`}>
+                        {person.relationship}
+                      </div>
+                      {person.is_partner && (
+                        <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-rose-500 flex items-center justify-center shadow-md">
+                          <Heart className="h-3 w-3 text-white fill-white" />
+                        </div>
+                      )}
                     </div>
-                    {mostCommonZodiac.count > 0 && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">Most common:</span>
-                        <Badge variant="outline" className={getZodiacElementColor(mostCommonZodiac.element as any)}>
-                          <span className="mr-1">{mostCommonZodiac.emoji}</span>
-                          {mostCommonZodiac.name}
-                        </Badge>
-                        <span className="text-muted-foreground">
-                          ({mostCommonZodiac.count} {mostCommonZodiac.count === 1 ? 'person' : 'people'})
-                        </span>
+
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <Link href={`/people/${person.slug}`} className="group/link">
+                          <h3 className="text-2xl font-bold text-media-primary tracking-tight line-clamp-1 group-hover/link:text-media-secondary transition-colors">{person.name}</h3>
+                        </Link>
+                        <p className="text-media-on-surface-variant italic font-serif">
+                          {person.relationshipTypeName || config.label}
+                        </p>
                       </div>
-                    )}
-                    {mostCommonMonth.count > 0 && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">🎂 Most birthdays in:</span>
-                        <span className="font-medium">{monthNames[mostCommonMonth.num - 1]}</span>
-                        <span className="text-muted-foreground">
-                          ({mostCommonMonth.count})
-                        </span>
-                      </div>
-                    )}
-                    {milestoneCount > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                        <span className="font-medium text-yellow-900 dark:text-yellow-200">
-                          {milestoneCount} milestone {milestoneCount === 1 ? 'birthday' : 'birthdays'} coming up!
-                        </span>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by name, email, phone, notes, or gift ideas..."
-          value={searchTerm}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-10 pr-10"
-        />
-        {searchTerm && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-            onClick={clearSearch}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-
-      {/* Filters and Sort */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Relationship filters */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={selectedFilter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleFilterChange("all")}
-          >
-            All
-          </Button>
-          {(Object.keys(RELATIONSHIP_CONFIG) as RelationshipCategory[]).map((rel) => {
-            const config = RELATIONSHIP_CONFIG[rel];
-            const Icon = config.icon;
-            return (
-              <Button
-                key={rel}
-                variant={selectedFilter === rel ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleFilterChange(rel)}
-              >
-                <Icon className="mr-2 h-4 w-4" />
-                {config.label}
-              </Button>
-            );
-          })}
-        </div>
-
-        {/* Sort */}
-        <div className="flex items-center gap-2 sm:ml-auto">
-          <Label className="text-sm text-muted-foreground whitespace-nowrap">Sort by:</Label>
-          <Select value={sortBy} onValueChange={(value) => handleSortChange(value as SortOption)}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="birthday">Birthday</SelectItem>
-              <SelectItem value="upcoming">Upcoming</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* People list */}
-      {filteredPeople.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <User className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No people found</h3>
-            <p className="text-sm text-muted-foreground text-center mb-4">
-              {searchTerm
-                ? `No results for "${searchTerm}"`
-                : selectedFilter === "all"
-                ? "Add your first contact to start tracking birthdays"
-                : `No people in the ${RELATIONSHIP_CONFIG[selectedFilter as RelationshipCategory].label} category`}
-            </p>
-            {searchTerm ? (
-              <Button onClick={clearSearch} variant="outline">
-                Clear Search
-              </Button>
-            ) : selectedFilter === "all" && (
-              <Button onClick={openAddDialog}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Person
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {filteredPeople.map((person) => {
-            const config = RELATIONSHIP_CONFIG[person.relationship];
-            const Icon = config.icon;
-            // Only calculate date-dependent values on the client to prevent hydration mismatch
-            const daysUntil = isClient ? calculateDaysUntil(person.birthday) : null;
-            const age = isClient ? calculateAge(person.birthday) : null;
-            const isToday = isClient && daysUntil === 0;
-            const zodiacSign = isClient ? getZodiacSignFromBirthday(person.birthday) : null;
-
-            // Calculate upcoming age and check if it's a milestone
-            const upcomingAge = isClient && age !== null ? age + 1 : null;
-            const isMilestoneBirthday = isClient && upcomingAge !== null && MILESTONE_AGES.includes(upcomingAge);
-
-            return (
-              <Card key={person.id} className={`${isToday ? "border-pink-500 border-2" : ""} ${person.is_partner ? "border-rose-400/50 bg-rose-500/5" : ""} ${isMilestoneBirthday && !isToday ? "border-yellow-500/50 bg-gradient-to-br from-yellow-500/5 to-amber-500/5" : ""}`}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4 flex-1 min-w-0">
-                      {/* Avatar */}
-                      <div className="relative h-12 w-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                        {person.photo ? (
-                          <img src={person.photo} alt={person.name} className="h-12 w-12 rounded-full object-cover" />
-                        ) : (
-                          <User className="h-6 w-6 text-muted-foreground" />
-                        )}
-                        {person.is_partner && (
-                          <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-rose-500 flex items-center justify-center">
-                            <Heart className="h-3 w-3 text-white fill-white" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Person info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <CardTitle className="text-lg">{person.name}</CardTitle>
-                          {person.relationshipTypeName && (
-                            <Badge variant="outline" className="bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300">
-                              {person.relationshipTypeName}
-                            </Badge>
-                          )}
-                          <Badge variant="outline" className={config.bgClass}>
-                            <Icon className="mr-1 h-3 w-3" />
-                            {config.label}
-                          </Badge>
-                          {isToday && (
-                            <Badge variant="outline" className="bg-pink-500/10 border-pink-500/30 text-pink-700 dark:text-pink-300">
-                              <Cake className="mr-1 h-3 w-3" />
-                              Today!
-                            </Badge>
-                          )}
-                          {zodiacSign && (
-                            <Badge
-                              variant="outline"
-                              className={getZodiacElementColor(zodiacSign.element)}
-                              title={`${zodiacSign.name} (${zodiacSign.dateRange})`}
-                            >
-                              <span className="mr-1">{zodiacSign.emoji}</span>
-                              {zodiacSign.name}
-                            </Badge>
-                          )}
-                          {isMilestoneBirthday && (
-                            <Badge
-                              variant="outline"
-                              className="bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 text-yellow-900 dark:text-yellow-200"
-                              title={`Turning ${upcomingAge} - Milestone Birthday!`}
-                            >
-                              <Sparkles className="mr-1 h-3 w-3" />
-                              Milestone: {upcomingAge}
-                            </Badge>
-                          )}
-                        </div>
-
-                        <div className="mt-2 space-y-1 text-sm">
-                          <div className="flex items-center gap-4 flex-wrap">
-                            <span className="text-muted-foreground">
-                              Birthday: {(() => {
-                                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                                const [, month, day] = person.birthday.split('-');
-                                return `${monthNames[parseInt(month) - 1]} ${parseInt(day)}`;
-                              })()}
-                            </span>
-                            {isClient && daysUntil !== null && daysUntil > 0 && (
-                              <span className="text-muted-foreground">
-                                ({daysUntil} day{daysUntil !== 1 ? 's' : ''})
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-4 flex-wrap text-muted-foreground">
-                            {isClient ? (
-                              age !== null ? (
-                                <span>Age: {age}</span>
-                              ) : (
-                                <span>Age unknown</span>
-                              )
-                            ) : (
-                              <span>Age: ...</span>
-                            )}
-                            {person.email && (
-                              <div className="flex items-center gap-1">
-                                <Mail className="h-3 w-3" />
-                                <a
-                                  href={`mailto:${person.email}`}
-                                  className="hover:underline hover:text-primary transition-colors"
-                                >
-                                  {person.email}
-                                </a>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-5 w-5 ml-1"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    copyToClipboard(person.email!, "Email");
-                                  }}
-                                >
-                                  <Copy className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            )}
-                            {person.phone && (
-                              <div className="flex items-center gap-1">
-                                <Phone className="h-3 w-3" />
-                                <a
-                                  href={`tel:${person.phone}`}
-                                  className="hover:underline hover:text-primary transition-colors"
-                                >
-                                  {person.phone}
-                                </a>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-5 w-5 ml-1"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    copyToClipboard(person.phone!, "Phone");
-                                  }}
-                                >
-                                  <Copy className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                          {person.notes && (
-                            <p className="text-muted-foreground mt-2 line-clamp-2">{person.notes}</p>
-                          )}
-                          {person.gift_ideas && (
-                            <div className="flex items-start gap-2 text-muted-foreground mt-2">
-                              <Gift className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                              <p className="line-clamp-2">{person.gift_ideas}</p>
-                            </div>
-                          )}
-                        </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => openEditDialog(person)}
+                          className="cursor-pointer p-2 hover:bg-media-surface-container rounded-full text-media-outline hover:text-media-primary transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">edit</span>
+                        </button>
+                        <button 
+                          onClick={() => openDeleteDialog(person)}
+                          className="cursor-pointer p-2 hover:bg-media-surface-container rounded-full text-media-outline hover:text-media-error transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">delete</span>
+                        </button>
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-2 flex-shrink-0">
-                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(person)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(person)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div className="space-y-4 mt-auto">
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className="material-symbols-outlined text-media-secondary text-lg">cake</span>
+                        <div className="flex flex-col">
+                          <span className="text-media-primary font-medium">
+                            {(() => {
+                              const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                              const [, month, day] = person.birthday.split('-');
+                              return `${monthNames[parseInt(month) - 1]} ${parseInt(day)}`;
+                            })()}
+                          </span>
+                          <span className="text-xs text-media-on-surface-variant">
+                            ({daysUntil === 0 ? 'Today!' : `${daysUntil} days left`})
+                          </span>
+                        </div>
+                      </div>
+                      {zodiacSign && (
+                        <div className="flex items-center gap-3 text-sm">
+                          <span className="material-symbols-outlined text-media-secondary text-lg">auto_awesome</span>
+                          <span className="text-media-primary font-medium">{zodiacSign.name}</span>
+                        </div>
+                      )}
+                      
+                      {/* Expansion info */}
+                      {(person.email || person.phone) && (
+                        <div className="pt-4 border-t border-media-outline-variant/10 flex gap-4">
+                          {person.email && (
+                            <button 
+                              onClick={() => copyToClipboard(person.email!, "Email")}
+                              className="cursor-pointer text-media-outline hover:text-media-primary transition-colors"
+                              title={person.email}
+                            >
+                              <span className="material-symbols-outlined text-lg">mail</span>
+                            </button>
+                          )}
+                          {person.phone && (
+                            <button 
+                              onClick={() => copyToClipboard(person.phone!, "Phone")}
+                              className="cursor-pointer text-media-outline hover:text-media-primary transition-colors"
+                              title={person.phone}
+                            >
+                              <span className="material-symbols-outlined text-lg">call</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                </CardHeader>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                );
+              })}
+            </div>
+          )}
+
+          {/* Footer Implementation */}
+          <div className="mt-32 border-t-2 border-media-primary-container/10 pt-16 flex flex-col md:flex-row items-center gap-12 pb-20">
+            <div className="flex-1">
+              <h4 className="text-3xl font-bold text-media-primary mb-4 tracking-tighter">Expanding the Archive</h4>
+              <p className="text-media-on-surface-variant text-lg leading-relaxed">The Editorial Directory is more than a list of names. It’s a rhythmic record of the people who shape your narrative. Add birthdays, milestones, and relationship notes to create a complete picture of your life’s core ensemble.</p>
+            </div>
+            <div className="flex-1 w-full aspect-video bg-media-surface-container-high rounded-xl overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-tr from-media-primary/10 to-transparent"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="material-symbols-outlined text-7xl text-media-primary-container/20">auto_stories</span>
+              </div>
+            </div>
+          </div>
         </TabsContent>
 
-        <TabsContent value="manage" className="space-y-6 mt-6 pb-20 md:pb-0">
-          <RelationshipTypeManager onTypesChanged={refreshPeople} />
+        <TabsContent value="manage" className="mt-8">
+          <div className="bg-media-surface-container-low rounded-xl p-8 border border-media-outline-variant/10 shadow-sm">
+            <h3 className="text-3xl font-bold text-media-primary mb-6 tracking-tight">Relationship Management</h3>
+            <p className="text-media-on-surface-variant mb-8 max-w-2xl">
+              Customize the relationship categories and types to better organize your editorial directory. These labels will appear on your contact cards.
+            </p>
+            <RelationshipTypeManager onTypesChanged={refreshPeople} />
+          </div>
         </TabsContent>
       </Tabs>
 

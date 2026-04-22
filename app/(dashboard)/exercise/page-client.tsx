@@ -20,15 +20,20 @@ import {
   FastForward,
 } from "lucide-react";
 import { AddActivityModal } from "@/components/widgets/exercise/add-activity-modal";
+import { AddPrModal } from "@/components/widgets/exercise/add-pr-modal";
+import { EditPrModal } from "@/components/widgets/exercise/edit-pr-modal";
 import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
 
 import type { WorkoutActivity, WorkoutActivityStats, Exercise } from "@/lib/db/workout-activities";
+import type { PersonalRecord, ExerciseSettings } from "@/lib/db/personal-records";
 
 interface ExercisePageClientProps {
   initialUpcomingActivities: WorkoutActivity[];
   initialRecentActivities: WorkoutActivity[];
   initialCompletedActivities: WorkoutActivity[];
   initialStats: WorkoutActivityStats;
+  initialSettings: ExerciseSettings;
+  initialRecords: PersonalRecord[];
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -83,6 +88,8 @@ export function ExercisePageClient({
   initialRecentActivities: _initialRecentActivities,
   initialCompletedActivities,
   initialStats,
+  initialRecords,
+  initialSettings,
 }: ExercisePageClientProps) {
   const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
@@ -131,7 +138,7 @@ export function ExercisePageClient({
     let fastestRun: { activity: WorkoutActivity; pace: number } | null = null; // pace in min/mi
     const records: Record<string, { activity: WorkoutActivity; time: number }> = {};
 
-    initialCompletedActivities.forEach(activity => {
+    for (const activity of initialCompletedActivities) {
       // Longest Run
       if (activity.type === "run" && activity.distance) {
         if (!longestRun || activity.distance > (longestRun.distance || 0)) {
@@ -144,14 +151,14 @@ export function ExercisePageClient({
         try {
           const exercises: Exercise[] = typeof activity.exercises === 'string' 
             ? JSON.parse(activity.exercises) 
-            : activity.exercises;
+            : (activity.exercises as any);
           
-          exercises.forEach(ex => {
+          for (const ex of exercises) {
             if (ex.weight && ex.weight > maxWeight) {
               maxWeight = ex.weight;
               maxWeightExercise = ex.description;
             }
-          });
+          }
         } catch (e) {
           // Ignore parse errors
         }
@@ -190,9 +197,16 @@ export function ExercisePageClient({
           records["longestSwim"] = { activity, time: activity.length || 0 };
         }
       }
-    });
+    }
 
-    return { longestRun, maxWeight, maxWeightExercise, fastestRun, ...records };
+    return { 
+      longestRun, 
+      maxWeight, 
+      maxWeightExercise, 
+      fastestRun, 
+      longestSwim: records["longestSwim"],
+      milestones: records 
+    };
   })();
 
   // Active days this week for streak visualization
@@ -218,12 +232,37 @@ export function ExercisePageClient({
     return activeIndices;
   })();
 
-  const recordsList = [
-    { label: "5K Run", key: "5k", icon: <Timer className="h-6 w-6" /> },
-    { label: "10K Run", key: "10k", icon: <FastForward className="h-6 w-6" /> },
-    { label: "Half Marathon", key: "halfMarathon", icon: <TrendingUp className="h-6 w-6" /> },
-    { label: "Marathon", key: "marathon", icon: <Trophy className="h-6 w-6" /> },
-  ].filter(r => personalRecords[r.key]);
+  // Personal Records from Database (replacing derived milestones)
+  const dbRecordsList = initialRecords
+    .filter(r => r.type === "running" && r.distance && r.total_seconds)
+    .map(r => {
+      // Map common distances to labels
+      let label = `${r.distance}mi Run`;
+      let icon = <Timer className="h-6 w-6" />;
+      
+      const d = r.distance || 0;
+      if (Math.abs(d - 3.1) < 0.1) { label = "5K Run"; }
+      else if (Math.abs(d - 6.2) < 0.1) { label = "10K Run"; icon = <FastForward className="h-6 w-6" />; }
+      else if (Math.abs(d - 13.1) < 0.1) { label = "Half Marathon"; icon = <TrendingUp className="h-6 w-6" />; }
+      else if (Math.abs(d - 26.2) < 0.1) { label = "Marathon"; icon = <Trophy className="h-6 w-6" />; }
+
+      const totalSecs = r.total_seconds || 0;
+      const h = Math.floor(totalSecs / 3600);
+      const m = Math.floor((totalSecs % 3600) / 60);
+      const s = totalSecs % 60;
+      const displayTime = h > 0 
+        ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}` 
+        : `${m}:${s.toString().padStart(2, '0')}`;
+
+      return {
+        label,
+        displayTime,
+        date: r.date,
+        icon,
+        id: r.id,
+        rawRecord: r
+      };
+    });
 
   return (
     <div className="space-y-8">
@@ -237,9 +276,6 @@ export function ExercisePageClient({
           </p>
         </div>
         <div className="flex gap-4">
-          <HomePageButton variant="secondary" icon={<PlusCircle className="h-5 w-5 text-sage-green" />}>
-            New Goal
-          </HomePageButton>
           <AddActivityModal onActivityAdded={handleActivityAdded} showButton={true} />
         </div>
       </div>
@@ -367,37 +403,52 @@ export function ExercisePageClient({
         {/* ── Left Column: History & Stats ───────────────────────────── */}
         <section className="lg:col-span-8 flex flex-col gap-8">
 
-          {/* Personal Records Section (Prototype addition) */}
-          {recordsList.length > 0 && (
-            <div className="flex flex-col gap-6">
+          {/* Personal Records Section (From Table) */}
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-between">
               <h3 className="text-2xl font-bold tracking-tight">Personal Records</h3>
+              <AddPrModal 
+                onSuccess={handleActivityAdded}
+                enableRunning={initialSettings.enable_running_prs}
+                enableWeights={initialSettings.enable_weights_prs}
+              />
+            </div>
+            
+            {dbRecordsList.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recordsList.map((record) => {
-                  const data = personalRecords[record.key];
-                  const hours = Math.floor(data.time / 60);
-                  const mins = Math.floor(data.time % 60);
-                  const displayTime = hours > 0 
-                     ? `${hours}:${mins.toString().padStart(2, '0')}:00` 
-                     : `${mins}:00`;
-
+                {dbRecordsList.map((record) => {
                   return (
-                    <div key={record.key} className="group bg-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex items-center gap-6 relative overflow-hidden border border-border/40">
-                      <div className="flex-shrink-0 w-16 h-16 rounded-full bg-lime-highlight/20 text-emerald-800 dark:text-lime-400 flex items-center justify-center">
-                         {record.icon}
-                      </div>
-                      <div className="flex-grow">
-                        <h4 className="text-xl font-bold">{record.label}</h4>
-                        <div className="text-2xl font-black text-foreground mt-1">{displayTime}</div>
-                        <div className="text-sage-green text-sm font-semibold mt-1">
-                          Set on {format(new Date(data.activity.date + "T00:00:00"), "MMM dd, yyyy")}
+                    <EditPrModal 
+                      key={record.id} 
+                      record={record.rawRecord}
+                      onSuccess={handleActivityAdded}
+                      enableRunning={initialSettings.enable_running_prs}
+                      enableWeights={initialSettings.enable_weights_prs}
+                    >
+                      <div className="group bg-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex items-center gap-6 relative overflow-hidden border border-border/40 cursor-pointer">
+                        <div className="flex-shrink-0 w-16 h-16 rounded-full bg-lime-highlight/20 text-emerald-800 dark:text-lime-400 flex items-center justify-center">
+                           {record.icon}
+                        </div>
+                        <div className="flex-grow">
+                          <div className="flex justify-between items-start">
+                            <h4 className="text-xl font-bold">{record.label}</h4>
+                          </div>
+                          <div className="text-2xl font-black text-foreground mt-1">{record.displayTime}</div>
+                          <div className="text-sage-green text-sm font-semibold mt-1">
+                            Set on {format(new Date(record.date + "T00:00:00"), "MMM dd, yyyy")}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </EditPrModal>
                   );
                 })}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="rounded-2xl border-2 border-dashed border-border/50 p-12 text-center text-muted-foreground font-medium">
+                No personal records logged yet. Click the button above to add your first PR.
+              </div>
+            )}
+          </div>
 
           {/* Recent Workouts (Renamed to Achievements in Prototype) */}
           <div className="flex items-center justify-between mt-4">
@@ -528,7 +579,7 @@ export function ExercisePageClient({
                 </div>
                 <div className="text-4xl font-black mb-1">
                   {personalRecords.fastestRun ? (() => {
-                    const totalSecs = personalRecords.fastestRun.pace * 60;
+                    const totalSecs = (personalRecords.fastestRun?.pace || 0) * 60;
                     const mins = Math.floor(totalSecs / 60);
                     const secs = Math.round(totalSecs % 60);
                     return `${mins}:${secs.toString().padStart(2, '0')}`;

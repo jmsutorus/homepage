@@ -374,6 +374,7 @@ CREATE TABLE IF NOT EXISTS journals (
   featured BOOLEAN DEFAULT 0, -- Whether to feature on homepage
   published BOOLEAN DEFAULT 1, -- Whether to show publicly
   content TEXT NOT NULL, -- Markdown content (body)
+  image_url TEXT, -- Hero image URL (optional)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
@@ -1297,6 +1298,7 @@ CREATE TABLE IF NOT EXISTS vacation_itinerary_days (
   location TEXT,
   activities TEXT, -- JSON array of activity strings
   notes TEXT, -- Markdown
+  photo TEXT,
   budget_planned REAL,
   budget_actual REAL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -1400,4 +1402,229 @@ CREATE TRIGGER IF NOT EXISTS update_holidays_timestamp
 AFTER UPDATE ON holidays
 BEGIN
   UPDATE holidays SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- ==================== PERSONAL RECORDS ====================
+
+-- Exercise Settings Table
+CREATE TABLE IF NOT EXISTS exercise_settings (
+  userId TEXT PRIMARY KEY,
+  enable_running_prs BOOLEAN DEFAULT 0,
+  enable_weights_prs BOOLEAN DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Personal Records Table
+CREATE TABLE IF NOT EXISTS personal_records (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  type TEXT CHECK(type IN ('running', 'weights')) NOT NULL,
+  date TEXT NOT NULL,
+  notes TEXT,
+  -- Running PR fields
+  distance REAL,
+  total_seconds INTEGER,
+  -- Weights PR fields
+  exercise TEXT,
+  weight REAL,
+  reps INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for personal_records
+CREATE INDEX IF NOT EXISTS idx_personal_records_userId ON personal_records(userId);
+CREATE INDEX IF NOT EXISTS idx_personal_records_type ON personal_records(type);
+
+-- Trigger for exercise_settings updated_at
+CREATE TRIGGER IF NOT EXISTS update_exercise_settings_timestamp
+AFTER UPDATE ON exercise_settings
+BEGIN
+  UPDATE exercise_settings SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Trigger for personal_records updated_at
+CREATE TRIGGER IF NOT EXISTS update_personal_records_timestamp
+AFTER UPDATE ON personal_records
+BEGIN
+  UPDATE personal_records SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- ==================== Finances ====================
+
+-- Subscriptions Table
+-- Stores recurring subscription tracking (per user)
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  website TEXT,
+  icon_url TEXT,
+  price REAL NOT NULL,
+  cycle TEXT NOT NULL DEFAULT 'monthly'
+    CHECK(cycle IN ('weekly', 'monthly', 'quarterly', 'yearly')),
+  currency TEXT NOT NULL DEFAULT 'USD',
+  active INTEGER DEFAULT 1,
+  category TEXT,
+  billing_day INTEGER,
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_subscriptions_userId ON subscriptions(userId);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_active ON subscriptions(active);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_cycle ON subscriptions(cycle);
+
+CREATE TRIGGER IF NOT EXISTS update_subscriptions_timestamp
+AFTER UPDATE ON subscriptions
+BEGIN
+  UPDATE subscriptions SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Savings Accounts Table
+-- Stores savings/investment account tracking (per user)
+CREATE TABLE IF NOT EXISTS savings_accounts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  institution TEXT,
+  account_type TEXT DEFAULT 'savings'
+    CHECK(account_type IN ('savings', 'checking', 'money_market', 'cd', 'investment', 'other')),
+  currency TEXT NOT NULL DEFAULT 'USD',
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_savings_accounts_userId ON savings_accounts(userId);
+CREATE INDEX IF NOT EXISTS idx_savings_accounts_account_type ON savings_accounts(account_type);
+
+CREATE TRIGGER IF NOT EXISTS update_savings_accounts_timestamp
+AFTER UPDATE ON savings_accounts
+BEGIN
+  UPDATE savings_accounts SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Savings Balances Table
+-- Stores balance snapshots for chart visualization
+CREATE TABLE IF NOT EXISTS savings_balances (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  accountId INTEGER NOT NULL,
+  userId TEXT NOT NULL,
+  balance REAL NOT NULL,
+  date TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (accountId) REFERENCES savings_accounts(id) ON DELETE CASCADE,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_savings_balances_accountId ON savings_balances(accountId);
+CREATE INDEX IF NOT EXISTS idx_savings_balances_userId ON savings_balances(userId);
+CREATE INDEX IF NOT EXISTS idx_savings_balances_date ON savings_balances(date);
+
+-- Debts Table
+-- Stores debt tracking with payment modeling (per user)
+CREATE TABLE IF NOT EXISTS debts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  category TEXT DEFAULT 'other'
+    CHECK(category IN ('mortgage', 'car', 'student_loan', 'credit_card', 'personal', 'medical', 'other')),
+  original_amount REAL NOT NULL,
+  current_balance REAL NOT NULL,
+  interest_rate REAL DEFAULT 0,
+  monthly_payment REAL NOT NULL,
+  extra_payment REAL DEFAULT 0,
+  start_date TEXT,
+  currency TEXT NOT NULL DEFAULT 'USD',
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_debts_userId ON debts(userId);
+CREATE INDEX IF NOT EXISTS idx_debts_category ON debts(category);
+
+CREATE TRIGGER IF NOT EXISTS update_debts_timestamp
+AFTER UPDATE ON debts
+BEGIN
+  UPDATE debts SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Debt Payments Table
+-- Stores payment history for debt tracking
+CREATE TABLE IF NOT EXISTS debt_payments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  debtId INTEGER NOT NULL,
+  userId TEXT NOT NULL,
+  amount REAL NOT NULL,
+  date TEXT NOT NULL,
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (debtId) REFERENCES debts(id) ON DELETE CASCADE,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_debt_payments_debtId ON debt_payments(debtId);
+CREATE INDEX IF NOT EXISTS idx_debt_payments_userId ON debt_payments(userId);
+CREATE INDEX IF NOT EXISTS idx_debt_payments_date ON debt_payments(date);
+
+-- ==================== Budget ====================
+
+-- Budget Income Table
+-- Stores monthly take-home pay sources (per user)
+CREATE TABLE IF NOT EXISTS budget_income (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  amount REAL NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'USD',
+  label TEXT DEFAULT 'Primary',
+  effective_date TEXT NOT NULL,
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_budget_income_userId ON budget_income(userId);
+CREATE INDEX IF NOT EXISTS idx_budget_income_effective_date ON budget_income(effective_date);
+
+CREATE TRIGGER IF NOT EXISTS update_budget_income_timestamp
+AFTER UPDATE ON budget_income
+BEGIN
+  UPDATE budget_income SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Budget Fixed Costs Table
+-- Stores recurring monthly expenses like rent, utilities, groceries
+CREATE TABLE IF NOT EXISTS budget_fixed_costs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  category TEXT DEFAULT 'other'
+    CHECK(category IN ('housing', 'utilities', 'groceries', 'transportation',
+                        'insurance', 'healthcare', 'childcare', 'phone',
+                        'internet', 'other')),
+  amount REAL NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'USD',
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_budget_fixed_costs_userId ON budget_fixed_costs(userId);
+CREATE INDEX IF NOT EXISTS idx_budget_fixed_costs_category ON budget_fixed_costs(category);
+
+CREATE TRIGGER IF NOT EXISTS update_budget_fixed_costs_timestamp
+AFTER UPDATE ON budget_fixed_costs
+BEGIN
+  UPDATE budget_fixed_costs SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;

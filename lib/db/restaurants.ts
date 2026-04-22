@@ -154,10 +154,11 @@ export async function getAllRestaurants(userId: string): Promise<Restaurant[]> {
 /**
  * Get restaurants with visit count for card display
  */
-export async function getAllRestaurantsWithVisitCount(userId: string): Promise<(Restaurant & { visitCount: number })[]> {
-  const rows = await query<DBRestaurant & { visitCount: number }>(
+export async function getAllRestaurantsWithVisitCount(userId: string): Promise<(Restaurant & { visitCount: number; lastVisitDate: string | null })[]> {
+  const rows = await query<DBRestaurant & { visitCount: number; lastVisitDate: string | null }>(
     `SELECT r.*, 
-      (SELECT COUNT(*) FROM restaurant_visits WHERE restaurantId = r.id) as visitCount
+      (SELECT COUNT(*) FROM restaurant_visits WHERE restaurantId = r.id) as visitCount,
+      (SELECT MAX(visit_date) FROM restaurant_visits WHERE restaurantId = r.id) as lastVisitDate
     FROM restaurants r
     WHERE r.userId = ?
     ORDER BY r.name ASC`,
@@ -166,6 +167,7 @@ export async function getAllRestaurantsWithVisitCount(userId: string): Promise<(
   return rows.map(row => ({
     ...transformRestaurant(row),
     visitCount: row.visitCount,
+    lastVisitDate: row.lastVisitDate,
   }));
 }
 

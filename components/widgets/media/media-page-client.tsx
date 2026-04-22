@@ -1,13 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { MediaItem } from "@/lib/media";
-import { MediaGrid } from "./media-grid";
 import { PaginatedMediaGrid } from "./paginated-media-grid";
-import { MediaConsumptionTimeline } from "./media-consumption-timeline";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { PageTabsList } from "@/components/ui/page-tabs-list";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +16,16 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, ChevronDown, ChevronRight, X } from "lucide-react";
-import Link from "next/link";
+import { Plus, ChevronDown, X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import type { MediaTimelineData, PaginatedMediaResult, MediaContent } from "@/lib/db/media";
+import { cn } from "@/lib/utils";
+
+import { MediaHero } from "./media-hero";
+import { MediaActiveJourneys } from "./media-active-journeys";
+import { MediaCuratedBento } from "./media-curated-bento";
+import { MediaFormDialog } from "./media-form-dialog";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 
 // Convert MediaContent to MediaItem
 function dbToMediaItem(dbMedia: MediaContent): MediaItem {
@@ -44,6 +46,7 @@ function dbToMediaItem(dbMedia: MediaContent): MediaItem {
       length: dbMedia.length ?? undefined,
       featured: dbMedia.featured === 1,
       published: dbMedia.published === 1,
+      timeSpent: dbMedia.time_spent,
     },
     // Content might be undefined if not selected for performance
     content: dbMedia.content ?? "",
@@ -66,7 +69,6 @@ type SortOption =
   | "started-desc"
   | "started-asc";
 
-type ViewTab = "media" | "analytics";
 
 export function MediaPageClient({
   allMedia,
@@ -75,34 +77,25 @@ export function MediaPageClient({
 }: MediaPageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [viewTab, setViewTab] = useState<ViewTab>("media");
   const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game" | "album">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showPlanned, setShowPlanned] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>("completed-desc");
   const [genreSearch, setGenreSearch] = useState("");
   const [tagSearch, setTagSearch] = useState("");
+  const [showForm, setShowForm] = useState(false);
   
   // Read genres and tags directly from URL parameters on initialization
   const [activeGenres, setActiveGenres] = useState<string[]>(() => {
-    // Only attempt to read if window is defined (client-side) to avoid SSR hydration mismatches,
-    // though useSearchParams is usually safe in client components.
     if (typeof window === 'undefined') return [];
-    
     const genres = searchParams.get("genres");
-    const genre = searchParams.get("genre");
     if (genres) return genres.split(",");
-    if (genre) return [genre];
     return [];
   });
 
   const [activeTags, setActiveTags] = useState<string[]>(() => {
     if (typeof window === 'undefined') return [];
-    
     const tags = searchParams.get("tags");
-    const tag = searchParams.get("tag");
     if (tags) return tags.split(",");
-    if (tag) return [tag];
     return [];
   });
   
@@ -126,83 +119,16 @@ export function MediaPageClient({
     return Array.from(tagSet).sort();
   }, [allMedia]);
 
-  // Sort media items
-  const sortMedia = useCallback((items: MediaItem[]) => {
-    const sorted = [...items];
+  // Extract in-progress media for the "Active Journeys" section
+  const inProgressMedia = useMemo(() => {
+    return allMedia.filter((item) => item.frontmatter.status === "in-progress")
+      .sort((a, b) => (b.frontmatter.started || "").localeCompare(a.frontmatter.started || ""))
+      .slice(0, 5); // Show top 5 for the homepage
+  }, [allMedia]);
 
-    switch (sortBy) {
-      case "title-asc":
-        return sorted.sort((a, b) =>
-          a.frontmatter.title.localeCompare(b.frontmatter.title)
-        );
-      case "title-desc":
-        return sorted.sort((a, b) =>
-          b.frontmatter.title.localeCompare(a.frontmatter.title)
-        );
-      case "rating-desc":
-        return sorted.sort((a, b) => {
-          const ratingA = a.frontmatter.rating || 0;
-          const ratingB = b.frontmatter.rating || 0;
-          return ratingB - ratingA;
-        });
-      case "rating-asc":
-        return sorted.sort((a, b) => {
-          const ratingA = a.frontmatter.rating || 0;
-          const ratingB = b.frontmatter.rating || 0;
-          return ratingA - ratingB;
-        });
-      case "completed-desc":
-        return sorted.sort((a, b) => {
-          const dateA = a.frontmatter.completed || "";
-          const dateB = b.frontmatter.completed || "";
-          return dateB.localeCompare(dateA);
-        });
-      case "completed-asc":
-        return sorted.sort((a, b) => {
-          const dateA = a.frontmatter.completed || "";
-          const dateB = b.frontmatter.completed || "";
-          return dateA.localeCompare(dateB);
-        });
-      case "started-desc":
-        return sorted.sort((a, b) => {
-          const dateA = a.frontmatter.started || "";
-          const dateB = b.frontmatter.started || "";
-          return dateB.localeCompare(dateA);
-        });
-      case "started-asc":
-        return sorted.sort((a, b) => {
-          const dateA = a.frontmatter.started || "";
-          const dateB = b.frontmatter.started || "";
-          return dateA.localeCompare(dateB);
-        });
-      default:
-        return sorted;
-    }
-  }, [sortBy]);
-
-  // Separate in-progress and planned media (completed items are paginated separately)
-  const { inProgressMedia, plannedMedia } = useMemo(() => {
-    // In Progress: status is "in-progress"
-    const inProgress = allMedia.filter((item) => item.frontmatter.status === "in-progress");
-    // Planned: status is "planned"
-    const planned = allMedia.filter((item) => item.frontmatter.status === "planned");
-
-    // Sort in-progress by started date (most recent first)
-    const sortedInProgress = [...inProgress].sort((a, b) => {
-      const dateA = a.frontmatter.started || "";
-      const dateB = b.frontmatter.started || "";
-      return dateB.localeCompare(dateA);
-    });
-
-    // Sort planned by title alphabetically
-    const sortedPlanned = [...planned].sort((a, b) => {
-      return a.frontmatter.title.localeCompare(b.frontmatter.title);
-    });
-
-    return {
-      inProgressMedia: sortedInProgress,
-      plannedMedia: sortedPlanned,
-    };
+  // Latest featured item for Hero
+  const featuredItem = useMemo(() => {
+    return allMedia.find(m => m.frontmatter.featured) || allMedia[0];
   }, [allMedia]);
 
   // Convert initial completed media to MediaItem format
@@ -213,111 +139,16 @@ export function MediaPageClient({
 
   // Build filters for paginated completed media
   const completedFilters = useMemo(() => {
-    const filters: {
-      type?: "movie" | "tv" | "book" | "game" | "album";
-      status: "completed";
-      search?: string;
-      genres?: string[];
-      tags?: string[];
-      sortBy: typeof sortBy;
-    } = {
+    const filters: any = {
       status: "completed",
       sortBy,
     };
-
-    if (activeTab !== "all") {
-      filters.type = activeTab;
-    }
-
-    if (searchQuery) {
-      filters.search = searchQuery;
-    }
-
-    if (activeGenres.length > 0) {
-      filters.genres = activeGenres;
-    }
-
-    if (activeTags.length > 0) {
-      filters.tags = activeTags;
-    }
-
+    if (activeTab !== "all") filters.type = activeTab;
+    if (searchQuery) filters.search = searchQuery;
+    if (activeGenres.length > 0) filters.genres = activeGenres;
+    if (activeTags.length > 0) filters.tags = activeTags;
     return filters;
   }, [activeTab, searchQuery, activeGenres, activeTags, sortBy]);
-
-  // Filter in-progress media by type and search
-  const filteredInProgress = useMemo(() => {
-    let filtered = inProgressMedia;
-
-    // Filter by type
-    if (activeTab !== "all") {
-      filtered = filtered.filter((item) => item.frontmatter.type === activeTab);
-    }
-
-    // Filter by genres (match ANY of the selected genres)
-    if (activeGenres.length > 0) {
-      filtered = filtered.filter((item) =>
-        item.frontmatter.genres?.some((genre) => activeGenres.includes(genre))
-      );
-    }
-
-    // Filter by tags (match ANY of the selected tags)
-    if (activeTags.length > 0) {
-      filtered = filtered.filter((item) =>
-        item.frontmatter.tags?.some((tag) => activeTags.includes(tag))
-      );
-    }
-
-    // Search by title
-    if (searchQuery) {
-      filtered = filtered.filter((item) =>
-        item.frontmatter.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    return sortMedia(filtered);
-  }, [inProgressMedia, activeTab, searchQuery, activeGenres, activeTags, sortMedia]);
-
-  // Filter planned media by type and search
-  const filteredPlanned = useMemo(() => {
-    let filtered = plannedMedia;
-
-    // Filter by type
-    if (activeTab !== "all") {
-      filtered = filtered.filter((item) => item.frontmatter.type === activeTab);
-    }
-
-    // Filter by genres (match ANY of the selected genres)
-    if (activeGenres.length > 0) {
-      filtered = filtered.filter((item) =>
-        item.frontmatter.genres?.some((genre) => activeGenres.includes(genre))
-      );
-    }
-
-    // Filter by tags (match ANY of the selected tags)
-    if (activeTags.length > 0) {
-      filtered = filtered.filter((item) =>
-        item.frontmatter.tags?.some((tag) => activeTags.includes(tag))
-      );
-    }
-
-    // Search by title
-    if (searchQuery) {
-      filtered = filtered.filter((item) =>
-        item.frontmatter.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    return sortMedia(filtered);
-  }, [plannedMedia, activeTab, searchQuery, activeGenres, activeTags, sortMedia]);
-
-  const stats = {
-    all: allMedia.length,
-    movie: allMedia.filter((item) => item.frontmatter.type === "movie").length,
-    tv: allMedia.filter((item) => item.frontmatter.type === "tv").length,
-    book: allMedia.filter((item) => item.frontmatter.type === "book").length,
-    game: allMedia.filter((item) => item.frontmatter.type === "game").length,
-    album: allMedia.filter((item) => item.frontmatter.type === "album").length,
-  };
 
   // Toggle genre selection
   const toggleGenre = (genre: string) => {
@@ -325,7 +156,6 @@ export function MediaPageClient({
       ? activeGenres.filter((g) => g !== genre)
       : [...activeGenres, genre];
     setActiveGenres(newGenres);
-    updateURL({ genres: newGenres });
   };
 
   // Toggle tag selection
@@ -334,409 +164,184 @@ export function MediaPageClient({
       ? activeTags.filter((t) => t !== tag)
       : [...activeTags, tag];
     setActiveTags(newTags);
-    updateURL({ tags: newTags });
-  };
-
-  // Clear all genre filters
-  const clearGenreFilter = () => {
-    setActiveGenres([]);
-    updateURL({ genres: [] });
-  };
-
-  // Clear all tag filters
-  const clearTagFilter = () => {
-    setActiveTags([]);
-    updateURL({ tags: [] });
-  };
-
-  // Update URL with current filters
-  const updateURL = ({ genres, tags }: { genres?: string[]; tags?: string[] }) => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (genres !== undefined) {
-      params.delete("genre");
-      params.delete("genres");
-      if (genres.length > 0) {
-        params.set("genres", genres.join(","));
-      }
-    }
-
-    if (tags !== undefined) {
-      params.delete("tag");
-      params.delete("tags");
-      if (tags.length > 0) {
-        params.set("tags", tags.join(","));
-      }
-    }
-
-    router.push(`/media${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Media Library</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Track movies, TV shows, books, and video games you&apos;re watching/reading/playing
-          </p>
-        </div>
-        <Button asChild className="w-full sm:w-auto">
-          <Link href="/media/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Create New
-          </Link>
-        </Button>
-      </div>
+    <div className="flex bg-media-surfacedark:bg-media-primary min-h-screen font-lexend -mx-4 -my-8 sm:-mx-6 md:-mx-8">
+      {/* Floating Action Button */}
+      <FloatingActionButton 
+        onClick={() => isMobile ? setShowForm(true) : router.push("/media/new")}
+        tooltipText="New Media"
+      />
 
-      <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as ViewTab)}>
-        <PageTabsList
-          tabs={[
-            { value: "media", label: "Media" },
-            { value: "analytics", label: "Analytics" },
-          ]}
-        />
+      <main className="flex-1 min-h-screen pb-24 transition-all duration-300">
+        {/* Top Content (Hero + Filters) */}
+        <div className="w-full max-w-[1440px] mx-auto pt-8">
+          
+          {/* Hero Section */}
+          {featuredItem && <MediaHero item={featuredItem} />}
 
-        <TabsContent value="media" className="space-y-4 sm:space-y-6 mt-6">
-          {/* Filters and Search */}
-          <div className="flex flex-col gap-4">
-        {/* Type Filter - Dropdown on mobile, tabs on desktop */}
-        {isMobile ? (
-          <Select value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Filter by type..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All ({stats.all})</SelectItem>
-              <SelectItem value="movie">Movies ({stats.movie})</SelectItem>
-              <SelectItem value="tv">TV ({stats.tv})</SelectItem>
-              <SelectItem value="book">Books ({stats.book})</SelectItem>
-              <SelectItem value="game">Games ({stats.game})</SelectItem>
-              <SelectItem value="album">Albums ({stats.album})</SelectItem>
-            </SelectContent>
-          </Select>
-        ) : (
-          <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground w-full">
-            <Button
-              variant={activeTab === "all" ? "default" : "ghost"}
-              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-              onClick={() => setActiveTab("all")}
-            >
-              All ({stats.all})
-            </Button>
-            <Button
-              variant={activeTab === "movie" ? "default" : "ghost"}
-              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-              onClick={() => setActiveTab("movie")}
-            >
-              Movies ({stats.movie})
-            </Button>
-            <Button
-              variant={activeTab === "tv" ? "default" : "ghost"}
-              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-              onClick={() => setActiveTab("tv")}
-            >
-              TV ({stats.tv})
-            </Button>
-            <Button
-              variant={activeTab === "book" ? "default" : "ghost"}
-              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-              onClick={() => setActiveTab("book")}
-            >
-              Books ({stats.book})
-            </Button>
-            <Button
-              variant={activeTab === "game" ? "default" : "ghost"}
-              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-              onClick={() => setActiveTab("game")}
-            >
-              Games ({stats.game})
-            </Button>
-            <Button
-              variant={activeTab === "album" ? "default" : "ghost"}
-              className="flex-1 text-xs sm:text-sm h-auto py-1.5"
-              onClick={() => setActiveTab("album")}
-            >
-              Albums ({stats.album})
-            </Button>
-          </div>
-        )}
+          <div className="px-8 mt-12 pb-24">
+            {/* Active Journeys (In Progress) */}
+            <MediaActiveJourneys items={inProgressMedia} />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-          <div className="relative sm:col-span-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search media..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+            {/* Curated Bento Grid */}
+            <MediaCuratedBento />
 
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Sort by..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="completed-desc">Completed (Newest)</SelectItem>
-              <SelectItem value="completed-asc">Completed (Oldest)</SelectItem>
-              <SelectItem value="started-desc">Started (Newest)</SelectItem>
-              <SelectItem value="started-asc">Started (Oldest)</SelectItem>
-              <SelectItem value="title-asc">Title (A-Z)</SelectItem>
-              <SelectItem value="title-desc">Title (Z-A)</SelectItem>
-              <SelectItem value="rating-desc">Rating (High to Low)</SelectItem>
-              <SelectItem value="rating-asc">Rating (Low to High)</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Genre Filter */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-between">
-                <span className="truncate">
-                  {activeGenres.length > 0
-                    ? `${activeGenres.length} Genre${activeGenres.length > 1 ? "s" : ""}`
-                    : "Filter by Genre"}
-                </span>
-                <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
-              </Button>
-            </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0" align="start">
-            <div className="p-2">
-              <Input
-                placeholder="Search genres..."
-                value={genreSearch}
-                onChange={(e) => setGenreSearch(e.target.value)}
-                className="h-8"
-              />
-            </div>
-            <div className="max-h-[300px] overflow-y-auto">
-              {allGenres
-                .filter((genre) =>
-                  genre.toLowerCase().includes(genreSearch.toLowerCase())
-                )
-                .map((genre) => (
-                  <div
-                    key={genre}
-                    className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer"
-                    onClick={() => toggleGenre(genre)}
-                  >
-                    <Checkbox
-                      checked={activeGenres.includes(genre)}
-                      className="pointer-events-none"
-                    />
-                    <span className="text-sm">{genre}</span>
-                  </div>
-                ))}
-              {allGenres.filter((genre) =>
-                genre.toLowerCase().includes(genreSearch.toLowerCase())
-              ).length === 0 && (
-                <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-                  No genres found
+            {/* Sub-Navigation & Search (Integrated into page per feedback) */}
+            <div className="mb-12">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 bg-white/40 dark:bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-media-outline-variant/10 shadow-sm">
+                <div className="flex-1 max-w-2xl relative group">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-media-outline transition-colors group-hover:text-media-secondary">search</span>
+                  <input 
+                    className="w-full pl-12 pr-6 py-4 bg-media-surface-container-low rounded-2xl border-none focus:ring-2 focus:ring-media-secondary/20 transition-all text-sm placeholder:text-media-on-surface-variant/50 shadow-inner" 
+                    placeholder="Search your media library..." 
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
-              )}
-            </div>
-            {activeGenres.length > 0 && (
-              <div className="border-t p-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full h-8"
-                  onClick={clearGenreFilter}
-                >
-                  Clear All
-                </Button>
+                
+                <nav className="flex items-center gap-1 sm:gap-4 md:gap-8 text-xs sm:text-sm uppercase tracking-widest font-black">
+                  {(["all", "movie", "tv", "book", "game"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={cn(
+                        "pb-2 transition-all duration-300 relative border-none bg-transparent cursor-pointer",
+                        activeTab === tab 
+                          ? "text-media-secondary" 
+                          : "text-media-on-surface-variant dark:text-media-surface-variant/60 hover:text-media-secondary opacity-70 hover:opacity-100"
+                      )}
+                    >
+                      {tab === "all" ? "LIBRARY" : tab === "movie" ? "MOVIES" : tab === "tv" ? "TV" : tab === "book" ? "BOOKS" : "GAMES"}
+                      {activeTab === tab && (
+                        <span className="absolute bottom-0 left-0 w-full h-1 bg-media-secondary rounded-full"></span>
+                      )}
+                    </button>
+                  ))}
+                </nav>
               </div>
-            )}
-          </PopoverContent>
-        </Popover>
 
-          {/* Tag Filter */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-between">
-                <span className="truncate">
-                  {activeTags.length > 0
-                    ? `${activeTags.length} Tag${activeTags.length > 1 ? "s" : ""}`
-                    : "Filter by Tag"}
-                </span>
-                <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
-              </Button>
-            </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0" align="start">
-            <div className="p-2">
-              <Input
-                placeholder="Search tags..."
-                value={tagSearch}
-                onChange={(e) => setTagSearch(e.target.value)}
-                className="h-8"
-              />
-            </div>
-            <div className="max-h-[300px] overflow-y-auto">
-              {allTags
-                .filter((tag) =>
-                  tag.toLowerCase().includes(tagSearch.toLowerCase())
-                )
-                .map((tag) => (
-                  <div
-                    key={tag}
-                    className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer"
-                    onClick={() => toggleTag(tag)}
-                  >
-                    <Checkbox
-                      checked={activeTags.includes(tag)}
-                      className="pointer-events-none"
-                    />
-                    <span className="text-sm">{tag}</span>
-                  </div>
-                ))}
-              {allTags.filter((tag) =>
-                tag.toLowerCase().includes(tagSearch.toLowerCase())
-              ).length === 0 && (
-                <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-                  No tags found
+              {/* In-Page Stats Summary (Optional flair) */}
+              <div className="flex items-center gap-4 mt-8 flex-wrap">
+                <div className="flex items-center gap-2 px-6 py-3 bg-media-primary text-media-on-primary rounded-full text-[10px] font-black tracking-[0.2em] uppercase shadow-lg">
+                  <span className="material-symbols-outlined text-[16px]">tune</span>
+                  <span>Filters</span>
                 </div>
-              )}
-            </div>
-            {activeTags.length > 0 && (
-              <div className="border-t p-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full h-8"
-                  onClick={clearTagFilter}
-                >
-                  Clear All
-                </Button>
+                
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="px-6 py-3 bg-media-tertiary-fixed text-media-on-tertiary-fixed rounded-full text-[10px] font-black tracking-[0.1em] uppercase hover:bg-media-tertiary-fixed-dim transition-all shadow-sm border-none cursor-pointer">
+                      GENRES ({activeGenres.length})
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[240px] p-4 rounded-2xl bg-white dark:bg-media-primary border-media-outline-variant/20 shadow-2xl">
+                    <div className="space-y-4 font-lexend">
+                      <h4 className="font-black text-sm uppercase tracking-widest text-media-primary">Genre Selection</h4>
+                      <div className="max-h-[300px] overflow-y-auto pr-2 space-y-1">
+                        {allGenres.map((genre) => (
+                          <div 
+                            key={genre} 
+                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-media-surface-variant/20 cursor-pointer"
+                            onClick={() => toggleGenre(genre)}
+                          >
+                            <Checkbox checked={activeGenres.includes(genre)} className="border-media-outline" />
+                            <span className="text-sm font-medium">{genre}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="px-6 py-3 bg-media-secondary-fixed text-media-on-secondary-fixed rounded-full text-[10px] font-black tracking-[0.1em] uppercase hover:bg-media-secondary-fixed-dim transition-all shadow-sm border-none cursor-pointer">
+                      TAGS ({activeTags.length})
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[240px] p-4 rounded-2xl bg-white dark:bg-media-primary border-media-outline-variant/20 shadow-2xl">
+                    <div className="space-y-4 font-lexend">
+                      <h4 className="font-black text-sm uppercase tracking-widest text-media-primary">Tag Selection</h4>
+                      <div className="max-h-[300px] overflow-y-auto pr-2 space-y-1">
+                        {allTags.map((tag) => (
+                          <div 
+                            key={tag} 
+                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-media-surface-variant/20 cursor-pointer"
+                            onClick={() => toggleTag(tag)}
+                          >
+                            <Checkbox checked={activeTags.includes(tag)} className="border-media-outline" />
+                            <span className="text-sm font-medium">{tag}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                  <SelectTrigger className="w-[180px] bg-media-surface-container-high border-none rounded-full h-10 text-[10px] font-black tracking-widest uppercase px-6">
+                    <SelectValue placeholder="SORT BY" />
+                  </SelectTrigger>
+                  <SelectContent className="font-lexend">
+                    <SelectItem value="completed-desc">Completed (Newest)</SelectItem>
+                    <SelectItem value="completed-asc">Completed (Oldest)</SelectItem>
+                    <SelectItem value="started-desc">Started (Newest)</SelectItem>
+                    <SelectItem value="title-asc">Title (A-Z)</SelectItem>
+                    <SelectItem value="rating-desc">Rating (High to Low)</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Active Pills */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {activeGenres.map(g => (
+                    <Badge key={g} className="bg-media-secondary/10 text-media-secondary border-media-secondary/20 px-4 py-2 rounded-full flex items-center gap-2 font-black text-[10px] tracking-widest uppercase shadow-sm hover:bg-media-secondary/20 transition-colors">
+                      {g}
+                      <X className="h-3 w-3 cursor-pointer hover:scale-120 transition-transform" onClick={() => toggleGenre(g)} />
+                    </Badge>
+                  ))}
+                  {activeTags.map(t => (
+                    <Badge key={t} className="bg-media-primary/10 text-media-primary border-media-primary/20 px-4 py-2 rounded-full flex items-center gap-2 font-black text-[10px] tracking-widest uppercase shadow-sm hover:bg-media-primary/20 transition-colors">
+                      {t}
+                      <X className="h-3 w-3 cursor-pointer hover:scale-120 transition-transform" onClick={() => toggleTag(t)} />
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            )}
-          </PopoverContent>
-          </Popover>
-        </div>
-      </div>
-
-      {/* Active Filters */}
-      {(activeGenres.length > 0 || activeTags.length > 0) && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
-          {activeGenres.map((genre) => (
-            <Badge key={genre} variant="secondary" className="gap-1">
-              {genre}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-4 w-4 p-0 hover:bg-transparent"
-                onClick={() => toggleGenre(genre)}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </Badge>
-          ))}
-          {activeTags.map((tag) => (
-            <Badge key={tag} variant="outline" className="gap-1">
-              {tag}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-4 w-4 p-0 hover:bg-transparent"
-                onClick={() => toggleTag(tag)}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </Badge>
-          ))}
-          {(activeGenres.length > 0 || activeTags.length > 0) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 text-xs"
-              onClick={() => {
-                clearGenreFilter();
-                clearTagFilter();
-              }}
-            >
-              Clear All
-            </Button>
-          )}
-        </div>
-      )}
-
-      {/* In Progress Section */}
-      {filteredInProgress.length > 0 && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">In Progress</h2>
-            <p className="text-sm text-muted-foreground">
-              Currently watching, reading, or playing ({filteredInProgress.length})
-            </p>
-          </div>
-          <MediaGrid
-            items={filteredInProgress}
-            emptyMessage=""
-          />
-        </div>
-      )}
-
-      {/* Planned Section (Collapsible) */}
-      {filteredPlanned.length > 0 && (
-        <div className="space-y-4">
-          <button
-            onClick={() => setShowPlanned(!showPlanned)}
-            className="cursor-pointer flex items-center gap-2 w-full text-left group"
-          >
-            {showPlanned ? (
-              <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            ) : (
-              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            )}
-            <div className="flex-1">
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight group-hover:text-foreground/80 transition-colors">
-                Planned
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Planning to watch, read, or play ({filteredPlanned.length})
-              </p>
             </div>
-          </button>
-          {showPlanned && (
-            <MediaGrid
-              items={filteredPlanned}
-              emptyMessage=""
-            />
-          )}
-        </div>
-      )}
 
-      {/* Completed Media Grid - Paginated */}
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Completed</h2>
-          <p className="text-sm text-muted-foreground">
-            Finished watching, reading, or playing
-          </p>
-        </div>
-        <PaginatedMediaGrid
-          initialItems={initialCompletedItems}
-          filters={completedFilters}
-          emptyMessage={
-            searchQuery
-              ? `No results found for "${searchQuery}"`
-              : filteredInProgress.length === 0 && filteredPlanned.length === 0
-              ? `No ${activeTab === "all" ? "media" : activeTab === "game" ? "games" : `${activeTab}s`} found`
-              : "No completed media found"
-          }
-        />
-      </div>
-        </TabsContent>
+            {/* Completed Media Section */}
+            <section className="mt-24">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                <div>
+                  <h2 className="text-3xl font-black tracking-tight text-media-primary dark:text-media-surface mb-2">My Library</h2>
+                  <p className="text-media-on-surface-variant font-medium">
+                    Everything you&apos;ve finished, organized and rated.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-media-on-surface-variant">Displaying</span>
+                  <Badge variant="outline" className="rounded-full px-4 border-media-secondary/30 text-media-secondary font-black">
+                    {initialCompletedMedia.total} ITEMS
+                  </Badge>
+                </div>
+              </div>
 
-        <TabsContent value="analytics" className="space-y-6 mt-6">
-          {/* Media Consumption Timeline */}
-          {timelineData && (
-            <MediaConsumptionTimeline initialData={timelineData} />
-          )}
-        </TabsContent>
-      </Tabs>
+              <PaginatedMediaGrid
+                initialItems={initialCompletedItems}
+                filters={completedFilters}
+                emptyMessage={
+                  searchQuery
+                    ? `No results found for "${searchQuery}"`
+                    : "No completed media found"
+                }
+              />
+            </section>
+          </div>
+        </div>
+      </main>
+    <MediaFormDialog open={showForm} onOpenChange={setShowForm} />
     </div>
   );
 }

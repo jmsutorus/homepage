@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Entry - Archivist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e3e2e0",
+                    "surface-container-highest": "#e3e2e0",
+                    "on-error": "#ffffff",
+                    "on-surface": "#1a1c1a",
+                    "error-container": "#ffdad6",
+                    "outline-variant": "#c3c8c1",
+                    "surface": "#faf9f6",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#e4e4cc",
+                    "tertiary-container": "#2b2d1d",
+                    "on-tertiary-fixed-variant": "#474836",
+                    "on-tertiary-fixed": "#1b1d0e",
+                    "surface-tint": "#4d6453",
+                    "secondary-fixed": "#ffdad3",
+                    "on-primary-fixed": "#0b2013",
+                    "on-background": "#1a1c1a",
+                    "primary-container": "#1b3022",
+                    "on-secondary-fixed": "#3e0500",
+                    "secondary-container": "#fd876f",
+                    "on-secondary-fixed-variant": "#802918",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed": "#d0e9d4",
+                    "tertiary-fixed-dim": "#c8c8b0",
+                    "secondary": "#9f402d",
+                    "primary-fixed-dim": "#b4cdb8",
+                    "inverse-on-surface": "#f2f1ee",
+                    "surface-container": "#efeeeb",
+                    "primary": "#061b0e",
+                    "surface-bright": "#faf9f6",
+                    "background": "#faf9f6",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed-variant": "#364c3c",
+                    "surface-dim": "#dbdad7",
+                    "surface-container-high": "#e9e8e5",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#732010",
+                    "outline": "#737973",
+                    "on-tertiary-container": "#93947f",
+                    "secondary-fixed-dim": "#ffb4a5",
+                    "surface-container-low": "#f4f3f1",
+                    "on-surface-variant": "#434843",
+                    "tertiary": "#17180a",
+                    "on-primary-container": "#819986",
+                    "inverse-primary": "#b4cdb8",
+                    "inverse-surface": "#2f312f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface text-primary selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<main class="lg:ml-72 pt-24 min-h-screen">
+<div class="max-w-4xl mx-auto px-8 pb-24 space-y-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<nav class="flex gap-2 text-xs uppercase tracking-widest text-secondary font-bold mb-4">
+<span>Library</span>
+<span>/</span>
+<span>Books</span>
+<span>/</span>
+<span class="text-primary opacity-50">Editing</span>
+</nav>
+<h2 class="text-5xl font-bold tracking-tighter text-primary">Alloy of Law</h2>
+<p class="text-on-surface-variant mt-2 font-light">Mistborn Era 2, Book 1</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2.5 rounded-lg text-primary font-semibold hover:bg-surface-container-low transition-colors">Cancel</button>
+<button class="px-8 py-2.5 rounded-lg bg-secondary text-on-secondary font-bold shadow-xl shadow-secondary/10 hover:brightness-110 transition-all">Save Changes</button>
+</div>
+</div>
+<section class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm">
+<div class="flex flex-col md:flex-row gap-8">
+<div class="w-full md:w-48 flex-shrink-0">
+<div class="aspect-[2/3] w-full rounded-xl overflow-hidden relative group cursor-pointer bg-surface-container-high shadow-md">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="dramatic fantasy book cover with a silhouette of a man in a duster coat against a swirling mist background with metallic accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8aUMZ2cPHe7_JViD3EIzO0GVGvYUzI9GQjdSDk7hhWZIWq7RfaRMKYqQ6IASlROxc3NjbW1w5LwBeZwmRU0u1NknEfbpXHcvIJdqAUABS7nvZZoUNOTLhHBTg_2O_H2AV6wy-7CJnYHQZKnnxX24zjXV59doW8Od3GvHWXyzZ3BnaD9N6EJQvpRNMFlKJlmZnIRAqX8lY2-gQyUuoR5UdpO4_kkdxP_OJg6uRQzBrIJU2PMWUN-b-allJvFuzopTOAK4E8tz6joo"/>
+<div class="absolute inset-0 bg-primary/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white text-3xl">add_a_photo</span>
+</div>
+</div>
+</div>
+<div class="flex-1 space-y-6">
+<h3 class="text-sm font-bold uppercase tracking-widest text-primary border-b border-outline-variant/20 pb-2 mb-4">Metadata</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-secondary">Title</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-2.5 text-sm text-primary focus:ring-2 focus:ring-secondary/20" type="text" value="Alloy of Law"/>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-secondary">Type</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg p-2.5 text-sm text-primary focus:ring-2 focus:ring-secondary/20 appearance-none">
+<option>Novel</option>
+<option>Short Story</option>
+<option>Graphic Novel</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-secondary">Status</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg p-2.5 text-sm text-primary focus:ring-2 focus:ring-secondary/20 appearance-none">
+<option>Completed</option>
+<option>Reading</option>
+<option>To-Read</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-secondary">Rating</label>
+<div class="flex gap-1 text-secondary py-1">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xl">star</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-secondary">Pages</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-2.5 text-sm text-primary focus:ring-2 focus:ring-secondary/20" type="number" value="332"/>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-secondary">Genres</label>
+<div class="flex flex-wrap gap-2 pt-1">
+<span class="px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed text-[10px] rounded-full font-medium">Fantasy</span>
+<span class="px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed text-[10px] rounded-full font-medium">Steampunk</span>
+<button class="w-5 h-5 rounded-full bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px]">add</span>
+</button>
+</div>
+</div>
+<div class="md:col-span-2 space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-secondary">Read Dates</label>
+<div class="flex items-center gap-3">
+<input class="flex-1 bg-surface-container-low border-none rounded-lg p-2.5 text-xs text-primary focus:ring-2 focus:ring-secondary/20" type="date" value="2023-05-12"/>
+<span class="material-symbols-outlined text-outline text-sm">arrow_forward</span>
+<input class="flex-1 bg-surface-container-low border-none rounded-lg p-2.5 text-xs text-primary focus:ring-2 focus:ring-secondary/20" type="date" value="2023-05-18"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="space-y-6">
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col h-full min-h-[700px] border border-surface-container">
+<div class="px-8 py-4 border-b border-surface-container-low flex items-center justify-between bg-surface-container-lowest">
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">format_h1</span>
+</button>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">format_h2</span>
+</button>
+<div class="w-px h-6 bg-outline-variant/30 mx-2"></div>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">format_bold</span>
+</button>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">format_italic</span>
+</button>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">format_quote</span>
+</button>
+<div class="w-px h-6 bg-outline-variant/30 mx-2"></div>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">format_list_bulleted</span>
+</button>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">link</span>
+</button>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">image</span>
+</button>
+</div>
+<div class="flex items-center gap-4 text-xs font-medium text-on-surface-variant uppercase tracking-widest">
+<span>1,240 Words</span>
+<span class="text-secondary">Draft Saved</span>
+</div>
+</div>
+<div class="flex-1 p-8 lg:p-16 bg-surface-container-lowest">
+<textarea class="w-full h-full border-none focus:ring-0 bg-transparent text-lg leading-relaxed text-on-surface-variant font-light resize-none placeholder:text-outline-variant/50 selection:bg-secondary-fixed min-h-[500px]" placeholder="Start weaving your thoughts here...">The transition from the epic scale of the first Mistborn trilogy to the more focused, 'western' vibes of Alloy of Law is masterful. Brandon Sanderson captures the feeling of a world progressing technologically while keeping the magic systems grounded and evolving.
+Waxillium Ladrian is a fascinating protagonist—a lawman from the Roughs returning to the high society of Elendel. The dynamic between him and Wayne provides some of the best comedic relief in the entire Cosmere.
+Key Themes explored:
+- Justice vs. Law
+- The burden of nobility
+- Religious evolution (The Path vs. Survivorism)
+I particularly enjoyed the way Allomancy is used in combat here. The 'Crashing' and 'Pushing' feels much more tactical when combined with firearms and early industrial settings. It gives the world a gritty, palpable texture that was missing in the more ethereal Final Empire.</textarea>
+</div>
+<div class="px-8 py-4 bg-surface-container-low flex justify-between items-center">
+<div class="flex gap-4">
+<span class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                    Last edited 2 mins ago
+                </span>
+</div>
+<div class="flex gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-primary">visibility</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-primary">fullscreen</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-primary-container p-6 rounded-2xl text-on-primary-container flex gap-4">
+<span class="material-symbols-outlined">lightbulb</span>
+<div>
+<h4 class="font-bold text-sm uppercase tracking-wider mb-1">Editorial Note</h4>
+<p class="text-xs opacity-80 leading-relaxed">Consider expanding on the metallic arts interactions in Chapter 4 for your next deep-dive essay.</p>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl text-on-surface border border-outline-variant/10 flex gap-4">
+<span class="material-symbols-outlined">collections_bookmark</span>
+<div>
+<h4 class="font-bold text-sm uppercase tracking-wider mb-1">Linked Entries</h4>
+<p class="text-xs opacity-80 leading-relaxed">Referenced in "The History of Scadrial" and "Wax and Wayne Series Review".</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+
+</body></html>

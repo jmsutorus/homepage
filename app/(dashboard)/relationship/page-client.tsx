@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
-import { Heart, Lock, Calendar, Settings, Plus } from "lucide-react";
+import { Heart, Lock, Calendar, Settings, Plus, Star } from "lucide-react";
 import { DatesTab } from "@/components/widgets/relationship/dates-tab";
 import { IntimacyTab } from "@/components/widgets/relationship/intimacy-tab";
 import { MilestonesTab } from "@/components/widgets/relationship/milestones-tab";
@@ -117,45 +117,49 @@ export function RelationshipPageClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Heart className="h-8 w-8 text-pink-500" />
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Relationship Tracker</h1>
-          <p className="text-muted-foreground">
-            Track dates, intimacy, and special moments together
-          </p>
+      <section className="mb-8">
+        <div className="flex items-start gap-5">
+          <div className="p-4 bg-primary/10 rounded-2xl">
+            <Heart className="h-8 w-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-5xl font-playfair font-bold text-primary leading-tight">Relationship Tracker</h1>
+            <p className="text-muted-foreground mt-1 max-w-lg">
+              Capturing the grand chapters and quiet moments of our journey through life together.
+            </p>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Stats Summary (placeholder for now) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg bg-muted/50">
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="h-4 w-4 text-pink-500" />
-            <p className="text-xs text-muted-foreground">Total Dates</p>
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+        <div className="p-6 bg-white dark:bg-zinc-900 border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold font-font-lexend">Total Dates</span>
+            <Calendar className="h-4 w-4 text-primary/50" />
           </div>
-          <p className="text-2xl font-bold">{stats.totalDates}</p>
+          <div className="text-3xl font-playfair font-bold">{stats.totalDates}</div>
         </div>
-        <div className="p-4 rounded-lg bg-muted/50">
-          <div className="flex items-center gap-2 mb-1">
-            <Heart className="h-4 w-4 text-pink-500" />
-            <p className="text-xs text-muted-foreground">Intimacy Entries</p>
+        <div className="p-6 bg-white dark:bg-zinc-900 border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold font-font-lexend">Intimacy Entries</span>
+            <Heart className="h-4 w-4 text-primary/50" />
           </div>
-          <p className="text-2xl font-bold">{stats.totalIntimacy}</p>
+          <div className="text-3xl font-playfair font-bold">{stats.totalIntimacy}</div>
         </div>
-        <div className="p-4 rounded-lg bg-muted/50">
-          <div className="flex items-center gap-2 mb-1">
-            <Lock className="h-4 w-4 text-pink-500" />
-            <p className="text-xs text-muted-foreground">Milestones</p>
+        <div className="p-6 bg-white dark:bg-zinc-900 border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold font-font-lexend">Milestones</span>
+            <Lock className="h-4 w-4 text-primary/50" />
           </div>
-          <p className="text-2xl font-bold">{stats.totalMilestones}</p>
+          <div className="text-3xl font-playfair font-bold">{stats.totalMilestones}</div>
         </div>
-        <div className="p-4 rounded-lg bg-muted/50">
-          <div className="flex items-center gap-2 mb-1">
-            <Heart className="h-4 w-4 text-pink-500" />
-            <p className="text-xs text-muted-foreground">Avg Rating</p>
+        <div className="p-6 bg-white dark:bg-zinc-900 border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold font-font-lexend">Avg Rating</span>
+            <Star className="h-4 w-4 text-primary/50" />
           </div>
-          <p className="text-2xl font-bold">{stats.avgDateRating.toFixed(1)}</p>
+          <div className="text-3xl font-playfair font-bold">{stats.avgDateRating.toFixed(1)}</div>
         </div>
       </div>
 

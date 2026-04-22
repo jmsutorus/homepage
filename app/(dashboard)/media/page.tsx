@@ -1,6 +1,6 @@
 import { getAllMediaItems } from "@/lib/media";
 import { MediaPageClient } from "@/components/widgets/media/media-page-client";
-import { getMediaTimelineData, getPaginatedMedia } from "@/lib/db/media";
+import { getPaginatedMedia } from "@/lib/db/media";
 import { getUserId } from "@/lib/auth/server";
 
 export const dynamic = "force-dynamic";
@@ -42,21 +42,15 @@ function serializePaginatedResult(result: Awaited<ReturnType<typeof getPaginated
 export default async function MediaPage() {
   const userId = await getUserId();
 
-  // Fetch all data in parallel
   const [
     allMedia,
-    initialCompletedMediaRaw,
-    timelineData
+    initialCompletedMediaRaw
   ] = await Promise.all([
-    // Get ALL media items for in-progress and planned (usually small numbers)
     getAllMediaItems(userId),
-    // Get initial paginated completed media items (first 25)
     getPaginatedMedia(userId, 1, 25, {
       status: "completed",
       sortBy: "completed-desc",
     }),
-    // Get timeline data on the server for initial render
-    getMediaTimelineData(userId, "month", 12)
   ]);
 
   // Convert to plain serializable object
@@ -66,7 +60,6 @@ export default async function MediaPage() {
     <MediaPageClient
       allMedia={allMedia}
       initialCompletedMedia={initialCompletedMedia}
-      timelineData={timelineData}
     />
   );
 }

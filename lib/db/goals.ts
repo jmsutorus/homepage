@@ -58,6 +58,13 @@ export interface GoalMilestoneWithChecklist extends GoalMilestone {
   checklist: GoalChecklistItem[];
 }
 
+export interface GoalWithProgress extends Goal {
+  progress: number;
+  category?: string;
+  milestoneCount: number;
+  milestonesCompleted: number;
+}
+
 // Raw database row types (before parsing)
 interface GoalRow {
   id: number;
@@ -245,6 +252,39 @@ export async function getGoals(userId: string, options?: {
     console.error("Error getting goals:", error);
     return [];
   }
+}
+
+/**
+ * Get goals with their calculated progress
+ */
+export async function getGoalsWithProgress(userId: string, options?: {
+  status?: GoalStatus | GoalStatus[];
+  priority?: GoalPriority;
+  includeArchived?: boolean;
+}): Promise<GoalWithProgress[]> {
+  const goals = await getGoals(userId, options);
+  
+  return Promise.all(goals.map(async (goal) => {
+    const milestones = await getMilestonesByGoalId(goal.id);
+    const goalChecklist = await getChecklistByGoalId(goal.id);
+
+    const milestoneChecklists = new Map<number, GoalChecklistItem[]>();
+    for (const milestone of milestones) {
+      const checklist = await getChecklistByMilestoneId(milestone.id);
+      milestoneChecklists.set(milestone.id, checklist);
+    }
+    
+    // Attempt to extract a category from tags if it exists
+    const category = goal.tags && goal.tags.length > 0 ? goal.tags[0] : undefined;
+    
+    return {
+      ...goal,
+      progress: calculateGoalProgress(milestones, goalChecklist, milestoneChecklists),
+      category,
+      milestoneCount: milestones.length,
+      milestonesCompleted: milestones.filter(m => m.completed).length,
+    };
+  }));
 }
 
 /**
@@ -841,50 +881,9 @@ export async function reorderMilestoneChecklist(milestoneId: number, itemIds: nu
     return false;
   }
 }
-
 // ============================================================================
 // Aggregate Functions
 // ============================================================================
-
-/**
- * Get goals with progress for list view
- */
-export async function getGoalsWithProgress(userId: string, options?: {
-  status?: GoalStatus | GoalStatus[];
-  priority?: GoalPriority;
-  includeArchived?: boolean;
-}): Promise<(Goal & { progress: number; milestoneCount: number; milestonesCompleted: number })[]> {
-  try {
-    const goals = await getGoals(userId, options);
-
-    const goalsWithProgress = await Promise.all(goals.map(async goal => {
-      const [milestones, goalChecklist] = await Promise.all([
-        getMilestonesByGoalId(goal.id),
-        getChecklistByGoalId(goal.id)
-      ]);
-
-      const milestoneChecklists = new Map<number, GoalChecklistItem[]>();
-      await Promise.all(milestones.map(async milestone => {
-        const checklist = await getChecklistByMilestoneId(milestone.id);
-        milestoneChecklists.set(milestone.id, checklist);
-      }));
-
-      const progress = calculateGoalProgress(milestones, goalChecklist, milestoneChecklists);
-
-      return {
-        ...goal,
-        progress,
-        milestoneCount: milestones.length,
-        milestonesCompleted: milestones.filter(m => m.completed).length,
-      };
-    }));
-
-    return goalsWithProgress;
-  } catch (error) {
-    console.error("Error getting goals with progress:", error);
-    return [];
-  }
-}
 
 /**
  * Get all unique tags from goals

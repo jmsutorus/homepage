@@ -341,8 +341,8 @@ export async function createItineraryDay(
   const result = await execute(
     `INSERT INTO vacation_itinerary_days (
       vacationId, date, day_number, title, location,
-      activities, notes, budget_planned, budget_actual
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      activities, notes, photo, budget_planned, budget_actual
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       vacationId,
       data.date,
@@ -351,6 +351,7 @@ export async function createItineraryDay(
       data.location || null,
       data.activities ? JSON.stringify(data.activities) : null,
       data.notes || null,
+      data.photo || null,
       data.budget_planned || null,
       data.budget_actual || null,
     ]
@@ -425,6 +426,10 @@ export async function updateItineraryDay(
   if (data.notes !== undefined) {
     updates.push("notes = ?");
     values.push(data.notes);
+  }
+  if (data.photo !== undefined) {
+    updates.push("photo = ?");
+    values.push(data.photo);
   }
   if (data.budget_planned !== undefined) {
     updates.push("budget_planned = ?");

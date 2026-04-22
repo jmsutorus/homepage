@@ -19,6 +19,9 @@ export interface Drink {
   image_url: string | null;
   favorite: boolean;
   status: DrinkStatus;
+  body_feel: string | null;
+  serving_temp: string | null;
+  pairings: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -51,6 +54,9 @@ export interface CreateDrinkInput {
   image_url?: string;
   favorite?: boolean;
   status?: DrinkStatus;
+  body_feel?: string;
+  serving_temp?: string;
+  pairings?: string;
 }
 
 export interface UpdateDrinkInput {
@@ -65,6 +71,9 @@ export interface UpdateDrinkInput {
   image_url?: string;
   favorite?: boolean;
   status?: DrinkStatus;
+  body_feel?: string;
+  serving_temp?: string;
+  pairings?: string;
 }
 
 export interface CreateDrinkLogInput {
@@ -91,6 +100,9 @@ interface DBDrink {
   image_url: string | null;
   favorite: number;
   status: string;
+  body_feel: string | null;
+  serving_temp: string | null;
+  pairings: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -137,12 +149,13 @@ export async function getAllDrinks(userId: string): Promise<Drink[]> {
 }
 
 /**
- * Get drinks with log count for card display
+ * Get drinks with log count and last log date for card display
  */
-export async function getAllDrinksWithLogCount(userId: string): Promise<(Drink & { logCount: number })[]> {
-  const rows = await query<DBDrink & { logCount: number }>(
+export async function getAllDrinksWithLogCount(userId: string): Promise<(Drink & { logCount: number, lastLogDate: string | null })[]> {
+  const rows = await query<DBDrink & { logCount: number, lastLogDate: string | null }>(
     `SELECT d.*, 
-      (SELECT COUNT(*) FROM drink_logs WHERE drinkId = d.id) as logCount
+      (SELECT COUNT(*) FROM drink_logs WHERE drinkId = d.id) as logCount,
+      (SELECT MAX(date) FROM drink_logs WHERE drinkId = d.id) as lastLogDate
     FROM drinks d
     WHERE d.userId = ?
     ORDER BY d.name ASC`,
@@ -151,6 +164,7 @@ export async function getAllDrinksWithLogCount(userId: string): Promise<(Drink &
   return rows.map(row => ({
     ...transformDrink(row),
     logCount: row.logCount,
+    lastLogDate: row.lastLogDate,
   }));
 }
 
@@ -187,8 +201,8 @@ export async function getDrinkWithLogs(slug: string, userId: string): Promise<Dr
 export async function createDrink(input: CreateDrinkInput, userId: string): Promise<Drink> {
   const result = await execute(
     `INSERT INTO drinks (
-      userId, slug, name, type, producer, year, abv, rating, notes, image_url, favorite, status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      userId, slug, name, type, producer, year, abv, rating, notes, image_url, favorite, status, body_feel, serving_temp, pairings
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       input.slug,
@@ -202,6 +216,9 @@ export async function createDrink(input: CreateDrinkInput, userId: string): Prom
       input.image_url || null,
       input.favorite ? 1 : 0,
       input.status || 'tasted',
+      input.body_feel || null,
+      input.serving_temp || null,
+      input.pairings || null,
     ]
   );
 
@@ -274,6 +291,18 @@ export async function updateDrink(
   if (updates.status !== undefined) {
     fields.push('status = ?');
     params.push(updates.status);
+  }
+  if (updates.body_feel !== undefined) {
+    fields.push('body_feel = ?');
+    params.push(updates.body_feel || null);
+  }
+  if (updates.serving_temp !== undefined) {
+    fields.push('serving_temp = ?');
+    params.push(updates.serving_temp || null);
+  }
+  if (updates.pairings !== undefined) {
+    fields.push('pairings = ?');
+    params.push(updates.pairings || null);
   }
 
   if (fields.length === 0) {

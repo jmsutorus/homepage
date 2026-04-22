@@ -120,6 +120,7 @@ export interface ItineraryDay {
   location: string | null;
   activities: string[]; // Parsed from JSON
   notes: string | null;
+  photo: string | null;
   budget_planned: number | null;
   budget_actual: number | null;
   created_at: string;
@@ -136,6 +137,7 @@ export interface ItineraryDayInput {
   location?: string;
   activities?: string[];
   notes?: string;
+  photo?: string;
   budget_planned?: number;
   budget_actual?: number;
 }

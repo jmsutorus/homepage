@@ -50,22 +50,22 @@ type EntityType =
  * Default success messages for each entity type
  */
 const DEFAULT_MESSAGES: Record<EntityType, string> = {
-  habit: "Habit created successfully!",
-  task: "Task added to your list",
-  event: "Event added to calendar",
-  mood: "Mood entry recorded",
-  activity: "Activity logged successfully",
-  journal: "Journal entry saved",
-  media: "Media entry added to collection",
-  park: "Park visit recorded",
-  vacation: "Vacation planned successfully!",
-  category: "Category created",
-  link: "Link added",
-  goal: "Goal created successfully!",
-  date: "Date updated successfully",
-  milestone: "Milestone updated successfully",
-  intimacy: "Private entry saved",
-  recipe: "Recipe created successfully!",
+  habit: "Habit Created Successfully",
+  task: "Task Added to Your List",
+  event: "Event Added to Calendar",
+  mood: "Mood Entry Recorded",
+  activity: "Activity Logged Successfully",
+  journal: "Journal Entry Saved Successfully",
+  media: "Media Entry Added to Collection",
+  park: "Park Visit Recorded",
+  vacation: "Vacation Planned Successfully",
+  category: "New Category Created",
+  link: "Quick Link Added",
+  goal: "Goal Created Successfully",
+  date: "Date Details Updated",
+  milestone: "Milestone Updated Successfully",
+  intimacy: "Intimacy Entry Saved",
+  recipe: "Recipe Created Successfully",
 };
 
 /**

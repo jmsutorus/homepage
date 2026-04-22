@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -15,10 +14,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
+import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
 
 interface DeleteMediaButtonProps {
   slug: string;
   mediaType: string;
+  className?: string;
 }
 
 // Helper function to convert plural type to singular (for API calls)
@@ -31,7 +33,7 @@ function getApiType(type: string): string {
   return typeMap[type] || type;
 }
 
-export function DeleteMediaButton({ slug, mediaType }: DeleteMediaButtonProps) {
+export function DeleteMediaButton({ slug, mediaType, className }: DeleteMediaButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,10 +65,16 @@ export function DeleteMediaButton({ slug, mediaType }: DeleteMediaButtonProps) {
     <>
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="destructive" size="sm" disabled={isDeleting} className="border border-transparent">
-            <Trash2 className="mr-2 h-4 w-4" />
-            {isDeleting ? "Deleting..." : "Delete"}
-          </Button>
+          <HomePageButton 
+            disabled={isDeleting} 
+            className={cn(
+              "bg-media-surface-container text-media-on-surface-variant hover:bg-media-error-container hover:text-media-on-error-container transition-all duration-300 border-none",
+              className
+            )}
+            icon={<Trash2 className="w-4 h-4" />}
+          >
+            {isDeleting ? "Deleting..." : "Remove"}
+          </HomePageButton>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Earthbound | Event Archive &amp; Calendar List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#061b0e",
+                        "inverse-on-surface": "#f2f1ee",
+                        "surface-container-high": "#e9e8e5",
+                        "on-primary-container": "#819986",
+                        "surface-variant": "#e3e2e0",
+                        "surface-bright": "#faf9f6",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#802918",
+                        "tertiary": "#17180a",
+                        "on-tertiary-container": "#93947f",
+                        "inverse-surface": "#2f312f",
+                        "on-primary-fixed": "#0b2013",
+                        "surface-container": "#efeeeb",
+                        "on-surface": "#1a1c1a",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#4d6453",
+                        "surface-container-highest": "#e3e2e0",
+                        "tertiary-fixed": "#e4e4cc",
+                        "tertiary-container": "#2b2d1d",
+                        "primary-container": "#1b3022",
+                        "on-surface-variant": "#434843",
+                        "on-secondary-container": "#732010",
+                        "surface-dim": "#dbdad7",
+                        "secondary": "#9f402d",
+                        "surface-container-low": "#f4f3f1",
+                        "on-secondary-fixed": "#3e0500",
+                        "inverse-primary": "#b4cdb8",
+                        "surface": "#faf9f6",
+                        "secondary-fixed-dim": "#ffb4a5",
+                        "outline": "#737973",
+                        "background": "#faf9f6",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#ffdad3",
+                        "on-primary-fixed-variant": "#364c3c",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "on-background": "#1a1c1a",
+                        "outline-variant": "#c3c8c1",
+                        "primary-fixed-dim": "#b4cdb8",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "secondary-container": "#fd876f",
+                        "primary-fixed": "#d0e9d4",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Lexend"],
+                        "label": ["Lexend"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; background-color: #faf9f6; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e3e2e0; border-radius: 10px; }
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 140px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: #c3c8c1;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen text-on-surface">
+
+<div class="flex-1 flex flex-col">
+<main class="mt-20 px-8 lg:px-12 py-12 max-w-7xl w-full mx-auto">
+<div class="mb-12">
+<h2 class="text-5xl font-black text-primary tracking-tight mb-4">Event Archive &amp; Calendar List</h2>
+<div class="w-24 h-1.5 bg-secondary rounded-full"></div>
+</div>
+<section class="bg-surface-container-low p-8 rounded-xl mb-16 flex flex-wrap items-center gap-8 shadow-sm">
+<div class="flex flex-col gap-2 min-w-[200px]">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Date Range</span>
+<div class="flex items-center bg-surface-container-lowest px-4 py-2 rounded-lg">
+<span class="material-symbols-outlined text-sm mr-2 opacity-40" data-icon="calendar_month">calendar_month</span>
+<span class="text-sm">Oct 1 - Oct 31, 2023</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 min-w-[200px]">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Event Type</span>
+<div class="flex gap-2">
+<span class="bg-primary text-on-primary px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer">All</span>
+<span class="bg-surface-container-highest px-4 py-1.5 rounded-full text-xs font-medium cursor-pointer hover:bg-surface-container-high transition-colors">Milestone</span>
+<span class="bg-surface-container-highest px-4 py-1.5 rounded-full text-xs font-medium cursor-pointer hover:bg-surface-container-high transition-colors">Social</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 flex-1 min-w-[250px]">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Tags</span>
+<div class="flex flex-wrap gap-2">
+<span class="text-secondary text-xs font-bold px-3 py-1 bg-secondary/10 rounded-lg">#family</span>
+<span class="text-on-surface-variant text-xs font-medium px-3 py-1 bg-surface-variant/40 rounded-lg">#work</span>
+<span class="text-on-surface-variant text-xs font-medium px-3 py-1 bg-surface-variant/40 rounded-lg">#fitness</span>
+<span class="text-on-surface-variant text-xs font-medium px-3 py-1 bg-surface-variant/40 rounded-lg">+ Add Tag</span>
+</div>
+</div>
+</section>
+<div class="relative timeline-line">
+<div class="flex items-center gap-4 mb-12 relative z-10">
+<div class="w-[140px] flex justify-end">
+<span class="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Upcoming</span>
+</div>
+<div class="w-3 h-3 rounded-full bg-secondary border-4 border-background"></div>
+<div class="flex-1 h-[1px] bg-surface-variant/50"></div>
+</div>
+<div class="flex gap-8 mb-16 group relative z-10">
+<div class="w-[140px] pt-1 text-right flex flex-col gap-1 flex-shrink-0">
+<span class="text-xs font-black uppercase tracking-widest text-primary">Dec 12</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant opacity-60">Milestone</span>
+</div>
+<div class="flex-1">
+<div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer flex flex-col lg:flex-row border border-surface-container-high">
+<div class="lg:w-72 h-48 lg:h-auto overflow-hidden">
+<img alt="Gala Event" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYUr12gU6H7_gs5RJrIuMqLC2EuU6kHQehzrfwatls9aAi_h3b8YU6e9VvAPNSajYkPMB4kYlrbOWcEsDaEHxpvpGrM3s5cObPbueZFNAv4KkfWBUM6V-og9RtFY9zpkWHTra5-nUoDn8WVybGnTdbh1envZWxh4Dv38U2tsoBSUoGhIsbAxCuy-r7cfP-npCz3aA-DGvkxQ0coMmK1b44k_2G1L5TzzNlUiHIatFfCE-jxhHjpeQ3QBgatrkHK38ge2Ae7TGT1lM"/>
+</div>
+<div class="p-8 flex-1">
+<div class="flex justify-between items-start mb-4">
+<h4 class="text-2xl font-black text-primary tracking-tight">Drizzy Birthday Gala</h4>
+<div class="flex gap-2">
+<span class="text-[10px] text-secondary font-bold uppercase">#family</span>
+<span class="text-[10px] text-secondary font-bold uppercase">#creative</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">An evening dedicated to celebrating another year of creative pursuit. Formal attire at The Glass Pavilion, 8:00 PM.</p>
+<div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-tighter opacity-50">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+                                    The Glass Pavilion
+                                </div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-8 mb-16 group relative z-10">
+<div class="w-[140px] pt-1 text-right flex flex-col gap-1 flex-shrink-0">
+<span class="text-xs font-black uppercase tracking-widest text-primary">Nov 02</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant opacity-60">Milestone</span>
+</div>
+<div class="flex-1">
+<div class="bg-primary p-8 rounded-2xl shadow-sm hover:translate-x-1 transition-transform cursor-pointer relative overflow-hidden group">
+<div class="relative z-10">
+<h5 class="text-xl font-bold text-on-primary mb-2">Quarterly Life Audit</h5>
+<p class="text-sm text-on-primary/70 leading-relaxed max-w-2xl mb-4">Reviewing progress on creative goals and relationship health from Q3.</p>
+<span class="text-xs text-on-primary/40 font-bold uppercase tracking-widest">Growth Session</span>
+</div>
+<div class="absolute -right-4 -top-4 opacity-10 transform group-hover:rotate-12 transition-transform duration-500">
+<span class="material-symbols-outlined text-8xl" data-icon="track_changes" style="font-size: 120px;">track_changes</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-8 mb-16 group relative z-10">
+<div class="w-[140px] pt-1 text-right flex flex-col gap-1 flex-shrink-0">
+<span class="text-xs font-black uppercase tracking-widest text-primary">Oct 24</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant opacity-60">Appointment</span>
+</div>
+<div class="flex-1">
+<div class="bg-surface-container-lowest p-8 rounded-2xl border border-surface-container-high shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+<h5 class="text-xl font-bold text-primary mb-2">SSA Appointment</h5>
+<p class="text-sm text-on-surface-variant opacity-80 mb-6 leading-relaxed max-w-2xl">Mandatory identity verification and document review. Bring original passport and lease agreement.</p>
+<div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-tighter opacity-50">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+                                Federal Building, Room 402
+                            </div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 mb-12 relative z-10">
+<div class="w-[140px] flex justify-end">
+<span class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant opacity-40">Past Memories</span>
+</div>
+<div class="w-3 h-3 rounded-full bg-on-surface-variant/30 border-4 border-background"></div>
+<div class="flex-1 h-[1px] bg-surface-variant/50"></div>
+</div>
+<div class="flex gap-8 mb-12 group relative z-10">
+<div class="w-[140px] pt-1 text-right flex flex-col gap-1 flex-shrink-0">
+<span class="text-xs font-black uppercase tracking-widest text-primary opacity-40 group-hover:opacity-100 transition-opacity">Sep 15</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant opacity-30 group-hover:opacity-60 transition-opacity">Social</span>
+</div>
+<div class="flex-1">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-transparent hover:border-secondary/20 hover:bg-surface-container-low transition-all duration-300 flex items-center gap-8">
+<div class="flex-1">
+<h5 class="text-lg font-bold text-primary mb-1">MOMA Exhibition Visit</h5>
+<p class="text-sm text-on-surface-variant leading-relaxed opacity-80">Explored the new minimal architectural photography collection. Inspired the new journal layout.</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ_XuUu18r_ekmLj4kivG6niq9vc3Z7viugtVani5k9rNcgnenEsJ_tJzCWr4D-qsx2Yq-bXz6eRV6cvI7NTg2o5kLGDhTKmokvzVfqfBpfA1Vt2SpjvQIpk1eJS9wY8J2nC9fyYkvWBca1lVT9Leyt3Ls-ODM51L2nmjrzoe3ESm78-vmIrrqSsVpIScW0AQ2AxJrNI65iU4tAB8WzKkBrTZoyewe3aXumoZzztecrEUCVzZVh60DN_xqGI482bUyexbS6aBFcp0"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQJENHkGxNKyG914vfWch1mUrQcDB9024Sg9zrKXyFrEqzfFpRAQ7MXUwBMBQsrF53xu0Rg6wAQUFjYFaMfhULBDTZJg7eOC0I36ru_VHlOrL_Vr7b2AXAWAeD8uxOQAFkzcDuB3wCX2dYtvaJumr29YqTFVhBRLWKgzJK9LQRfIoExjBj-ACcXSSl0qDZ7FhxOAzFtuMa5jQo5q18iCBm2fZxRJlWrtZPXE3CwV6P8RPyKyyFQm4Dy8CEo0aehYwMOLx8qq9-HJE"/>
+<div class="w-8 h-8 rounded-full bg-surface-variant border-2 border-surface flex items-center justify-center text-[10px] font-bold">+2</div>
+</div>
+<button class="text-secondary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 font-bold text-xs uppercase">
+                                    View Story
+                                    <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-8 mb-12 group relative z-10">
+<div class="w-[140px] pt-1 text-right flex flex-col gap-1 flex-shrink-0">
+<span class="text-xs font-black uppercase tracking-widest text-primary opacity-40 group-hover:opacity-100 transition-opacity">Sep 08</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant opacity-30 group-hover:opacity-60 transition-opacity">Milestone</span>
+</div>
+<div class="flex-1">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-transparent hover:border-secondary/20 hover:bg-surface-container-low transition-all duration-300 flex items-center gap-8">
+<div class="flex-1">
+<h5 class="text-lg font-bold text-primary mb-1">Cabo Family Vacation</h5>
+<p class="text-sm text-on-surface-variant leading-relaxed opacity-80">A week of disconnection. Focus on sunrise meditation and evening seafood. Best memory: The whale watch at dusk.</p>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-on-surface-variant opacity-40" data-icon="photo_library">photo_library</span>
+<button class="text-secondary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 font-bold text-xs uppercase">
+                                    View Story
+                                    <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-8 mb-12 group relative z-10">
+<div class="w-[140px] pt-1 text-right flex flex-col gap-1 flex-shrink-0">
+<span class="text-xs font-black uppercase tracking-widest text-primary opacity-40 group-hover:opacity-100 transition-opacity">Aug 21</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant opacity-30 group-hover:opacity-60 transition-opacity">Appointment</span>
+</div>
+<div class="flex-1">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-transparent hover:border-secondary/20 hover:bg-surface-container-low transition-all duration-300 flex items-center gap-8">
+<div class="flex-1">
+<h5 class="text-lg font-bold text-primary mb-1">Contract Negotiation</h5>
+<p class="text-sm text-on-surface-variant leading-relaxed opacity-80">Closed the partnership with Earthbound Editorial Group. Major career leap.</p>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-secondary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 font-bold text-xs uppercase">
+                                    View Story
+                                    <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 mb-16 relative z-10">
+<div class="w-[140px]"></div>
+<div class="w-3 h-3 rounded-full bg-on-surface-variant/20"></div>
+</div>
+</div>
+<div class="mt-8 flex justify-center">
+<button class="px-12 py-4 bg-surface-container-high text-primary font-bold rounded-lg hover:bg-surface-container-highest transition-colors flex items-center gap-3">
+                    Discover Older Memories
+                    <span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+</div>
+</main>
+</div>
+<button class="md:hidden fixed bottom-8 right-8 bg-secondary text-on-secondary w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-[100] active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+
+</body></html>

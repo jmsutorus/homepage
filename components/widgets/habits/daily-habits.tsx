@@ -65,52 +65,40 @@ export function DailyHabits({ habits, completions, date }: DailyHabitsProps) {
 
   return (
     <div className="space-y-3">
-      {/* Daily Progress Summary */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">Today&apos;s progress</span>
-          <span className="font-medium">{completedCount}/{totalCount} completed</span>
-        </div>
-        <AnimatedProgress
-          value={completedCount}
-          max={totalCount}
-          size="sm"
-          color={completedCount === totalCount ? "success" : "primary"}
-        />
-      </div>
-
       {habits.map((habit) => {
         const isCompleted = optimisticCompletions.has(habit.id);
         return (
           <div 
             key={habit.id} 
             className={cn(
-              "flex items-start space-x-3 p-3 rounded-lg border transition-colors",
-              isCompleted ? "bg-primary/5 border-primary/20" : "bg-card hover:bg-accent/50"
+              "flex items-center justify-between p-4 rounded-xl transition-all h-16",
+              isCompleted ? "bg-media-surface-container" : "bg-media-surface-container-low"
             )}
           >
-            <Checkbox 
-              id={`habit-${habit.id}`} 
-              checked={isCompleted}
-              onCheckedChange={() => handleToggle(habit.id)}
-              className="mt-1"
-            />
-            <div className="grid gap-1.5 leading-none">
-              <Label 
-                htmlFor={`habit-${habit.id}`}
-                className={cn(
-                  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer",
-                  isCompleted && "line-through text-muted-foreground"
-                )}
-              >
+            <div className="flex flex-col">
+              <span className={cn(
+                "text-sm font-medium transition-all",
+                isCompleted ? "text-media-on-surface opacity-60 line-through" : "text-media-on-surface"
+              )}>
                 {habit.title}
-              </Label>
-              {habit.description && (
-                <p className="text-xs text-muted-foreground">
+              </span>
+              {habit.description && !isCompleted && (
+                <span className="text-[10px] text-media-on-surface-variant/60 uppercase tracking-wider font-bold mt-0.5">
                   {habit.description}
-                </p>
+                </span>
               )}
             </div>
+            <button 
+              onClick={() => handleToggle(habit.id)}
+              className={cn(
+                "px-4 py-1.5 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all cursor-pointer active:scale-95",
+                isCompleted 
+                  ? "bg-media-primary text-media-primary-fixed" 
+                  : "bg-media-surface-container-high text-media-on-surface-variant hover:bg-media-surface-container-highest"
+              )}
+            >
+              {isCompleted ? "Completed" : "Mark Done"}
+            </button>
           </div>
         );
       })}

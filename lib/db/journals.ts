@@ -13,6 +13,7 @@ export interface DBJournal {
   featured: number; // SQLite boolean (0 or 1)
   published: number; // SQLite boolean (0 or 1)
   content: string;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +30,7 @@ export interface JournalContent {
   featured: boolean;
   published: boolean;
   content: string;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -67,6 +69,7 @@ async function dbToJournalContent(row: DBJournal): Promise<JournalContent> {
     featured: row.featured === 1,
     published: row.published === 1,
     content: row.content,
+    image_url: row.image_url,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -245,6 +248,7 @@ export async function createJournal(data: {
   featured?: boolean;
   published?: boolean;
   content: string;
+  image_url?: string;
   userId: string;
 }): Promise<JournalContent> {
   try {
@@ -281,8 +285,8 @@ export async function createJournal(data: {
 
     await db.execute({
       sql: `INSERT INTO journals (
-              slug, title, journal_type, daily_date, mood, tags, featured, published, content, userId
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              slug, title, journal_type, daily_date, mood, tags, featured, published, content, image_url, userId
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         slug,
         title,
@@ -293,6 +297,7 @@ export async function createJournal(data: {
         data.featured ? 1 : 0,
         data.published !== false ? 1 : 0,
         data.content,
+        data.image_url || null,
         data.userId
       ]
     });
@@ -328,6 +333,7 @@ export async function updateJournal(
     featured?: boolean;
     published?: boolean;
     content?: string;
+    image_url?: string | null;
   }
 ): Promise<JournalContent> {
   try {
@@ -384,6 +390,10 @@ export async function updateJournal(
     if (data.content !== undefined) {
       updates.push("content = ?");
       values.push(data.content);
+    }
+    if (data.image_url !== undefined) {
+      updates.push("image_url = ?");
+      values.push(data.image_url);
     }
 
     if (updates.length === 0) {
@@ -476,6 +486,50 @@ export async function journalSlugExists(slug: string): Promise<boolean> {
   } catch (error) {
     console.error("Error checking journal slug:", error);
     return false;
+  }
+}
+
+/**
+ * Get previous and next journals for navigation
+ */
+export async function getAdjacentJournals(slug: string, userId: string): Promise<{ prev: JournalContent | null; next: JournalContent | null }> {
+  try {
+    const current = await getJournalBySlug(slug, userId);
+    if (!current) return { prev: null, next: null };
+
+    const db = getDatabase();
+    const isDaily = current.journal_type === "daily";
+    
+    // Sort by daily_date for daily journals, created_at for general journals
+    const sortCol = isDaily ? "daily_date" : "created_at";
+    const currentVal = isDaily ? current.daily_date : current.created_at;
+
+    if (!currentVal) return { prev: null, next: null };
+
+    const prevResult = await db.execute({
+      sql: `SELECT * FROM journals
+            WHERE userId = ? AND journal_type = ? AND ${sortCol} < ? AND published = 1
+            ORDER BY ${sortCol} DESC LIMIT 1`,
+      args: [userId, current.journal_type, currentVal]
+    });
+
+    const nextResult = await db.execute({
+      sql: `SELECT * FROM journals
+            WHERE userId = ? AND journal_type = ? AND ${sortCol} > ? AND published = 1
+            ORDER BY ${sortCol} ASC LIMIT 1`,
+      args: [userId, current.journal_type, currentVal]
+    });
+
+    const prevRow = prevResult.rows[0] as unknown as DBJournal | undefined;
+    const nextRow = nextResult.rows[0] as unknown as DBJournal | undefined;
+
+    return {
+      prev: prevRow ? await dbToJournalContent(prevRow) : null,
+      next: nextRow ? await dbToJournalContent(nextRow) : null
+    };
+  } catch (error) {
+    console.error("Error getting adjacent journals:", error);
+    return { prev: null, next: null };
   }
 }
 

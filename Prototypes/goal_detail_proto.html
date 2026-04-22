@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e3e2e0",
+                    "outline-variant": "#c3c8c1",
+                    "surface": "#faf9f6",
+                    "outline": "#737973",
+                    "on-primary-fixed": "#0b2013",
+                    "secondary-fixed": "#ffdad3",
+                    "on-secondary-container": "#732010",
+                    "on-secondary-fixed": "#3e0500",
+                    "secondary-container": "#fd876f",
+                    "on-background": "#1a1c1a",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#819986",
+                    "primary-fixed-dim": "#b4cdb8",
+                    "on-surface": "#1a1c1a",
+                    "inverse-surface": "#2f312f",
+                    "secondary": "#9f402d",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#2b2d1d",
+                    "surface-tint": "#4d6453",
+                    "on-secondary-fixed-variant": "#802918",
+                    "surface-bright": "#faf9f6",
+                    "surface-dim": "#dbdad7",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#d0e9d4",
+                    "on-primary-fixed-variant": "#364c3c",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#e9e8e5",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#061b0e",
+                    "surface-variant": "#e3e2e0",
+                    "on-tertiary-fixed": "#1b1d0e",
+                    "surface-container-low": "#f4f3f1",
+                    "on-tertiary-container": "#93947f",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#e4e4cc",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#ffb4a5",
+                    "surface-container": "#efeeeb",
+                    "on-tertiary-fixed-variant": "#474836",
+                    "inverse-primary": "#b4cdb8",
+                    "on-surface-variant": "#434843",
+                    "inverse-on-surface": "#f2f1ee",
+                    "tertiary": "#17180a",
+                    "background": "#faf9f6",
+                    "tertiary-fixed-dim": "#c8c8b0",
+                    "primary-container": "#1b3022"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.5rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-secondary-container selection:text-on-secondary-container">
+<main class="pt-24 pb-32 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
+<!-- Editorial Hero Section -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-end mb-20">
+<div class="lg:col-span-8 space-y-6">
+<div class="flex flex-wrap gap-3 items-center">
+<span class="px-3 py-1 bg-primary text-on-primary text-[10px] uppercase tracking-widest font-bold rounded-full">In Synthesis</span>
+<span class="px-3 py-1 bg-secondary text-on-secondary text-[10px] uppercase tracking-widest font-bold rounded-full">High Priority</span>
+<span class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed text-[10px] uppercase tracking-widest font-bold rounded-full">Creative</span>
+<span class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed text-[10px] uppercase tracking-widest font-bold rounded-full">Mastery</span>
+</div>
+<h1 class="text-5xl md:text-7xl font-bold tracking-tight text-primary leading-[1.1] max-w-3xl">
+                    Master Classical Piano Étude
+                </h1>
+</div>
+<div class="lg:col-span-4 flex flex-col gap-4 text-on-surface-variant">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">calendar_add_on</span>
+<div>
+<p class="text-[10px] uppercase tracking-wider font-bold">Created</p>
+<p class="text-sm font-medium">Oct 12, 2023</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">event_upcoming</span>
+<div>
+<p class="text-[10px] uppercase tracking-wider font-bold text-secondary">Target Completion</p>
+<p class="text-sm font-medium">Dec 31, 2024</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Progress Visualization (Main Feature) -->
+<div class="md:col-span-12 lg:col-span-5 bg-surface-container-low rounded-xl p-10 flex flex-col items-center justify-center relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/5 rounded-full -mr-16 -mt-16"></div>
+<div class="relative w-64 h-64 flex items-center justify-center">
+<!-- SVG Progress Circle -->
+<svg class="w-full h-full -rotate-90 transform">
+<circle class="text-surface-container-highest" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-secondary" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-dasharray="691" stroke-dashoffset="276" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-6xl font-bold text-primary">60%</span>
+<span class="text-[10px] uppercase tracking-[0.2em] font-bold text-on-surface-variant">Evolution</span>
+</div>
+</div>
+<div class="mt-8 text-center">
+<h3 class="text-xl font-semibold text-primary mb-2">Steady Momentum</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed max-w-xs mx-auto">Approaching the final phase of technical mastery. The structure is firm.</p>
+</div>
+</div>
+<!-- Milestones Timeline -->
+<div class="md:col-span-7 lg:col-span-7 bg-surface-container-lowest rounded-xl p-8">
+<h3 class="text-[10px] uppercase tracking-[0.2em] font-bold text-on-surface-variant mb-8">Milestones Timeline</h3>
+<div class="space-y-10 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-outline-variant">
+<div class="relative flex items-start gap-8 group">
+<div class="z-10 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div>
+<h4 class="font-bold text-primary">Learn Scale Structure</h4>
+<p class="text-sm text-on-surface-variant">Completed on Nov 15</p>
+</div>
+</div>
+<div class="relative flex items-start gap-8 group">
+<div class="z-10 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div>
+<h4 class="font-bold text-primary">Master Left Hand Pattern</h4>
+<p class="text-sm text-on-surface-variant">Completed on Jan 22</p>
+</div>
+</div>
+<div class="relative flex items-start gap-8 group">
+<div class="z-10 w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant border-4 border-surface">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+</div>
+<div>
+<h4 class="font-bold text-primary">Dynamic Articulation</h4>
+<p class="text-sm text-on-surface-variant">Currently refining the pianissimo passages</p>
+</div>
+</div>
+<div class="relative flex items-start gap-8 group">
+<div class="z-10 w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-outline-variant border-4 border-surface"></div>
+<div>
+<h4 class="font-bold text-outline">Final Performance</h4>
+<p class="text-sm text-outline-variant italic">Projected Dec 2024</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Checklist & Reflections Row -->
+<div class="md:col-span-5 lg:col-span-4 space-y-8">
+<div class="bg-surface-container rounded-xl p-8">
+<h3 class="text-[10px] uppercase tracking-[0.2em] font-bold text-on-surface-variant mb-6">Execution Checklist</h3>
+<ul class="space-y-4">
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_box</span>
+<span class="text-sm font-medium">Memorize measures 1-32</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_box</span>
+<span class="text-sm font-medium">Isolate difficult trills</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-outline">check_box_outline_blank</span>
+<span class="text-sm font-medium">Recording first draft</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined text-outline">check_box_outline_blank</span>
+<span class="text-sm font-medium">Metronome speed at 120bpm</span>
+</li>
+</ul>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-700 cursor-pointer">
+<img alt="Piano detail" class="w-full h-full object-cover" data-alt="dramatic close up of classical piano keys in black and white with shallow depth of field and elegant lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB214UbpUWFuWmys_wFDBXh0T6m0uH2V3hMsMxE29F8l_EajPbUeHez0GMIbP2douBSC33u0v6cNGXiDGTYaY5ENnvP_RaFxpvIXlndHyJ0l6GgVWypON_QDnRLik3A5mqzLUK6S-0PgsSRVjO2A95vUhHFq2rcuohqf-3o7HKX7gIvy8qLRDobi9Lj0u3sK68LG-59tJ9aP3WyE-K1su1klYZxHBD_b_ZcLYCwSz6VG-yJMApaWWdxq_wRJc86pVOzKGWEeMV_8BA"/>
+</div>
+</div>
+<!-- Personal Reflections (The Editorial Content) -->
+<div class="md:col-span-7 lg:col-span-8 bg-surface-container-low rounded-xl p-10 flex flex-col">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-[10px] uppercase tracking-[0.2em] font-bold text-on-surface-variant">Editorial Reflections</h3>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-secondary transition-colors">edit_note</span>
+</div>
+<div class="flex-grow">
+<p class="text-lg text-primary leading-relaxed italic font-medium mb-6">
+                        "The transition between the second and third movements remains the most significant hurdle. It's not just a matter of technical fingering, but one of emotional resonance. I find the forest atmosphere of the morning sessions helps ground the practice."
+                    </p>
+<p class="text-on-surface-variant leading-loose">
+                        Progress has been slower this month, but the quality of synthesis is higher. By focusing on the scale structures, the muscle memory is becoming more organic. The aim for the next cycle is to bring the tempo up without losing the delicate articulation required for the C-minor passage. The journey is the mastery itself.
+                    </p>
+</div>
+<div class="mt-8 pt-8 border-t border-outline-variant/20 flex gap-4">
+<button class="bg-secondary text-on-secondary px-6 py-3 rounded-lg font-bold text-sm tracking-tight hover:opacity-90 transition-all">Add Reflection</button>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-lg font-bold text-sm tracking-tight hover:opacity-90 transition-all">Update Stats</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-4 pb-safe bg-[#faf9f6] dark:bg-[#061b0e] shadow-[0_-4px_32px_rgba(6,27,14,0.04)]">
+<div class="flex flex-col items-center justify-center text-[#434843] dark:text-[#e3e2e0] opacity-60 hover:opacity-100 transition-all cursor-pointer">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-['Lexend'] text-[10px] uppercase tracking-widest font-bold mt-1">Journal</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#9f402d] dark:text-[#9f402d] scale-110 transition-all cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">track_changes</span>
+<span class="font-['Lexend'] text-[10px] uppercase tracking-widest font-bold mt-1">Goals</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#434843] dark:text-[#e3e2e0] opacity-60 hover:opacity-100 transition-all cursor-pointer">
+<span class="material-symbols-outlined">stars</span>
+<span class="font-['Lexend'] text-[10px] uppercase tracking-widest font-bold mt-1">Milestones</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#434843] dark:text-[#e3e2e0] opacity-60 hover:opacity-100 transition-all cursor-pointer">
+<span class="material-symbols-outlined">person</span>
+<span class="font-['Lexend'] text-[10px] uppercase tracking-widest font-bold mt-1">Profile</span>
+</div>
+</nav>
+</body></html>

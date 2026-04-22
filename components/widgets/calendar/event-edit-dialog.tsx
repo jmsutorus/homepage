@@ -1,21 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import type { Event, EventCategory } from "@/lib/db/events";
-import { Trash2 } from "lucide-react";
+import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
+import { cn } from "@/lib/utils";
 
 interface EventEditDialogProps {
   event: Event;
@@ -100,7 +89,7 @@ export function EventEditDialog({
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this event?")) {
+    if (!confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
       return;
     }
 
@@ -125,172 +114,203 @@ export function EventEditDialog({
     }
   };
 
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Event</DialogTitle>
-          <DialogDescription>
-            Make changes to your event. Click save when you&apos;re done.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) =>
-                setFormData({ ...formData, location: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Select
-              value={formData.category || "none"}
-              onValueChange={(value) =>
-                setFormData({ ...formData, category: value === "none" ? "" : value })
-              }
-            >
-              <SelectTrigger id="category">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No category</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.name}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="date">Start Date *</Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="end_date">End Date</Label>
-              <Input
-                id="end_date"
-                type="date"
-                value={formData.end_date}
-                onChange={(e) =>
-                  setFormData({ ...formData, end_date: e.target.value })
-                }
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="all_day"
-                checked={formData.all_day}
-                onChange={(e) =>
-                  setFormData({ ...formData, all_day: e.target.checked })
-                }
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              <Label htmlFor="all_day" className="cursor-pointer">
-                All Day Event
-              </Label>
-            </div>
-          </div>
-
-          {!formData.all_day && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="start_time">Start Time</Label>
-                <Input
-                  id="start_time"
-                  type="time"
-                  value={formData.start_time}
-                  onChange={(e) =>
-                    setFormData({ ...formData, start_time: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="end_time">End Time</Label>
-                <Input
-                  id="end_time"
-                  type="time"
-                  value={formData.end_time}
-                  onChange={(e) =>
-                    setFormData({ ...formData, end_time: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-          )}
-
-          <DialogFooter className="flex justify-between items-center gap-2">
-            <Button
+      <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden border-none bg-transparent shadow-none">
+        <div className="bg-media-surface-container-lowest p-8 md:p-16 rounded-xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.04)] relative overflow-hidden font-lexend max-h-[90vh] overflow-y-auto no-scrollbar">
+          {/* Background Accent */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-media-secondary/5 blur-[100px] -mr-32 -mt-32 rounded-full pointer-events-none"></div>
+          
+          <h1 className="text-4xl md:text-5xl font-bold text-media-primary mb-12 text-center uppercase tracking-tighter">
+            Edit Event
+          </h1>
+          
+          {/* Top Header Actions */}
+          <div className="absolute top-8 right-8 z-20 flex items-center gap-4">
+            <button
               type="button"
-              variant="destructive"
               onClick={handleDelete}
               disabled={isDeleting || isSubmitting}
-              className="cursor-pointer mr-auto"
+              className="cursor-pointer p-3 rounded-full bg-media-error-container/10 text-media-error hover:bg-media-error-container/20 transition-all active:scale-95 disabled:opacity-50"
+              title="Delete Event"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting ? "Deleting..." : "Delete Event"}
-            </Button>
-            <div className="flex gap-2">
-              <Button className="cursor-pointer"
+              <MaterialSymbol icon="delete" size={24} />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-16 relative z-10 max-w-2xl mx-auto">
+            {/* Identity & Purpose Section */}
+            <div className="space-y-8">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-media-secondary block mb-2">Refine Details</label>
+                <h2 className="text-3xl font-bold text-media-primary mb-6">Identity & Purpose</h2>
+              </div>
+
+              <div className="space-y-8">
+                <div className="relative">
+                  <input
+                    className="w-full bg-media-surface-container-low border-2 border-transparent rounded-lg p-4 text-xl font-bold text-media-primary placeholder:text-media-outline/50 focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all"
+                    placeholder="Event Title"
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => handleChange("title", e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="relative">
+                  <textarea
+                    className="w-full bg-media-surface-container-low border-2 border-transparent rounded-lg p-4 text-media-on-surface placeholder:text-media-outline/50 focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all"
+                    placeholder="Description of the gathering..."
+                    rows={4}
+                    value={formData.description}
+                    onChange={(e) => handleChange("description", e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Logistics Section */}
+            <div className="space-y-8 pt-8 border-t border-media-surface-container-high">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-media-secondary block mb-2">Space & Time</label>
+                <h2 className="text-3xl font-bold text-media-primary mb-6">Logistics</h2>
+              </div>
+
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-media-on-surface-variant uppercase tracking-tighter">Location</label>
+                    <div className="relative group">
+                      <MaterialSymbol 
+                        icon="location_on" 
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-media-outline" 
+                      />
+                      <input
+                        className="w-full bg-media-surface-container-low border-2 border-transparent rounded-lg pl-12 pr-4 py-4 text-media-on-surface focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all"
+                        placeholder="Physical address or digital link"
+                        type="text"
+                        value={formData.location}
+                        onChange={(e) => handleChange("location", e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-media-on-surface-variant uppercase tracking-tighter">Category</label>
+                    <div className="relative group">
+                      <MaterialSymbol 
+                        icon="category" 
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-media-outline" 
+                      />
+                      <select
+                        className="w-full bg-media-surface-container-low border-2 border-transparent rounded-lg pl-12 pr-4 py-4 text-media-on-surface focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all appearance-none cursor-pointer"
+                        value={formData.category || "none"}
+                        onChange={(e) => handleChange("category", e.target.value === "none" ? "" : e.target.value)}
+                      >
+                        <option value="none">Select a category</option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                      <MaterialSymbol 
+                        icon="expand_more" 
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-media-outline pointer-events-none" 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Date & Time Grid */}
+                <div className="p-8 rounded-lg bg-media-surface-container-low/50 space-y-10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <MaterialSymbol icon="event_repeat" className="text-media-primary" />
+                      <span className="font-bold text-media-primary">All day event</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        className="sr-only peer"
+                        type="checkbox"
+                        checked={formData.all_day}
+                        onChange={(e) => handleChange("all_day", e.target.checked)}
+                      />
+                      <div className="w-11 h-6 bg-media-outline-variant/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-media-secondary"></div>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-10">
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold text-media-on-surface-variant uppercase tracking-widest block">Start</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <input
+                          className="w-full bg-media-surface-container border-2 border-transparent rounded-lg p-4 text-sm focus:ring-0 focus:border-media-secondary outline-none transition-all"
+                          type="date"
+                          value={formData.date}
+                          onChange={(e) => handleChange("date", e.target.value)}
+                          required
+                        />
+                        {!formData.all_day && (
+                          <input
+                            className="w-full bg-media-surface-container border-2 border-transparent rounded-lg p-4 text-sm focus:ring-0 focus:border-media-secondary outline-none transition-all"
+                            type="time"
+                            value={formData.start_time}
+                            onChange={(e) => handleChange("start_time", e.target.value)}
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold text-media-on-surface-variant uppercase tracking-widest block">End</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <input
+                          className="w-full bg-media-surface-container border-2 border-transparent rounded-lg p-4 text-sm focus:ring-0 focus:border-media-secondary outline-none transition-all"
+                          type="date"
+                          value={formData.end_date || formData.date}
+                          min={formData.date}
+                          onChange={(e) => handleChange("end_date", e.target.value)}
+                        />
+                        {!formData.all_day && (
+                          <input
+                            className="w-full bg-media-surface-container border-2 border-transparent rounded-lg p-4 text-sm focus:ring-0 focus:border-media-secondary outline-none transition-all"
+                            type="time"
+                            value={formData.end_time}
+                            onChange={(e) => handleChange("end_time", e.target.value)}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 pt-12">
+              <button
+                className="w-full md:w-auto min-w-[160px] px-10 py-4 rounded-lg bg-media-surface-container-high text-media-on-surface-variant font-bold hover:bg-media-surface-dim transition-all active:scale-95 cursor-pointer"
                 type="button"
-                variant="outline"
                 onClick={() => onOpenChange(false)}
-                disabled={isSubmitting || isDeleting}
               >
                 Cancel
-              </Button>
-              <Button className="cursor-pointer" type="submit" disabled={isSubmitting || isDeleting}>
+              </button>
+              <button
+                className="w-full md:w-auto min-w-[200px] px-12 py-4 rounded-lg bg-media-secondary text-media-on-secondary font-bold shadow-lg shadow-media-secondary/20 hover:opacity-90 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                type="submit"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
+              </button>
             </div>
-          </DialogFooter>
-        </form>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
