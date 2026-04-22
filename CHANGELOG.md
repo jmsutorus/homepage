@@ -1,3 +1,12 @@
+# [1.22.0](https://github.com/jmsutorus/homepage/compare/v1.21.3...v1.22.0) (2026-04-22)
+
+
+### Features
+
+* Parks map added ([#95](https://github.com/jmsutorus/homepage/issues/95)) ([01150f7](https://github.com/jmsutorus/homepage/commit/01150f70afee508d069f17a60e05f15cf12187b5))
+* redesign ([#97](https://github.com/jmsutorus/homepage/issues/97)) ([45e0390](https://github.com/jmsutorus/homepage/commit/45e03901b9ae966e8400e4c68c7f5669f97ec16c))
+* workout rework ([beb50dc](https://github.com/jmsutorus/homepage/commit/beb50dc169597d796c77035a5e21feb79624576a))
+
 ## [1.21.3](https://github.com/jmsutorus/homepage/compare/v1.21.2...v1.21.3) (2026-04-02)
 
 
