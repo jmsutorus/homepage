@@ -1,8 +1,8 @@
 "use client";
-
 import { useMemo, useState } from "react";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, parse } from "date-fns";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
 import Link from "next/link";
 import { 
@@ -29,7 +29,7 @@ import type { DailyMealWithRecipe, Meal, MealType } from "@/lib/types/meals";
 interface DailyPageClientProps {
   date: string;
   journal: any;
-  mood: number | null;
+  mood: number | null | undefined;
   habits: any[];
   completions: any[];
   dailyData: CalendarDayData | undefined;
@@ -71,6 +71,11 @@ export default function DailyPageClient({
   const safeFormat = (dateStr: string | null | undefined, formatStr: string, fallback: string = "") => {
     if (!dateStr) return fallback;
     try {
+      // Handle HH:MM time strings
+      if (dateStr.length === 5 && dateStr.includes(':')) {
+        const d = parse(dateStr, 'HH:mm', new Date());
+        return isNaN(d.getTime()) ? fallback : format(d, formatStr);
+      }
       const d = parseISO(dateStr);
       return isNaN(d.getTime()) ? fallback : format(d, formatStr);
     } catch {
@@ -222,7 +227,7 @@ export default function DailyPageClient({
               {/* The Vitals */}
               <div className="space-y-6">
                 <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-media-on-surface-variant/60">The Vitals</h3>
-                <MoodSelector date={date} currentMood={mood} />
+                <MoodSelector date={date} currentMood={mood || null} />
                 
                 {hasDuolingo && (
                   <div className="bg-media-surface-container-lowest editorial-shadow p-6 rounded-2xl flex items-center justify-between group kinetic-hover">
@@ -260,11 +265,12 @@ export default function DailyPageClient({
                       <>
                         <div className="h-32 bg-media-surface-container relative">
                           {log.meal?.image_url && (
-                             <img 
+                             <Image 
                               src={log.meal.image_url} 
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                               alt={label} 
-                              referrerPolicy="no-referrer"
+                              width={400}
+                              height={128}
                              />
                           )}
                           <div className="absolute top-2 left-2 px-2 py-1 bg-media-surface/90 backdrop-blur-sm text-[9px] font-bold uppercase tracking-widest rounded">{label}</div>
@@ -379,12 +385,20 @@ export default function DailyPageClient({
                 ))}
                 
                 {/* Goal Progress */}
-                {[...completedGoals, ...completedMilestones].map((goal, idx) => (
+                {completedGoals.map((goal, idx) => (
                    <GoalEditorialCard 
                     key={`goal-${idx}`}
                     title={goal.title}
                     percentage={100}
                     isMilestone={false}
+                   />
+                ))}
+                {completedMilestones.map((milestone, idx) => (
+                   <GoalEditorialCard 
+                    key={`milestone-${idx}`}
+                    title={milestone.title}
+                    percentage={100}
+                    isMilestone={true}
                    />
                 ))}
                 {upcomingGoals.slice(0, 1).map((goal, idx) => (
@@ -424,8 +438,8 @@ export default function DailyPageClient({
               {dailyData?.vacations.map((v, idx) => (
                 <VacationEditorialCard 
                   key={`vacation-${idx}`}
-                  title={v.vacation.name}
-                  image={v.vacation.cover_image_url || ""}
+                  title={v.vacation.title}
+                  image={v.vacation.poster || ""}
                 />
               ))}
 
@@ -461,7 +475,7 @@ export default function DailyPageClient({
 
       {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-2 bg-media-surface/80 backdrop-blur-xl shadow-[0_-4px_32px_rgba(0,0,0,0.04)] rounded-t-2xl md:hidden">
-        <Link className="flex flex-col items-center justify-center text-media-secondary bg-media-surface-container-low rounded-xl px-4 py-1.5" href="#">
+        <Link className="flex flex-col items-center justify-center text-media-secondary bg-media-surface-container-low rounded-xl px-4 py-1.5" href="/calendar">
           <MaterialSymbol icon="auto_stories" fill />
           <span className="text-[10px] font-medium uppercase tracking-widest mt-1">Review</span>
         </Link>

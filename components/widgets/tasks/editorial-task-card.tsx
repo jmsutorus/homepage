@@ -2,6 +2,7 @@
 
 import { format, formatDistanceToNow } from "date-fns";
 import { ExternalLink, History, Check, Paperclip, Trash2 } from "lucide-react";
+import type { Task } from "@/lib/db/tasks";
 
 interface EditorialTaskCardProps {
   task: Task;
@@ -21,7 +22,8 @@ export function EditorialTaskCard({
   task, 
   variant = "standard", 
   onToggleComplete, 
-  onOpenDetails 
+  onOpenDetails,
+  onDelete
 }: EditorialTaskCardProps) {
   
   if (variant === "archived") {

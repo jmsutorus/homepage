@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ComingUpSection } from "./sections/coming-up-section";
 import { PastMemoriesSection } from "./sections/past-memories-section";
 import { CalendarGridEditorial } from "./calendar-grid-editorial";
-import { CalendarDayDetail } from "./calendar-day-detail";
 import { MoodEntryModal } from "../mood/mood-entry-modal";
 import { EventModal, type EventFormData } from "./event-modal";
 import { MobileEventSheet } from "./mobile-event-sheet";
 import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
-import type { CalendarDaySummary, CalendarDayData } from "@/lib/db/calendar";
-import { cn } from "@/lib/utils";
+import type { CalendarDaySummary } from "@/lib/db/calendar";
 
 interface CalendarEditorialProps {
   year: number;
@@ -36,18 +34,10 @@ export function CalendarEditorial({
   editorialData,
 }: CalendarEditorialProps) {
   const router = useRouter();
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [isMoodModalOpen, setIsMoodModalOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [targetDate, setTargetDate] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-
-  // Lazy loading state for day details
-  const [dayDetailData, setDayDetailData] = useState<CalendarDayData | null>(null);
-  const [isLoadingDayDetail, setIsLoadingDayDetail] = useState(false);
-  const [dayDetailError, setDayDetailError] = useState<string | null>(null);
-
-  const dayDetailCache = useRef<Map<string, CalendarDayData>>(new Map());
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -55,39 +45,6 @@ export function CalendarEditorial({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  const fetchDayDetails = useCallback(async (date: string) => {
-    const cachedData = dayDetailCache.current.get(date);
-    if (cachedData) {
-      setDayDetailData(cachedData);
-      setDayDetailError(null);
-      return;
-    }
-
-    setIsLoadingDayDetail(true);
-    setDayDetailError(null);
-
-    try {
-      const response = await fetch(`/api/calendar/day?date=${date}`);
-      if (!response.ok) throw new Error("Failed to load day details");
-      const data = await response.json();
-      dayDetailCache.current.set(date, data);
-      setDayDetailData(data);
-    } catch (error) {
-      console.error("Error fetching day details:", error);
-      setDayDetailError("Failed to load day details");
-    } finally {
-      setIsLoadingDayDetail(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (selectedDay) {
-      fetchDayDetails(selectedDay);
-    } else {
-      setDayDetailData(null);
-    }
-  }, [selectedDay, fetchDayDetails]);
 
   const handlePrevMonth = () => {
     const prevMonth = month === 1 ? 12 : month - 1;
@@ -184,31 +141,8 @@ export function CalendarEditorial({
           year={year} 
           month={month} 
           summaryData={summaryData} 
-          selectedDay={selectedDay}
-          onDayClick={(date) => {
-            setSelectedDay(date);
-            setTargetDate(date);
-          }}
+          onDayClick={(date) => router.push(`/daily/${date}`)}
         />
-
-        {/* Day Detail - Preserving existing functionality */}
-        {selectedDay && (
-          <div className="mt-12">
-            <CalendarDayDetail
-              date={selectedDay}
-              data={dayDetailData}
-              isLoading={isLoadingDayDetail}
-              error={dayDetailError}
-              holidayName={summaryData.get(selectedDay)?.holidayName || null}
-              isBirthday={summaryData.get(selectedDay)?.isBirthday || false}
-              onDataChange={() => {
-                dayDetailCache.current.delete(selectedDay);
-                fetchDayDetails(selectedDay);
-                router.refresh();
-              }}
-            />
-          </div>
-        )}
 
         {/* Past Memories */}
         <PastMemoriesSection 

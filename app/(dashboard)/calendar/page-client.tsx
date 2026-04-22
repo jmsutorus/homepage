@@ -12,6 +12,7 @@ interface CalendarPageClientProps {
     upcomingEvents: any[];
     peopleEvents: any[];
     vacations: any[];
+    milestones: any[];
     pastMemories: {
       media: any[];
       journals: any[];

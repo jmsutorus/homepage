@@ -44,6 +44,17 @@ function serialize<T>(data: T): T {
   return JSON.parse(JSON.stringify(data));
 }
 
+function getMoodLabel(rating: number) {
+  switch (rating) {
+    case 5: return "Radiant";
+    case 4: return "Serene";
+    case 3: return "Flowing";
+    case 2: return "Reflective";
+    case 1: return "Shadowed";
+    default: return "Unknown";
+  }
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -255,7 +266,7 @@ export default async function DashboardPage({
           <div className="relative z-10 w-full h-full flex flex-col">
             <h4 className="text-media-secondary-fixed tracking-widest uppercase text-[10px] font-bold mb-4">Atmosphere</h4>
             {todayMood ? (
-              <span className="text-2xl font-bold tracking-tight">{todayMood.label}</span>
+              <span className="text-2xl font-bold tracking-tight">{getMoodLabel(todayMood.rating)}</span>
             ) : (
               <Link href={`/daily/${todayStr}`} className="text-2xl font-bold tracking-tight opacity-70 hover:opacity-100 hover:text-white transition-all cursor-pointer inline-flex items-center gap-2 group/mood">
                 Log your mood
@@ -263,7 +274,7 @@ export default async function DashboardPage({
               </Link>
             )}
             <p className="text-media-primary-fixed-dim text-sm mt-2 flex-grow">
-              {todayMood?.notes || "No notes for today."}
+              {todayMood?.note || "No notes for today."}
             </p>
             {isWeatherEnabled && (
                <div className="mt-6 pt-4 border-t border-white/20">
@@ -284,15 +295,15 @@ export default async function DashboardPage({
 
         {/* Next Odyssey (Vacations) */}
         <div className="relative rounded-2xl overflow-hidden group cursor-pointer h-full min-h-[220px]">
-          {nextVacation && nextVacation.image_url ? (
-             <img className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={nextVacation.destination} src={nextVacation.image_url} />
+          {nextVacation && nextVacation.poster ? (
+             <img className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={nextVacation.destination} src={nextVacation.poster} />
           ) : (
              <img className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="vibrant coastal view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5PW5QVjZ_HxrD4VU-7LoF_iEcAsj3w4Bxy3AMWAuPVxV0iw4SsiT0P1hmNjKK1cM7nktn_x_Fo1fmeSjygPOjWj4bWcld0HVyUFlT0qDprBVYx3s_OoL7BJiblgOxnzj5Jnvba066XGRG1fIN6iOGamE39TfZlvPQ3xyYZMxetVafrT3vlUp0ti3WfyyN_BqMBH93npuxUcvT3gIbLMaBaIZhMQlBGIHt2EG_fatDsnAIYogHQPbT-Dcw89km2pO8jgQtKzF2xrI" />
           )}
           <div className="absolute inset-0 bg-black/40 p-8 flex flex-col justify-end">
             <span className="text-white/80 tracking-widest uppercase text-[10px] font-bold mb-1">Upcoming Odyssey</span>
             <h4 className="text-2xl font-bold text-white tracking-tight">
-               {nextVacation ? nextVacation.name : "No trips planned"}
+               {nextVacation ? nextVacation.title : "No trips planned"}
             </h4>
             <p className="text-white/70 text-xs mt-1">
                {nextVacation ? `Departing to ${nextVacation.destination}` : "Plan your next getaway"}

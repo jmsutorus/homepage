@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import { useDebounce } from "@/hooks/use-debounce";
-import { searchGlobal, type SearchResults, type SearchFilters } from "@/lib/actions/search";
+import { searchGlobal, type SearchResults, type SearchFilters, type SearchResult } from "@/lib/actions/search";
 import { getSavedSearches, createSavedSearch, deleteSavedSearch, type SavedSearch } from "@/lib/actions/saved-searches";
 import {
   Calendar,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Task, TaskCategory, TaskStatusRecord } from "@/lib/db/tasks";
+import type { Task, TaskCategory, TaskStatusRecord, TaskVelocityData } from "@/lib/db/tasks";
 import { TaskForm } from "@/components/widgets/tasks/task-form";
 import { TaskList } from "@/components/widgets/tasks/task-list";
 import { Plus, Settings } from "lucide-react";
@@ -11,9 +11,10 @@ import { FloatingActionButton } from "@/components/ui/floating-action-button";
 
 interface TasksPageClientProps {
   initialTasks: Task[];
+  initialVelocityData: TaskVelocityData;
 }
 
-export function TasksPageClient({ initialTasks }: TasksPageClientProps) {
+export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPageClientProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [categories, setCategories] = useState<TaskCategory[]>([]);
   const [statuses, setStatuses] = useState<TaskStatusRecord[]>([]);

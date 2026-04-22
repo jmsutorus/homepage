@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
 import Link from "next/link";
 import { format } from "date-fns";
+import Image from "next/image";
 import type { Event } from "@/lib/db/events";
 import type { CalendarGoal, CalendarMilestone } from "@/lib/db/calendar";
 import { Star } from "lucide-react";
@@ -66,11 +67,12 @@ export function RestaurantEditorialCard({
   return (
     <div className="bg-media-surface-container-lowest editorial-shadow rounded-2xl overflow-hidden group kinetic-hover">
       <div className="h-40 bg-media-surface-container relative">
-        <img 
+        <Image 
           src={image} 
           alt={name} 
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-          referrerPolicy="no-referrer"
+          width={400}
+          height={160}
         />
       </div>
       <div className="p-6">
@@ -112,7 +114,7 @@ export function MediaEditorialCard({
     <div className="bg-media-tertiary-fixed text-media-on-tertiary-fixed p-6 rounded-2xl flex gap-6 kinetic-hover">
       <div className="w-24 h-36 bg-media-tertiary rounded shadow-lg flex-shrink-0 overflow-hidden transform -rotate-3 group-hover:rotate-0 transition-transform duration-500">
         {image ? (
-          <img src={image} alt={title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <Image src={image} alt={title} className="w-full h-full object-cover" width={96} height={144} />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-media-tertiary-fixed-dim">
             <MaterialSymbol icon="image" className="opacity-20" />
@@ -205,11 +207,12 @@ export function VacationEditorialCard({
 }) {
   return (
     <div className="bg-media-surface-container relative aspect-square rounded-2xl overflow-hidden group cursor-pointer kinetic-hover">
-      <img 
+      <Image 
         src={image} 
         alt={title} 
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-        referrerPolicy="no-referrer"
+        width={300}
+        height={300}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-media-primary/40 to-transparent"></div>
       <div className="absolute bottom-4 left-4 text-white">
@@ -252,11 +255,12 @@ export function ParkEditorialCard({
   return (
     <div className="bg-media-surface-container-low relative aspect-[4/3] rounded-2xl overflow-hidden group cursor-pointer kinetic-hover">
       {image ? (
-        <img 
+        <Image 
           src={image} 
           alt={title} 
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-          referrerPolicy="no-referrer"
+          width={400}
+          height={300}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-media-surface-container">

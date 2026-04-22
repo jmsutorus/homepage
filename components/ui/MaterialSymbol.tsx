@@ -7,6 +7,7 @@ interface MaterialSymbolProps {
   weight?: number;
   grade?: number;
   opsz?: number;
+  size?: number | string;
   style?: React.CSSProperties;
 }
 
@@ -17,6 +18,7 @@ export function MaterialSymbol({
   weight = 400,
   grade = 0,
   opsz = 24,
+  size,
   style,
 }: MaterialSymbolProps) {
   return (
@@ -24,6 +26,7 @@ export function MaterialSymbol({
       className={cn("material-symbols-outlined select-none", className)}
       style={{
         fontVariationSettings: `'FILL' ${fill ? 1 : 0}, 'wght' ${weight}, 'GRAD' ${grade}, 'opsz' ${opsz}`,
+        fontSize: size,
         ...style,
       }}
     >

@@ -1,5 +1,5 @@
 
-import { getDatabase } from "./lib/db/index";
+import { getDatabase } from "@/lib/db/index";
 
 async function checkSchema() {
     try {

@@ -1,5 +1,5 @@
 
-import { execute } from './lib/db/index';
+import { execute } from '@/lib/db/index';
 
 async function runMigration() {
   try {

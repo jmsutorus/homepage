@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
-import type { MediaContent } from "@/lib/db/calendar";
+import type { MediaContent } from "@/lib/db/media";
 import type { JournalContent } from "@/lib/db/journals";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +25,7 @@ export function PastMemoriesSection({ media, journals }: PastMemoriesSectionProp
       type: 'media',
       date: m.completed?.split('T')[0],
       title: m.title,
-      image: m.poster || m.backdrop,
+      image: m.poster,
       id: m.id
     }))
   ].sort((a, b) => {

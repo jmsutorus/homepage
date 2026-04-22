@@ -2,28 +2,19 @@ import { getDailyJournalByDate } from "@/lib/db/journals";
 import { getHabitsAction, getHabitCompletionsAction } from "@/lib/actions/habits";
 import { formatDateLongSafe } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { DailyHabits } from "@/components/widgets/habits/daily-habits";
 import { DailyJournalPreview } from "@/components/widgets/journal/daily-journal-preview";
-import { MoodSelector } from "@/components/widgets/mood/mood-selector";
 import { getMoodForDate } from "@/lib/db/journals";
 import { getCalendarDataForDate } from "@/lib/db/calendar";
-import type { CalendarVacation } from "@/lib/db/calendar";
 import { auth } from "@/auth";
 import { getGithubEventsForDate } from "@/lib/db/github";
 import { queryOne } from "@/lib/db";
-import { DailyActivities } from "@/components/widgets/daily/daily-activities";
-import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { getCalendarColorsObject } from "@/lib/db/calendar-colors";
-import { DuolingoCompletionToggle } from "@/components/widgets/duolingo/duolingo-completion-toggle";
 import { getDuolingoCompletion } from "@/lib/db/duolingo";
-import { DailyMeals } from "@/components/widgets/daily/daily-meals";
 import { getDailyMealsByDate } from "@/lib/db/daily-meals";
 import { getAllMeals } from "@/lib/db/meals";
-import { DailyVacations } from "@/components/widgets/daily/daily-vacations";
-import { DailyRestaurants } from "@/components/widgets/daily/daily-restaurants";
-import { DailyDrinks } from "@/components/widgets/daily/daily-drinks";
 
 
 interface DailyPageProps {

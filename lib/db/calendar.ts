@@ -263,7 +263,7 @@ export async function getEventsInRange(
   startDate: string,
   endDate: string,
   userId: string
-): Promise<Event[]> {
+): Promise<EventWithCoverPhoto[]> {
   // Import from events module
   return getEvents(startDate, endDate, userId);
 }
@@ -309,6 +309,7 @@ export async function getJournalsInRange(
     featured: number;
     published: number;
     mood: number | null;
+    image_url: string | null;
   }
 
   // Need to parse tags from JSON and convert featured/published from number to boolean

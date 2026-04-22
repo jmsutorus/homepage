@@ -2,7 +2,6 @@
 
 import { GoalWithProgress } from "@/lib/db/goals";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 interface EditorialHomeGoalsProps {
   goals: GoalWithProgress[];

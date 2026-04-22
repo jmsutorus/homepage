@@ -138,7 +138,7 @@ export function ExercisePageClient({
     let fastestRun: { activity: WorkoutActivity; pace: number } | null = null; // pace in min/mi
     const records: Record<string, { activity: WorkoutActivity; time: number }> = {};
 
-    initialCompletedActivities.forEach(activity => {
+    for (const activity of initialCompletedActivities) {
       // Longest Run
       if (activity.type === "run" && activity.distance) {
         if (!longestRun || activity.distance > (longestRun.distance || 0)) {
@@ -151,14 +151,14 @@ export function ExercisePageClient({
         try {
           const exercises: Exercise[] = typeof activity.exercises === 'string' 
             ? JSON.parse(activity.exercises) 
-            : activity.exercises;
+            : (activity.exercises as any);
           
-          exercises.forEach(ex => {
+          for (const ex of exercises) {
             if (ex.weight && ex.weight > maxWeight) {
               maxWeight = ex.weight;
               maxWeightExercise = ex.description;
             }
-          });
+          }
         } catch (e) {
           // Ignore parse errors
         }
@@ -197,9 +197,16 @@ export function ExercisePageClient({
           records["longestSwim"] = { activity, time: activity.length || 0 };
         }
       }
-    });
+    }
 
-    return { longestRun, maxWeight, maxWeightExercise, fastestRun, ...records };
+    return { 
+      longestRun, 
+      maxWeight, 
+      maxWeightExercise, 
+      fastestRun, 
+      longestSwim: records["longestSwim"],
+      milestones: records 
+    };
   })();
 
   // Active days this week for streak visualization
@@ -572,7 +579,7 @@ export function ExercisePageClient({
                 </div>
                 <div className="text-4xl font-black mb-1">
                   {personalRecords.fastestRun ? (() => {
-                    const totalSecs = personalRecords.fastestRun.pace * 60;
+                    const totalSecs = (personalRecords.fastestRun?.pace || 0) * 60;
                     const mins = Math.floor(totalSecs / 60);
                     const secs = Math.round(totalSecs % 60);
                     return `${mins}:${secs.toString().padStart(2, '0')}`;

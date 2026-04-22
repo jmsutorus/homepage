@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Dumbbell, X } from "lucide-react";
 import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
@@ -20,9 +20,18 @@ interface AddActivityModalProps {
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   showButton?: boolean;
+  children?: React.ReactNode;
 }
 
-export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActivity, isOpen, onOpenChange, showButton }: AddActivityModalProps) {
+export function AddActivityModal({ 
+  onActivityAdded, 
+  onActivityDeleted, 
+  editActivity, 
+  isOpen, 
+  onOpenChange, 
+  showButton,
+  children 
+}: AddActivityModalProps) {
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -118,13 +127,17 @@ export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActiv
   if (isDesktop) {
     return (
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        {!editActivity && showButton && (
+        {children ? (
+          <DialogTrigger asChild>
+            {children}
+          </DialogTrigger>
+        ) : (!editActivity && showButton && (
           <FloatingActionButton 
             onClick={() => setIsModalOpen(true)}
             tooltipText="Log Activity"
             icon={<Dumbbell className="h-8 w-8 text-media-on-secondary" />}
           />
-        )}
+        ))}
         <DialogContent showCloseButton={false} className="p-0 border-none sm:max-w-3xl overflow-hidden bg-media-surface-container-lowest shadow-[0_32px_64px_-12px_rgba(6,27,14,0.12)] rounded-3xl">
           {dialogHeader}
           {contentBody}
@@ -136,14 +149,18 @@ export function AddActivityModal({ onActivityAdded, onActivityDeleted, editActiv
   // Mobile view
   return (
     <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
-      {!editActivity && showButton && (
+      {children ? (
+        <SheetTrigger asChild>
+          {children}
+        </SheetTrigger>
+      ) : (!editActivity && showButton && (
         <FloatingActionButton 
           onClick={() => setIsModalOpen(true)}
           tooltipText="Log Activity"
           icon={<Dumbbell className="h-8 w-8 text-media-on-secondary" />}
           className="md:hidden"
         />
-      )}
+      ))}
       <SheetContent 
         side="bottom" 
         className="h-[95vh] max-h-[95vh] p-0 border-none rounded-t-[40px] overflow-hidden bg-media-surface-container-lowest flex flex-col [&>button:last-child]:hidden"

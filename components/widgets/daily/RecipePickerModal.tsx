@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 import { 
   Dialog, 
   DialogContent, 
@@ -47,7 +48,7 @@ export function RecipePickerModal({
         <DialogHeader className="p-8 pb-4 border-b border-media-outline-variant/10">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-8 rounded bg-media-secondary/10 flex items-center justify-center text-media-secondary">
-              <MaterialSymbol icon="restaurant" size={20} />
+              <MaterialSymbol icon="restaurant" opsz={20} />
             </div>
             <DialogTitle className="text-3xl font-bold tracking-tight text-media-primary">
               Log {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
@@ -81,11 +82,12 @@ export function RecipePickerModal({
               >
                 <div className="h-40 w-full relative overflow-hidden bg-media-surface-container">
                   {recipe.image_url ? (
-                    <img 
+                    <Image 
                       src={recipe.image_url} 
                       alt={recipe.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      referrerPolicy="no-referrer"
+                      width={400}
+                      height={160}
                     />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-media-on-surface-variant/20">
@@ -125,7 +127,7 @@ export function RecipePickerModal({
           {filteredRecipes.length === 0 && (
             <div className="py-20 text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-media-surface-container mx-auto flex items-center justify-center text-media-on-surface-variant/30">
-                <MaterialSymbol icon="search_off" size={32} />
+                <MaterialSymbol icon="search_off" className="text-4xl" />
               </div>
               <p className="text-media-on-surface-variant opacity-50 italic">No recipes found matching &quot;{search}&quot;</p>
             </div>
