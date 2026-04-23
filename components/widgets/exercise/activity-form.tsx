@@ -35,10 +35,13 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
   // Load edit activity data when provided
   useEffect(() => {
     if (editActivity) {
+      // Prevent infinite loops by only updating if the activity ID is different
+      if (activityId === editActivity.id) return;
+
       setActivityId(editActivity.id);
       setDate(editActivity.date);
       setTime(editActivity.time);
-      setLength(editActivity.length);
+      setLength(editActivity.length || 0);
       setDistance(editActivity.distance || 0);
       setDifficulty(editActivity.difficulty);
       const rawType = editActivity.type ? editActivity.type.toLowerCase() : "other";
@@ -46,10 +49,11 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
       setType(validTypes.includes(rawType) ? (rawType as any) : "other");
       setNotes(editActivity.notes || "");
       setIsCompleted(editActivity.completed || false);
-    } else {
+    } else if (activityId !== null) {
+        // Only reset if we were previously editing an activity
         resetForm();
     }
-  }, [editActivity]);
+  }, [editActivity, activityId]);
 
   const resetForm = () => {
     setActivityId(null);
@@ -168,7 +172,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
                 type="number"
                 min="1"
                 required
-                value={length}
+                value={isNaN(length) ? "" : length}
                 onChange={(e) => setLength(parseInt(e.target.value))}
                 className={inputClasses}
               />
@@ -183,7 +187,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
                 min="0"
                 step="0.01"
                 disabled={type !== "run"}
-                value={distance}
+                value={isNaN(distance) ? "" : distance}
                 onChange={(e) => setDistance(parseFloat(e.target.value))}
                 className={inputClasses}
                 placeholder="0.00"
@@ -270,11 +274,6 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
               </p>
             </div>
           </div>
-          <Checkbox 
-            checked={isCompleted}
-            onCheckedChange={(checked) => setIsCompleted(checked as boolean)}
-            className="hidden"
-          />
         </div>
       </div>
 

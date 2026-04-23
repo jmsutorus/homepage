@@ -1,14 +1,64 @@
 "use client";
 
-import { Star, MapPin, Calendar, Quote } from "lucide-react";
+import { Star, MapPin, Calendar, Quote, Pencil, Loader2 } from "lucide-react";
 import { ParkContent } from "@/lib/db/parks";
 import { formatDateLongSafe } from "@/lib/utils";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogDescription
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface ParkHeroEditorialProps {
   park: ParkContent;
 }
 
 export function ParkHeroEditorial({ park }: ParkHeroEditorialProps) {
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+  const [quote, setQuote] = useState(park.quote || "");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleUpdateQuote = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/parks/${park.slug}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          frontmatter: {
+            title: park.title,
+            category: park.category,
+            quote: quote
+          },
+          content: park.content
+        })
+      });
+
+      if (response.ok) {
+        toast.success("Mantra updated");
+        setIsQuoteOpen(false);
+        router.refresh();
+      } else {
+        toast.error("Failed to update mantra");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <header className="relative rounded-3xl overflow-hidden h-[600px] md:h-[819px] group font-lexend mb-24">
       {park.poster ? (
@@ -53,15 +103,60 @@ export function ParkHeroEditorial({ park }: ParkHeroEditorialProps) {
           </div>
         </div>
         
-        {park.description && (
-          <div className="hidden lg:block bg-media-surface/5 backdrop-blur-2xl p-8 rounded-2xl border border-white/10 max-w-sm shadow-2xl skew-y-[-1deg]">
+        <div className="hidden lg:block relative group/quote">
+          <div className="bg-media-surface/5 backdrop-blur-2xl p-8 rounded-2xl border border-white/10 max-w-sm shadow-2xl skew-y-[-1deg] hover:skew-y-0 transition-transform duration-500">
             <Quote className="w-8 h-8 text-media-secondary mb-4 opacity-50" />
-            <p className="text-media-surface/90 text-sm italic leading-relaxed font-light">
-              &quot;{park.description.length > 150 ? park.description.substring(0, 150) + "..." : park.description}&quot;
+            <p className="text-media-surface/90 text-sm italic leading-relaxed font-light mb-4">
+              &quot;{park.quote || "Every wilderness reveals a new facet of nature's grandeur."}&quot;
             </p>
+            <Button 
+              onClick={() => setIsQuoteOpen(true)}
+              variant="ghost" 
+              size="sm" 
+              className="absolute top-4 right-4 opacity-0 group-hover/quote:opacity-100 transition-opacity text-white/50 hover:text-white hover:bg-white/10"
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
           </div>
-        )}
+        </div>
       </div>
+
+      <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
+        <DialogContent className="sm:max-w-[450px] border-media-outline-variant/10 bg-white/95 backdrop-blur-xl rounded-[2rem] font-lexend">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-black text-media-primary tracking-tighter">
+              The Mantra
+            </DialogTitle>
+            <DialogDescription className="text-media-on-surface-variant font-light">
+              Set the defining spirit of this expedition.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="quote" className="text-[10px] font-black uppercase tracking-[0.2em] text-media-secondary">Mantra / Quote</Label>
+              <Textarea 
+                id="quote"
+                value={quote}
+                onChange={(e) => setQuote(e.target.value)}
+                placeholder="What defines this place for you?"
+                className="rounded-xl border-media-outline-variant/20 italic font-light min-h-[120px]"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              onClick={handleUpdateQuote}
+              disabled={isLoading}
+              className="bg-media-primary text-white rounded-xl px-8 hover:bg-media-secondary transition-all font-black uppercase tracking-widest text-[10px]"
+            >
+              {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Commemorate
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

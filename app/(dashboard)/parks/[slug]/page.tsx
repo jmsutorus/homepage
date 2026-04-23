@@ -77,11 +77,11 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
         {/* Cinematic Hero */}
         <ParkHeroEditorial park={park} />
 
-        {/* Photos Grid */}
-        <ParkGalleryEditorial parkSlug={slug} />
-
         {/* Expedition Summary */}
         <ParkExpeditionSummary park={park} />
+
+        {/* Photos Grid */}
+        <ParkGalleryEditorial parkSlug={slug} />
 
         {/* Travel Companions */}
         <ParkCompanionsEditorial parkSlug={slug} />

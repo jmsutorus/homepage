@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ParkTrail } from '@/lib/db/parks';
-import { Mountain, TrendingUp, MapPin, Clock, Plus } from 'lucide-react';
+import { Mountain, TrendingUp, MapPin, Clock, Plus, ExternalLink } from 'lucide-react';
 import { ParkTrailFormDialog } from './park-trail-form-dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -92,6 +92,18 @@ export function ParkTrailsEditorial({ parkSlug }: ParkTrailsEditorialProps) {
                       <h3 className="text-3xl md:text-4xl font-black text-media-primary dark:text-media-surface tracking-tighter group-hover:text-media-secondary transition-colors duration-300">
                         {trail.name}
                       </h3>
+                      {trail.alltrails_url && (
+                        <a 
+                          href={trail.alltrails_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-2 rounded-full bg-media-secondary/10 text-media-secondary hover:bg-media-secondary hover:text-white transition-all duration-300 shadow-sm"
+                          title="View on AllTrails"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
                     </div>
                     <p className="text-media-on-surface-variant leading-relaxed text-lg font-light max-w-2xl italic opacity-80">
                       {trail.notes || "A transformative journey through the heart of the wilderness, offering unparalleled views and a deep connection to the land."}
@@ -122,8 +134,8 @@ export function ParkTrailsEditorial({ parkSlug }: ParkTrailsEditorialProps) {
                 
                 <div className="hidden md:block w-full lg:w-72 h-72 rounded-3xl overflow-hidden shadow-2xl skew-y-1 group-hover:skew-y-0 transition-transform duration-700">
                   <img 
-                    src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop" 
-                    alt="Trail preview" 
+                    src={trail.photo_url || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop"} 
+                    alt={trail.name} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                   />
                 </div>

@@ -28,7 +28,7 @@ export function ParkFooterQuote({ title }: { title: string }) {
         </p>
         <div className="flex justify-center items-center gap-6">
           <div className="h-[1px] w-16 bg-media-outline-variant/30"></div>
-          <span className="text-xs uppercase tracking-[0.4em] font-black text-media-on-surface-variant/60">Earthbound Journal — 2024</span>
+          <span className="text-xs uppercase tracking-[0.4em] font-black text-media-on-surface-variant/60">Homepage Journal — 2024</span>
           <div className="h-[1px] w-16 bg-media-outline-variant/30"></div>
         </div>
       </div>

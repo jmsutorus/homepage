@@ -114,6 +114,7 @@ export function AddActivityModal({
     )}>
       {showSuccess ? successContent : (
         <ActivityForm 
+          key={editActivity?.id || "new"}
           editActivity={editActivity} 
           onSuccess={handleSuccess} 
           onCancel={() => setIsModalOpen(false)} 

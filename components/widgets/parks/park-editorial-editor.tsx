@@ -46,6 +46,7 @@ interface ParkFrontmatter {
   rating?: number;
   featured?: boolean;
   published?: boolean;
+  quote?: string;
 }
 
 interface ParkEditorialEditorProps {
@@ -212,6 +213,10 @@ export function ParkEditorialEditor({
             break;
           case 'published':
             parsedFrontmatter.published = value === 'true' || value === '1' || value === 'yes';
+            break;
+          case 'quote':
+          case 'mantra':
+            parsedFrontmatter.quote = value;
             break;
         }
       }
@@ -468,6 +473,16 @@ export function ParkEditorialEditor({
                     onChange={(e) => setFrontmatter(prev => ({ ...prev, state: e.target.value }))}
                     className="w-full bg-media-surface-container-low border-none rounded-lg p-4 focus:ring-0 focus:bg-media-surface-container-high transition-colors text-media-primary placeholder:text-media-outline-variant" 
                     placeholder="California, USA" 
+                  />
+                </div>
+
+                <div className="group">
+                  <label className="block text-xs font-bold uppercase tracking-widest text-media-on-surface-variant mb-2 ml-1">Mantra / Quote</label>
+                  <textarea 
+                    value={frontmatter.quote || ''}
+                    onChange={(e) => setFrontmatter(prev => ({ ...prev, quote: e.target.value }))}
+                    className="w-full bg-media-surface-container-low border-none rounded-lg p-4 focus:ring-0 focus:bg-media-surface-container-high transition-colors text-media-primary placeholder:text-media-outline-variant italic font-light resize-none min-h-[80px]" 
+                    placeholder="Set the defining spirit..." 
                   />
                 </div>
               </div>

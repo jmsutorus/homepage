@@ -31,6 +31,7 @@ export async function PUT(
       date_hiked: body.date_hiked,
       notes: body.notes,
       alltrails_url: body.alltrails_url,
+      photo_url: body.photo_url,
     });
 
     if (!success) {

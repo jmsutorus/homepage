@@ -50,7 +50,8 @@ export function ParkTrailFormDialog({
     rating: "8",
     date_hiked: "",
     notes: "",
-    alltrails_url: ""
+    alltrails_url: "",
+    photo_url: ""
   });
 
   useEffect(() => {
@@ -63,7 +64,8 @@ export function ParkTrailFormDialog({
         rating: trail.rating?.toString() || "8",
         date_hiked: trail.date_hiked || "",
         notes: trail.notes || "",
-        alltrails_url: trail.alltrails_url || ""
+        alltrails_url: trail.alltrails_url || "",
+        photo_url: trail.photo_url || ""
       });
     } else {
       setFormData({
@@ -74,7 +76,8 @@ export function ParkTrailFormDialog({
         rating: "8",
         date_hiked: new Date().toISOString().split('T')[0],
         notes: "",
-        alltrails_url: ""
+        alltrails_url: "",
+        photo_url: ""
       });
     }
   }, [trail, isOpen]);
@@ -258,6 +261,17 @@ export function ParkTrailFormDialog({
                 value={formData.alltrails_url}
                 onChange={(e) => setFormData({ ...formData, alltrails_url: e.target.value })}
                 placeholder="https://www.alltrails.com/trail/..." 
+                className="rounded-xl border-media-outline-variant/20"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="photo_url" className="text-[10px] font-black uppercase tracking-[0.2em] text-media-secondary">Trail Photo URL</Label>
+              <Input 
+                id="photo_url" 
+                value={formData.photo_url}
+                onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
+                placeholder="https://images.unsplash.com/..." 
                 className="rounded-xl border-media-outline-variant/20"
               />
             </div>

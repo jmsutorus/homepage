@@ -17,6 +17,7 @@ export interface DBPark {
   featured: number; // SQLite boolean (0 or 1)
   published: number; // SQLite boolean (0 or 1)
   content: string;
+  quote: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -36,6 +37,7 @@ export interface ParkContent {
   featured: boolean;
   published: boolean;
   content: string;
+  quote: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -59,6 +61,7 @@ function dbToParkContent(row: DBPark): ParkContent {
     featured: row.featured === 1,
     published: row.published === 1,
     content: row.content,
+    quote: row.quote,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -198,6 +201,7 @@ export async function createPark(data: {
   featured?: boolean;
   published?: boolean;
   content: string;
+  quote?: string | null;
   userId: string;
 }): Promise<ParkContent> {
   try {
@@ -207,7 +211,7 @@ export async function createPark(data: {
       sql: `INSERT INTO parks (
               slug, title, category, state, poster, description,
               visited, tags, rating, featured, published, content, userId
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         data.slug,
         data.title,
@@ -221,6 +225,7 @@ export async function createPark(data: {
         data.featured ? 1 : 0,
         data.published !== false ? 1 : 0,
         data.content,
+        data.quote || null,
         data.userId
       ]
     });
@@ -259,6 +264,7 @@ export async function updatePark(
     featured?: boolean;
     published?: boolean;
     content?: string;
+    quote?: string | null;
   }
 ): Promise<ParkContent> {
   try {
@@ -320,6 +326,10 @@ export async function updatePark(
     if (data.content !== undefined) {
       updates.push("content = ?");
       values.push(data.content);
+    }
+    if (data.quote !== undefined) {
+      updates.push("quote = ?");
+      values.push(data.quote || null);
     }
 
     if (updates.length === 0) {
@@ -766,6 +776,7 @@ export interface ParkTrail {
   date_hiked: string | null;
   notes: string | null;
   alltrails_url: string | null;
+  photo_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -779,6 +790,7 @@ export interface ParkTrailInput {
   date_hiked?: string | null;
   notes?: string | null;
   alltrails_url?: string | null;
+  photo_url?: string | null;
 }
 
 /**
@@ -793,8 +805,8 @@ export async function createParkTrail(
     
     const result = await db.execute({
       sql: `INSERT INTO park_trails (
-              parkId, name, distance, elevation_gain, difficulty, rating, date_hiked, notes, alltrails_url
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              parkId, name, distance, elevation_gain, difficulty, rating, date_hiked, notes, alltrails_url, photo_url
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         parkId,
         data.name,
@@ -805,6 +817,7 @@ export async function createParkTrail(
         data.date_hiked || null,
         data.notes || null,
         data.alltrails_url || null,
+        data.photo_url || null,
       ]
     });
 
@@ -899,6 +912,10 @@ export async function updateParkTrail(
     if (data.alltrails_url !== undefined) {
       updates.push("alltrails_url = ?");
       values.push(data.alltrails_url || null);
+    }
+    if (data.photo_url !== undefined) {
+      updates.push("photo_url = ?");
+      values.push(data.photo_url || null);
     }
 
     if (updates.length === 0) return true;

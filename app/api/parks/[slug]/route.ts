@@ -43,6 +43,7 @@ export async function GET(
         rating: park.rating,
         featured: park.featured,
         published: park.published,
+        quote: park.quote,
       },
       content: park.content,
       slug: park.slug,
@@ -109,6 +110,7 @@ export async function PATCH(
       featured: frontmatter.featured,
       published: frontmatter.published,
       content: content || "",
+      quote: frontmatter.quote || undefined,
     };
 
     const updatedPark = await updatePark(slug, userId, updateData);

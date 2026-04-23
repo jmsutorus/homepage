@@ -30,6 +30,7 @@ export default async function EditParkPage({ params }: EditParkPageProps) {
     rating: park.rating !== null ? park.rating : undefined,
     featured: park.featured,
     published: park.published,
+    quote: park.quote || undefined,
   };
 
   return (

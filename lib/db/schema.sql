@@ -286,6 +286,7 @@ CREATE TABLE IF NOT EXISTS parks (
   featured BOOLEAN DEFAULT 0, -- Whether to feature on homepage
   published BOOLEAN DEFAULT 1, -- Whether to show publicly
   content TEXT NOT NULL, -- Markdown content (body)
+  quote TEXT, -- Featured quote or mantra for the park
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
@@ -346,6 +347,7 @@ CREATE TABLE IF NOT EXISTS park_trails (
   date_hiked TEXT, -- YYYY-MM-DD
   notes TEXT,
   alltrails_url TEXT,
+  photo_url TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (parkId) REFERENCES parks(id) ON DELETE CASCADE
