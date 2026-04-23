@@ -11,6 +11,22 @@
 
 * Parks map added ([#95](https://github.com/jmsutorus/homepage/issues/95)) ([01150f7](https://github.com/jmsutorus/homepage/commit/01150f70afee508d069f17a60e05f15cf12187b5))
 * redesign ([#97](https://github.com/jmsutorus/homepage/issues/97)) ([45e0390](https://github.com/jmsutorus/homepage/commit/45e03901b9ae966e8400e4c68c7f5669f97ec16c))
+* themes updated ([93e08e3](https://github.com/jmsutorus/homepage/commit/93e08e314d8cfefa8d71b2fa4acfbc0905450322))
+* workout rework ([beb50dc](https://github.com/jmsutorus/homepage/commit/beb50dc169597d796c77035a5e21feb79624576a))
+
+# [1.22.0](https://github.com/jmsutorus/homepage/compare/v1.21.3...v1.22.0) (2026-04-23)
+
+
+### Bug Fixes
+
+* bug fixes ([e1f3bdc](https://github.com/jmsutorus/homepage/commit/e1f3bdc7a97dd4db20b773fe0f58a4645dce0e8d))
+* code cleanup ([1ae5108](https://github.com/jmsutorus/homepage/commit/1ae510865217356a3ab80f3cd0c6da0a5a3adda5))
+
+
+### Features
+
+* Parks map added ([#95](https://github.com/jmsutorus/homepage/issues/95)) ([01150f7](https://github.com/jmsutorus/homepage/commit/01150f70afee508d069f17a60e05f15cf12187b5))
+* redesign ([#97](https://github.com/jmsutorus/homepage/issues/97)) ([45e0390](https://github.com/jmsutorus/homepage/commit/45e03901b9ae966e8400e4c68c7f5669f97ec16c))
 * workout rework ([beb50dc](https://github.com/jmsutorus/homepage/commit/beb50dc169597d796c77035a5e21feb79624576a))
 
 # [1.22.0](https://github.com/jmsutorus/homepage/compare/v1.21.3...v1.22.0) (2026-04-22)
