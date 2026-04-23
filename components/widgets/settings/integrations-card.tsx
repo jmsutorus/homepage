@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Github, RefreshCw } from "lucide-react";
+import { Github, RefreshCw, ChevronRight } from "lucide-react";
 import { signIn } from "next-auth/react";
 import type { ConnectedAccount } from "@/lib/actions/settings";
+import { cn } from "@/lib/utils";
 
 interface IntegrationsCardProps {
   connectedAccounts: ConnectedAccount[];
@@ -18,7 +16,6 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
     (account) => account.providerId === "github"
   );
 
-  // GitHub sync state
   const [isGithubSyncing, setIsGithubSyncing] = useState(false);
   const [githubSyncResult, setGithubSyncResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -26,7 +23,8 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
     signIn("github", { callbackUrl: "/settings" });
   };
 
-  const handleSyncGithub = async () => {
+  const handleSyncGithub = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsGithubSyncing(true);
     setGithubSyncResult(null);
     try {
@@ -59,58 +57,52 @@ export function IntegrationsCard({ connectedAccounts }: IntegrationsCardProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Integrations</CardTitle>
-        <CardDescription>
-          Manage your connected accounts and services.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* GitHub Integration */}
-        <div className="flex items-center justify-between p-4 border rounded-lg">
-          <div className="flex items-center gap-4">
-            <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-full">
-              <Github className="h-6 w-6" />
-            </div>
-            <div>
-              <h3 className="font-medium">GitHub</h3>
-              <p className="text-sm text-muted-foreground">
-                Connect to sync your coding activity.
-              </p>
-              {githubSyncResult && (
-                <p className={`text-xs mt-1 ${githubSyncResult.success ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-                  {githubSyncResult.message}
-                </p>
-              )}
-            </div>
+    <div className="space-y-3">
+      {/* GitHub Integration */}
+      <button
+        onClick={!isGithubConnected ? handleConnectGithub : undefined}
+        className={cn(
+          "w-full flex items-center justify-between p-4 rounded-lg bg-media-surface border border-media-outline-variant/20 hover:border-media-primary/40 transition-all group text-left",
+          !isGithubConnected && "cursor-pointer"
+        )}
+      >
+        <div className="flex items-center gap-4">
+          <div className="p-2 bg-media-surface-variant rounded-full">
+            <Github className="h-5 w-5 text-media-primary" />
           </div>
-          <div className="flex items-center gap-2">
-            {isGithubConnected ? (
-              <>
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
-                  Connected
-                </Badge>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleSyncGithub}
-                  disabled={isGithubSyncing}
-                  className="h-7 text-xs"
-                >
-                  <RefreshCw className={`h-3 w-3 mr-1 ${isGithubSyncing ? "animate-spin" : ""}`} />
-                  {isGithubSyncing ? "Syncing..." : "Sync"}
-                </Button>
-              </>
-            ) : (
-              <Button variant="outline" size="sm" onClick={handleConnectGithub}>
-                Connect
-              </Button>
+          <div className="flex flex-col items-start">
+            <span className="font-bold text-media-on-surface text-sm">GitHub Integration</span>
+            <span className="text-xs text-media-on-surface-variant">
+              {isGithubConnected ? "Connected • Sync activity" : "Not connected • Click to connect"}
+            </span>
+            {githubSyncResult && (
+              <span className={cn(
+                "text-[10px] mt-0.5",
+                githubSyncResult.success ? "text-green-600" : "text-media-error"
+              )}>
+                {githubSyncResult.message}
+              </span>
             )}
           </div>
         </div>
-
-      </CardContent>
-    </Card>
+        <div className="flex items-center gap-2">
+          {isGithubConnected ? (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleSyncGithub}
+              disabled={isGithubSyncing}
+              className="h-8 px-2 text-[10px] font-bold uppercase tracking-widest hover:bg-media-primary/10"
+            >
+              <RefreshCw className={cn("h-3 w-3 mr-1", isGithubSyncing && "animate-spin")} />
+              {isGithubSyncing ? "Syncing" : "Sync"}
+            </Button>
+          ) : (
+            <ChevronRight className="h-5 w-5 text-media-on-surface-variant group-hover:text-media-primary transition-colors" />
+          )}
+        </div>
+      </button>
+    </div>
   );
 }
+

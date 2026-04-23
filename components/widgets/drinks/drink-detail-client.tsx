@@ -111,7 +111,7 @@ export function DrinkDetailClient({ drink }: DrinkDetailClientProps) {
   const pairings = drink.pairings || defaults.pairings;
 
   return (
-    <main className="min-h-screen bg-media-background max-w-screen-2xl mx-auto px-6 pt-8 pb-12 font-lexend text-media-on-surface">
+    <main className="min-h-screen max-w-screen-2xl mx-auto px-6 pt-8 pb-12 font-lexend text-media-on-surface">
       {/* Back Button */}
       <Button
         variant="ghost"

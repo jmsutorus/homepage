@@ -117,7 +117,7 @@ export function MoodPageClient({ initialMoodData, userId }: MoodPageClientProps)
   };
 
   return (
-    <div className="min-h-screen bg-media-background text-media-on-surface font-body pb-24 md:pb-12">
+    <div className="min-h-screen text-media-on-surface font-body pb-24 md:pb-12">
       <main className="max-w-6xl mx-auto px-6 md:px-8 py-12">
         {/* Immersive Header */}
         <section className="mb-20">

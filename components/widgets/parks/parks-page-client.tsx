@@ -45,7 +45,7 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
   };
 
   return (
-    <div className="min-h-screen bg-media-background font-lexend -mt-8 -mx-4 md:-mx-8">
+    <div className="min-h-screen font-lexend -mt-8 -mx-4 md:-mx-8">
       {/* Floating Action Button */}
       <FloatingActionButton 
         onClick={() => isMobile ? setShowForm(true) : router.push('/parks/new')}
@@ -56,7 +56,7 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
         {/* Hero & Stats Header */}
         <header className="py-12 flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
           <div className="space-y-4">
-            <h1 className="text-6xl md:text-8xl font-black text-media-primary dark:text-media-surface tracking-tighter leading-[0.9] mb-4">
+            <h1 className="text-6xl md:text-8xl font-black text-media-primary tracking-tighter leading-[0.9] mb-4">
               The Earthbound<br/>Atlas
             </h1>
             <p className="text-media-on-surface-variant max-w-md text-lg font-light leading-relaxed">
@@ -69,11 +69,11 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
               <span className="text-[10px] uppercase tracking-[0.2em] font-black text-media-on-surface-variant mt-2 opacity-60">Total Visits</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-media-primary dark:text-media-surface font-black text-5xl leading-none tracking-tighter">{nationalParksCount}</span>
+              <span className="text-media-primary font-black text-5xl leading-none tracking-tighter">{nationalParksCount}</span>
               <span className="text-[10px] uppercase tracking-[0.2em] font-black text-media-on-surface-variant mt-2 opacity-60">National Parks</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-media-primary dark:text-media-surface font-black text-5xl leading-none tracking-tighter">{stateParksCount}</span>
+              <span className="text-media-primary font-black text-5xl leading-none tracking-tighter">{stateParksCount}</span>
               <span className="text-[10px] uppercase tracking-[0.2em] font-black text-media-on-surface-variant mt-2 opacity-60">State Parks</span>
             </div>
           </div>
@@ -91,7 +91,7 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
                 </div>
                 
                 <div className="md:w-80 space-y-8">
-                  <div className="bg-white/50 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-xl">
+                  <div className="bg-white/50 dark:bg-media-surface-container/50 backdrop-blur-xl p-8 rounded-3xl border border-white/20 dark:border-media-outline-variant/20 shadow-xl">
                     <div className="flex items-center gap-3 mb-6">
                       <span className="material-symbols-outlined text-media-secondary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
                       <h4 className="font-black text-xl tracking-tight text-media-primary">Current Atlas</h4>
@@ -109,8 +109,11 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
                         <span className="text-[10px] font-black text-media-on-primary-fixed">+{Math.max(0, totalVisits - 3)}</span>
                       </div>
                     </div>
-                    <Button asChild className="w-full bg-media-primary text-media-on-primary rounded-xl font-black py-6 hover:scale-[1.02] transition-transform">
-                       <Link href="/parks/new">Plan New Expedition</Link>
+                    <Button asChild className="w-full bg-media-secondary text-media-on-secondary rounded-2xl font-black py-7 hover:scale-[1.02] transition-all shadow-xl shadow-media-secondary/20 uppercase tracking-widest text-xs">
+                       <Link href="/parks/new" className="flex items-center justify-center gap-2">
+                         <span className="material-symbols-outlined text-xl">explore</span>
+                         Plan New Expedition
+                       </Link>
                     </Button>
                   </div>
                 </div>
@@ -121,7 +124,7 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
         {/* Recent Explorations Section */}
         <section className="mb-12">
           <div className="flex items-baseline justify-between mb-16">
-            <h2 className="text-4xl md:text-5xl font-black text-media-primary dark:text-media-surface tracking-tighter">Recent Explorations</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-media-primary tracking-tighter">Recent Explorations</h2>
             <Link 
               href="/parks/list"
               className="text-xs font-black uppercase tracking-[0.3em] text-media-secondary hover:text-media-primary transition-colors flex items-center gap-2 group"

@@ -34,6 +34,7 @@ import { TagInput } from '@/components/search/tag-input';
 import { GenreInput } from '@/components/search/genre-input';
 import { CreatorInput } from '@/components/search/creator-input';
 import { cn } from '@/lib/utils';
+import { SuccessOverlay } from '@/components/ui/animations/success-overlay';
 
 interface MediaFrontmatter {
   title: string;
@@ -90,6 +91,8 @@ export function MediaEditorialEditor({
   const [content, setContent] = useState(initialContent);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [savedPath, setSavedPath] = useState<string | null>(null);
   const [isIMDBModalOpen, setIsIMDBModalOpen] = useState(false);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -168,11 +171,13 @@ export function MediaEditorialEditor({
 
       if (mode === 'create') {
         showCreationSuccess('media', { persistent: true });
+        setSavedPath(data.path);
+        setShowSuccess(true);
+      } else {
+        router.push(data.path);
+        router.refresh();
       }
-
       setLastSaved(new Date());
-      router.push(data.path);
-      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       showCreationError('media', err);
@@ -648,6 +653,15 @@ export function MediaEditorialEditor({
           </div>
         </section>
       </div>
+      <SuccessOverlay 
+        show={showSuccess} 
+        onComplete={() => {
+          if (savedPath) {
+            router.push(savedPath);
+            router.refresh();
+          }
+        }} 
+      />
     </main>
   );
 }

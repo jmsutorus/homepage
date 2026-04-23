@@ -136,7 +136,7 @@ export function SavingsTab({ accounts }: SavingsTabProps) {
           
           {growthData > 0 && (
             <div className="mt-6 flex items-center justify-center gap-2 text-media-on-surface-variant">
-              <span className="material-symbols-outlined text-green-700" style={{ fontVariationSettings: "'FILL' 1" }}>
+              <span className="material-symbols-outlined text-media-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
                 trending_up
               </span>
               <span className="text-sm font-medium">
@@ -211,13 +211,14 @@ export function SavingsTab({ accounts }: SavingsTabProps) {
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#ffffff',
-                      border: 'none',
+                      backgroundColor: 'var(--media-surface-container-lowest)',
+                      border: '1px solid var(--media-outline-variant)',
                       borderRadius: '16px',
                       boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
                       padding: '16px',
                     }}
-                    itemStyle={{ fontWeight: 'bold', fontSize: '12px' }}
+                    itemStyle={{ fontWeight: 'bold', fontSize: '12px', color: 'var(--media-on-surface)' }}
+                    labelStyle={{ fontWeight: 'bold', fontSize: '10px', color: 'var(--media-on-surface-variant)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}
                     formatter={(value: unknown) => [`$${Number(value).toLocaleString()}`, undefined]}
                   />
                   {accounts.map((acc, i) => (

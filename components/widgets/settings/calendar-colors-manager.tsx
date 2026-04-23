@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,7 +14,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Palette, RefreshCcw } from "lucide-react";
+import { toast } from "sonner";
 
 interface CalendarColor {
   id: number;
@@ -23,15 +23,13 @@ interface CalendarColor {
   category: string;
   bg_color: string;
   text_color: string;
-  created_at: string;
-  updated_at: string;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
   "activity": "Strava Activities",
   "workout.upcoming": "Workout - Upcoming",
   "workout.completed": "Workout - Completed",
-  "media": "Media (Movies/TV/Books/Games)",
+  "media": "Media Items",
   "park": "Parks",
   "journal": "Journals",
   "event": "Events",
@@ -51,13 +49,11 @@ export function CalendarColorsManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [editedColors, setEditedColors] = useState<Record<string, { bg_color: string; text_color: string }>>({});
   const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     fetchColors();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchColors = async () => {
@@ -69,15 +65,10 @@ export function CalendarColorsManager() {
       setEditedColors({});
     } catch (error) {
       console.error("Error fetching colors:", error);
-      showMessage("error", "Failed to load calendar colors");
+      toast.error("Failed to load calendar colors");
     } finally {
       setLoading(false);
     }
-  };
-
-  const showMessage = (type: "success" | "error", text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
   };
 
   const handleColorChange = (category: string, field: "bg_color" | "text_color", value: string) => {
@@ -93,7 +84,8 @@ export function CalendarColorsManager() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     setSaving(true);
     try {
       const colorsToUpdate = Object.entries(editedColors).map(([category, { bg_color, text_color }]) => ({
@@ -108,17 +100,15 @@ export function CalendarColorsManager() {
         body: JSON.stringify({ colors: colorsToUpdate }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        showMessage("success", data.message);
+        toast.success("Calendar colors updated successfully");
         await fetchColors();
       } else {
-        showMessage("error", data.error || "Failed to save colors");
+        toast.error("Failed to save colors");
       }
     } catch (error) {
       console.error("Error saving colors:", error);
-      showMessage("error", "Failed to save colors");
+      toast.error("Failed to save colors");
     } finally {
       setSaving(false);
     }
@@ -130,17 +120,15 @@ export function CalendarColorsManager() {
         method: "DELETE",
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        showMessage("success", data.message);
+        toast.success("Calendar colors reset to defaults");
         await fetchColors();
       } else {
-        showMessage("error", data.error || "Failed to reset colors");
+        toast.error("Failed to reset colors");
       }
     } catch (error) {
       console.error("Error resetting colors:", error);
-      showMessage("error", "Failed to reset colors");
+      toast.error("Failed to reset colors");
     } finally {
       setResetDialogOpen(false);
     }
@@ -157,128 +145,110 @@ export function CalendarColorsManager() {
   const hasChanges = Object.keys(editedColors).length > 0;
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Calendar Colors</CardTitle>
-              <CardDescription>
-                Customize the colors for different calendar item types. Changes will be reflected across all calendar views.
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              {isExpanded && (
-                <Button
-                  variant="outline"
-                  onClick={() => setResetDialogOpen(true)}
-                  disabled={saving || loading}
-                >
-                  Reset to Defaults
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
-                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </Button>
-            </div>
+    <div className="space-y-3">
+      <div 
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-4 rounded-lg bg-media-surface border border-media-outline-variant/20 hover:border-media-primary/40 transition-all group cursor-pointer"
+      >
+        <div className="flex items-center gap-4">
+          <div className="p-2 bg-media-surface-variant rounded-full">
+            <Palette className="h-5 w-5 text-media-primary" />
           </div>
-        </CardHeader>
-        {isExpanded && (
-          <CardContent className="space-y-4">
+          <div className="flex flex-col items-start">
+            <span className="font-bold text-media-on-surface text-sm">Calendar Theme</span>
+            <span className="text-xs text-media-on-surface-variant">Customize item categorization colors</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {hasChanges && (
+            <Button 
+              size="sm" 
+              onClick={handleSave}
+              disabled={saving}
+              className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest bg-media-primary text-media-on-primary"
+            >
+              Save
+            </Button>
+          )}
+          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="p-6 rounded-lg bg-media-surface-variant/30 border border-media-outline-variant/10 space-y-6">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-media-on-surface-variant italic">
+              Use Tailwind classes (e.g. bg-blue-500, text-white) to style calendar categories.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setResetDialogOpen(true)}
+              className="h-8 text-[10px] font-bold uppercase tracking-widest border-media-outline-variant/40"
+            >
+              <RefreshCcw className="h-3 w-3 mr-1" />
+              Reset
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
             {loading ? (
-              <div className="text-center py-4 text-muted-foreground">Loading colors...</div>
+              <div className="h-40 flex items-center justify-center text-media-on-surface-variant text-sm">Loading...</div>
             ) : (
-              <>
-                {/* Success/Error Message */}
-                {message && (
-                  <div className={`p-3 rounded-lg ${message.type === "success" ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}>
-                    {message.text}
-                  </div>
-                )}
+              colors.map((color) => {
+                const bgValue = getCurrentValue(color.category, "bg_color");
+                const textValue = getCurrentValue(color.category, "text_color");
 
-                <div className="space-y-4">
-                  {/* Header */}
-                  <div className="grid grid-cols-4 gap-4 pb-2 border-b font-medium text-sm">
-                    <div>Category</div>
-                    <div>Preview</div>
-                    <div>Background Color</div>
-                    <div>Text Color</div>
-                  </div>
-
-                  {/* Color rows */}
-                  {colors.map((color) => {
-                    const bgValue = getCurrentValue(color.category, "bg_color");
-                    const textValue = getCurrentValue(color.category, "text_color");
-
-                    return (
-                      <div key={color.category} className="grid grid-cols-4 gap-4 items-center py-2 border-b last:border-b-0">
-                        <div className="font-medium text-sm">
-                          {CATEGORY_LABELS[color.category] || color.category}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className={cn("w-6 h-6 rounded", bgValue)} />
-                          <span className={cn("text-sm font-medium", textValue)}>
-                            Text
-                          </span>
-                        </div>
-                        <Input
-                          value={bgValue}
-                          onChange={(e) => handleColorChange(color.category, "bg_color", e.target.value)}
-                          placeholder="e.g., bg-orange-500"
-                          className="font-mono text-sm"
-                        />
-                        <Input
-                          value={textValue}
-                          onChange={(e) => handleColorChange(color.category, "text_color", e.target.value)}
-                          placeholder="e.g., text-orange-500"
-                          className="font-mono text-sm"
-                        />
+                return (
+                  <div key={color.category} className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-center p-3 rounded-lg bg-media-surface/50 border border-media-outline-variant/10">
+                    <div className="text-xs font-bold text-media-on-surface">
+                      {CATEGORY_LABELS[color.category] || color.category}
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <div className={cn("px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tighter", bgValue, textValue)}>
+                        Preview
                       </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    Use Tailwind color classes. Examples: bg-blue-500, text-red-600, bg-emerald-400
-                  </p>
-                  <Button
-                    onClick={handleSave}
-                    disabled={!hasChanges || saving}
-                  >
-                    {saving ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </>
+                    </div>
+                    <Input
+                      value={bgValue}
+                      onChange={(e) => handleColorChange(color.category, "bg_color", e.target.value)}
+                      placeholder="Background class"
+                      className="h-8 text-[10px] bg-media-surface border-media-outline-variant/30"
+                    />
+                    <Input
+                      value={textValue}
+                      onChange={(e) => handleColorChange(color.category, "text_color", e.target.value)}
+                      placeholder="Text class"
+                      className="h-8 text-[10px] bg-media-surface border-media-outline-variant/30"
+                    />
+                  </div>
+                );
+              })
             )}
-          </CardContent>
-        )}
-      </Card>
+          </div>
+        </div>
+      )}
 
-      {/* Reset Confirmation Dialog */}
       <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-media-surface border-media-outline-variant/20">
           <AlertDialogHeader>
-            <AlertDialogTitle>Reset to Default Colors</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to reset all calendar colors to their default values? This action cannot be undone.
+            <AlertDialogTitle className="text-media-on-surface">Reset Calendar Colors</AlertDialogTitle>
+            <AlertDialogDescription className="text-media-on-surface-variant">
+              This will restore all calendar item categories to their default thematic colors.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="bg-transparent border-media-outline-variant/40 text-media-on-surface hover:bg-media-surface-variant">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleReset}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-media-error text-white"
             >
               Reset
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
+

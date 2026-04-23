@@ -383,8 +383,8 @@ export default async function DashboardPage({
       </section>
 
       {/* Contextual FAB for New Entry */}
-      <Link href="/journals" className="fixed bottom-8 right-8 bg-media-secondary text-media-on-secondary w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 group z-40 md:hidden">
-        <span className="material-symbols-outlined">add</span>
+      <Link href="/journals" className="fixed bottom-8 right-8 bg-media-secondary text-media-on-secondary w-16 h-16 rounded-2xl shadow-2xl shadow-media-secondary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 group z-40 md:hidden hover:bg-media-secondary/90">
+        <span className="material-symbols-outlined text-3xl font-bold">edit_note</span>
       </Link>
 
     </div>

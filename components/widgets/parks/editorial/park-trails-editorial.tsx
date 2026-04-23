@@ -51,7 +51,7 @@ export function ParkTrailsEditorial({ parkSlug }: ParkTrailsEditorialProps) {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex items-baseline gap-4">
           <span className="text-media-secondary font-black text-5xl md:text-7xl opacity-20 leading-none">04</span>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-media-primary dark:text-media-surface">The Trails</h2>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-media-primary">The Trails</h2>
         </div>
         <Button 
           onClick={handleAddTrail}
@@ -89,7 +89,7 @@ export function ParkTrailsEditorial({ parkSlug }: ParkTrailsEditorialProps) {
                       <span className="bg-media-primary text-media-surface px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg">
                         {trail.difficulty || "Moderate"}
                       </span>
-                      <h3 className="text-3xl md:text-4xl font-black text-media-primary dark:text-media-surface tracking-tighter group-hover:text-media-secondary transition-colors duration-300">
+                      <h3 className="text-3xl md:text-4xl font-black text-media-primary tracking-tighter group-hover:text-media-secondary transition-colors duration-300">
                         {trail.name}
                       </h3>
                       {trail.alltrails_url && (
@@ -113,19 +113,19 @@ export function ParkTrailsEditorial({ parkSlug }: ParkTrailsEditorialProps) {
                   <div className="grid grid-cols-3 gap-8 pt-8 border-t border-media-outline-variant/10">
                     <div>
                       <span className="block text-[10px] uppercase text-media-secondary font-black tracking-[0.2em] mb-2">Distance</span>
-                      <span className="text-2xl md:text-3xl font-black text-media-primary dark:text-media-surface tracking-tighter">
+                      <span className="text-2xl md:text-3xl font-black text-media-primary tracking-tighter">
                         {trail.distance || "0.0"} <span className="text-sm opacity-50 font-medium">mi</span>
                       </span>
                     </div>
                     <div>
                       <span className="block text-[10px] uppercase text-media-secondary font-black tracking-[0.2em] mb-2">Elevation</span>
-                      <span className="text-2xl md:text-3xl font-black text-media-primary dark:text-media-surface tracking-tighter">
+                      <span className="text-2xl md:text-3xl font-black text-media-primary tracking-tighter">
                         +{trail.elevation_gain || "0"} <span className="text-sm opacity-50 font-medium">ft</span>
                       </span>
                     </div>
                     <div>
                       <span className="block text-[10px] uppercase text-media-secondary font-black tracking-[0.2em] mb-2">Rating</span>
-                      <span className="text-2xl md:text-3xl font-black text-media-primary dark:text-media-surface tracking-tighter">
+                      <span className="text-2xl md:text-3xl font-black text-media-primary tracking-tighter">
                         {trail.rating || "5.0"}/10
                       </span>
                     </div>

@@ -239,7 +239,7 @@ export function EditorialBudget({
                 onClick={() => { setEditIncome(inc); setShowIncomeForm(true); }}
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-media-primary-fixed flex items-center justify-center group-hover:bg-media-primary group-hover:text-media-on-primary transition-colors">
+                  <div className="w-12 h-12 rounded-full bg-media-primary-fixed text-media-on-primary-fixed flex items-center justify-center group-hover:bg-media-primary group-hover:text-media-on-primary transition-colors">
                     <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
                       account_balance_wallet
                     </span>

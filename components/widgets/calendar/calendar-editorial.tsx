@@ -91,7 +91,7 @@ export function CalendarEditorial({
   ];
 
   return (
-    <div className="flex min-h-screen bg-media-background text-media-on-background font-lexend">
+    <div className="flex min-h-screen text-media-on-background font-lexend">
       <main className="p-8 md:p-12 max-w-[1600px] mx-auto w-full pb-32">
         {/* Editorial Header */}
         <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">

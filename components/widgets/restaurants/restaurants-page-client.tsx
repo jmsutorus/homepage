@@ -87,7 +87,13 @@ export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProp
   const archiveItems = showAllArchive ? filteredRestaurants : filteredRestaurants.slice(0, 5);
 
   return (
-    <main className="min-h-screen bg-media-background font-lexend selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed">
+    <div className="min-h-screen font-lexend selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed -mx-4 md:-mx-8 -mt-8">
+      {/* Floating Action Button */}
+      <FloatingActionButton 
+        onClick={() => setShowForm(true)}
+        tooltipText="New Restaurant"
+      />
+
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 pt-24">
         
         {/* Spotlight Hero Section */}
@@ -292,18 +298,11 @@ export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProp
         </div>
       </footer>
 
-      {/* Floating Action Button */}
-      <FloatingActionButton 
-        onClick={() => setShowForm(true)}
-        tooltipText="New Restaurant"
-      />
-
-      {/* Add Restaurant Dialog */}
       <RestaurantFormDialog
         open={showForm}
         onOpenChange={setShowForm}
         onSuccess={handleCreated}
       />
-    </main>
+    </div>
   );
 }

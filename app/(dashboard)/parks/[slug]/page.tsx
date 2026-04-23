@@ -44,7 +44,7 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
   );
 
   return (
-    <div className="min-h-screen bg-media-background font-lexend -mt-8 -mx-4 md:-mx-8">
+    <div className="min-h-screen font-lexend -mt-8 -mx-4 md:-mx-8">
       {/* Floating Action Menu for Admin */}
       <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-4">
         {park.content && (
@@ -94,7 +94,7 @@ export default async function ParkDetailPage({ params }: ParkDetailPageProps) {
           <section className="relative">
             <div className="flex items-baseline gap-4 mb-12">
               <span className="text-media-secondary font-black text-5xl md:text-7xl opacity-20 leading-none">05</span>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-media-primary dark:text-media-surface">The Narrative</h2>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-media-primary">The Narrative</h2>
             </div>
             <div className="bg-media-surface-container/30 rounded-[2.5rem] p-8 md:p-16 border border-media-outline-variant/5 shadow-inner">
               <article className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-black prose-headings:tracking-tighter prose-p:text-lg prose-p:font-light prose-p:leading-relaxed prose-a:text-media-secondary hover:prose-a:text-media-primary transition-colors">

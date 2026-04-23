@@ -55,7 +55,7 @@ export function RelatedMedia({ items, title = "Related Media" }: RelatedMediaPro
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">{title}</h2>
+      <h2 className="text-2xl font-black tracking-tighter text-media-primary">{title}</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {items.map((item) => (
           <Link key={item.id} href={`/media/${item.type}/${item.slug}`}>
@@ -109,7 +109,7 @@ export function RelatedJournals({ items, title = "Related Journal Entries" }: Re
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">{title}</h2>
+      <h2 className="text-2xl font-black tracking-tighter text-media-primary">{title}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((item) => (
           <Link key={item.id} href={`/journals/${item.slug}`}>
@@ -146,7 +146,7 @@ export function RelatedParks({ items, title = "Related Parks" }: RelatedParksPro
   return (
     <div className="space-y-8 font-lexend mt-24">
       <div className="flex items-center gap-6">
-        <h2 className="text-3xl font-black tracking-tighter text-media-primary dark:text-media-surface whitespace-nowrap">{title}</h2>
+        <h2 className="text-3xl font-black tracking-tighter text-media-primary whitespace-nowrap">{title}</h2>
         <div className="h-[1px] w-full bg-media-outline-variant/10"></div>
       </div>
       
@@ -172,7 +172,7 @@ export function RelatedParks({ items, title = "Related Parks" }: RelatedParksPro
                 </div>
               </div>
               <div className="p-5 flex flex-col flex-1">
-                <h3 className="font-black text-sm tracking-tight text-media-primary dark:text-media-surface group-hover:text-media-secondary transition-colors line-clamp-2 leading-tight mb-4">
+                <h3 className="font-black text-sm tracking-tight text-media-primary group-hover:text-media-secondary transition-colors line-clamp-2 leading-tight mb-4">
                   {item.title}
                 </h3>
                 <div className="mt-auto flex items-center justify-between">

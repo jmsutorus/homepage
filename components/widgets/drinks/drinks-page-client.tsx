@@ -65,7 +65,7 @@ export function DrinksPageClient({ drinks }: DrinksPageClientProps) {
 
 
   return (
-    <div className="min-h-screen bg-[var(--color-media-surface)] text-[var(--color-media-on-surface)] font-lexend selection:bg-[var(--color-media-secondary)]/30">
+    <div className="min-h-screen  text-[var(--color-media-on-surface)] font-lexend selection:bg-[var(--color-media-secondary)]/30">
       <main className="pt-28 px-8 pb-20 max-w-7xl mx-auto space-y-24">
         
         {/* Hero Section: Featured Pour */}

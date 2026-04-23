@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { SuccessOverlay } from '@/components/ui/animations/success-overlay';
 
 interface VacationFrontmatter {
   title: string;
@@ -70,6 +71,8 @@ export function EditorialVacationEditor({
   const [content, setContent] = useState(initialContent);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [savedPath, setSavedPath] = useState<string | null>(null);
 
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
@@ -113,10 +116,12 @@ export function EditorialVacationEditor({
 
       if (mode === 'create') {
         showCreationSuccess('vacation', { persistent: true });
+        setSavedPath(data.path || `/vacations/${slug}`);
+        setShowSuccess(true);
+      } else {
+        router.push(data.path || `/vacations/${slug}`);
+        router.refresh();
       }
-
-      router.push(data.path || `/vacations/${slug}`);
-      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       showCreationError('vacation', err);
@@ -494,6 +499,15 @@ export function EditorialVacationEditor({
           </div>
         </form>
       </main>
+      <SuccessOverlay 
+        show={showSuccess} 
+        onComplete={() => {
+          if (savedPath) {
+            router.push(savedPath);
+            router.refresh();
+          }
+        }} 
+      />
     </div>
   );
 }

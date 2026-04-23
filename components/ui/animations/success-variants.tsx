@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { CircleSuccess } from "./circle-success";
+import { TreeSuccess } from "./tree-success";
 
-type SuccessVariant = "check" | "star" | "confetti" | "ripple";
+type SuccessVariant = "check" | "star" | "confetti" | "ripple" | "circle" | "tree";
 
 interface SuccessAnimationProps {
   variant?: SuccessVariant;
@@ -20,6 +22,8 @@ export function SuccessAnimation({
     star: <SuccessStar size={size} />,
     confetti: <SuccessConfetti size={size} />,
     ripple: <SuccessRipple size={size} />,
+    circle: <CircleSuccess size={size} />,
+    tree: <TreeSuccess size={size} />,
   };
 
   return <div className={className}>{variants[variant]}</div>;

@@ -331,7 +331,7 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
   }, [goal]);
 
   return (
-    <main className="pt-12 pb-32 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto bg-media-surface min-h-screen font-lexend">
+    <main className="pt-12 pb-32 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto min-h-screen font-lexend">
       {/* Editorial Hero Section */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-end mb-20 pt-12">
         <div className="lg:col-span-8 space-y-6">
@@ -345,19 +345,19 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
                   {getStatusLabel(goal.status)}
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
+              <DropdownMenuContent align="start" className="bg-media-surface-container/95 backdrop-blur-xl border-media-outline-variant/10 rounded-2xl shadow-2xl p-2 min-w-[180px]">
                 {allStatuses.map((status) => (
                   <DropdownMenuItem
                     key={status}
                     onClick={() => handleStatusChange(status)}
                     className={cn(
-                      "cursor-pointer",
-                      status === goal.status && "bg-muted"
+                      "cursor-pointer rounded-xl py-3 px-4 focus:bg-media-primary/10 focus:text-media-primary transition-colors mb-1 last:mb-0",
+                      status === goal.status && "bg-media-primary/5 text-media-primary font-bold"
                     )}
                   >
                     <GoalStatusBadge status={status} className="mr-2" />
                     {status === goal.status && (
-                      <span className="ml-auto text-xs text-muted-foreground">(current)</span>
+                      <span className="ml-auto text-[9px] uppercase tracking-widest opacity-50">Current</span>
                     )}
                   </DropdownMenuItem>
                 ))}

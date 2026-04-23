@@ -25,14 +25,14 @@ interface NavSection {
 }
 
 export function MobileNav() {
-  const [mounted, setMounted] = React.useState(false);
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
   const [currentYear] = React.useState(new Date().getFullYear());
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted) {
     return (

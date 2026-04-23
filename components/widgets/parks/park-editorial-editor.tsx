@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { SuccessOverlay } from '@/components/ui/animations/success-overlay';
 
 interface ParkFrontmatter {
   title: string;
@@ -79,6 +80,8 @@ export function ParkEditorialEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [savedPath, setSavedPath] = useState<string | null>(null);
 
 
   // Helper function to convert ISO date to YYYY-MM-DD format
@@ -274,9 +277,14 @@ export function ParkEditorialEditor({
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to save park');
 
-      if (mode === 'create') showCreationSuccess('park', { persistent: true });
-      router.push(data.path);
-      router.refresh();
+      if (mode === 'create') {
+        showCreationSuccess('park', { persistent: true });
+        setSavedPath(data.path);
+        setShowSuccess(true);
+      } else {
+        router.push(data.path);
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       showCreationError('park', err);
@@ -348,7 +356,7 @@ export function ParkEditorialEditor({
   };
 
   return (
-    <main className="min-h-screen bg-media-surface text-media-primary selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed font-lexend pb-32">
+    <main className="min-h-screen text-media-primary selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed font-lexend pb-32">
       {/* Hidden File Input */}
       <input
         type="file"
@@ -712,6 +720,15 @@ export function ParkEditorialEditor({
           <span className="text-[10px] uppercase font-bold tracking-[0.1em]">Kitchen</span>
         </button>
       </footer>
+      <SuccessOverlay 
+        show={showSuccess} 
+        onComplete={() => {
+          if (savedPath) {
+            router.push(savedPath);
+            router.refresh();
+          }
+        }} 
+      />
     </main>
   );
 }

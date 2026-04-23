@@ -75,7 +75,7 @@ export function JournalsPageClient({ journals }: JournalsPageClientProps) {
   }
 
   return (
-    <div className="font-lexend text-media-on-background bg-media-background antialiased selection:bg-media-secondary-fixed">
+    <div className="font-lexend text-media-on-background antialiased selection:bg-media-secondary-fixed">
       {/* Welcome Section */}
       <section className="mb-16 max-w-5xl">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">

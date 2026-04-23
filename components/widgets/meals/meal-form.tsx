@@ -491,15 +491,18 @@ export function MealForm({
             <button 
               type="submit"
               disabled={loading || !name.trim()}
-              className="cursor-pointer px-10 py-5 bg-media-secondary text-media-on-secondary rounded-2xl font-bold tracking-tight shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-3 font-lexend uppercase"
+              className="cursor-pointer w-full md:w-auto px-10 h-16 bg-media-secondary text-media-on-secondary rounded-2xl font-black text-lg tracking-widest uppercase shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-3 font-lexend"
             >
               {loading ? (
                 <>
-                  <span className="w-4 h-4 rounded-full border-2 border-media-on-secondary/30 border-t-media-on-secondary animate-spin" />
+                  <span className="w-5 h-5 rounded-full border-2 border-media-on-secondary/30 border-t-media-on-secondary animate-spin" />
                   Processing...
                 </>
               ) : (
-                initialData ? 'Update Blueprint' : 'Establish Protocol'
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined">{initialData ? 'save' : 'auto_awesome'}</span>
+                  {initialData ? 'Refine Protocol' : 'Establish Protocol'}
+                </div>
               )}
             </button>
           </div>

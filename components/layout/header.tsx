@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
 import { Settings, Search, ChevronDown, User, Shield } from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,8 +22,11 @@ export function Header() {
 
   // Detect OS on mount
   React.useEffect(() => {
-    setMounted(true);
-    setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0);
+    const timer = setTimeout(() => {
+      setMounted(true);
+      setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -82,43 +86,46 @@ export function Header() {
             <Link className="text-[#434843] dark:text-[#e3e2e0] font-medium text-sm tracking-tight hover:text-[#9f402d] transition-colors" href="/settings">Settings</Link>
           </nav>
 
-          {isAuthenticated && user && (
-            <div className="flex items-center gap-3 bg-[#f4f3f1] dark:bg-[#1b3022]/40 px-3 py-1 rounded-full border border-outline-variant/30">
-               <div className="w-6 h-6 rounded-full border border-[#b4cdb8] bg-[#061b0e] flex items-center justify-center text-[#ffffff] overflow-hidden">
-                  {user.image ? (
-                    <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="material-symbols-outlined text-xs">person</span>
-                  )}
-               </div>
-               <span className="text-[11px] font-bold text-[#1a1c1a] dark:text-[#faf9f6] truncate hidden md:block max-w-[100px]">
-                 {user.name || user.email}
-               </span>
-               <DropdownMenu>
-                 <DropdownMenuTrigger asChild>
-                   <button className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors">
-                     <span className="material-symbols-outlined text-sm block">settings</span>
-                   </button>
-                 </DropdownMenuTrigger>
-                 <DropdownMenuContent align="end">
-                    {(user as any).role === 'admin' && (
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            {isAuthenticated && user && (
+              <div className="flex items-center gap-3 bg-[#f4f3f1] dark:bg-[#1b3022]/40 px-3 py-1 rounded-full border border-outline-variant/30">
+                 <div className="w-6 h-6 rounded-full border border-[#b4cdb8] bg-[#061b0e] flex items-center justify-center text-[#ffffff] overflow-hidden">
+                    {user.image ? (
+                      <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="material-symbols-outlined text-xs">person</span>
+                    )}
+                 </div>
+                 <span className="text-[11px] font-bold text-[#1a1c1a] dark:text-[#faf9f6] truncate hidden md:block max-w-[100px]">
+                   {user.name || user.email}
+                 </span>
+                 <DropdownMenu>
+                   <DropdownMenuTrigger asChild>
+                     <button className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors">
+                       <span className="material-symbols-outlined text-sm block">settings</span>
+                     </button>
+                   </DropdownMenuTrigger>
+                   <DropdownMenuContent align="end">
+                      {(user as any).role === 'admin' && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin" className="w-full cursor-pointer">
+                            <Shield className="mr-2 h-4 w-4" />
+                            Admin
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem asChild>
-                        <Link href="/admin" className="w-full cursor-pointer">
-                          <Shield className="mr-2 h-4 w-4" />
-                          Admin
+                        <Link href="/settings" className="w-full cursor-pointer">
+                          <Settings className="mr-2 h-4 w-4" />
+                          Settings
                         </Link>
                       </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem asChild>
-                      <Link href="/settings" className="w-full cursor-pointer">
-                        <Settings className="mr-2 h-4 w-4" />
-                        Settings
-                      </Link>
-                    </DropdownMenuItem>
-                 </DropdownMenuContent>
-               </DropdownMenu>
-            </div>
-          )}
+                   </DropdownMenuContent>
+                 </DropdownMenu>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

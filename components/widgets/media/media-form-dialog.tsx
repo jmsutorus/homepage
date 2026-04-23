@@ -350,9 +350,14 @@ export function MediaFormDialog({
               disabled={loading}
               className="w-full h-16 text-lg font-black uppercase tracking-widest bg-media-secondary hover:brightness-110 text-media-on-secondary rounded-2xl shadow-xl shadow-media-secondary/20 transition-all active:scale-95"
             >
-              {loading ? 'Adding to Library...' : (
+              {loading ? (
                 <div className="flex items-center gap-2">
-                  <Send className="h-5 w-5" />
+                  <span className="w-5 h-5 rounded-full border-2 border-media-on-secondary/30 border-t-media-on-secondary animate-spin" />
+                  Processing...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined">auto_awesome</span>
                   Finalize Entry
                 </div>
               )}

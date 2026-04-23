@@ -74,7 +74,7 @@ export function ParksListClient({ initialParks }: ParksListClientProps) {
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Back to Atlas
           </Link>
-          <h1 className="text-6xl md:text-8xl font-black text-media-primary dark:text-media-surface tracking-tighter leading-[0.9] mb-8">
+          <h1 className="text-6xl md:text-8xl font-black text-media-primary tracking-tighter leading-[0.9] mb-8">
             The Great <br/> <span className="text-media-secondary">Expedition</span>
           </h1>
           <p className="text-media-on-surface-variant text-lg max-w-xl leading-relaxed font-light italic opacity-80">
@@ -142,7 +142,7 @@ export function ParksListClient({ initialParks }: ParksListClientProps) {
                 <ChevronDown className="w-3 h-3 opacity-40" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48 bg-white/95 backdrop-blur-xl border-media-outline-variant/10 rounded-2xl shadow-2xl p-2 font-lexend">
+            <DropdownMenuContent align="start" className="w-48 bg-white/95 dark:bg-media-surface-container-high/95 backdrop-blur-xl border-media-outline-variant/10 rounded-2xl shadow-2xl p-2 font-lexend">
                <DropdownMenuItem onClick={() => setMinRating(null)} className="rounded-xl text-xs font-bold uppercase tracking-widest py-3">All Ratings</DropdownMenuItem>
                <DropdownMenuItem onClick={() => setMinRating(10)} className="rounded-xl text-xs font-bold uppercase tracking-widest py-3">5.0 Only</DropdownMenuItem>
                <DropdownMenuItem onClick={() => setMinRating(9)} className="rounded-xl text-xs font-bold uppercase tracking-widest py-3">4.5+ Stars</DropdownMenuItem>
@@ -166,7 +166,7 @@ export function ParksListClient({ initialParks }: ParksListClientProps) {
                 <ChevronDown className="w-3 h-3 opacity-40" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48 bg-white/95 backdrop-blur-xl border-media-outline-variant/10 rounded-2xl shadow-2xl p-2 font-lexend max-h-64 overflow-y-auto">
+            <DropdownMenuContent align="start" className="w-48 bg-white/95 dark:bg-media-surface-container-high/95 backdrop-blur-xl border-media-outline-variant/10 rounded-2xl shadow-2xl p-2 font-lexend max-h-64 overflow-y-auto">
                <DropdownMenuItem onClick={() => setActiveYear(null)} className="rounded-xl text-xs font-bold uppercase tracking-widest py-3">All Years</DropdownMenuItem>
                {years.map(year => (
                  <DropdownMenuItem key={year} onClick={() => setActiveYear(year)} className="rounded-xl text-xs font-bold uppercase tracking-widest py-3">{year}</DropdownMenuItem>
@@ -201,7 +201,7 @@ export function ParksListClient({ initialParks }: ParksListClientProps) {
       <footer className="mt-32 pt-24 border-t border-media-outline-variant/10 text-center">
         <div className="inline-block p-12 md:p-16 rounded-[3rem] bg-media-surface-container/20 max-w-xl shadow-inner border border-media-outline-variant/5">
           <BookOpen className="w-12 h-12 mx-auto mb-6 text-media-secondary opacity-40" />
-          <h4 className="text-3xl font-black text-media-primary dark:text-media-surface tracking-tighter mb-4 leading-none">Continue the Journal</h4>
+          <h4 className="text-3xl font-black text-media-primary tracking-tighter mb-4 leading-none">Continue the Journal</h4>
           <p className="text-media-on-surface-variant text-lg leading-relaxed mb-10 font-light italic opacity-70">
             You&quot;ve recorded {initialParks.length} adventures so far. The horizon is calling for more. Ready to log your next discovery?
           </p>

@@ -48,7 +48,7 @@ export function HabitsPageClient({ habits }: HabitsPageClientProps) {
   const activeHabits = habits.filter(h => h.active);
 
   return (
-    <main className="pt-24 pb-32 px-6 max-w-4xl mx-auto min-h-screen bg-media-background">
+    <main className="pt-24 pb-32 px-6 max-w-4xl mx-auto min-h-screen">
       {/* Hero Section */}
       <section className="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-12">
         <div className="max-w-xl">

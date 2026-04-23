@@ -75,7 +75,7 @@ export function SavingsAccountCard({
         <div>
           <div className="flex justify-between items-start mb-12">
             <div className="bg-media-primary-fixed p-3 rounded-lg">
-              <span className="material-symbols-outlined text-media-primary">
+              <span className="material-symbols-outlined text-media-on-primary-fixed">
                 {iconName}
               </span>
             </div>

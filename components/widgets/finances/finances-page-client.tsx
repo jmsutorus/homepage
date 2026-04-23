@@ -34,12 +34,12 @@ export function FinancesPageClient({
     <div className="container mx-auto py-6 sm:py-10 px-4 max-w-7xl">
       <div className="mb-10">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight flex items-center gap-3 font-lexend">
-          <div className="bg-primary text-white p-2 rounded-xl">
+          <div className="bg-media-primary text-media-on-primary p-2 rounded-xl">
             <DollarSign className="w-6 h-6" />
           </div>
           Finances
         </h1>
-        <p className="text-muted-foreground text-sm sm:text-base mt-2 font-medium">
+        <p className="text-media-on-surface-variant text-sm sm:text-base mt-2 font-medium">
           Control center for your monthly capital, obligations, and growth.
         </p>
       </div>

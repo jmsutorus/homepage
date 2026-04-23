@@ -173,7 +173,7 @@ export default function DailyPageClient({
   };
 
   return (
-    <div className="bg-media-surface text-media-on-surface min-h-screen pb-32 font-lexend">
+    <div className="text-media-on-surface min-h-screen pb-32 font-lexend">
       <main className="pt-24 px-6 max-w-screen-2xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           

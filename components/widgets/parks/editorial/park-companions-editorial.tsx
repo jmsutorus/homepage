@@ -51,7 +51,7 @@ export function ParkCompanionsEditorial({ parkSlug }: ParkCompanionsEditorialPro
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex items-baseline gap-4">
           <span className="text-media-secondary font-black text-5xl md:text-7xl opacity-20 leading-none">03</span>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-media-primary dark:text-media-surface">Travel Companions</h2>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-media-primary">Travel Companions</h2>
         </div>
         <Button 
           onClick={handleAddCompanion}
@@ -95,7 +95,7 @@ export function ParkCompanionsEditorial({ parkSlug }: ParkCompanionsEditorialPro
                 </Avatar>
               </div>
               <div>
-                <div className="text-2xl font-black text-media-primary dark:text-media-surface mb-1 tracking-tight">{person.name}</div>
+                <div className="text-2xl font-black text-media-primary mb-1 tracking-tight">{person.name}</div>
                 <div className="text-[10px] md:text-xs uppercase text-media-secondary font-black tracking-[0.2em]">
                   {person.relationshipTypeName || person.relationship || "Fellow Explorer"}
                 </div>

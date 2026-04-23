@@ -23,7 +23,7 @@ export function ParkFooterQuote({ title }: { title: string }) {
     <footer className="mt-24 py-24 border-t border-media-outline-variant/10 text-center font-lexend">
       <div className="max-w-3xl mx-auto px-4">
         <span className="material-symbols-outlined text-media-secondary text-6xl mb-10" style={{ fontVariationSettings: "'FILL' 1" }}>format_quote</span>
-        <p className="text-4xl md:text-5xl font-black text-media-primary dark:text-media-surface leading-tight mb-12 tracking-tighter">
+        <p className="text-4xl md:text-5xl font-black text-media-primary leading-tight mb-12 tracking-tighter">
           &quot;{title} is not just a destination; it is a monument to the untamed spirit of the wilderness.&quot;
         </p>
         <div className="flex justify-center items-center gap-6">

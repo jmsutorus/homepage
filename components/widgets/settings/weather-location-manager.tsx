@@ -1,16 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { MapPin, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,8 +17,7 @@ export function WeatherLocationManager() {
   const fetchLocation = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/weather/location");
-
+      const response = await fetch("/api/settings/location");
       if (response.ok) {
         const data = await response.json();
         setLocation(data.location || "");
@@ -40,15 +30,9 @@ export function WeatherLocationManager() {
   };
 
   const handleSave = async () => {
-    if (!location.trim()) {
-      toast.error("Location cannot be empty");
-      return;
-    }
-
     try {
       setIsSaving(true);
-
-      const response = await fetch("/api/weather/location", {
+      const response = await fetch("/api/settings/location", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,10 +41,9 @@ export function WeatherLocationManager() {
       });
 
       if (response.ok) {
-        toast.success("Weather location updated successfully!");
+        toast.success("Location updated successfully!");
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || errorData.error);
+        toast.error("Failed to update location");
       }
     } catch (error) {
       console.error("Failed to save location:", error);
@@ -70,51 +53,35 @@ export function WeatherLocationManager() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Weather Location
-          </CardTitle>
-          <CardDescription>Loading...</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
+  if (isLoading) return <div className="h-20 animate-pulse bg-media-surface/50 rounded-lg" />;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5" />
-          Weather Location
-        </CardTitle>
-        <CardDescription>
-          Set your location for weather updates. US locations only.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="location">Location</Label>
-          <Input
-            id="location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Denver, CO"
-            disabled={isSaving}
-          />
-          <p className="text-sm text-muted-foreground">
-            Format: City, State (e.g., Denver, CO or New York, NY)
-          </p>
-        </div>
-
-        <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          Save Location
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-bold uppercase tracking-widest text-media-primary/70">
+          Location
+        </label>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleSave} 
+          disabled={isSaving}
+          className="h-6 text-[10px] font-bold uppercase tracking-widest"
+        >
+          {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Update"}
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+      <div className="relative">
+        <input
+          className="w-full bg-media-surface border border-media-outline-variant/40 rounded-lg p-4 text-media-on-surface focus:ring-2 focus:ring-media-primary/20 focus:border-media-primary outline-none"
+          placeholder="Oslo, Norway"
+          type="text"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          disabled={isSaving}
+        />
+        <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-media-on-surface-variant pointer-events-none" />
+      </div>
+    </div>
   );
 }

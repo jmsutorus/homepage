@@ -238,7 +238,7 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
   };
 
   return (
-    <div className="bg-media-surface text-media-on-surface selection:bg-media-secondary-fixed">
+    <div className="text-media-on-surface selection:bg-media-secondary-fixed">
       <main className="pt-8 pb-32 max-w-[1440px] mx-auto px-6 lg:px-12">
         {/* Navigation / Actions */}
         <div className="flex justify-between items-center mb-8">

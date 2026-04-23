@@ -45,7 +45,7 @@ export function ManageClient({
             className="flex items-center gap-2 text-media-secondary font-bold text-xs uppercase tracking-widest mb-6 hover:translate-x-[-4px] transition-transform"
           >
             <ArrowLeft className="w-3 h-3" />
-            Back to Journal
+            Back to Tasks
           </Link>
           <h1 className="text-5xl md:text-6xl font-extrabold text-media-primary tracking-tighter mb-4 max-w-2xl leading-[0.9]">
             System <span className="text-media-secondary italic">Governance</span> & Flow.

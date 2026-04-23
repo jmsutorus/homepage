@@ -582,9 +582,13 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
               {formFields}
             </div>
             <div className="border-t px-6 py-4 bg-background">
-              <Button type="submit" disabled={loading} className="w-full h-12 text-base bg-brand hover:bg-brand/90 text-brand-foreground">
+              <Button 
+                type="submit" 
+                disabled={loading} 
+                className="w-full h-16 text-lg font-black uppercase tracking-widest bg-media-secondary hover:brightness-110 text-media-on-secondary rounded-2xl shadow-xl shadow-media-secondary/20 transition-all active:scale-95"
+              >
                 <Send className="h-5 w-5 mr-2" />
-                {buttonText}
+                {loading ? 'Saving...' : initialData ? 'Refine Protocol' : 'Establish Protocol'}
               </Button>
             </div>
           </form>

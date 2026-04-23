@@ -54,7 +54,7 @@ export function SubscriptionEditorialCard({
         )}>
           <span className={cn(
             "material-symbols-outlined text-xl",
-            isPrimary && "text-media-surface-bright",
+            isPrimary && "text-media-on-primary-container",
             isAccent && "text-media-on-secondary",
             isSurface && "text-media-primary"
           )}>

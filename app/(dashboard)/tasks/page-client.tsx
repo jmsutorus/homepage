@@ -76,7 +76,7 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
       {/* Hero Section: Draft Your Next Action */}
       <section className="text-center">
         <div className="mb-10">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-media-primary mb-6">Draft Your Next Action.</h2>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-media-on-surface mb-6">Draft Your Next Action.</h2>
           <p className="text-media-on-surface-variant text-lg leading-relaxed max-w-xl mx-auto">
             Every great project begins with a single, clearly defined entry in the journal. Define the scope, set the priority, and begin the flow.
           </p>
@@ -88,9 +88,9 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
       {/* In Progress Section */}
       <section>
         <div className="flex items-baseline justify-between mb-10 border-b border-media-outline-variant/20 pb-4">
-          <h3 className="text-3xl font-bold tracking-tighter text-media-primary">In Progress</h3>
+          <h3 className="text-3xl font-bold tracking-tighter text-media-on-surface">In Progress</h3>
           <span className="font-lexend text-xs uppercase tracking-[0.2em] text-media-secondary font-bold">
-            {activeTasks.length} Ongoing {activeTasks.length === 1 ? 'Chapter' : 'Chapters'}
+            {activeTasks.length} Ongoing {activeTasks.length === 1 ? 'Task' : 'Tasks'}
           </span>
         </div>
 
@@ -110,7 +110,7 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
       {/* Archived Flow Section */}
       <section className="pb-12">
         <div className="flex items-baseline gap-6 mb-10">
-          <h3 className="text-3xl font-bold tracking-tighter text-media-primary opacity-30">Archived Flow</h3>
+          <h3 className="text-3xl font-bold tracking-tighter text-media-on-surface opacity-30">Archived Flow</h3>
           <div className="h-px flex-1 bg-media-outline-variant/20"></div>
         </div>
 

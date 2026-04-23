@@ -197,7 +197,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         {/* Title Input Area */}
         <div className="group">
           <input
-            className="w-full text-2xl md:text-3xl font-bold tracking-tight bg-transparent border-none p-0 placeholder:text-media-outline-variant/40 focus:ring-0 text-media-primary"
+            className="w-full text-2xl md:text-3xl font-bold tracking-tight bg-transparent border-none p-0 placeholder:text-media-outline-variant/40 focus:ring-0 text-media-on-surface"
             placeholder="Title of the task..."
             type="text"
             value={rawInput}
@@ -291,9 +291,9 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
           <button 
             type="submit"
             disabled={isAdding || !rawInput.trim()}
-            className="bg-media-primary text-media-on-primary px-10 py-4 rounded-lg font-lexend uppercase tracking-widest text-xs font-bold kinetic-hover shadow-lg shadow-media-primary/10 disabled:opacity-50 disabled:transform-none cursor-pointer"
+            className="bg-media-secondary text-media-on-secondary px-10 py-4 rounded-lg font-lexend uppercase tracking-widest text-xs font-bold kinetic-hover shadow-lg shadow-media-secondary/10 disabled:opacity-50 disabled:transform-none cursor-pointer"
           >
-            {isAdding ? "Drafting..." : "Submit"}
+            {isAdding ? "Drafting..." : "Commit"}
           </button>
         </div>
       </form>

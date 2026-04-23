@@ -250,10 +250,10 @@ export function ParkFormDialog({
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 text-base bg-brand hover:bg-brand/90 text-brand-foreground"
+              className="w-full h-16 text-lg font-black uppercase tracking-widest bg-media-secondary hover:brightness-110 text-media-on-secondary rounded-2xl shadow-xl shadow-media-secondary/20 transition-all active:scale-95"
             >
               <Send className="h-5 w-5 mr-2" />
-              {loading ? 'Saving...' : 'Add Park'}
+              {loading ? 'Saving...' : 'Establish Park'}
             </Button>
           </div>
         </form>

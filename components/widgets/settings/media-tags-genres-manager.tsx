@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Search, X, Hash, Plus } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,30 +14,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ChevronDown, Search } from "lucide-react";
+import { toast } from "sonner";
 
 export function MediaTagsGenresManager() {
   const [tags, setTags] = useState<string[]>([]);
   const [genres, setGenres] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [tagSearch, setTagSearch] = useState("");
   const [genreSearch, setGenreSearch] = useState("");
-  const [tagPopoverOpen, setTagPopoverOpen] = useState(false);
-  const [genrePopoverOpen, setGenrePopoverOpen] = useState(false);
-
-  const [renameTagValue, setRenameTagValue] = useState("");
-  const [renameGenreValue, setRenameGenreValue] = useState("");
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteItem, setDeleteItem] = useState<{ type: "tag" | "genre"; name: string } | null>(null);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {
@@ -57,70 +45,9 @@ export function MediaTagsGenresManager() {
       setGenres(genresData.genres || []);
     } catch (error) {
       console.error("Error fetching data:", error);
-      showMessage("error", "Failed to load tags and genres");
+      toast.error("Failed to load tags and genres");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const showMessage = (type: "success" | "error", text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
-
-  const handleRenameTag = async () => {
-    if (!selectedTag || !renameTagValue || renameTagValue === selectedTag) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/media/tags/${encodeURIComponent(selectedTag)}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newName: renameTagValue }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        showMessage("success", data.message);
-        setTags(tags.map((t) => (t === selectedTag ? renameTagValue : t)).sort());
-        setSelectedTag(renameTagValue);
-        setRenameTagValue("");
-      } else {
-        showMessage("error", data.error || "Failed to rename tag");
-      }
-    } catch (error) {
-      console.error("Error renaming tag:", error);
-      showMessage("error", "Failed to rename tag");
-    }
-  };
-
-  const handleRenameGenre = async () => {
-    if (!selectedGenre || !renameGenreValue || renameGenreValue === selectedGenre) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/media/genres/${encodeURIComponent(selectedGenre)}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newName: renameGenreValue }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        showMessage("success", data.message);
-        setGenres(genres.map((g) => (g === selectedGenre ? renameGenreValue : g)).sort());
-        setSelectedGenre(renameGenreValue);
-        setRenameGenreValue("");
-      } else {
-        showMessage("error", data.error || "Failed to rename genre");
-      }
-    } catch (error) {
-      console.error("Error renaming genre:", error);
-      showMessage("error", "Failed to rename genre");
     }
   };
 
@@ -140,37 +67,26 @@ export function MediaTagsGenresManager() {
         method: "DELETE",
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        showMessage("success", data.message);
+        toast.success(`${type === "tag" ? "Tag" : "Genre"} deleted successfully`);
         if (type === "tag") {
           setTags(tags.filter((t) => t !== name));
         } else {
           setGenres(genres.filter((g) => g !== name));
         }
       } else {
-        showMessage("error", data.error || `Failed to delete ${type}`);
+        toast.error(`Failed to delete ${type}`);
       }
     } catch (error) {
       console.error(`Error deleting ${type}:`, error);
-      showMessage("error", `Failed to delete ${type}`);
+      toast.error(`Failed to delete ${type}`);
     } finally {
       setDeleteDialogOpen(false);
       setDeleteItem(null);
     }
   };
 
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Media Tags & Genres</CardTitle>
-          <CardDescription>Loading...</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
+  if (loading) return <div className="h-40 animate-pulse bg-media-surface/50 rounded-lg" />;
 
   const filteredTags = tags.filter((tag) =>
     tag.toLowerCase().includes(tagSearch.toLowerCase())
@@ -181,206 +97,108 @@ export function MediaTagsGenresManager() {
   );
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Media Tags & Genres</CardTitle>
-          <CardDescription>
-            Manage tags and genres across all your media items. Renaming or deleting will update all related media.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Success/Error Message */}
-          {message && (
-            <div className={`p-3 rounded-lg ${message.type === "success" ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}>
-              {message.text}
+    <div className="space-y-8">
+      {/* Tags Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-media-primary/70">
+            Tags ({tags.length})
+          </label>
+          <div className="relative w-40">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-media-on-surface-variant" />
+            <input
+              className="w-full bg-media-surface border border-media-outline-variant/40 rounded-md pl-7 pr-2 py-1 text-xs focus:ring-1 focus:ring-media-primary outline-none"
+              placeholder="Search tags..."
+              value={tagSearch}
+              onChange={(e) => setTagSearch(e.target.value)}
+            />
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          {filteredTags.map((tag) => (
+            <div 
+              key={tag}
+              className="group flex items-center gap-2 bg-media-surface px-3 py-1.5 rounded-lg border border-media-outline-variant/40 hover:border-media-primary transition-all cursor-default"
+            >
+              <Hash className="h-3 w-3 text-media-primary opacity-70" />
+              <span className="text-sm font-medium">{tag}</span>
+              <button 
+                onClick={() => handleDeleteClick("tag", tag)}
+                className="opacity-0 group-hover:opacity-100 hover:text-media-error transition-all"
+              >
+                <X className="h-3 w-3" />
+              </button>
             </div>
+          ))}
+          {filteredTags.length === 0 && tagSearch && (
+            <p className="text-xs text-media-on-surface-variant italic">No tags matching &quot;{tagSearch}&quot;</p>
           )}
+        </div>
+      </div>
 
-          {/* Tags Section */}
-          <div className="space-y-3">
-            <Label>Manage Tags ({tags.length} total)</Label>
-            <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
-                  {selectedTag || "Select a tag..."}
-                  <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0" align="start">
-                <div className="p-2 border-b">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search tags..."
-                      value={tagSearch}
-                      onChange={(e) => setTagSearch(e.target.value)}
-                      className="pl-8"
-                    />
-                  </div>
-                </div>
-                <div className="max-h-[200px] overflow-y-auto p-2">
-                  {filteredTags.length === 0 ? (
-                    <p className="text-sm text-muted-foreground p-2">No tags found</p>
-                  ) : (
-                    filteredTags.map((tag) => (
-                      <Button
-                        key={tag}
-                        variant={selectedTag === tag ? "secondary" : "ghost"}
-                        className="w-full justify-start mb-1"
-                        onClick={() => {
-                          setSelectedTag(tag);
-                          setRenameTagValue(tag);
-                          setTagPopoverOpen(false);
-                          setTagSearch("");
-                        }}
-                      >
-                        {tag}
-                      </Button>
-                    ))
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {/* Rename/Delete for selected tag */}
-            {selectedTag && (
-              <div className="space-y-3 pt-2 border-t">
-                <div className="space-y-2">
-                  <Label htmlFor="rename-tag">Rename Tag</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="rename-tag"
-                      value={renameTagValue}
-                      onChange={(e) => setRenameTagValue(e.target.value)}
-                      placeholder="New tag name"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleRenameTag();
-                      }}
-                    />
-                    <Button
-                      onClick={handleRenameTag}
-                      disabled={!renameTagValue || renameTagValue === selectedTag}
-                    >
-                      Rename
-                    </Button>
-                  </div>
-                </div>
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  onClick={() => handleDeleteClick("tag", selectedTag)}
-                >
-                  Delete Tag
-                </Button>
-              </div>
-            )}
+      {/* Genres Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-media-primary/70">
+            Genres ({genres.length})
+          </label>
+          <div className="relative w-40">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-media-on-surface-variant" />
+            <input
+              className="w-full bg-media-surface border border-media-outline-variant/40 rounded-md pl-7 pr-2 py-1 text-xs focus:ring-1 focus:ring-media-primary outline-none"
+              placeholder="Search genres..."
+              value={genreSearch}
+              onChange={(e) => setGenreSearch(e.target.value)}
+            />
           </div>
-
-          {/* Genres Section */}
-          <div className="space-y-3">
-            <Label>Manage Genres ({genres.length} total)</Label>
-            <Popover open={genrePopoverOpen} onOpenChange={setGenrePopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
-                  {selectedGenre || "Select a genre..."}
-                  <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0" align="start">
-                <div className="p-2 border-b">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search genres..."
-                      value={genreSearch}
-                      onChange={(e) => setGenreSearch(e.target.value)}
-                      className="pl-8"
-                    />
-                  </div>
-                </div>
-                <div className="max-h-[200px] overflow-y-auto p-2">
-                  {filteredGenres.length === 0 ? (
-                    <p className="text-sm text-muted-foreground p-2">No genres found</p>
-                  ) : (
-                    filteredGenres.map((genre) => (
-                      <Button
-                        key={genre}
-                        variant={selectedGenre === genre ? "secondary" : "ghost"}
-                        className="w-full justify-start mb-1"
-                        onClick={() => {
-                          setSelectedGenre(genre);
-                          setRenameGenreValue(genre);
-                          setGenrePopoverOpen(false);
-                          setGenreSearch("");
-                        }}
-                      >
-                        {genre}
-                      </Button>
-                    ))
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {/* Rename/Delete for selected genre */}
-            {selectedGenre && (
-              <div className="space-y-3 pt-2 border-t">
-                <div className="space-y-2">
-                  <Label htmlFor="rename-genre">Rename Genre</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="rename-genre"
-                      value={renameGenreValue}
-                      onChange={(e) => setRenameGenreValue(e.target.value)}
-                      placeholder="New genre name"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleRenameGenre();
-                      }}
-                    />
-                    <Button
-                      onClick={handleRenameGenre}
-                      disabled={!renameGenreValue || renameGenreValue === selectedGenre}
-                    >
-                      Rename
-                    </Button>
-                  </div>
-                </div>
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  onClick={() => handleDeleteClick("genre", selectedGenre)}
-                >
-                  Delete Genre
-                </Button>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          {filteredGenres.map((genre) => (
+            <div 
+              key={genre}
+              className="group flex items-center gap-2 bg-media-surface px-3 py-1.5 rounded-lg border border-media-outline-variant/40 hover:border-media-primary transition-all cursor-default"
+            >
+              <div className="h-1.5 w-1.5 rounded-full bg-media-primary opacity-70" />
+              <span className="text-sm font-medium">{genre}</span>
+              <button 
+                onClick={() => handleDeleteClick("genre", genre)}
+                className="opacity-0 group-hover:opacity-100 hover:text-media-error transition-all"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+          {filteredGenres.length === 0 && genreSearch && (
+            <p className="text-xs text-media-on-surface-variant italic">No genres matching &quot;{genreSearch}&quot;</p>
+          )}
+        </div>
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-media-surface border-media-outline-variant/20">
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="text-media-on-surface">
               Delete {deleteItem?.type === "tag" ? "Tag" : "Genre"}
             </AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-media-on-surface-variant">
               Are you sure you want to delete &quot;{deleteItem?.name}&quot;? This will remove it from all media items. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="bg-transparent border-media-outline-variant/40 text-media-on-surface hover:bg-media-surface-variant">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-media-error text-white hover:bg-media-error/90"
             >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
+

@@ -45,7 +45,7 @@ export function EditorialTaskCard({
             <Check className="w-5 h-5 text-media-secondary stroke-[3]" />
           </button>
           <div className="min-w-0">
-            <h5 className="text-xl font-bold tracking-tight text-media-primary/40 line-through decoration-media-primary/20 truncate">
+            <h5 className="text-xl font-bold tracking-tight text-media-on-surface/40 line-through decoration-media-on-surface/20 truncate">
               {task.title}
             </h5>
             <p className="text-[10px] font-lexend uppercase tracking-widest text-media-on-surface-variant/50 mt-1">
@@ -76,20 +76,20 @@ export function EditorialTaskCard({
 
   if (variant === "featured") {
     return (
-      <div className="group relative overflow-hidden rounded-2xl bg-media-primary-container min-h-[320px] flex flex-col justify-end p-8 kinetic-hover cursor-pointer shadow-lg shadow-media-primary-container/10" onClick={() => onOpenDetails?.(task)}>
+      <div className="group relative overflow-hidden rounded-2xl bg-media-surface-container-highest min-h-[320px] flex flex-col justify-end p-8 kinetic-hover cursor-pointer shadow-lg shadow-black/20" onClick={() => onOpenDetails?.(task)}>
         <div className="absolute inset-0 z-0">
           <img 
             alt="Atmospheric Background" 
-            className="w-full h-full object-cover opacity-30" 
+            className="w-full h-full object-cover opacity-40 mix-blend-luminosity" 
             src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2560&auto=format&fit=crop"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-media-primary-container via-media-primary-container/60 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-media-background via-media-background/40 to-transparent"></div>
         </div>
         <div className="relative z-10 space-y-6">
           <span className="inline-block bg-media-tertiary-fixed text-media-on-tertiary-fixed text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded">
             {priorityLabels[task.priority]}
           </span>
-          <h4 className="text-4xl md:text-5xl font-bold tracking-tighter text-media-on-primary leading-[1.1]">
+          <h4 className="text-4xl md:text-5xl font-bold tracking-tighter text-media-on-surface leading-[1.1]">
             {task.title}
           </h4>
           <div className="flex items-center gap-6">
@@ -99,7 +99,7 @@ export function EditorialTaskCard({
                 style={{ width: task.status === 'in_progress' ? '65%' : '20%' }}
               ></div>
             </div>
-            <span className="text-[10px] font-lexend font-bold text-media-on-primary uppercase tracking-[0.2em] whitespace-nowrap">
+            <span className="text-[10px] font-lexend font-bold text-media-on-surface uppercase tracking-[0.2em] whitespace-nowrap">
               {task.status === 'in_progress' ? '65% Progress' : 'In Flow'}
             </span>
           </div>
@@ -149,7 +149,7 @@ export function EditorialTaskCard({
             </span>
           )}
         </div>
-        <h4 className="text-2xl md:text-3xl font-bold tracking-tight text-media-primary mb-3">
+        <h4 className="text-2xl md:text-3xl font-bold tracking-tight text-media-on-surface mb-3">
           {task.title}
         </h4>
         {task.description && (

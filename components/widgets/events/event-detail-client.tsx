@@ -243,7 +243,7 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
   };
 
   return (
-    <div className="bg-media-background text-media-on-background min-h-screen font-lexend">
+    <div className="text-media-on-background min-h-screen font-lexend">
       <main className="max-w-7xl mx-auto px-4 md:px-12 py-8 pb-32">
         {/* Navigation & Admin Actions */}
         <div className="flex items-center justify-between mb-8">
@@ -290,14 +290,16 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                 size="sm" 
                 onClick={handleSaveEdit} 
                 disabled={isSaving}
-                className="rounded-full bg-media-primary text-media-on-primary hover:opacity-90 h-9 px-6"
+                className="rounded-full bg-media-primary text-media-on-primary hover:opacity-90 h-9 px-4 md:px-6"
               >
                 {isSaving ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 md:mr-2 animate-spin" />
                 ) : (
-                  <Save className="w-4 h-4 mr-2" />
+                  <Save className="w-4 h-4 md:mr-2" />
                 )}
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                <span className="hidden md:inline">
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </span>
               </Button>
             </div>
           )}

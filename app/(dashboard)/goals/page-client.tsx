@@ -76,7 +76,7 @@ export function GoalsPageClient({ initialGoals }: GoalsPageClientProps) {
   }, [initialGoals]);
 
   return (
-    <div className="min-h-screen bg-media-background text-media-on-background transition-colors duration-500 font-lexend pb-32">
+    <div className="min-h-screen text-media-on-background transition-colors duration-500 font-lexend pb-32">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 py-12">
         {/* Cinematic Header */}
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-24">

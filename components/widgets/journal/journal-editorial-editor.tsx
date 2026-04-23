@@ -20,6 +20,7 @@ import { TagInput } from '@/components/search/tag-input';
 import { fireAchievementConfetti, isJournalMilestone, getJournalMilestoneMessage } from '@/lib/utils/confetti';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { SuccessOverlay } from '@/components/ui/animations/success-overlay';
 
 interface JournalFrontmatter {
   title?: string;
@@ -75,6 +76,8 @@ export function JournalEditorialEditor({
   );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [savedPath, setSavedPath] = useState<string | null>(null);
 
   // Initialize mood for resonance slider (0-10 format preferred for editorial)
   const [resonance, setResonance] = useState<number>(frontmatter.mood || 5);
@@ -124,10 +127,13 @@ export function JournalEditorialEditor({
             });
           }, 500);
         }
-      }
 
-      router.push(data.path);
-      router.refresh();
+        setSavedPath(data.path);
+        setShowSuccess(true);
+      } else {
+        router.push(data.path);
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       showCreationError('journal', err);
@@ -296,6 +302,16 @@ export function JournalEditorialEditor({
           </div>
         </div>
       </section>
+
+      <SuccessOverlay 
+        show={showSuccess} 
+        onComplete={() => {
+          if (savedPath) {
+            router.push(savedPath);
+            router.refresh();
+          }
+        }} 
+      />
     </main>
   );
 }

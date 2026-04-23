@@ -275,7 +275,7 @@ export function MealsPageClient({
   };
 
   return (
-    <main className="min-h-screen bg-media-background text-media-on-background selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed font-lexend pb-24 lg:pb-0">
+    <main className="min-h-screen text-media-on-background selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed font-lexend pb-24 lg:pb-0">
       <div className="px-6 md:px-8 py-12 max-w-6xl mx-auto space-y-24">
         
         {/* Seasonal Discovery Hero */}

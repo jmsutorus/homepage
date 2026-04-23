@@ -26,10 +26,13 @@ import {
 import type { EventCategory } from '@/lib/db/events';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { SuccessOverlay } from '@/components/ui/animations/success-overlay';
 
 export function CreateEventClient() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [savedPath, setSavedPath] = useState<string | null>(null);
   
   // Default form state
   const [form, setForm] = useState({
@@ -90,7 +93,8 @@ export function CreateEventClient() {
       if (response.ok) {
         const event = await response.json();
         toast.success('Journey commenced successfully');
-        router.push(`/events/${event.slug}`);
+        setSavedPath(`/events/${event.slug}`);
+        setShowSuccess(true);
       } else {
         const error = await response.json();
         toast.error(`Failed to commence journey: ${error.error}`);
@@ -153,14 +157,16 @@ export function CreateEventClient() {
               size="sm" 
               onClick={handleSave} 
               disabled={isSaving}
-              className="rounded-full bg-media-primary text-media-on-primary hover:opacity-90 h-9 px-6"
+              className="rounded-full bg-media-primary text-media-on-primary hover:opacity-90 h-9 px-4 md:px-6"
             >
               {isSaving ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 md:mr-2 animate-spin" />
               ) : (
-                <Save className="w-4 h-4 mr-2" />
+                <Save className="w-4 h-4 md:mr-2" />
               )}
-              {isSaving ? 'Commencing...' : 'Commence Journey'}
+              <span className="hidden md:inline">
+                {isSaving ? 'Commencing...' : 'Commence Journey'}
+              </span>
             </Button>
           </div>
         </div>
@@ -330,6 +336,15 @@ export function CreateEventClient() {
           </section>
         </div>
       </main>
+      <SuccessOverlay 
+        show={showSuccess} 
+        onComplete={() => {
+          if (savedPath) {
+            router.push(savedPath);
+            router.refresh();
+          }
+        }} 
+      />
     </div>
   );
 }

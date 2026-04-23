@@ -51,7 +51,7 @@ export function ParkGalleryEditorial({ parkSlug }: ParkGalleryEditorialProps) {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex items-baseline gap-4">
           <span className="text-media-secondary font-black text-5xl md:text-7xl opacity-20 leading-none">02</span>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-media-primary dark:text-media-surface">The Gallery</h2>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-media-primary">The Gallery</h2>
         </div>
         <Button 
           onClick={handleAddPhoto}

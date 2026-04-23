@@ -1,81 +1,84 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Moon, Sun } from "lucide-react";
+import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function ThemeSettings() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
-  useEffect(() => {
-    // This is necessary for proper SSR hydration with next-themes
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-          <CardDescription>
-            Choose how the application looks to you.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="theme-toggle">Theme</Label>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled>
-                <Sun className="h-4 w-4 mr-2" />
-                Light
-              </Button>
-              <Button variant="outline" size="sm" disabled>
-                <Moon className="h-4 w-4 mr-2" />
-                Dark
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  if (!mounted) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Appearance</CardTitle>
-        <CardDescription>
-          Choose how the application looks to you.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between">
-          <Label htmlFor="theme-toggle">Theme</Label>
-          <div className="flex gap-2">
-            <Button
-              variant={theme === "light" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTheme("light")}
-            >
-              <Sun className="h-4 w-4 mr-2" />
-              Light
-            </Button>
-            <Button
-              variant={theme === "dark" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTheme("dark")}
-            >
-              <Moon className="h-4 w-4 mr-2" />
-              Dark
-            </Button>
-          </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Forest Night (Dark) */}
+      <button
+        onClick={() => setTheme("dark")}
+        className={cn(
+          "group relative flex flex-col items-start p-4 rounded-lg transition-all h-full text-left",
+          theme === "dark"
+            ? "bg-media-surface border-2 border-media-primary ring-2 ring-media-primary/10"
+            : "bg-media-surface border border-media-outline-variant/30 hover:border-media-primary/50"
+        )}
+      >
+        <div className="w-full h-24 mb-4 rounded bg-[#03170b] border border-media-outline-variant/20 flex flex-col p-2 gap-1 overflow-hidden">
+          <div className="w-1/2 h-2 bg-white/20 rounded"></div>
+          <div className="w-3/4 h-2 bg-white/10 rounded"></div>
+          <div className="mt-auto w-full h-8 bg-[#192e20] rounded-sm"></div>
         </div>
-      </CardContent>
-    </Card>
+        <span className={cn(
+          "font-bold",
+          theme === "dark" ? "text-media-on-surface" : "text-media-on-surface-variant"
+        )}>
+          Forest Night
+        </span>
+        <span className="text-media-on-surface-variant text-xs">
+          {theme === "dark" ? "Selected" : "Midnight deep greens"}
+        </span>
+        {theme === "dark" && (
+          <div className="absolute top-2 right-2 bg-media-primary text-media-on-primary rounded-full p-1">
+            <Check className="h-3 w-3" />
+          </div>
+        )}
+      </button>
+
+      {/* Mist Morning (Light) */}
+      <button
+        onClick={() => setTheme("light")}
+        className={cn(
+          "group relative flex flex-col items-start p-4 rounded-lg transition-all h-full text-left",
+          theme === "light"
+            ? "bg-media-surface border-2 border-media-primary ring-2 ring-media-primary/10"
+            : "bg-media-surface border border-media-outline-variant/30 hover:border-media-primary/50"
+        )}
+      >
+        <div className="w-full h-24 mb-4 rounded bg-white border border-media-outline-variant/10 flex flex-col p-2 gap-1 overflow-hidden">
+          <div className="w-1/2 h-2 bg-media-surface-variant rounded"></div>
+          <div className="w-3/4 h-2 bg-media-surface-container rounded"></div>
+          <div className="mt-auto w-full h-8 bg-media-surface-container-low rounded-sm"></div>
+        </div>
+        <span className={cn(
+          "font-bold",
+          theme === "light" ? "text-media-on-surface" : "text-media-on-surface-variant"
+        )}>
+          Mist Morning
+        </span>
+        <span className="text-media-on-surface-variant text-xs">
+          {theme === "light" ? "Selected" : "Soft natural light"}
+        </span>
+        {theme === "light" && (
+          <div className="absolute top-2 right-2 bg-media-primary text-media-on-primary rounded-full p-1">
+            <Check className="h-3 w-3" />
+          </div>
+        )}
+      </button>
+    </div>
   );
 }
+

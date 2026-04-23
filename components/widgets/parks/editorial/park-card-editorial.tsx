@@ -45,7 +45,7 @@ export function ParkCardEditorial({ park, className, isAsymmetric }: ParkCardEdi
       
       <div className="p-8">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-2xl font-black tracking-tighter text-media-primary dark:text-media-surface group-hover:text-media-secondary transition-colors duration-300">
+          <h3 className="text-2xl font-black tracking-tighter text-media-primary group-hover:text-media-secondary transition-colors duration-300">
             {park.title}
           </h3>
           <div className="flex items-center gap-1 bg-media-secondary/10 px-2 py-1 rounded-lg">

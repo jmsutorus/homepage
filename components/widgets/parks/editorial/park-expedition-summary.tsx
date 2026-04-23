@@ -39,7 +39,7 @@ export function ParkExpeditionSummary({ park }: ParkExpeditionSummaryProps) {
         </div>
       </div>
 
-      <div className="bg-white/5 rounded-2xl p-8 border border-white/10 hover:bg-white/10 transition-colors duration-500">
+      <div className="bg-media-surface/5 rounded-2xl p-8 border border-media-surface/10 hover:bg-media-surface/15 transition-colors duration-500">
         <div className="flex items-center gap-4 mb-4">
           <span className="material-symbols-outlined text-media-secondary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
           <span className="text-2xl font-black tracking-tight tracking-tight">Prime Exploration Route</span>

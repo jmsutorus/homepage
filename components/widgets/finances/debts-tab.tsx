@@ -193,26 +193,26 @@ export function DebtsTab({ debts: initialDebts }: DebtsTabProps) {
   }, [debts]);
 
   return (
-    <div className="narrative-container min-h-screen pb-24">
+    <div className="narrative-container min-h-screen pb-24 text-media-on-surface">
       {/* Editorial Header */}
       <header className="mb-12 text-center pt-8">
-        <span className="text-[#9f402d] font-bold uppercase tracking-widest text-sm mb-4 block">Current Liabilities</span>
-        <h1 className="text-5xl md:text-7xl font-bold text-[#061b0e] tracking-tighter leading-tight mb-8">
+        <span className="text-media-secondary font-bold uppercase tracking-widest text-sm mb-4 block">Current Liabilities</span>
+        <h1 className="text-5xl md:text-7xl font-bold text-media-primary tracking-tighter leading-tight mb-8">
           The Architecture <br /> of Freedom.
         </h1>
-        <p className="text-[#434843] text-xl leading-relaxed mx-auto max-w-2xl">
-          Your strategic path is holding steady. You have reduced your total principal by <span className="text-[#061b0e] font-bold">{percentPaidTotal}%</span> since inception, maintaining consistent momentum toward zero-balance.
+        <p className="text-media-on-surface-variant text-xl leading-relaxed mx-auto max-w-2xl font-medium">
+          Your strategic path is holding steady. You have reduced your total principal by <span className="text-media-primary font-bold">{percentPaidTotal}%</span> since inception, maintaining consistent momentum toward zero-balance.
         </p>
       </header>
 
       {/* Summary Stats Box */}
-      <div className="mb-16 grid grid-cols-1 md:grid-cols-2 bg-[#061b0e] text-white rounded-2xl overflow-hidden shadow-2xl">
-        <div className="p-10 text-center border-b md:border-b-0 md:border-r border-white/10">
-          <p className="text-emerald-100/60 text-sm font-medium uppercase tracking-widest mb-2">Total Debt</p>
+      <div className="mb-16 grid grid-cols-1 md:grid-cols-2 bg-media-primary text-media-on-primary rounded-2xl overflow-hidden shadow-2xl">
+        <div className="p-10 text-center border-b md:border-b-0 md:border-r border-media-on-primary/10">
+          <p className="text-media-on-primary/60 text-sm font-medium uppercase tracking-widest mb-2">Total Debt</p>
           <h2 className="text-4xl md:text-5xl font-bold">{formatCurrency(totalDebt, 'USD')}</h2>
         </div>
         <div className="p-10 text-center">
-          <p className="text-emerald-100/60 text-sm font-medium uppercase tracking-widest mb-2">Monthly Debt Service</p>
+          <p className="text-media-on-primary/60 text-sm font-medium uppercase tracking-widest mb-2">Monthly Debt Service</p>
           <h2 className="text-4xl md:text-5xl font-bold">{formatCurrency(totalMonthlyPayment, 'USD')}</h2>
         </div>
       </div>
@@ -221,17 +221,17 @@ export function DebtsTab({ debts: initialDebts }: DebtsTabProps) {
       <section className="mb-24">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <div className="text-center md:text-left">
-            <h3 className="text-2xl font-bold text-[#061b0e]">Freedom Horizon</h3>
-            <p className="text-[#434843]">Projected zero-balance timeline based on current velocity.</p>
+            <h3 className="text-2xl font-bold text-media-primary">Freedom Horizon</h3>
+            <p className="text-media-on-surface-variant font-medium">Projected zero-balance timeline based on current velocity.</p>
           </div>
           {targetDate && (
-            <div className="bg-[#e9e8e5] px-4 py-2 rounded-lg text-xs font-bold text-[#061b0e] tracking-widest">
+            <div className="bg-media-surface-container-high px-4 py-2 rounded-lg text-xs font-bold text-media-primary tracking-widest border border-media-outline-variant/20">
               TARGET: {targetDate}
             </div>
           )}
         </div>
         
-        <div className="bg-[#f4f3f1] rounded-2xl p-8 md:p-12 relative overflow-hidden">
+        <div className="bg-media-surface-container-low rounded-2xl p-8 md:p-12 relative overflow-hidden border border-media-outline-variant/10">
           <div className="h-64 mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={projectionData} barGap={4}>
@@ -240,19 +240,19 @@ export function DebtsTab({ debts: initialDebts }: DebtsTabProps) {
                   hide={false} 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fontSize: 10, fill: '#434843', fontWeight: 'bold' }}
+                  tick={{ fontSize: 10, fill: 'var(--media-on-surface-variant)', fontWeight: 'bold' }}
                   interval="preserveStartEnd"
                 />
                 <Tooltip 
-                  cursor={{ fill: 'rgba(6, 27, 14, 0.05)' }}
+                  cursor={{ fill: 'var(--media-surface-container-highest)' }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="bg-white p-3 rounded-lg shadow-xl border border-[#e9e8e5]">
-                          <p className="text-[10px] font-bold text-[#434843] uppercase tracking-widest mb-1">
+                        <div className="bg-media-surface-container-lowest p-3 rounded-lg shadow-xl border border-media-outline-variant/20">
+                          <p className="text-[10px] font-bold text-media-on-surface-variant uppercase tracking-widest mb-1">
                             {payload[0].payload.month === 0 ? 'Current Balance' : `Month ${payload[0].payload.month}`}
                           </p>
-                          <p className="text-lg font-bold text-[#061b0e]">
+                          <p className="text-lg font-bold text-media-primary">
                             {formatCurrency(payload[0].value as number, 'USD')}
                           </p>
                         </div>
@@ -265,7 +265,8 @@ export function DebtsTab({ debts: initialDebts }: DebtsTabProps) {
                   {projectionData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
-                      fill={entry.month === 0 ? '#9f402d' : `rgba(6, 27, 14, ${0.1 + (index / projectionData.length) * 0.7})`}
+                      fill={entry.month === 0 ? 'var(--media-secondary)' : `var(--media-primary)`}
+                      fillOpacity={entry.month === 0 ? 1 : 0.1 + (index / projectionData.length) * 0.7}
                       className="transition-all duration-300 hover:opacity-80"
                     />
                   ))}
@@ -273,7 +274,7 @@ export function DebtsTab({ debts: initialDebts }: DebtsTabProps) {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex justify-between mt-6 text-[10px] text-[#434843] font-bold uppercase tracking-widest px-2">
+          <div className="flex justify-between mt-6 text-[10px] text-media-on-surface-variant font-bold uppercase tracking-widest px-2">
              <span>{new Date().getFullYear()}</span>
              <span>STRATEGIC REDUCTION PHASE</span>
              <span>{targetDate?.split(' ')[1]}</span>
@@ -283,20 +284,20 @@ export function DebtsTab({ debts: initialDebts }: DebtsTabProps) {
 
       {/* Active Portfolio */}
       <section className="mb-24 space-y-12">
-        <div className="flex justify-between items-center border-b border-[#061b0e]/10 pb-6">
-          <h3 className="text-3xl font-bold text-[#061b0e] tracking-tight">Active Portfolio</h3>
+        <div className="flex justify-between items-center border-b border-media-outline-variant/20 pb-6">
+          <h2 className="text-3xl font-bold text-media-primary tracking-tight font-lexend">Active Portfolio</h2>
           <button 
             onClick={() => { setEditData(undefined); setShowForm(true); }}
-            className="cursor-pointer text-[#9f402d] font-bold flex items-center gap-2 hover:opacity-80 transition-opacity text-sm group"
+            className="cursor-pointer text-media-secondary font-bold flex items-center gap-2 hover:opacity-80 transition-opacity text-sm group"
           >
             Add Instrument <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
           </button>
         </div>
 
         {debts.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center border-2 border-dashed border-[#e9e8e5]">
-            <CreditCard className="w-12 h-12 mx-auto mb-4 text-[#e9e8e5]" />
-            <p className="text-[#434843] font-bold uppercase tracking-widest text-sm">No Active Instruments</p>
+          <div className="bg-media-surface-container-lowest rounded-3xl p-12 text-center border-2 border-dashed border-media-outline-variant/30">
+            <CreditCard className="w-12 h-12 mx-auto mb-4 text-media-outline-variant/50" />
+            <p className="text-media-on-surface-variant font-bold uppercase tracking-widest text-sm">No Active Instruments</p>
           </div>
         ) : (
           <div className="space-y-16">
@@ -307,112 +308,112 @@ export function DebtsTab({ debts: initialDebts }: DebtsTabProps) {
               return (
                 <div 
                   key={debt.id} 
-                  className="bg-white rounded-3xl p-10 md:p-14 border border-[#e9e8e5] shadow-sm hover:shadow-md transition-shadow relative group"
+                  className="bg-media-surface-container-lowest rounded-3xl p-10 md:p-14 border border-media-outline-variant/15 shadow-sm hover:shadow-md transition-shadow relative group"
                 >
                   <div className="absolute top-8 right-8 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 hover:bg-[#f4f3f1]"
+                      className="h-8 w-8 hover:bg-media-surface-container"
                       onClick={() => { setEditData(debt); setShowForm(true); }}
                     >
-                      <Pencil className="w-4 h-4 text-[#434843]" />
+                      <Pencil className="w-4 h-4 text-media-on-surface-variant" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 hover:bg-red-50"
+                      className="h-8 w-8 hover:bg-media-error/10"
                       onClick={() => handleDelete(debt.id)}
                     >
-                      <Trash2 className="w-4 h-4 text-red-500" />
+                      <Trash2 className="w-4 h-4 text-media-error" />
                     </Button>
                   </div>
 
                   <div className="flex flex-col md:flex-row justify-between mb-12 gap-6">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <Icon className="w-6 h-6 text-[#9f402d]" />
-                        <h4 className="text-2xl font-bold text-[#061b0e]">{debt.name}</h4>
+                        <Icon className="w-6 h-6 text-media-secondary" />
+                        <h4 className="text-2xl font-bold text-media-primary font-lexend">{debt.name}</h4>
                       </div>
-                      <p className="text-sm text-[#434843] uppercase tracking-widest font-medium">
+                      <p className="text-sm text-media-on-surface-variant uppercase tracking-widest font-bold opacity-70">
                         {categoryLabels[debt.category]} · {debt.interest_rate}% APR
                       </p>
                     </div>
-                    <div className="bg-[#f4f3f1] px-6 py-4 rounded-xl text-center md:text-right">
-                      <p className="text-xs font-bold text-[#434843] uppercase tracking-widest mb-1">Current Balance</p>
-                      <p className="text-2xl font-bold text-[#9f402d]">{formatCurrency(debt.current_balance, debt.currency)}</p>
+                    <div className="bg-media-surface-container-low px-6 py-4 rounded-xl text-center md:text-right border border-media-outline-variant/10">
+                      <p className="text-xs font-bold text-media-on-surface-variant uppercase tracking-widest mb-1">Current Balance</p>
+                      <p className="text-2xl font-bold text-media-secondary">{formatCurrency(debt.current_balance, debt.currency)}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
                     <div>
-                      <p className="text-xs font-bold text-[#434843] uppercase tracking-widest mb-2">Principal Momentum</p>
-                      <p className="text-5xl font-bold text-[#061b0e] tracking-tighter">
-                        {debt.percentPaid}% <span className="text-lg text-[#434843] font-medium tracking-normal ml-2">Retired</span>
+                      <p className="text-xs font-bold text-media-on-surface-variant uppercase tracking-widest mb-2">Principal Momentum</p>
+                      <p className="text-5xl font-bold text-media-primary tracking-tighter font-lexend">
+                        {debt.percentPaid}% <span className="text-lg text-media-on-surface-variant font-medium tracking-normal ml-2">Retired</span>
                       </p>
                     </div>
                     <div className="flex flex-col justify-end">
-                      <div className="flex justify-between text-xs font-bold text-[#434843] uppercase tracking-widest mb-3">
+                      <div className="flex justify-between text-xs font-bold text-media-on-surface-variant uppercase tracking-widest mb-3">
                         <span>Progress</span>
                         <span>{formatCurrency(debt.original_amount - debt.current_balance, debt.currency)} Paid</span>
                       </div>
-                      <div className="w-full bg-[#f4f3f1] h-3 rounded-full overflow-hidden">
+                      <div className="w-full bg-media-surface-container-high h-3 rounded-full overflow-hidden">
                         <div 
-                          className="bg-[#061b0e] h-full transition-all duration-1000" 
+                          className="bg-media-primary h-full transition-all duration-1000" 
                           style={{ width: `${debt.percentPaid}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-[10px] mt-2 font-bold text-[#434843]">
+                      <div className="flex justify-between text-[10px] mt-2 font-bold text-media-on-surface-variant">
                         <span>START: {formatCurrency(debt.original_amount, debt.currency)}</span>
                         <span>EST. END: {formatPayoffDate(debt.projectedPayoffMonths).toUpperCase()}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col md:flex-row items-center gap-6 pt-8 border-t border-[#e9e8e5]">
+                  <div className="flex flex-col md:flex-row items-center gap-6 pt-8 border-t border-media-outline-variant/15">
                     <button 
                       onClick={() => setPaymentDialog({ debtId: debt.id, debtName: debt.name })}
-                      className="cursor-pointer w-full md:w-auto px-10 bg-[#061b0e] text-white py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity shadow-lg"
+                      className="cursor-pointer w-full md:w-auto px-10 bg-media-primary text-media-on-primary py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity shadow-lg"
                     >
                       Log Payment
                     </button>
                     <button 
                       onClick={() => setExpandedDebt(isExpanded ? null : debt.id)}
-                      className="cursor-pointer w-full md:w-auto px-10 bg-[#f4f3f1] text-[#061b0e] py-4 rounded-xl font-bold text-sm hover:bg-[#e9e8e5] transition-colors"
+                      className="cursor-pointer w-full md:w-auto px-10 bg-media-surface-container-low text-media-primary py-4 rounded-xl font-bold text-sm hover:bg-media-surface-container-high transition-colors border border-media-outline-variant/10"
                     >
                       {isExpanded ? 'Hide History' : `View History (${debt.payments.length})`}
                     </button>
-                    <p className="md:ml-auto text-[11px] text-[#434843] font-bold uppercase tracking-widest">
+                    <p className="md:ml-auto text-[11px] text-media-on-surface-variant font-bold uppercase tracking-widest">
                       Next Due: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                     </p>
                   </div>
 
                   {/* Payment History Expansion */}
                   {isExpanded && (
-                    <div className="mt-8 pt-8 border-t border-dashed border-[#e9e8e5] animate-in fade-in slide-in-from-top-4 duration-300">
-                      <h5 className="text-xs font-bold text-[#434843] uppercase tracking-[0.2em] mb-6">Historical Ledger</h5>
+                    <div className="mt-8 pt-8 border-t border-dashed border-media-outline-variant/30 animate-in fade-in slide-in-from-top-4 duration-300">
+                      <h5 className="text-xs font-bold text-media-on-surface-variant uppercase tracking-[0.2em] mb-6">Historical Ledger</h5>
                       <div className="space-y-4">
                         {debt.payments.length === 0 ? (
-                          <p className="text-sm text-[#434843] italic">No transactions recorded for this instrument.</p>
+                          <p className="text-sm text-media-on-surface-variant italic">No transactions recorded for this instrument.</p>
                         ) : (
                           debt.payments.map((payment) => (
-                            <div key={payment.id} className="flex items-center justify-between py-3 border-b border-[#f4f3f1] last:border-0 hover:bg-[#f4f3f1]/50 px-4 rounded-lg transition-colors">
+                            <div key={payment.id} className="flex items-center justify-between py-3 border-b border-media-outline-variant/10 last:border-0 hover:bg-media-surface-container-low px-4 rounded-lg transition-colors">
                               <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center">
-                                  <ArrowRight className="w-4 h-4 text-emerald-600" />
+                                <div className="w-8 h-8 rounded-full bg-media-primary/10 flex items-center justify-center">
+                                  <ArrowRight className="w-4 h-4 text-media-primary" />
                                 </div>
                                 <div>
-                                  <p className="text-sm font-bold text-[#061b0e]">
+                                  <p className="text-sm font-bold text-media-primary">
                                     {new Date(payment.date + 'T00:00:00').toLocaleDateString('en-US', {
                                       month: 'long',
                                       day: 'numeric',
                                       year: 'numeric',
                                     })}
                                   </p>
-                                  {payment.notes && <p className="text-xs text-[#434843]">{payment.notes}</p>}
+                                  {payment.notes && <p className="text-xs text-media-on-surface-variant font-medium">{payment.notes}</p>}
                                 </div>
                               </div>
-                              <p className="font-bold text-emerald-600">-{formatCurrency(payment.amount, debt.currency)}</p>
+                              <p className="font-bold text-media-primary">-{formatCurrency(payment.amount, debt.currency)}</p>
                             </div>
                           ))
                         )}
@@ -427,42 +428,42 @@ export function DebtsTab({ debts: initialDebts }: DebtsTabProps) {
       </section>
 
       {/* Editorial Spotlight */}
-      <section className="relative bg-[#061b0e] text-white rounded-3xl p-10 md:p-20 overflow-hidden shadow-2xl">
+      <section className="relative bg-media-primary text-media-on-primary rounded-3xl p-10 md:p-20 overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
-          <Sparkles className="w-full h-full object-cover text-white" />
+          <Sparkles className="w-full h-full object-cover text-media-on-primary" />
         </div>
         <div className="relative z-10">
-          <span className="text-emerald-100/60 font-bold uppercase tracking-[0.3em] text-xs mb-8 block">The Path to Freedom</span>
-          <h3 className="text-4xl md:text-6xl font-bold mb-12 tracking-tight leading-none text-white">
+          <span className="text-media-on-primary/60 font-bold uppercase tracking-[0.3em] text-xs mb-8 block">The Path to Freedom</span>
+          <h3 className="text-4xl md:text-6xl font-bold mb-12 tracking-tight leading-none text-media-on-primary font-lexend">
             Editorial Spotlight: <br />Debt Optimization
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
-            <div className="space-y-4 p-8 rounded-2xl bg-white/5 border border-white/10">
-              <h4 className="text-white font-bold text-xl flex items-center gap-3">
-                <Snowflake className="w-6 h-6 text-[#9f402d]" />
+            <div className="space-y-4 p-8 rounded-2xl bg-media-surface-container-lowest/10 border border-media-on-primary/10">
+              <h4 className="text-media-on-primary font-bold text-xl flex items-center gap-3">
+                <Snowflake className="w-6 h-6 text-media-secondary" />
                 The Snowball Method
               </h4>
-              <p className="text-emerald-100/70 leading-relaxed">
+              <p className="text-media-on-primary/70 leading-relaxed font-medium">
                 Psychological momentum is a powerful asset. By targeting your smallest balances first, you create a &quot;win&quot; early in the journey, fueling the discipline needed for the larger mortgage mountain ahead.
               </p>
             </div>
-            <div className="space-y-4 p-8 rounded-2xl bg-white/5 border border-white/10">
-              <h4 className="text-white font-bold text-xl flex items-center gap-3">
-                <Waves className="w-6 h-6 text-emerald-400" />
+            <div className="space-y-4 p-8 rounded-2xl bg-media-surface-container-lowest/10 border border-media-on-primary/10">
+              <h4 className="text-media-on-primary font-bold text-xl flex items-center gap-3">
+                <Waves className="w-6 h-6 text-media-on-primary-container" />
                 The Avalanche Approach
               </h4>
-              <p className="text-emerald-100/70 leading-relaxed">
+              <p className="text-media-on-primary/70 leading-relaxed font-medium">
                 Mathematically superior, the Avalanche focuses on the highest interest rates. Currently, prioritizing extra principal on high-rate debt saves you the most in lifetime interest.
               </p>
             </div>
           </div>
-          <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-12">
+          <div className="pt-12 border-t border-media-on-primary/10 flex flex-col md:flex-row items-center justify-between gap-12">
             <div className="max-w-md">
-              <p className="text-2xl italic font-light text-emerald-100/80 leading-relaxed">&quot;The best method is the one you can sustain.&quot;</p>
-              <p className="text-xs uppercase tracking-[0.2em] mt-4 font-bold opacity-40">— Kinetic Editorial Council</p>
+              <p className="text-2xl italic font-light text-media-on-primary/80 leading-relaxed">&quot;The best method is the one you can sustain.&quot;</p>
+              <p className="text-xs uppercase tracking-[0.2em] mt-4 font-bold opacity-40 text-media-on-primary">— Kinetic Editorial Council</p>
             </div>
             <Button 
-              className="w-full md:w-auto bg-[#9f402d] text-white px-12 py-8 rounded-full font-bold text-lg hover:bg-[#833525] transition-all shadow-2xl active:scale-95 whitespace-nowrap"
+              className="w-full md:w-auto bg-media-secondary text-media-on-secondary px-12 py-8 rounded-full font-bold text-lg hover:bg-media-secondary/90 transition-all shadow-2xl active:scale-95 whitespace-nowrap"
             >
               Analyze Strategy
             </Button>

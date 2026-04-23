@@ -122,7 +122,7 @@ export function ParkHeroEditorial({ park }: ParkHeroEditorialProps) {
       </div>
 
       <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
-        <DialogContent className="sm:max-w-[450px] border-media-outline-variant/10 bg-white/95 backdrop-blur-xl rounded-[2rem] font-lexend">
+        <DialogContent className="sm:max-w-[450px] border-media-outline-variant/10 bg-white/95 dark:bg-media-surface-container-high/95 backdrop-blur-xl rounded-[2rem] font-lexend">
           <DialogHeader>
             <DialogTitle className="text-3xl font-black text-media-primary tracking-tighter">
               The Mantra
