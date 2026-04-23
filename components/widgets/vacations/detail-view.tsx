@@ -29,6 +29,7 @@ import {
 import { Edit2, ArrowLeft, Plus, PlusCircle, Pencil, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { VacationPosterEditDialog } from './vacation-poster-edit-dialog';
 import { VacationPhotoAddDialog } from './vacation-photo-add-dialog';
+import { VacationDayPhotoEditDialog } from './vacation-day-photo-edit-dialog';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -55,6 +56,8 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
   const [editingBookingId, setEditingBookingId] = useState<number | null>(null);
   const [isPosterDialogOpen, setIsPosterDialogOpen] = useState(false);
   const [isPhotoAddDialogOpen, setIsPhotoAddDialogOpen] = useState(false);
+  const [isDayPhotoEditDialogOpen, setIsDayPhotoEditDialogOpen] = useState(false);
+  const [activeDayForPhotoEdit, setActiveDayForPhotoEdit] = useState<ItineraryDay | null>(null);
   const [dayFormData, setDayFormData] = useState<Partial<ItineraryDay>>({});
   const [bookingFormData, setBookingFormData] = useState<Partial<Booking>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -76,6 +79,12 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
       photo: '',
     });
     setIsAddingDay(true);
+  };
+
+  const handleOpeningDayPhotoEdit = (e: React.MouseEvent, day: ItineraryDay) => {
+    e.stopPropagation();
+    setActiveDayForPhotoEdit(day);
+    setIsDayPhotoEditDialogOpen(true);
   };
 
   const handleOpeningEditDay = (day: ItineraryDay) => {
@@ -484,12 +493,20 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
                     </div>
                     <div className={`lg:col-span-7 relative ${idx % 2 === 1 ? 'order-2 lg:order-1' : ''}`}>
                       <div className={`absolute -top-4 ${idx % 2 === 1 ? '-right-4' : '-left-4'} w-full h-full ${idx % 2 === 1 ? 'bg-media-secondary-fixed' : 'bg-media-primary-fixed'} rounded-3xl -z-10 transform ${idx % 2 === 1 ? '-rotate-1' : 'rotate-1'}`}></div>
-                      <div className="w-full aspect-[16/10] bg-media-surface-container-high rounded-3xl shadow-xl overflow-hidden flex items-center justify-center">
+                      <div className="w-full aspect-[16/10] bg-media-surface-container-high rounded-3xl shadow-xl overflow-hidden flex items-center justify-center relative group/photo">
                          {day.photo ? (
                            <img src={day.photo} alt={day.title || `Day ${day.day_number}`} className="w-full h-full object-cover" />
                          ) : (
                            <span className="material-symbols-outlined text-6xl text-media-primary/20">landscape</span>
                          )}
+                         
+                         <button
+                           onClick={(e) => handleOpeningDayPhotoEdit(e, day)}
+                           className="absolute top-4 right-4 bg-black/50 backdrop-blur-md text-white p-2 rounded-full opacity-0 group-hover/photo:opacity-100 transition-opacity hover:bg-black/70 cursor-pointer z-10"
+                           title="Edit Day Photo"
+                         >
+                           <Pencil className="w-4 h-4" />
+                         </button>
                       </div>
                     </div>
                   </article>
@@ -693,16 +710,6 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
                  rows={2}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="photo" className="text-right">Photo URL</Label>
-              <Input
-                id="photo"
-                value={dayFormData.photo || ''}
-                onChange={(e) => setDayFormData({ ...dayFormData, photo: e.target.value })}
-                placeholder="https://images.unsplash.com/..."
-                className="col-span-3"
-              />
-            </div>
           </div>
           <DialogFooter className="flex justify-between items-center sm:justify-between w-full">
             {editingDayId ? (
@@ -864,6 +871,16 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
         vacation={vacation}
         onSuccess={onUpdate}
       />
+
+      {activeDayForPhotoEdit && (
+        <VacationDayPhotoEditDialog
+          open={isDayPhotoEditDialogOpen}
+          onOpenChange={setIsDayPhotoEditDialogOpen}
+          vacation={vacation}
+          day={activeDayForPhotoEdit}
+          onSuccess={onUpdate}
+        />
+      )}
     </div>
   );
 }

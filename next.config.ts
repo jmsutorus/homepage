@@ -82,6 +82,17 @@ const withPWA = withPWAInit({
         },
       },
     },
+    {
+      urlPattern: /^https:\/\/firebasestorage\.googleapis\.com\/.*/i,
+      handler: "StaleWhileRevalidate",
+      options: {
+        cacheName: "firebase-images-cache",
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+        },
+      },
+    },
     // Cache static assets - Cache first
     {
       urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
@@ -234,13 +245,12 @@ const nextConfig: NextConfig = {
         hostname: "uploads.coppermind.net",
         pathname: "/**",
       },
-      // Add your custom Tautulli/Home Assistant domains here if needed
-      // Example:
-      // {
-      //   protocol: "https",
-      //   hostname: "your-domain.com",
-      //   pathname: "/**",
-      // },
+      // Firebase Storage
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+        pathname: "/**",
+      },
     ],
   },
 };

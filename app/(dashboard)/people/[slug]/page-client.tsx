@@ -96,13 +96,39 @@ export function PersonDetailClient({ person, sharedHistory }: PersonDetailClient
         <div className="md:col-span-2 bg-media-surface-container-low p-8 rounded-xl flex flex-col justify-between h-48 border border-media-outline-variant/10">
           <span className="text-media-secondary font-bold tracking-widest uppercase text-xs">Contact Information</span>
           <div className="space-y-1">
-            <p className="text-xl font-bold text-media-primary">{person.email || "No email documented"}</p>
-            <p className="text-media-on-surface-variant">{formatPhoneNumber(person.phone)}</p>
+            {person.phone ? (
+              <a 
+                href={`tel:${person.phone}`} 
+                className="text-lg font-bold text-media-on-surface-variant block hover:text-media-primary transition-colors"
+              >
+                {formatPhoneNumber(person.phone)}
+              </a>
+            ) : (
+              <p className="text-xl font-bold text-media-on-surface-variant opacity-50">No phone documented</p>
+            )}
+
+            {person.email ? (
+              <a 
+                href={`mailto:${person.email}`} 
+                className="text-lg font-bold text-media-primary block hover:underline transition-all"
+              >
+                {person.email}
+              </a>
+            ) : (
+              <p className="text-xl font-bold text-media-primary opacity-50">No email documented</p>
+            )}
+
             {person.address && (
-              <p className="text-sm text-media-on-surface-variant flex items-center gap-1 mt-1">
-                <MapPin className="w-3 h-3" />
-                {person.address}
-              </p>
+              <a 
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(person.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-media-on-surface-variant flex items-center gap-1 mt-1 hover:text-media-primary transition-colors truncate max-w-full"
+                title={person.address}
+              >
+                <MapPin className="w-3 h-3 shrink-0" />
+                <span className="truncate">{person.address}</span>
+              </a>
             )}
           </div>
         </div>

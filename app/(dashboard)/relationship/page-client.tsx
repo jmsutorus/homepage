@@ -8,6 +8,7 @@ import { DatesTab } from "@/components/widgets/relationship/dates-tab";
 import { IntimacyTab } from "@/components/widgets/relationship/intimacy-tab";
 import { MilestonesTab } from "@/components/widgets/relationship/milestones-tab";
 import { ManageTab } from "@/components/widgets/relationship/manage-tab";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import type {
   RelationshipDate,
   IntimacyEntry,
@@ -172,15 +173,6 @@ export function RelationshipPageClient({
             { value: "milestones", label: "Milestones", icon: Lock, showLabel: false },
             { value: "manage", label: "Manage", icon: Settings, showLabel: false },
           ]}
-          actionButton={
-            viewTab !== "manage"
-              ? {
-                  label: "Add",
-                  onClick: handleAddClick,
-                  icon: Plus,
-                }
-              : undefined
-          }
         />
 
         <TabsContent value="dates" className="space-y-6 mt-6 pb-20 md:pb-0">
@@ -214,6 +206,16 @@ export function RelationshipPageClient({
           <ManageTab/>
         </TabsContent>
       </Tabs>
+      {viewTab !== "manage" && (
+        <FloatingActionButton 
+          onClick={handleAddClick}
+          tooltipText={
+            viewTab === "dates" ? "Add Date" : 
+            viewTab === "intimacy" ? "Log Intimacy" : 
+            "Add Milestone"
+          }
+        />
+      )}
     </div>
   );
 }

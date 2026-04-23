@@ -486,10 +486,15 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                       </div>
                     )}
                     {event.location && (
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-media-secondary" style={{ fontSize: '20px' }}>location_on</span>
-                        <span>{event.location}</span>
-                      </div>
+                      <a 
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer group/loc"
+                      >
+                        <span className="material-symbols-outlined text-media-secondary group-hover/loc:scale-110 transition-transform" style={{ fontSize: '20px' }}>location_on</span>
+                        <span className="hover:underline underline-offset-4">{event.location}</span>
+                      </a>
                     )}
                   </div>
                 </div>

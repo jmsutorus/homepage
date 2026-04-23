@@ -87,7 +87,7 @@ export function UpcomingBirthdays({ birthdays }: UpcomingBirthdaysProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <p className="font-bold text-media-on-surface truncate">{person.name}</p>
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-media-primary/10 border border-media-primary/20 text-[10px] uppercase tracking-wider font-bold text-media-primary">
+                  <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-media-primary/10 border border-media-primary/20 text-[10px] uppercase tracking-wider font-bold text-media-primary flex-shrink-0">
                     <span className="material-symbols-outlined text-[10px]">{config.icon}</span>
                     {config.label}
                   </div>
@@ -95,18 +95,10 @@ export function UpcomingBirthdays({ birthdays }: UpcomingBirthdaysProps) {
 
                 <div className="flex items-center gap-2 text-xs font-medium text-media-on-surface-variant/70">
                   <span className="text-media-secondary uppercase tracking-widest">{formattedDate}</span>
-                  {person.age !== null && (
-                    <>
-                      <span className="opacity-30">•</span>
-                      <span>Turning {person.age + 1}</span>
-                    </>
-                  )}
-                  {person.age === null && (
-                    <>
-                      <span className="opacity-30">•</span>
-                      <span>Age unknown</span>
-                    </>
-                  )}
+                  <span className="hidden sm:inline-flex items-center gap-2">
+                    <span className="opacity-30">•</span>
+                    <span>{person.age !== null ? `Turning ${person.age + 1}` : 'Age unknown'}</span>
+                  </span>
                 </div>
               </div>
 

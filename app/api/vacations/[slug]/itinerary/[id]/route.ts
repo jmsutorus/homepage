@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import {
   getVacationBySlug,
+  getItineraryDay,
   updateItineraryDay,
   deleteItineraryDay,
   type ItineraryDayInput,
 } from "@/lib/db/vacations";
 import { requireAuthApi } from "@/lib/auth/server";
+import { deleteFromStorage } from "@/lib/firebase/storage-utils";
 
 interface RouteParams {
   params: Promise<{ slug: string; id: string }>;
@@ -42,7 +44,15 @@ export async function PATCH(
     if (body.location !== undefined) updateData.location = body.location;
     if (body.activities !== undefined) updateData.activities = body.activities;
     if (body.notes !== undefined) updateData.notes = body.notes;
-    if (body.photo !== undefined) updateData.photo = body.photo;
+
+    // Handle photo cleanup if photo is being updated or removed
+    if (body.photo !== undefined) {
+      const existingDay = await getItineraryDay(parseInt(id), vacation.id);
+      if (existingDay?.photo && existingDay.photo !== body.photo) {
+        await deleteFromStorage(existingDay.photo);
+      }
+      updateData.photo = body.photo;
+    }
     if (body.budget_planned !== undefined) updateData.budget_planned = body.budget_planned;
     if (body.budget_actual !== undefined) updateData.budget_actual = body.budget_actual;
 
@@ -91,6 +101,12 @@ export async function DELETE(
 
     if (!vacation) {
       return NextResponse.json({ error: "Vacation not found" }, { status: 404 });
+    }
+
+    // Get existing day to check for photo
+    const day = await getItineraryDay(parseInt(id), vacation.id);
+    if (day?.photo) {
+      await deleteFromStorage(day.photo);
     }
 
     const success = await deleteItineraryDay(parseInt(id), vacation.id);

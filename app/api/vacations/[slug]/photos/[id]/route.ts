@@ -6,7 +6,7 @@ import {
   deleteVacationPhoto,
 } from "@/lib/db/vacations";
 import { requireAuthApi } from "@/lib/auth/server";
-import { getAdminStorage } from "@/lib/firebase/admin";
+import { deleteFromStorage } from "@/lib/firebase/storage-utils";
 
 interface RouteParams {
   params: Promise<{ slug: string; id: string }>;
@@ -43,27 +43,8 @@ export async function DELETE(
     }
 
     // 3. If it's a Firebase Storage URL, delete from Storage
-    if (photo.url.includes("firebasestorage.googleapis.com")) {
-      try {
-        // Extract path from URL
-        // Example: .../o/vacations%2F12%2Fphotos%2Fphoto-123.jpg?alt=media...
-        const urlObj = new URL(photo.url);
-        const pathPart = urlObj.pathname.split("/o/")[1];
-        if (pathPart) {
-          const filePath = decodeURIComponent(pathPart);
-          const bucket = getAdminStorage().bucket();
-          const storageFile = bucket.file(filePath);
-          
-          const [exists] = await storageFile.exists();
-          if (exists) {
-            await storageFile.delete();
-            console.log(`Deleted file from storage: ${filePath}`);
-          }
-        }
-      } catch (storageError) {
-        // Log but continue - we want to remove the DB record even if storage delete fails
-        console.error("Error deleting from Firebase Storage:", storageError);
-      }
+    if (photo.url) {
+      await deleteFromStorage(photo.url);
     }
 
     // 4. Delete from Database
