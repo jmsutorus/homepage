@@ -422,7 +422,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
                       )}
                       
                       {/* Expansion info */}
-                      {(person.email || person.phone) && (
+                      {(person.email || person.phone || person.address) && (
                         <div className="pt-4 border-t border-media-outline-variant/10 flex gap-4">
                           {person.email && (
                             <button 
@@ -440,6 +440,15 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
                               title={formatPhoneNumber(person.phone)}
                             >
                               <span className="material-symbols-outlined text-lg">call</span>
+                            </button>
+                          )}
+                          {person.address && (
+                            <button 
+                              onClick={() => copyToClipboard(person.address!, "Address")}
+                              className="cursor-pointer text-media-outline hover:text-media-primary transition-colors"
+                              title={person.address}
+                            >
+                              <span className="material-symbols-outlined text-lg">map</span>
                             </button>
                           )}
                         </div>

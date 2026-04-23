@@ -3,9 +3,12 @@ import {
   getEventBySlug,
   getEventPhotos,
   createEventPhoto,
+  deleteEventPhoto,
   type EventPhotoInput,
 } from "@/lib/db/events";
 import { requireAuthApi } from "@/lib/auth/server";
+import { getAdminStorage } from "@/lib/firebase/admin";
+import { revalidatePath } from "next/cache";
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -76,7 +79,42 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       order_index: body.order_index,
     };
 
+    // If this is becoming the new hero (order_index 0), clean up the old one
+    if (input.order_index === 0) {
+      try {
+        const photos = await getEventPhotos(event.id);
+        const oldHero = photos.find(p => p.order_index === 0);
+        
+        if (oldHero) {
+          // Delete from Storage if it's a Firebase URL
+          if (oldHero.url.includes("firebasestorage.googleapis.com")) {
+            try {
+              const bucket = getAdminStorage().bucket();
+              const urlObj = new URL(oldHero.url);
+              const pathPart = urlObj.pathname.split("/o/")[1];
+              if (pathPart) {
+                const filePath = decodeURIComponent(pathPart);
+                const oldFile = bucket.file(filePath);
+                const [exists] = await oldFile.exists();
+                if (exists) {
+                  await oldFile.delete();
+                  console.log(`Deleted old event hero during URL update: ${filePath}`);
+                }
+              }
+            } catch (storageErr) {
+              console.error("Failed to delete old hero from storage:", storageErr);
+            }
+          }
+          // Delete from DB
+          await deleteEventPhoto(oldHero.id, event.id);
+        }
+      } catch (cleanupError) {
+        console.error("Error cleaning up old event hero during URL update:", cleanupError);
+      }
+    }
+
     const photo = await createEventPhoto(event.id, input);
+    revalidatePath(`/events/${slug}`);
     return NextResponse.json(photo, { status: 201 });
   } catch (error) {
     console.error("Error creating event photo:", error);

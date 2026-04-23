@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUserId } from "@/lib/auth/server";
-import { getParkBySlug, updateParkTrail, deleteParkTrail } from "@/lib/db/parks";
+import { getParkBySlug, updateParkTrail, deleteParkTrail, getParkTrail } from "@/lib/db/parks";
+import { getAdminStorage } from "@/lib/firebase/admin";
 
 export async function PUT(
   request: Request,
@@ -21,6 +22,31 @@ export async function PUT(
 
     const body = await request.json();
     const trailId = parseInt(id, 10);
+
+    // Handle photo cleanup if photo_url is being updated
+    if (body.photo_url !== undefined) {
+      const existingTrail = await getParkTrail(trailId, park.id);
+      if (existingTrail && existingTrail.photo_url && existingTrail.photo_url !== body.photo_url) {
+        if (existingTrail.photo_url.includes("firebasestorage.googleapis.com")) {
+          try {
+            const bucket = getAdminStorage().bucket();
+            const urlObj = new URL(existingTrail.photo_url);
+            const pathPart = urlObj.pathname.split("/o/")[1];
+            if (pathPart) {
+              const filePath = decodeURIComponent(pathPart);
+              const oldFile = bucket.file(filePath);
+              const [exists] = await oldFile.exists();
+              if (exists) {
+                await oldFile.delete();
+                console.log(`Deleted old trail photo during PUT: ${filePath}`);
+              }
+            }
+          } catch (err) {
+            console.error("Failed to delete old trail photo during PUT:", err);
+          }
+        }
+      }
+    }
 
     const success = await updateParkTrail(trailId, park.id, {
       name: body.name,
@@ -66,6 +92,28 @@ export async function DELETE(
     }
 
     const trailId = parseInt(id, 10);
+    const existingTrail = await getParkTrail(trailId, park.id);
+
+    // Delete from Storage if it exists
+    if (existingTrail && existingTrail.photo_url && existingTrail.photo_url.includes("firebasestorage.googleapis.com")) {
+      try {
+        const bucket = getAdminStorage().bucket();
+        const urlObj = new URL(existingTrail.photo_url);
+        const pathPart = urlObj.pathname.split("/o/")[1];
+        if (pathPart) {
+          const filePath = decodeURIComponent(pathPart);
+          const oldFile = bucket.file(filePath);
+          const [exists] = await oldFile.exists();
+          if (exists) {
+            await oldFile.delete();
+            console.log(`Deleted trail photo during DELETE: ${filePath}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to delete trail photo from storage:", err);
+      }
+    }
+
     const success = await deleteParkTrail(trailId, park.id);
 
     if (!success) {

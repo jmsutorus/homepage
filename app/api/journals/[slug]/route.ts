@@ -9,6 +9,7 @@ import {
   getMoodForDate,
 } from "@/lib/db/journals";
 import { requireAuthApi } from "@/lib/auth/server";
+import { getAdminStorage } from "@/lib/firebase/admin";
 
 // GET - Read existing journal entry for editing
 export async function GET(
@@ -100,6 +101,28 @@ export async function PATCH(
         { status: 400 }
       );
     }
+    
+    // Handle photo cleanup if image_url is being updated
+    if (frontmatter.image_url !== undefined && existing.image_url && existing.image_url !== frontmatter.image_url) {
+      if (existing.image_url.includes("firebasestorage.googleapis.com")) {
+        try {
+          const bucket = getAdminStorage().bucket();
+          const urlObj = new URL(existing.image_url);
+          const pathPart = urlObj.pathname.split("/o/")[1];
+          if (pathPart) {
+            const filePath = decodeURIComponent(pathPart);
+            const oldFile = bucket.file(filePath);
+            const [exists] = await oldFile.exists();
+            if (exists) {
+              await oldFile.delete();
+              console.log(`Deleted old journal image during PATCH: ${filePath}`);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to delete old journal image during PATCH:", err);
+        }
+      }
+    }
 
     // Build update object
     const updateData: any = {
@@ -184,6 +207,26 @@ export async function DELETE(
         { error: "Journal not found" },
         { status: 404 }
       );
+    }
+    
+    // Delete image from storage if it exists
+    if (existing.image_url && existing.image_url.includes("firebasestorage.googleapis.com")) {
+      try {
+        const bucket = getAdminStorage().bucket();
+        const urlObj = new URL(existing.image_url);
+        const pathPart = urlObj.pathname.split("/o/")[1];
+        if (pathPart) {
+          const filePath = decodeURIComponent(pathPart);
+          const oldFile = bucket.file(filePath);
+          const [exists] = await oldFile.exists();
+          if (exists) {
+            await oldFile.delete();
+            console.log(`Deleted journal image during DELETE: ${filePath}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to delete journal image during DELETE:", err);
+      }
     }
 
     const success = await deleteJournal(slug, userId);

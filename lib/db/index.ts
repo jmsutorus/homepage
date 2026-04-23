@@ -82,7 +82,12 @@ export async function query<T>(sql: string, params: any[] = []): Promise<T[]> {
     sql,
     args: params,
   });
-  return result.rows as unknown as T[];
+  
+  // Convert Row objects to plain JavaScript objects to ensure they can be 
+  // passed from Server Components to Client Components.
+  // Using JSON.parse(JSON.stringify()) is a reliable way to strip any 
+  // non-serializable properties or methods from the database driver's Row objects.
+  return JSON.parse(JSON.stringify(result.rows)) as T[];
 }
 
 /**
@@ -94,7 +99,11 @@ export async function queryOne<T>(sql: string, params: any[] = []): Promise<T | 
     sql,
     args: params,
   });
-  return result.rows[0] as unknown as T | undefined;
+  
+  if (result.rows.length === 0) return undefined;
+  
+  // Convert to plain object for Next.js serialization
+  return JSON.parse(JSON.stringify(result.rows[0])) as T;
 }
 
 /**

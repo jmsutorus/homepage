@@ -4,9 +4,12 @@ import {
   getParkBySlug,
   updatePark,
   deletePark,
+  getParkPhotos,
+  getParkTrails,
 } from "@/lib/db/parks";
 import { PARK_CATEGORIES } from "@/lib/db/enums/park-enums";
 import { requireAuthApi } from "@/lib/auth/server";
+import { getAdminStorage } from "@/lib/firebase/admin";
 
 // GET - Read existing park entry for editing
 export async function GET(
@@ -97,6 +100,28 @@ export async function PATCH(
       );
     }
 
+    // Handle photo cleanup if poster is being updated
+    if (frontmatter.poster !== undefined && existing.poster && existing.poster !== frontmatter.poster) {
+      if (existing.poster.includes("firebasestorage.googleapis.com")) {
+        try {
+          const bucket = getAdminStorage().bucket();
+          const urlObj = new URL(existing.poster);
+          const pathPart = urlObj.pathname.split("/o/")[1];
+          if (pathPart) {
+            const filePath = decodeURIComponent(pathPart);
+            const oldFile = bucket.file(filePath);
+            const [exists] = await oldFile.exists();
+            if (exists) {
+              await oldFile.delete();
+              console.log(`Deleted old park poster during PATCH: ${filePath}`);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to delete old park poster during PATCH:", err);
+        }
+      }
+    }
+
     // Build update object
     const updateData = {
       title: frontmatter.title,
@@ -160,6 +185,72 @@ export async function DELETE(
         { error: "Park not found" },
         { status: 404 }
       );
+    }
+
+    // Delete all associated media from storage
+    const bucket = getAdminStorage().bucket();
+
+    // 1. Delete poster
+    if (existing.poster && existing.poster.includes("firebasestorage.googleapis.com")) {
+      try {
+        const urlObj = new URL(existing.poster);
+        const pathPart = urlObj.pathname.split("/o/")[1];
+        if (pathPart) {
+          const filePath = decodeURIComponent(pathPart);
+          const oldFile = bucket.file(filePath);
+          const [exists] = await oldFile.exists();
+          if (exists) {
+            await oldFile.delete();
+            console.log(`Deleted park poster during park deletion: ${filePath}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to delete park poster during park deletion:", err);
+      }
+    }
+
+    // 2. Delete gallery photos
+    const photos = await getParkPhotos(existing.id);
+    for (const photo of photos) {
+      if (photo.url && photo.url.includes("firebasestorage.googleapis.com")) {
+        try {
+          const urlObj = new URL(photo.url);
+          const pathPart = urlObj.pathname.split("/o/")[1];
+          if (pathPart) {
+            const filePath = decodeURIComponent(pathPart);
+            const oldFile = bucket.file(filePath);
+            const [exists] = await oldFile.exists();
+            if (exists) {
+              await oldFile.delete();
+              console.log(`Deleted park gallery photo during park deletion: ${filePath}`);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to delete park gallery photo during park deletion:", err);
+        }
+      }
+    }
+
+    // 3. Delete trail photos
+    const trails = await getParkTrails(existing.id);
+    for (const trail of trails) {
+      if (trail.photo_url && trail.photo_url.includes("firebasestorage.googleapis.com")) {
+        try {
+          const urlObj = new URL(trail.photo_url);
+          const pathPart = urlObj.pathname.split("/o/")[1];
+          if (pathPart) {
+            const filePath = decodeURIComponent(pathPart);
+            const oldFile = bucket.file(filePath);
+            const [exists] = await oldFile.exists();
+            if (exists) {
+              await oldFile.delete();
+              console.log(`Deleted park trail photo during park deletion: ${filePath}`);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to delete park trail photo during park deletion:", err);
+        }
+      }
     }
 
     const success = await deletePark(slug, userId);

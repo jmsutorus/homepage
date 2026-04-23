@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { ParkPosterEditDialog } from "./park-poster-edit-dialog";
 
 interface ParkHeroEditorialProps {
   park: ParkContent;
@@ -24,6 +25,7 @@ interface ParkHeroEditorialProps {
 
 export function ParkHeroEditorial({ park }: ParkHeroEditorialProps) {
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+  const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
   const [quote, setQuote] = useState(park.quote || "");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -73,6 +75,19 @@ export function ParkHeroEditorial({ park }: ParkHeroEditorialProps) {
           <span className="material-symbols-outlined text-8xl text-media-primary-fixed/20">terrain</span>
         </div>
       )}
+      
+      {/* Photo Edit Button */}
+      <div className="absolute top-8 right-8 z-20">
+        <Button
+          onClick={() => setIsPhotoDialogOpen(true)}
+          size="icon"
+          variant="ghost"
+          className="rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white/40 border border-white/20 transition-all shadow-lg hover:scale-110 h-12 w-12 group/btn"
+          title="Edit Park Poster"
+        >
+          <Pencil className="w-6 h-6 group-hover/btn:scale-110 text-white transition-transform" />
+        </Button>
+      </div>
       
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-media-primary/90 via-media-primary/20 to-transparent"></div>
@@ -157,6 +172,15 @@ export function ParkHeroEditorial({ park }: ParkHeroEditorialProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ParkPosterEditDialog
+        open={isPhotoDialogOpen}
+        onOpenChange={setIsPhotoDialogOpen}
+        park={park}
+        onSuccess={() => {
+          router.refresh();
+        }}
+      />
     </header>
   );
 }

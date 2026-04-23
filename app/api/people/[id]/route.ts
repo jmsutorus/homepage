@@ -6,6 +6,7 @@ import {
   type RelationshipCategory
 } from "@/lib/db/people";
 import { requireAuthApi } from "@/lib/auth/server";
+import { getAdminStorage } from "@/lib/firebase/admin";
 
 /**
  * GET /api/people/[id]
@@ -80,7 +81,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, birthday, relationship, photo, email, phone, notes, gift_ideas, anniversary, relationship_type_id, is_partner, slug } = body;
+    const { name, birthday, relationship, photo, email, phone, address, notes, gift_ideas, anniversary, relationship_type_id, is_partner, slug } = body;
 
     // Validate required fields
     if (!name || !birthday) {
@@ -123,6 +124,28 @@ export async function PUT(
       return NextResponse.json({ error: "Person not found" }, { status: 404 });
     }
 
+    // Handle old photo cleanup if photo is being updated
+    if (photo !== undefined && existingPerson.photo && existingPerson.photo !== photo) {
+      if (existingPerson.photo.includes("firebasestorage.googleapis.com")) {
+        try {
+          const bucket = getAdminStorage().bucket();
+          const urlObj = new URL(existingPerson.photo);
+          const pathPart = urlObj.pathname.split("/o/")[1];
+          if (pathPart) {
+            const filePath = decodeURIComponent(pathPart);
+            const oldFile = bucket.file(filePath);
+            const [exists] = await oldFile.exists();
+            if (exists) {
+              await oldFile.delete();
+              console.log(`Deleted old person photo during PATCH: ${filePath}`);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to delete old person photo during PATCH:", err);
+        }
+      }
+    }
+
     // Update person
     const success = await updatePerson(
       personId,
@@ -138,7 +161,8 @@ export async function PUT(
       userId,
       relationship_type_id,
       is_partner,
-      slug || existingPerson.slug
+      slug || existingPerson.slug,
+      address
     );
 
     if (!success) {
@@ -175,6 +199,27 @@ export async function DELETE(
 
     if (isNaN(personId)) {
       return NextResponse.json({ error: "Invalid person ID" }, { status: 400 });
+    }
+
+    // Delete image from storage if it exists
+    const existingPerson = await getPersonById(personId, userId);
+    if (existingPerson && existingPerson.photo && existingPerson.photo.includes("firebasestorage.googleapis.com")) {
+      try {
+        const bucket = getAdminStorage().bucket();
+        const urlObj = new URL(existingPerson.photo);
+        const pathPart = urlObj.pathname.split("/o/")[1];
+        if (pathPart) {
+          const filePath = decodeURIComponent(pathPart);
+          const oldFile = bucket.file(filePath);
+          const [exists] = await oldFile.exists();
+          if (exists) {
+            await oldFile.delete();
+            console.log(`Deleted person photo during DELETE: ${filePath}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to delete person photo during DELETE:", err);
+      }
     }
 
     const success = await deletePerson(personId, userId);

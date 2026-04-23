@@ -43,6 +43,7 @@ import {
   IngredientInput,
 } from "@/lib/types/meals";
 import { MealForm } from "@/components/widgets/meals/meal-form";
+import { MealPhotoEditDialog } from "@/components/widgets/recipes/meal-photo-edit-dialog";
 import { motion } from "framer-motion";
 
 interface MealDetailContentProps {
@@ -52,6 +53,7 @@ interface MealDetailContentProps {
 export function MealDetailContent({ meal }: MealDetailContentProps) {
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [isEditing, setIsEditing] = useState(false);
 
@@ -149,6 +151,15 @@ export function MealDetailContent({ meal }: MealDetailContentProps) {
         <Link href="/recipes" className="absolute top-8 left-8 z-20 bg-media-background/20 backdrop-blur-md p-3 rounded-full hover:bg-media-background/40 transition-all text-media-on-primary">
           <ArrowLeft className="h-6 w-6" />
         </Link>
+
+        {/* Photo Edit Button */}
+        <button 
+          onClick={() => setIsPhotoDialogOpen(true)}
+          className="absolute top-8 right-8 z-20 bg-media-background/20 backdrop-blur-md p-3 rounded-full hover:bg-media-background/40 transition-all text-media-on-primary cursor-pointer group"
+          title="Edit Recipe Photo"
+        >
+          <Pencil className="h-6 w-6 group-hover:scale-110 transition-transform" />
+        </button>
         
         <div className="relative z-10 max-w-4xl space-y-8">
           <div className="flex flex-wrap gap-3">
@@ -404,6 +415,14 @@ export function MealDetailContent({ meal }: MealDetailContentProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Photo Edit Dialog */}
+      <MealPhotoEditDialog
+        open={isPhotoDialogOpen}
+        onOpenChange={setIsPhotoDialogOpen}
+        meal={meal}
+        onSuccess={() => router.refresh()}
+      />
     </main>
   );
 }

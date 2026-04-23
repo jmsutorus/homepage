@@ -9,6 +9,7 @@ import {
 } from "@/lib/db/vacations";
 import { requireAuthApi } from "@/lib/auth/server";
 import { checkAchievement } from "@/lib/achievements";
+import { getAdminStorage } from "@/lib/firebase/admin";
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -95,6 +96,28 @@ export async function PATCH(
       if (frontmatter.rating !== undefined) updateData.rating = frontmatter.rating;
       if (frontmatter.featured !== undefined) updateData.featured = frontmatter.featured;
       if (frontmatter.published !== undefined) updateData.published = frontmatter.published;
+
+      // Handle old poster cleanup if poster is being updated
+      if (frontmatter.poster !== undefined && vacation.poster && vacation.poster !== frontmatter.poster) {
+        if (vacation.poster.includes("firebasestorage.googleapis.com")) {
+          try {
+            const bucket = getAdminStorage().bucket();
+            const urlObj = new URL(vacation.poster);
+            const pathPart = urlObj.pathname.split("/o/")[1];
+            if (pathPart) {
+              const filePath = decodeURIComponent(pathPart);
+              const oldFile = bucket.file(filePath);
+              const [exists] = await oldFile.exists();
+              if (exists) {
+                await oldFile.delete();
+                console.log(`Deleted old poster during PATCH: ${filePath}`);
+              }
+            }
+          } catch (err) {
+            console.error("Failed to delete old poster during PATCH:", err);
+          }
+        }
+      }
     }
 
     if (content !== undefined) {

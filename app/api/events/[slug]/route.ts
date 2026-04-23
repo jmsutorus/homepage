@@ -4,9 +4,11 @@ import {
   getEventBySlug,
   updateEvent,
   deleteEvent,
+  getEventPhotos,
   type UpdateEventInput,
 } from "@/lib/db/events";
 import { requireAuthApi } from "@/lib/auth/server";
+import { getAdminStorage } from "@/lib/firebase/admin";
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -114,6 +116,31 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const event = await getEventBySlug(slug, userId);
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+
+    // Delete all photos from storage if they exist
+    const photos = await getEventPhotos(event.id);
+    if (photos.length > 0) {
+      const bucket = getAdminStorage().bucket();
+      for (const photo of photos) {
+        if (photo.url && photo.url.includes("firebasestorage.googleapis.com")) {
+          try {
+            const urlObj = new URL(photo.url);
+            const pathPart = urlObj.pathname.split("/o/")[1];
+            if (pathPart) {
+              const filePath = decodeURIComponent(pathPart);
+              const oldFile = bucket.file(filePath);
+              const [exists] = await oldFile.exists();
+              if (exists) {
+                await oldFile.delete();
+                console.log(`Deleted event photo from storage during event deletion: ${filePath}`);
+              }
+            }
+          } catch (err) {
+            console.error("Failed to delete event photo from storage during event deletion:", err);
+          }
+        }
+      }
     }
 
     const success = await deleteEvent(event.id, userId);

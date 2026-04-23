@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import {
   getMealWithIngredients,
+  getMealById,
   updateMeal,
   deleteMeal,
   MealInput,
 } from "@/lib/db/meals";
+import { getAdminStorage } from "@/lib/firebase/admin";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -63,9 +65,34 @@ export async function PUT(request: Request, { params }: RouteParams) {
     if (body.servings !== undefined) updates.servings = body.servings;
     if (body.prep_time !== undefined) updates.prep_time = body.prep_time;
     if (body.cook_time !== undefined) updates.cook_time = body.cook_time;
-    if (body.image_url !== undefined) updates.image_url = body.image_url;
     if (body.tags !== undefined) updates.tags = body.tags;
     if (body.rating !== undefined) updates.rating = body.rating;
+
+    // Handle old photo cleanup if image_url is being updated
+    if (body.image_url !== undefined) {
+      updates.image_url = body.image_url;
+      const existingMeal = await getMealById(mealId, session.user.id);
+      if (existingMeal && existingMeal.image_url && existingMeal.image_url !== body.image_url) {
+        if (existingMeal.image_url.includes("firebasestorage.googleapis.com")) {
+          try {
+            const bucket = getAdminStorage().bucket();
+            const urlObj = new URL(existingMeal.image_url);
+            const pathPart = urlObj.pathname.split("/o/")[1];
+            if (pathPart) {
+              const filePath = decodeURIComponent(pathPart);
+              const oldFile = bucket.file(filePath);
+              const [exists] = await oldFile.exists();
+              if (exists) {
+                await oldFile.delete();
+                console.log(`Deleted old meal photo during PUT: ${filePath}`);
+              }
+            }
+          } catch (err) {
+            console.error("Failed to delete old meal photo during PUT:", err);
+          }
+        }
+      }
+    }
 
     const success = await updateMeal(mealId, session.user.id, updates);
     if (!success) {
@@ -95,6 +122,27 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     const mealId = parseInt(id, 10);
     if (isNaN(mealId)) {
       return NextResponse.json({ error: "Invalid meal ID" }, { status: 400 });
+    }
+
+    // Delete image from storage if it exists
+    const existingMeal = await getMealById(mealId, session.user.id);
+    if (existingMeal && existingMeal.image_url && existingMeal.image_url.includes("firebasestorage.googleapis.com")) {
+      try {
+        const bucket = getAdminStorage().bucket();
+        const urlObj = new URL(existingMeal.image_url);
+        const pathPart = urlObj.pathname.split("/o/")[1];
+        if (pathPart) {
+          const filePath = decodeURIComponent(pathPart);
+          const oldFile = bucket.file(filePath);
+          const [exists] = await oldFile.exists();
+          if (exists) {
+            await oldFile.delete();
+            console.log(`Deleted meal photo during DELETE: ${filePath}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to delete meal photo during DELETE:", err);
+      }
     }
 
     const success = await deleteMeal(mealId, session.user.id);

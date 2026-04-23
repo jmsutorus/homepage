@@ -43,6 +43,7 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
     notes: "",
     gift_ideas: "",
     anniversary: "",
+    address: "",
     relationship_type_id: null as number | null,
     is_partner: false
   });
@@ -73,11 +74,12 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
           notes: editingPerson.notes || "",
           gift_ideas: editingPerson.gift_ideas || "",
           anniversary: editingPerson.anniversary || "",
+          address: editingPerson.address || "",
           relationship_type_id: editingPerson.relationship_type_id || null,
           is_partner: editingPerson.is_partner || false
         });
         // Auto-expand sections if they have data
-        setIsContactOpen(!!(editingPerson.email || editingPerson.phone || editingPerson.photo));
+        setIsContactOpen(!!(editingPerson.email || editingPerson.phone || editingPerson.photo || editingPerson.address));
         setIsAdditionalOpen(!!(editingPerson.anniversary || editingPerson.notes || editingPerson.gift_ideas));
       } else {
         // Reset to empty form for adding new person
@@ -92,6 +94,7 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
           notes: "",
           gift_ideas: "",
           anniversary: "",
+          address: "",
           relationship_type_id: null,
           is_partner: false
         });
@@ -124,6 +127,7 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
         notes: formData.notes || undefined,
         gift_ideas: formData.gift_ideas || undefined,
         anniversary: formData.anniversary || undefined,
+        address: formData.address || undefined,
         relationship_type_id: formData.relationship_type_id,
         is_partner: formData.is_partner
       };
@@ -174,12 +178,16 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
         {/* Modal Header */}
         <div className="px-8 py-6 border-b border-media-outline-variant/30 flex justify-between items-center bg-media-surface-container-low shrink-0">
           <div>
-            <h2 className="text-2xl font-bold text-media-primary tracking-tight">
-              {editingPerson ? "Edit Person" : "Add Person"}
-            </h2>
-            <p className="text-sm text-media-on-surface-variant font-medium">
-              {editingPerson ? "Curate the details of your connection." : "Add a new person to track their birthday and important dates."}
-            </p>
+            <DialogTitle asChild>
+              <h2 className="text-2xl font-bold text-media-primary tracking-tight">
+                {editingPerson ? "Edit Person" : "Add Person"}
+              </h2>
+            </DialogTitle>
+            <DialogDescription asChild>
+              <p className="text-sm text-media-on-surface-variant font-medium">
+                {editingPerson ? "Curate the details of your connection." : "Add a new person to track their birthday and important dates."}
+              </p>
+            </DialogDescription>
           </div>
           <button 
             onClick={() => onOpenChange(false)}
@@ -365,6 +373,21 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
                   />
                   <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-media-on-surface-variant">call</span>
                 </div>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="address" className="text-sm font-bold text-media-primary ml-1">Address</Label>
+              <div className="relative">
+                <input
+                  id="address"
+                  className="w-full bg-media-surface-container-low border border-media-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-media-secondary focus:border-media-secondary transition-all outline-none text-media-on-surface"
+                  placeholder="123 Editorial St, City, Country"
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                />
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-media-on-surface-variant">map</span>
               </div>
             </div>
           </div>

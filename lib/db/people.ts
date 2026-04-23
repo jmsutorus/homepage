@@ -37,6 +37,7 @@ export interface Person {
   relationshipTypeName?: string | null; // Joined from relationship_types table
   is_partner: boolean;
   slug: string;
+  address: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -108,13 +109,14 @@ export async function createPerson(
   userId: string,
   relationshipTypeId?: number | null,
   isPartner?: boolean,
-  slug?: string
+  slug?: string,
+  address?: string | null
 ): Promise<Person> {
   const generatedSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   
   const result = await execute(
-    `INSERT INTO people (userId, name, birthday, relationship, photo, email, phone, notes, gift_ideas, anniversary, relationship_type_id, is_partner, slug)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO people (userId, name, birthday, relationship, photo, email, phone, notes, gift_ideas, anniversary, relationship_type_id, is_partner, slug, address)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       name,
@@ -128,7 +130,8 @@ export async function createPerson(
       anniversary || null,
       relationshipTypeId ?? null,
       isPartner ? 1 : 0,
-      generatedSlug
+      generatedSlug,
+      address || null
     ]
   );
 
@@ -216,11 +219,12 @@ export async function updatePerson(
   userId: string,
   relationshipTypeId?: number | null,
   isPartner?: boolean,
-  slug?: string
+  slug?: string,
+  address?: string | null
 ): Promise<boolean> {
   const result = await execute(
     `UPDATE people
-     SET name = ?, birthday = ?, relationship = ?, photo = ?, email = ?, phone = ?, notes = ?, gift_ideas = ?, anniversary = ?, relationship_type_id = ?, is_partner = ?, slug = ?
+     SET name = ?, birthday = ?, relationship = ?, photo = ?, email = ?, phone = ?, notes = ?, gift_ideas = ?, anniversary = ?, relationship_type_id = ?, is_partner = ?, slug = ?, address = ?
      WHERE id = ? AND userId = ?`,
     [
       name,
@@ -235,6 +239,7 @@ export async function updatePerson(
       relationshipTypeId ?? null,
       isPartner ? 1 : 0,
       slug,
+      address || null,
       id,
       userId
     ]

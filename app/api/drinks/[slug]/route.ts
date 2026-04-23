@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDrinkWithLogs, updateDrink, deleteDrink, drinkSlugExists, UpdateDrinkInput } from "@/lib/db/drinks";
+import { getDrinkWithLogs, updateDrink, deleteDrink, drinkSlugExists, UpdateDrinkInput, getDrinkBySlug } from "@/lib/db/drinks";
 import { getUserId } from "@/lib/auth/server";
 import { slugify } from "@/lib/utils";
+import { getAdminStorage } from "@/lib/firebase/admin";
 
 export async function GET(
   req: NextRequest,
@@ -57,7 +58,32 @@ export async function PATCH(
           // If collision, don't change slug or error?
           // Let's error
           return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
-       }
+        }
+    }
+
+    // Handle photo cleanup if image_url is being updated
+    if (body.image_url !== undefined) {
+      const existing = await getDrinkBySlug(slug, userId);
+      if (existing && existing.image_url && existing.image_url !== body.image_url) {
+        if (existing.image_url.includes("firebasestorage.googleapis.com")) {
+          try {
+            const bucket = getAdminStorage().bucket();
+            const urlObj = new URL(existing.image_url);
+            const pathPart = urlObj.pathname.split("/o/")[1];
+            if (pathPart) {
+              const filePath = decodeURIComponent(pathPart);
+              const oldFile = bucket.file(filePath);
+              const [exists] = await oldFile.exists();
+              if (exists) {
+                await oldFile.delete();
+                console.log(`Deleted old drink photo during PATCH: ${filePath}`);
+              }
+            }
+          } catch (err) {
+            console.error("Failed to delete old drink photo during PATCH:", err);
+          }
+        }
+      }
     }
 
     const input: UpdateDrinkInput = {
@@ -97,6 +123,27 @@ export async function DELETE(
   try {
     const slug = (await params).slug;
     const userId = await getUserId();
+
+    // Delete photo from storage if it exists
+    const existing = await getDrinkBySlug(slug, userId);
+    if (existing && existing.image_url && existing.image_url.includes("firebasestorage.googleapis.com")) {
+      try {
+        const bucket = getAdminStorage().bucket();
+        const urlObj = new URL(existing.image_url);
+        const pathPart = urlObj.pathname.split("/o/")[1];
+        if (pathPart) {
+          const filePath = decodeURIComponent(pathPart);
+          const oldFile = bucket.file(filePath);
+          const [exists] = await oldFile.exists();
+          if (exists) {
+            await oldFile.delete();
+            console.log(`Deleted drink photo during DELETE: ${filePath}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to delete drink photo during DELETE:", err);
+      }
+    }
     
     const success = await deleteDrink(slug, userId);
 

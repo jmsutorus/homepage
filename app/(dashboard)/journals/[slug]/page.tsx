@@ -6,6 +6,7 @@ import { formatDateLongSafe, cn } from "@/lib/utils";
 import { ExportButton } from "@/components/widgets/shared/export-button";
 import { getRelatedJournals } from "@/lib/actions/related-content";
 import { getUserId } from "@/lib/auth/server";
+import { JournalHeroClient } from "@/components/widgets/journals/journal-hero-client";
 
 interface JournalDetailPageProps {
   params: Promise<{
@@ -80,34 +81,12 @@ export default async function JournalDetailPage({ params }: JournalDetailPagePro
     <div className="flex min-h-screen bg-[#faf9f6] font-['Lexend'] text-[#1a1c1a]">
       <main className="flex-1 bg-[#faf9f6] min-h-screen pb-20">
         {/* Hero Section */}
-        <div className="relative w-full h-[665px] overflow-hidden group">
-          <img 
-            alt={journal.title} 
-            className="w-full h-full object-cover brightness-[0.85] group-hover:brightness-90 transition-all duration-700" 
-            src={heroImage}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#061b0e]/80 via-transparent to-transparent"></div>
-          <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
-            <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-end gap-6">
-              <div className="space-y-2">
-                <p className="text-[#ffdad3] text-sm font-bold tracking-[0.2em] uppercase">{dayOfWeek}</p>
-                <h1 className="text-4xl md:text-7xl font-black text-white tracking-tighter leading-none">{mainTitle}</h1>
-              </div>
-              <div className="flex flex-col items-end">
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-xl flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#fd876f]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      {displayMood && displayMood > 5 ? 'mood' : 'mood_bad'}
-                    </span>
-                    <span className="font-bold text-xl text-white">{displayMood ?? "?"}/10</span>
-                  </div>
-                  <div className="w-[1px] h-6 bg-white/20"></div>
-                  <p className="text-white/80 text-xs font-medium tracking-wide capitalize">{journal.journal_type} Journal</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <JournalHeroClient 
+          journal={journal} 
+          displayMood={displayMood} 
+          dayOfWeek={dayOfWeek} 
+          mainTitle={mainTitle} 
+        />
 
         <div className="max-w-5xl mx-auto px-8 py-10">
           {/* Metadata & Actions Bar */}

@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, ImageIcon } from "lucide-react";
+import { Star, ImageIcon, Upload, Link as LinkIcon, Loader2, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRef } from "react";
+import { toast } from "sonner";
 import { SuccessCheck } from "@/components/ui/animations/success-check";
 import { useSuccessDialog } from "@/hooks/use-success-dialog";
 
@@ -27,6 +30,9 @@ export function CreateDateDialog({ open, onOpenChange, onDateAdded }: CreateDate
   const [cost, setCost] = useState("");
   const [notes, setNotes] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   // Success dialog state
@@ -53,9 +59,23 @@ export function CreateDateDialog({ open, onOpenChange, onDateAdded }: CreateDate
         setCost("");
         setNotes("");
         setPhotoUrl("");
+        setSelectedFile(null);
+        setPreviewUrl(null);
       }, 200);
     }
   }, [open, resetSuccess]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSave = async () => {
     if (!date || !type) {
@@ -65,6 +85,7 @@ export function CreateDateDialog({ open, onOpenChange, onDateAdded }: CreateDate
 
     setIsSaving(true);
     try {
+      // Create the date first to get an ID if we need to upload a photo
       const response = await fetch("/api/relationship/dates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -77,12 +98,29 @@ export function CreateDateDialog({ open, onOpenChange, onDateAdded }: CreateDate
           rating: rating || undefined,
           cost: cost ? parseFloat(cost) : undefined,
           notes: notes || undefined,
-          photos: photoUrl.trim() || undefined,
+          photos: selectedFile ? undefined : (photoUrl.trim() || undefined),
         }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to create date");
+      }
+
+      const newDate = await response.json();
+
+      // If there's a file to upload, do it now
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        const uploadResponse = await fetch(`/api/relationship/dates/${newDate.id}/photo`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          toast.error("Date created but photo upload failed");
+        }
       }
 
       // Reset form before showing success
@@ -95,11 +133,13 @@ export function CreateDateDialog({ open, onOpenChange, onDateAdded }: CreateDate
       setCost("");
       setNotes("");
       setPhotoUrl("");
+      setSelectedFile(null);
+      setPreviewUrl(null);
 
       triggerSuccess();
     } catch (error) {
       console.error("Failed to create date:", error);
-      alert("Failed to create date. Please try again.");
+      toast.error("Failed to create date. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -252,20 +292,93 @@ export function CreateDateDialog({ open, onOpenChange, onDateAdded }: CreateDate
                 />
               </div>
 
-              {/* Photo URL */}
-              <div className="space-y-2">
-                <Label htmlFor="photoUrl">Photo URL</Label>
-                <div className="relative">
-                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="photoUrl"
-                    placeholder="https://example.com/image.jpg"
-                    value={photoUrl}
-                    onChange={(e) => setPhotoUrl(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">Optional: Add a photo URL to display on the date card</p>
+              {/* Photos */}
+              <div className="space-y-3">
+                <Label>Date Photo</Label>
+                <Tabs defaultValue="upload" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-11">
+                    <TabsTrigger value="upload" className="data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all h-9">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload
+                    </TabsTrigger>
+                    <TabsTrigger value="url" className="data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all h-9">
+                      <LinkIcon className="w-4 h-4 mr-2" />
+                      URL
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="upload" className="mt-4 space-y-4">
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border-2 border-dashed border-muted-foreground/20 rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-muted/30 transition-all group relative overflow-hidden"
+                    >
+                      {previewUrl ? (
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-md">
+                          <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <p className="text-white text-sm font-medium">Change Photo</p>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedFile(null);
+                              setPreviewUrl(null);
+                            }}
+                            className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                            <ImageIcon className="w-6 h-6" />
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm font-semibold text-foreground">Click to upload photo</p>
+                            <p className="text-xs text-muted-foreground mt-1">Capture the moment together</p>
+                          </div>
+                        </>
+                      )}
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileChange} 
+                        accept="image/*" 
+                        className="hidden" 
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="url" className="mt-4 space-y-4">
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="photoUrl"
+                        placeholder="https://example.com/image.jpg"
+                        value={photoUrl}
+                        onChange={(e) => {
+                          setPhotoUrl(e.target.value);
+                          setSelectedFile(null);
+                          setPreviewUrl(null);
+                        }}
+                        className="pl-9 h-11 rounded-xl"
+                      />
+                    </div>
+                    {photoUrl && (
+                      <div className="rounded-xl overflow-hidden border border-muted shadow-sm aspect-video">
+                        <img 
+                          src={photoUrl} 
+                          alt="URL Preview" 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
 

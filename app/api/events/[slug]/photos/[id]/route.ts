@@ -7,6 +7,7 @@ import {
   type EventPhotoInput,
 } from "@/lib/db/events";
 import { requireAuthApi } from "@/lib/auth/server";
+import { getAdminStorage } from "@/lib/firebase/admin";
 
 interface RouteParams {
   params: Promise<{ slug: string; id: string }>;
@@ -67,7 +68,31 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     const updates: Partial<EventPhotoInput> = {};
-    if (body.url !== undefined) updates.url = body.url;
+    if (body.url !== undefined) {
+      updates.url = body.url;
+      // Cleanup old photo if URL changed
+      const existingPhoto = await getEventPhoto(parseInt(id, 10), event.id);
+      if (existingPhoto && existingPhoto.url && existingPhoto.url !== body.url) {
+        if (existingPhoto.url.includes("firebasestorage.googleapis.com")) {
+          try {
+            const bucket = getAdminStorage().bucket();
+            const urlObj = new URL(existingPhoto.url);
+            const pathPart = urlObj.pathname.split("/o/")[1];
+            if (pathPart) {
+              const filePath = decodeURIComponent(pathPart);
+              const oldFile = bucket.file(filePath);
+              const [exists] = await oldFile.exists();
+              if (exists) {
+                await oldFile.delete();
+                console.log(`Deleted old event photo during PUT: ${filePath}`);
+              }
+            }
+          } catch (err) {
+            console.error("Failed to delete old event photo during PUT:", err);
+          }
+        }
+      }
+    }
     if (body.caption !== undefined) updates.caption = body.caption;
     if (body.date_taken !== undefined) updates.date_taken = body.date_taken;
     if (body.order_index !== undefined) updates.order_index = body.order_index;
@@ -106,6 +131,26 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const event = await getEventBySlug(slug, userId);
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+
+    const photo = await getEventPhoto(parseInt(id, 10), event.id);
+    if (photo && photo.url && photo.url.includes("firebasestorage.googleapis.com")) {
+      try {
+        const bucket = getAdminStorage().bucket();
+        const urlObj = new URL(photo.url);
+        const pathPart = urlObj.pathname.split("/o/")[1];
+        if (pathPart) {
+          const filePath = decodeURIComponent(pathPart);
+          const oldFile = bucket.file(filePath);
+          const [exists] = await oldFile.exists();
+          if (exists) {
+            await oldFile.delete();
+            console.log(`Deleted event photo during DELETE: ${filePath}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to delete event photo from storage during DELETE:", err);
+      }
     }
 
     const success = await deleteEventPhoto(parseInt(id, 10), event.id);

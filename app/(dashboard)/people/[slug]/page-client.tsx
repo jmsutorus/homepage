@@ -5,8 +5,9 @@ import { type Person } from "@/lib/db/people";
 import { calculateAge, formatPhoneNumber } from "@/lib/people-utils";
 import { getZodiacSignFromBirthday } from "@/lib/zodiac";
 import { PersonFormDialog } from "@/components/widgets/people/person-form-dialog";
+import { PhotoEditDialog } from "@/components/widgets/people/photo-edit-dialog";
 import { useRouter } from "next/navigation";
-import { Heart, Mail, Phone, MapPin, Calendar, Edit, ChevronLeft, Filter, Plus, Image as ImageIcon, Gift } from "lucide-react";
+import { Heart, Mail, Phone, MapPin, Calendar, Edit, ChevronLeft, Filter, Plus, Image as ImageIcon, Gift, Pencil } from "lucide-react";
 import { formatDateLongSafe } from "@/lib/utils";
 
 interface PersonDetailClientProps {
@@ -17,6 +18,7 @@ interface PersonDetailClientProps {
 export function PersonDetailClient({ person, sharedHistory }: PersonDetailClientProps) {
   const router = useRouter();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
   
   const zodiacSign = getZodiacSignFromBirthday(person.birthday);
   const age = calculateAge(person.birthday);
@@ -55,6 +57,16 @@ export function PersonDetailClient({ person, sharedHistory }: PersonDetailClient
                 {person.name.charAt(0).toUpperCase()}
               </div>
             )}
+
+            {/* Photo Edit Button */}
+            <button 
+              onClick={() => setIsPhotoDialogOpen(true)}
+              className="absolute top-4 right-4 p-3 bg-white/20 backdrop-blur-md text-white rounded-full hover:bg-white/40 transition-all shadow-lg cursor-pointer z-10 group"
+              title="Edit Profile Photo"
+            >
+              <Pencil className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </button>
+
             <div className="absolute bottom-0 left-0 p-8 w-full bg-gradient-to-t from-media-primary/80 to-transparent">
               <span className="bg-media-secondary text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-2 inline-block shadow-sm">
                 {person.relationshipTypeName || person.relationship}
@@ -86,6 +98,12 @@ export function PersonDetailClient({ person, sharedHistory }: PersonDetailClient
           <div className="space-y-1">
             <p className="text-xl font-bold text-media-primary">{person.email || "No email documented"}</p>
             <p className="text-media-on-surface-variant">{formatPhoneNumber(person.phone)}</p>
+            {person.address && (
+              <p className="text-sm text-media-on-surface-variant flex items-center gap-1 mt-1">
+                <MapPin className="w-3 h-3" />
+                {person.address}
+              </p>
+            )}
           </div>
         </div>
         
@@ -199,6 +217,14 @@ export function PersonDetailClient({ person, sharedHistory }: PersonDetailClient
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         editingPerson={person}
+        onSuccess={handleEditSuccess}
+      />
+
+      {/* Photo Edit Dialog */}
+      <PhotoEditDialog
+        open={isPhotoDialogOpen}
+        onOpenChange={setIsPhotoDialogOpen}
+        person={person}
         onSuccess={handleEditSuccess}
       />
     </main>

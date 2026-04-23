@@ -19,7 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Pencil } from 'lucide-react';
+import { RestaurantPhotoEditDialog } from './restaurant-photo-edit-dialog';
 
 interface RestaurantDetailClientProps {
   restaurantData: RestaurantWithVisits;
@@ -32,6 +33,7 @@ export function RestaurantDetailClient({ restaurantData: initialData }: Restaura
   const [showAddVisit, setShowAddVisit] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
 
   const handleUpdate = async () => {
     const response = await fetch(`/api/restaurants/${restaurant.slug}`, {
@@ -112,6 +114,19 @@ export function RestaurantDetailClient({ restaurantData: initialData }: Restaura
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             The Culinary Archive
           </Link>
+        </div>
+        
+        {/* Photo Edit Button */}
+        <div className="absolute top-8 right-12 z-10">
+          <Button
+            onClick={() => setIsPhotoDialogOpen(true)}
+            size="icon"
+            variant="ghost"
+            className="rounded-full bg-white/20 backdrop-blur-md text-white rounded-full hover:bg-white/40 transition-all shadow-lg hover:scale-110 h-10 w-10 group"
+            title="Edit Restaurant Photo"
+          >
+            <Pencil className="w-5 h-5 group-hover:scale-110 text-white transition-transform" />
+          </Button>
         </div>
         <div className="absolute bottom-0 left-0 p-12 w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
@@ -336,6 +351,12 @@ export function RestaurantDetailClient({ restaurantData: initialData }: Restaura
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <RestaurantPhotoEditDialog
+        open={isPhotoDialogOpen}
+        onOpenChange={setIsPhotoDialogOpen}
+        restaurant={restaurant}
+        onSuccess={handleUpdate}
+      />
     </div>
   );
 }

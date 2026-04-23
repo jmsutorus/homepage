@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { DrinkWithLogs } from '@/lib/db/drinks';
 import { DrinkFormDialog } from './drink-form-dialog';
 import { DrinkLogDialog } from './drink-log-dialog';
+import { DrinkPhotoEditDialog } from './drink-photo-edit-dialog';
 
 interface DrinkDetailClientProps {
   drink: DrinkWithLogs;
@@ -20,6 +21,7 @@ export function DrinkDetailClient({ drink }: DrinkDetailClientProps) {
   const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showLogDialog, setShowLogDialog] = useState(false);
+  const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<any>(null); // Using any for simplicity with log type matching
 
   const handleDelete = async () => {
@@ -138,6 +140,20 @@ export function DrinkDetailClient({ drink }: DrinkDetailClientProps) {
                 <Wine className="w-24 h-24 text-media-primary/10" />
               </div>
             )}
+            
+            {/* Photo Edit Button */}
+            <div className="absolute top-4 right-4 z-20">
+              <Button
+                onClick={() => setIsPhotoDialogOpen(true)}
+                size="icon"
+                variant="ghost"
+                className="rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white/40 border border-white/20 transition-all shadow-lg hover:scale-110 h-10 w-10 group"
+                title="Edit Drink Photo"
+              >
+                <Pencil className="w-5 h-5 group-hover:scale-110 text-white transition-transform" />
+              </Button>
+            </div>
+
             <div className="absolute inset-0 bg-gradient-to-t from-media-primary/40 to-transparent"></div>
           </div>
         </div>
@@ -328,6 +344,14 @@ export function DrinkDetailClient({ drink }: DrinkDetailClientProps) {
           router.refresh();
         }}
         initialData={editingLog || undefined}
+      />
+      <DrinkPhotoEditDialog
+        open={isPhotoDialogOpen}
+        onOpenChange={setIsPhotoDialogOpen}
+        drink={drink}
+        onSuccess={() => {
+          router.refresh();
+        }}
       />
     </main>
   );

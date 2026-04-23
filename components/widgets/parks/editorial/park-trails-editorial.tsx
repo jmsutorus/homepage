@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { ParkTrail } from '@/lib/db/parks';
 import { Mountain, TrendingUp, MapPin, Clock, Plus, ExternalLink } from 'lucide-react';
 import { ParkTrailFormDialog } from './park-trail-form-dialog';
+import { ParkTrailPhotoEditDialog } from './park-trail-photo-edit-dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Pencil } from 'lucide-react';
 
 interface ParkTrailsEditorialProps {
   parkSlug: string;
@@ -15,7 +17,9 @@ export function ParkTrailsEditorial({ parkSlug }: ParkTrailsEditorialProps) {
   const [trails, setTrails] = useState<ParkTrail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
   const [selectedTrail, setSelectedTrail] = useState<ParkTrail | null>(null);
+  const [trailForPhoto, setTrailForPhoto] = useState<ParkTrail | null>(null);
 
   const fetchTrails = useCallback(async () => {
     setIsLoading(true);
@@ -39,6 +43,12 @@ export function ParkTrailsEditorial({ parkSlug }: ParkTrailsEditorialProps) {
   const handleEditTrail = (trail: ParkTrail) => {
     setSelectedTrail(trail);
     setIsDialogOpen(true);
+  };
+
+  const handleEditPhoto = (e: React.MouseEvent, trail: ParkTrail) => {
+    e.stopPropagation();
+    setTrailForPhoto(trail);
+    setIsPhotoDialogOpen(true);
   };
 
   const handleAddTrail = () => {
@@ -132,12 +142,25 @@ export function ParkTrailsEditorial({ parkSlug }: ParkTrailsEditorialProps) {
                   </div>
                 </div>
                 
-                <div className="hidden md:block w-full lg:w-72 h-72 rounded-3xl overflow-hidden shadow-2xl skew-y-1 group-hover:skew-y-0 transition-transform duration-700">
+                <div className="hidden md:block w-full lg:w-72 h-72 rounded-3xl overflow-hidden shadow-2xl skew-y-1 group-hover:skew-y-0 transition-transform duration-700 relative">
                   <img 
                     src={trail.photo_url || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop"} 
                     alt={trail.name} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                   />
+                  
+                  {/* Photo Edit Button */}
+                  <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      onClick={(e) => handleEditPhoto(e, trail)}
+                      size="icon"
+                      variant="ghost"
+                      className="rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white/40 border border-white/20 transition-all shadow-lg hover:scale-110 h-10 w-10 group/btn"
+                      title="Edit Trail Photo"
+                    >
+                      <Pencil className="w-5 h-5 group-hover/btn:scale-110 text-white transition-transform" />
+                    </Button>
+                  </div>
                 </div>
               </div>
               
@@ -157,6 +180,16 @@ export function ParkTrailsEditorial({ parkSlug }: ParkTrailsEditorialProps) {
         onOpenChange={setIsDialogOpen}
         onSuccess={fetchTrails}
       />
+
+      {trailForPhoto && (
+        <ParkTrailPhotoEditDialog
+          open={isPhotoDialogOpen}
+          onOpenChange={setIsPhotoDialogOpen}
+          parkSlug={parkSlug}
+          trail={trailForPhoto}
+          onSuccess={fetchTrails}
+        />
+      )}
     </section>
   );
 }

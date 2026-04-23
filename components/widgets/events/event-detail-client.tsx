@@ -31,10 +31,12 @@ import {
   MoreVertical,
   ExternalLink,
   Plus,
+  Pencil,
 } from 'lucide-react';
 import { EventPhotoGallery } from './event-photo-gallery';
 import { EventPeopleSection } from './event-people-section';
 import { AddPersonToEventDialog } from './add-person-to-event-dialog';
+import { EventPhotoUploadDialog } from './event-photo-upload-dialog';
 import { EventRestaurantSection } from '@/components/widgets/restaurants/event-restaurant-section';
 import type { Event, EventPhoto, EventWithDetails, EventCategory } from '@/lib/db/events';
 import type { RestaurantVisit } from '@/lib/db/restaurants';
@@ -57,6 +59,7 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isAddPersonDialogOpen, setIsAddPersonDialogOpen] = useState(false);
+  const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
   const { event, photos, people } = data;
   const isUpcoming = new Date(event.date) >= new Date(new Date().setHours(0, 0, 0, 0));
   const heroImage = photos.length > 0 ? photos[0].url : 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=1200';
@@ -448,6 +451,15 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-media-primary/95 via-media-primary/40 to-transparent"></div>
               </div>
+
+              {/* Photo Edit Button */}
+              <button 
+                onClick={() => setIsPhotoDialogOpen(true)}
+                className="absolute top-8 right-8 z-20 bg-media-background/20 backdrop-blur-md p-3 rounded-full hover:bg-media-background/40 transition-all text-media-on-primary cursor-pointer group"
+                title="Add Event Photo"
+              >
+                <Pencil className="h-6 w-6 group-hover:scale-110 transition-transform" />
+              </button>
               <div className="relative z-10 w-full flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="space-y-4 max-w-5xl">
                   <div className={cn(
@@ -704,6 +716,13 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
           </div>
         )}
       </main>
+
+      <EventPhotoUploadDialog
+        open={isPhotoDialogOpen}
+        onOpenChange={setIsPhotoDialogOpen}
+        eventData={data}
+        onSuccess={handleUpdate}
+      />
     </div>
   );
 }

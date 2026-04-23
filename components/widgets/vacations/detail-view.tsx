@@ -26,7 +26,11 @@ import {
   ItineraryDay,
   Booking
 } from '@/lib/types/vacations';
-import { Edit2, ArrowLeft, Plus, PlusCircle } from 'lucide-react';
+import { Edit2, ArrowLeft, Plus, PlusCircle, Pencil, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { VacationPosterEditDialog } from './vacation-poster-edit-dialog';
+import { VacationPhotoAddDialog } from './vacation-photo-add-dialog';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Tooltip,
@@ -49,6 +53,8 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
   const [isAddingPerson, setIsAddingPerson] = useState(false);
   const [editingDayId, setEditingDayId] = useState<number | null>(null);
   const [editingBookingId, setEditingBookingId] = useState<number | null>(null);
+  const [isPosterDialogOpen, setIsPosterDialogOpen] = useState(false);
+  const [isPhotoAddDialogOpen, setIsPhotoAddDialogOpen] = useState(false);
   const [dayFormData, setDayFormData] = useState<Partial<ItineraryDay>>({});
   const [bookingFormData, setBookingFormData] = useState<Partial<Booking>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -218,6 +224,28 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
       setIsSaving(false);
     }
   };
+
+  const handleDeletePhoto = async (photoId: number) => {
+    if (!confirm('Delete this memory? This will permanently remove the photo.')) return;
+    
+    setIsSaving(true);
+    try {
+      const response = await fetch(`/api/vacations/${vacation.slug}/photos/${photoId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete photo');
+
+      toast.success('Memory removed');
+      onUpdate();
+    } catch (error) {
+      toast.error('Failed to delete photo');
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const { actualTotal, plannedTotal } = calculateTotalBudget(itinerary, bookings);
   
   const startDate = parseLocalDate(vacation.start_date);
@@ -269,6 +297,16 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
               <div className="absolute inset-0 bg-media-primary-container"></div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-media-primary/80 via-transparent to-transparent"></div>
+
+            {/* Photo Edit Button */}
+            <button 
+              onClick={() => setIsPosterDialogOpen(true)}
+              className="absolute top-8 right-8 z-20 bg-media-background/20 backdrop-blur-md p-3 rounded-full hover:bg-media-background/40 transition-all text-media-on-primary cursor-pointer group"
+              title="Edit Vacation Poster"
+            >
+              <Pencil className="h-6 w-6 group-hover:scale-110 transition-transform" />
+            </button>
+
             <div className="absolute bottom-16 left-8 right-8 md:left-12 md:right-12 flex flex-col items-start gap-4">
               <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20">
                 <span className="material-symbols-outlined text-white text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
@@ -551,25 +589,56 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
           )}
 
           {/* Memories / Photo Gallery Section */}
-          {photos.length > 0 && (
-            <section className="space-y-12">
-              <div className="flex items-baseline gap-4">
-                <h2 className="text-5xl font-black tracking-tighter text-media-primary">Memories</h2>
-                <div className="h-px flex-grow bg-media-outline-variant/30"></div>
-              </div>
+          <section className="space-y-12">
+            <div className="flex items-baseline gap-4">
+              <h2 className="text-5xl font-black tracking-tighter text-media-primary">Memories</h2>
+              <div className="h-px flex-grow bg-media-outline-variant/30"></div>
+              <Button 
+                onClick={() => setIsPhotoAddDialogOpen(true)}
+                variant="ghost" 
+                size="sm" 
+                className="rounded-full text-media-primary hover:bg-media-primary/10"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Memory
+              </Button>
+            </div>
+            {photos.length > 0 ? (
               <div className="staggered-gap">
                 {photos.map((photo) => (
-                  <div key={photo.id} className="group overflow-hidden rounded-2xl shadow-md">
+                  <div key={photo.id} className="group relative overflow-hidden rounded-2xl shadow-md">
                     <img 
                       className="w-full grayscale hover:grayscale-0 transition-all duration-500 hover:scale-105" 
                       src={photo.url} 
                       alt={photo.caption || 'Vacation memory'} 
                     />
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePhoto(photo.id);
+                      }}
+                      className="absolute top-2 right-2 p-2 bg-media-error/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-media-error cursor-pointer z-10"
+                      title="Delete memory"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
-            </section>
-          )}
+            ) : (
+              <div className="py-20 px-8 rounded-[2.5rem] bg-media-surface-container-low border-2 border-dashed border-media-outline-variant text-center">
+                <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-20 text-media-primary" />
+                <p className="text-media-on-surface-variant italic">No memories captured yet.</p>
+                <Button 
+                  variant="link" 
+                  className="text-media-secondary font-black uppercase tracking-tighter" 
+                  onClick={() => setIsPhotoAddDialogOpen(true)}
+                >
+                  Capture First Moment
+                </Button>
+              </div>
+            )}
+          </section>
         </div>
       </main>
       {/* Add/Edit Itinerary Day Dialog */}
@@ -781,6 +850,19 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
           setIsAddingPerson(false);
           onUpdate();
         }}
+      />
+      <VacationPosterEditDialog
+        open={isPosterDialogOpen}
+        onOpenChange={setIsPosterDialogOpen}
+        vacation={vacation}
+        onSuccess={onUpdate}
+      />
+
+      <VacationPhotoAddDialog
+        open={isPhotoAddDialogOpen}
+        onOpenChange={setIsPhotoAddDialogOpen}
+        vacation={vacation}
+        onSuccess={onUpdate}
       />
     </div>
   );

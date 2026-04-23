@@ -14,7 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ParkPhoto } from "@/lib/db/parks";
 import { toast } from "sonner";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Upload, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRef } from "react";
 
 interface ParkPhotoFormDialogProps {
   parkSlug: string;
@@ -41,6 +43,22 @@ export function ParkPhotoFormDialog({
     order_index: "0"
   });
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   useEffect(() => {
     if (photo) {
       setFormData({
@@ -57,18 +75,45 @@ export function ParkPhotoFormDialog({
         order_index: "0"
       });
     }
+    setSelectedFile(null);
+    setPreviewUrl(null);
   }, [photo, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const payload = {
-      ...formData,
-      order_index: parseInt(formData.order_index, 10)
-    };
-
     try {
+      // Handle file upload if present
+      if (selectedFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", selectedFile);
+        uploadFormData.append("caption", formData.caption);
+        uploadFormData.append("date_taken", formData.date_taken);
+        uploadFormData.append("order_index", formData.order_index);
+
+        const uploadResponse = await fetch(`/api/parks/${parkSlug}/photos/upload`, {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          const error = await uploadResponse.json();
+          throw new Error(error.error || "Failed to upload photo");
+        }
+
+        toast.success(photo ? "Photo updated with new upload" : "Photo uploaded successfully");
+        onSuccess();
+        onOpenChange(false);
+        return;
+      }
+
+      // Handle URL-based update/creation
+      const payload = {
+        ...formData,
+        order_index: parseInt(formData.order_index, 10)
+      };
+
       const url = photo 
         ? `/api/parks/${parkSlug}/photos/${photo.id}`
         : `/api/parks/${parkSlug}/photos`;
@@ -91,7 +136,7 @@ export function ParkPhotoFormDialog({
       }
     } catch (error) {
       console.error("Error saving photo:", error);
-      toast.error("Failed to save photo");
+      toast.error(error instanceof Error ? error.message : "Failed to save photo");
     } finally {
       setIsLoading(false);
     }
@@ -135,19 +180,66 @@ export function ParkPhotoFormDialog({
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
-          <div className="grid gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="url" className="text-[10px] font-black uppercase tracking-[0.2em] text-media-secondary">Photo URL</Label>
-              <Input 
-                id="url" 
-                value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                placeholder="https://images.unsplash.com/..." 
-                className="rounded-xl border-media-outline-variant/20 focus:ring-media-secondary/20"
-                required
-              />
-            </div>
+          <Tabs defaultValue={photo ? "url" : "upload"} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-media-surface-container-low mb-6">
+              <TabsTrigger value="upload" className="data-[state=active]:bg-media-secondary data-[state=active]:text-white transition-all">
+                <Upload className="w-4 h-4 mr-2" />
+                Upload
+              </TabsTrigger>
+              <TabsTrigger value="url" className="data-[state=active]:bg-media-secondary data-[state=active]:text-white transition-all">
+                <LinkIcon className="w-4 h-4 mr-2" />
+                URL
+              </TabsTrigger>
+            </TabsList>
 
+            <TabsContent value="upload" className="space-y-6">
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-media-outline-variant/30 rounded-xl p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-media-surface-container-low transition-all group"
+              >
+                {previewUrl || (photo && photo.url && photo.url.includes('firebase')) ? (
+                  <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg">
+                    <img src={previewUrl || photo?.url} alt="Preview" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <p className="text-white text-sm font-medium">Change Photo</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary group-hover:scale-110 transition-transform">
+                      <ImageIcon className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-semibold text-media-primary">Click to upload photo</p>
+                      <p className="text-xs text-media-on-surface-variant mt-1">PNG, JPG or WebP (max. 5MB)</p>
+                    </div>
+                  </>
+                )}
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="url" className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="url" className="text-[10px] font-black uppercase tracking-[0.2em] text-media-secondary">Photo URL</Label>
+                <Input 
+                  id="url" 
+                  value={formData.url}
+                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                  placeholder="https://images.unsplash.com/..." 
+                  className="rounded-xl border-media-outline-variant/20 focus:ring-media-secondary/20"
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="grid gap-4">
             <div className="space-y-2">
               <Label htmlFor="caption" className="text-[10px] font-black uppercase tracking-[0.2em] text-media-secondary">Caption</Label>
               <Input 

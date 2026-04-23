@@ -5,6 +5,7 @@ import {
   deleteRelationshipDate,
 } from "@/lib/db/relationship";
 import { requireAuthApi } from "@/lib/auth/server";
+import { getAdminStorage } from "@/lib/firebase/admin";
 import { checkAchievement } from "@/lib/achievements";
 
 /**
@@ -93,6 +94,31 @@ export async function PATCH(
       );
     }
 
+    // Handle photo cleanup if photos is being updated
+    if (photos !== undefined) {
+      const existing = await getRelationshipDateById(dateId, userId);
+      if (existing && existing.photos && existing.photos !== photos) {
+        if (existing.photos.includes("firebasestorage.googleapis.com")) {
+          try {
+            const bucket = getAdminStorage().bucket();
+            const urlObj = new URL(existing.photos);
+            const pathPart = urlObj.pathname.split("/o/")[1];
+            if (pathPart) {
+              const filePath = decodeURIComponent(pathPart);
+              const oldFile = bucket.file(filePath);
+              const [exists] = await oldFile.exists();
+              if (exists) {
+                await oldFile.delete();
+                console.log(`Deleted old date photo during PATCH: ${filePath}`);
+              }
+            }
+          } catch (err) {
+            console.error("Failed to delete old date photo during PATCH:", err);
+          }
+        }
+      }
+    }
+
     // Update relationship date
     const success = await updateRelationshipDate(
       dateId,
@@ -150,6 +176,27 @@ export async function DELETE(
 
     if (isNaN(dateId)) {
       return NextResponse.json({ error: "Invalid date ID" }, { status: 400 });
+    }
+
+    // Delete image from storage if it exists
+    const existing = await getRelationshipDateById(dateId, userId);
+    if (existing && existing.photos && existing.photos.includes("firebasestorage.googleapis.com")) {
+      try {
+        const bucket = getAdminStorage().bucket();
+        const urlObj = new URL(existing.photos);
+        const pathPart = urlObj.pathname.split("/o/")[1];
+        if (pathPart) {
+          const filePath = decodeURIComponent(pathPart);
+          const oldFile = bucket.file(filePath);
+          const [exists] = await oldFile.exists();
+          if (exists) {
+            await oldFile.delete();
+            console.log(`Deleted date photo during DELETE: ${filePath}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to delete date photo during DELETE:", err);
+      }
     }
 
     const success = await deleteRelationshipDate(dateId, userId);
