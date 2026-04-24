@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select";
 import { TaskCategory, TaskStatusRecord } from "@/lib/db/tasks";
 import { FolderKanban, Circle } from "lucide-react";
+import { motion, PanInfo } from "framer-motion";
 
 interface MobileFilterSheetProps {
   open: boolean;
@@ -44,7 +45,23 @@ export function MobileFilterSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-auto rounded-t-3xl p-0">
-        <div className="flex flex-col h-full pb-8">
+        <motion.div 
+          className="flex flex-col bg-media-surface-container-lowest"
+          drag="y"
+          dragConstraints={{ top: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_, info: PanInfo) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              onOpenChange(false);
+            }
+          }}
+        >
+          {/* Drag Handle */}
+          <div className="flex-none flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
+          </div>
+
+          <div className="flex flex-col h-full pb-8">
           <SheetHeader className="px-6 pt-6 pb-4 border-b flex flex-row items-center justify-between">
             <SheetTitle>Filter Tasks</SheetTitle>
             {activeFiltersCount > 0 && (
@@ -120,7 +137,8 @@ export function MobileFilterSheet({
               Done
             </Button>
           </div>
-        </div>
+          </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

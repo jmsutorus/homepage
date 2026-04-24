@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { PageTabsList } from '@/components/ui/page-tabs-list';
-import { DollarSign, PiggyBank, CreditCard, Receipt, Plus } from 'lucide-react';
+import { DollarSign, PiggyBank, CreditCard, Receipt } from 'lucide-react';
 import type { Subscription } from '@/lib/db/subscriptions';
 import type { SavingsAccountWithBalance } from '@/lib/db/savings';
 import type { DebtWithPayments } from '@/lib/db/debts';

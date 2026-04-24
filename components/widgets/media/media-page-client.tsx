@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { MediaItem } from "@/lib/media";
 import { PaginatedMediaGrid } from "./paginated-media-grid";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -16,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, ChevronDown, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import type { MediaTimelineData, PaginatedMediaResult, MediaContent } from "@/lib/db/media";
 import { cn } from "@/lib/utils";

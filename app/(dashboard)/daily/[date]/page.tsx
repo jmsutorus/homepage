@@ -1,11 +1,5 @@
 import { getDailyJournalByDate } from "@/lib/db/journals";
 import { getHabitsAction, getHabitCompletionsAction } from "@/lib/actions/habits";
-import { formatDateLongSafe } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
-import { DailyHabits } from "@/components/widgets/habits/daily-habits";
-import { DailyJournalPreview } from "@/components/widgets/journal/daily-journal-preview";
 import { getMoodForDate } from "@/lib/db/journals";
 import { getCalendarDataForDate } from "@/lib/db/calendar";
 import { auth } from "@/auth";

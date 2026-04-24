@@ -3,9 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Star, Calendar, MapPin, Pencil, Trash2, Plus, Wine, Heart, Utensils } from 'lucide-react';
+import { ArrowLeft, Star, Calendar, MapPin, Pencil, Trash2, Plus, Wine, Utensils } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { DrinkWithLogs } from '@/lib/db/drinks';

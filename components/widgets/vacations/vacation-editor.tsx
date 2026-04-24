@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { SuccessOverlay } from '@/components/ui/animations/success-overlay';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -77,6 +78,8 @@ export function VacationEditor({
   const [content, setContent] = useState(initialContent);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [savedPath, setSavedPath] = useState<string | null>(null);
 
   // Markdown toolbar functions
   const insertMarkdown = (before: string, after: string = '') => {
@@ -144,14 +147,14 @@ export function VacationEditor({
         throw new Error(data.error || 'Failed to save vacation');
       }
 
-      // Show persistent success toast for create mode
       if (mode === 'create') {
         showCreationSuccess('vacation', { persistent: true });
+        setSavedPath(data.path || `/vacations/${slug}`);
+        setShowSuccess(true);
+      } else {
+        router.push(data.path || `/vacations/${slug}`);
+        router.refresh();
       }
-
-      // Redirect to the vacation detail page
-      router.push(data.path || `/vacations/${slug}`);
-      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       showCreationError('vacation', err);
@@ -576,6 +579,15 @@ export function VacationEditor({
           </Button>
         </div>
       </div>
+      <SuccessOverlay 
+        show={showSuccess} 
+        onComplete={() => {
+          if (savedPath) {
+            router.push(savedPath);
+            router.refresh();
+          }
+        }} 
+      />
     </form>
   );
 }

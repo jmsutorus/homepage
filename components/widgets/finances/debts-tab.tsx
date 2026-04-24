@@ -3,16 +3,11 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import {
   Plus,
   Trash2,
   Pencil,
   CreditCard,
-  Calendar,
-  ChevronDown,
-  ChevronUp,
-  DollarSign,
   Home,
   Car,
   GraduationCap,
@@ -29,7 +24,6 @@ import {
   BarChart,
   Bar,
   XAxis,
-  YAxis,
   Tooltip,
   Cell,
 } from 'recharts';
@@ -37,7 +31,6 @@ import type { DebtWithPayments } from '@/lib/db/debts';
 import { generatePayoffProjection } from '@/lib/utils/finances';
 import { DebtFormDialog } from './debt-form-dialog';
 import { DebtPaymentDialog } from './debt-payment-dialog';
-import { cn } from '@/lib/utils';
 
 interface DebtsTabProps {
   debts: DebtWithPayments[];

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { Task, TaskCategory, TaskStatusRecord, TaskVelocityData } from "@/lib/db/tasks";
 import { TaskForm } from "@/components/widgets/tasks/task-form";
 import { TaskList } from "@/components/widgets/tasks/task-list";
-import { Plus, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { MobileTaskSheet } from "@/components/widgets/tasks/mobile-task-sheet";
 import Link from "next/link";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
@@ -82,7 +82,9 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
           </p>
         </div>
         
-        <TaskForm onTaskAdded={handleTasksChanged} />
+        <div className="hidden md:block">
+          <TaskForm onTaskAdded={handleTasksChanged} />
+        </div>
       </section>
 
       {/* In Progress Section */}
@@ -144,6 +146,7 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
       <FloatingActionButton 
         onClick={() => setMobileSheetOpen(true)}
         tooltipText="New Task"
+        className="md:hidden"
       />
 
       {/* Mobile Task Sheet */}

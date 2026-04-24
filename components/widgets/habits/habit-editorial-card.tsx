@@ -3,7 +3,7 @@
 import { HabitWithStats } from "@/lib/actions/habits";
 import { updateHabitAction, deleteHabitAction, toggleHabitCompletionAction } from "@/lib/actions/habits";
 import { Button } from "@/components/ui/button";
-import { Archive, Trash2, CheckCircle2, MoreVertical, Flame, Target } from "lucide-react";
+import { Target } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";

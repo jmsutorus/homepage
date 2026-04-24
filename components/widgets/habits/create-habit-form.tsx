@@ -5,7 +5,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { Plus, WifiOff, Infinity, X } from "lucide-react";
+import { WifiOff, Infinity, X } from "lucide-react";
 import { useState } from "react";
 import { SuccessCheck } from "@/components/ui/animations/success-check";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";

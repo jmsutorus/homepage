@@ -10,7 +10,9 @@ import { IntegrationsCard } from "@/components/widgets/settings/integrations-car
 import { SignOutButton } from "@/components/widgets/settings/sign-out-button";
 import { PWAInstallCard } from "@/components/widgets/settings/pwa-install-card";
 import { CalendarColorsManager } from "@/components/widgets/settings/calendar-colors-manager";
+import { HapticSettings } from "@/components/widgets/settings/haptic-settings";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface SettingsPageClientProps {
   connectedAccounts: ConnectedAccount[];
@@ -18,6 +20,7 @@ interface SettingsPageClientProps {
 
 export function SettingsPageClient({ connectedAccounts }: SettingsPageClientProps) {
   const [isTaxonomyExpanded, setIsTaxonomyExpanded] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   return (
     <div className="flex">
@@ -42,6 +45,7 @@ export function SettingsPageClient({ connectedAccounts }: SettingsPageClientProp
             </div>
             <div className="space-y-6">
               <ThemeSettings />
+              {isMobile && <HapticSettings />}
               <CalendarColorsManager />
             </div>
           </section>
@@ -80,7 +84,7 @@ export function SettingsPageClient({ connectedAccounts }: SettingsPageClientProp
               </div>
               <button 
                 onClick={() => setIsTaxonomyExpanded(!isTaxonomyExpanded)}
-                className="p-2 rounded-full hover:bg-media-primary/10 transition-colors text-media-on-surface-variant"
+                className="cursor-pointer p-2 rounded-full hover:bg-media-primary/10 transition-colors text-media-on-surface-variant"
               >
                 {isTaxonomyExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
               </button>

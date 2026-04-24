@@ -4,24 +4,14 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
+
 import {
   ArrowLeft,
-  Calendar,
-  Clock,
-  MapPin,
   Edit2,
   Trash2,
   FileText,
@@ -29,16 +19,13 @@ import {
   X,
   Loader2,
   MoreVertical,
-  ExternalLink,
   Plus,
   Pencil,
 } from 'lucide-react';
 import { EventPhotoGallery } from './event-photo-gallery';
-import { EventPeopleSection } from './event-people-section';
 import { AddPersonToEventDialog } from './add-person-to-event-dialog';
 import { EventPhotoUploadDialog } from './event-photo-upload-dialog';
-import { EventRestaurantSection } from '@/components/widgets/restaurants/event-restaurant-section';
-import type { Event, EventPhoto, EventWithDetails, EventCategory } from '@/lib/db/events';
+import type { EventWithDetails, EventCategory } from '@/lib/db/events';
 import type { RestaurantVisit } from '@/lib/db/restaurants';
 import {
   DropdownMenu,

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Star, ArrowUpRight } from "lucide-react";
 import type { ParkContent } from "@/lib/db/parks";
 import { cn } from "@/lib/utils";
 

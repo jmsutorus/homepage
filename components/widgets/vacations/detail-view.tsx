@@ -30,7 +30,6 @@ import { Edit2, ArrowLeft, Plus, PlusCircle, Pencil, Image as ImageIcon, Trash2 
 import { VacationPosterEditDialog } from './vacation-poster-edit-dialog';
 import { VacationPhotoAddDialog } from './vacation-photo-add-dialog';
 import { VacationDayPhotoEditDialog } from './vacation-day-photo-edit-dialog';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {

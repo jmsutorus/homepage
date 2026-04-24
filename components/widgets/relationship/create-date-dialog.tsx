@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, ImageIcon, Upload, Link as LinkIcon, Loader2, X } from "lucide-react";
+import { Star, ImageIcon, Upload, Link as LinkIcon, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRef } from "react";
 import { toast } from "sonner";
@@ -324,7 +324,7 @@ export function CreateDateDialog({ open, onOpenChange, onDateAdded }: CreateDate
                               setSelectedFile(null);
                               setPreviewUrl(null);
                             }}
-                            className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                            className="cursor-pointer absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
                           >
                             <X className="w-4 h-4" />
                           </button>

@@ -1,13 +1,7 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
-import Link from "next/link";
-import { format } from "date-fns";
 import Image from "next/image";
-import type { Event } from "@/lib/db/events";
-import type { CalendarGoal, CalendarMilestone } from "@/lib/db/calendar";
-import { Star } from "lucide-react";
 
 interface EditorialCardProps {
   children: React.ReactNode;

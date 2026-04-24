@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, LayoutGrid, CalendarDays, ArrowRight } from 'lucide-react';
+import { Search, Filter, CalendarDays, ArrowRight } from 'lucide-react';
 import { Vacation, VacationStatus, VACATION_STATUSES, VACATION_STATUS_NAMES, calculateDurationDays } from '@/lib/types/vacations';
 import { EditorialVacationCard } from './editorial-vacation-card';
 import { TreasuryCard } from './treasury-card';

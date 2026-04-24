@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, Edit, CheckCircle2, MapPin, TrendingUp, ExternalLink, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit, CheckCircle2, Trash2 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isBefore } from "date-fns";
 import { AddActivityModal } from "../exercise/add-activity-modal";
 import { CompleteActivityModal } from "../exercise/complete-activity-modal";

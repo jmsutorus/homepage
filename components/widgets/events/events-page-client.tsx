@@ -4,15 +4,9 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Calendar, MapPin, CalendarDays, Clock, ArrowRight, ChevronRight, Scissors, ClipboardList, Stethoscope, Package, Utensils } from 'lucide-react';
+import { Plus, Calendar, CalendarDays, Clock, ArrowRight, ChevronRight, Scissors, ClipboardList, Stethoscope, Package, Utensils } from 'lucide-react';
 import type { EventWithCoverPhoto } from '@/lib/db/events';
-import { HolidayIcon, hasHolidayIcon } from './holiday-icons';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { PageTabsList } from '@/components/ui/page-tabs-list';
-import { cn } from '@/lib/utils';
 import { HomePageButton } from '@/Shared/Components/Buttons/HomePageButton';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
 

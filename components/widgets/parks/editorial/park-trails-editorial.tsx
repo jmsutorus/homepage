@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ParkTrail } from '@/lib/db/parks';
-import { Mountain, TrendingUp, MapPin, Clock, Plus, ExternalLink } from 'lucide-react';
+import { Mountain, Plus, ExternalLink } from 'lucide-react';
 import { ParkTrailFormDialog } from './park-trail-form-dialog';
 import { ParkTrailPhotoEditDialog } from './park-trail-photo-edit-dialog';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { Pencil } from 'lucide-react';
 
 interface ParkTrailsEditorialProps {

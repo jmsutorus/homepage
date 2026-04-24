@@ -12,8 +12,8 @@ export function SQLiteAdapter(): Adapter {
 
       await db.execute({
         sql: `
-          INSERT INTO user (id, email, emailVerified, name, image, createdAt, updatedAt)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO user (id, email, emailVerified, name, image, haptic, createdAt, updatedAt)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `,
         args: [
           id,
@@ -21,6 +21,7 @@ export function SQLiteAdapter(): Adapter {
           user.emailVerified ? 1 : 0,
           user.name || null,
           user.image || null,
+          1, // haptic default to true
           now,
           now
         ]
@@ -50,7 +51,8 @@ export function SQLiteAdapter(): Adapter {
         emailVerified: user.emailVerified || null,
         name: user.name || null,
         image: user.image || null,
-      } as AdapterUser;
+        haptic: true,
+      } as AdapterUser & { haptic: boolean };
     },
 
     async getUser(id) {
@@ -75,7 +77,8 @@ export function SQLiteAdapter(): Adapter {
         name: user.name,
         image: user.image,
         role: user.role || 'user',
-      } as AdapterUser & { role: string };
+        haptic: user.haptic === 1 || user.haptic === true || user.haptic === null ? true : false,
+      } as AdapterUser & { role: string, haptic: boolean };
     },
 
     async getUserByEmail(email) {
@@ -100,7 +103,8 @@ export function SQLiteAdapter(): Adapter {
         name: user.name,
         image: user.image,
         role: user.role || 'user',
-      } as AdapterUser & { role: string };
+        haptic: user.haptic === 1 || user.haptic === true || user.haptic === null ? true : false,
+      } as AdapterUser & { role: string, haptic: boolean };
     },
 
     async getUserByAccount({ providerAccountId, provider }) {
@@ -126,26 +130,48 @@ export function SQLiteAdapter(): Adapter {
         name: user.name,
         image: user.image,
         role: user.role || 'user',
-      } as AdapterUser & { role: string };
+        haptic: user.haptic === 1 || user.haptic === true || user.haptic === null ? true : false,
+      } as AdapterUser & { role: string, haptic: boolean };
     },
 
     async updateUser(user) {
       const db = getDatabase();
-      await db.execute({
-        sql: `
-          UPDATE user
-          SET email = ?, emailVerified = ?, name = ?, image = ?, updatedAt = ?
-          WHERE id = ?
-        `,
-        args: [
-          user.email!,
-          user.emailVerified ? 1 : 0,
-          user.name || null,
-          user.image || null,
-          Date.now(),
-          user.id
-        ]
-      });
+      const haptic = (user as any).haptic !== undefined ? ((user as any).haptic ? 1 : 0) : undefined;
+      
+      if (haptic !== undefined) {
+        await db.execute({
+          sql: `
+            UPDATE user
+            SET email = ?, emailVerified = ?, name = ?, image = ?, haptic = ?, updatedAt = ?
+            WHERE id = ?
+          `,
+          args: [
+            user.email!,
+            user.emailVerified ? 1 : 0,
+            user.name || null,
+            user.image || null,
+            haptic,
+            Date.now(),
+            user.id
+          ]
+        });
+      } else {
+        await db.execute({
+          sql: `
+            UPDATE user
+            SET email = ?, emailVerified = ?, name = ?, image = ?, updatedAt = ?
+            WHERE id = ?
+          `,
+          args: [
+            user.email!,
+            user.emailVerified ? 1 : 0,
+            user.name || null,
+            user.image || null,
+            Date.now(),
+            user.id
+          ]
+        });
+      }
 
       return this.getUser!(user.id) as Promise<AdapterUser>;
     },
@@ -251,13 +277,14 @@ export function SQLiteAdapter(): Adapter {
         expires: new Date(row.expiresAt as number),
       };
 
-      const user: AdapterUser & { role: string } = {
+      const user: AdapterUser & { role: string, haptic: boolean } = {
         id: row.userId,
         email: row.email,
         emailVerified: row.emailVerified ? new Date(row.emailVerified as number) : null,
         name: row.name,
         image: row.image,
         role: row.role || 'user',
+        haptic: row.haptic === 1 || row.haptic === true || row.haptic === null ? true : false,
       };
 
       return { session, user };

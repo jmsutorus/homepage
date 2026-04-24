@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import type { Event, EventCategory } from "@/lib/db/events";
 import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
-import { cn } from "@/lib/utils";
 
 interface EventEditDialogProps {
   event: Event;

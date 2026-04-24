@@ -28,7 +28,6 @@ import { DailyRestaurants } from "../daily/daily-restaurants";
 import { DailyDrinks } from "../daily/daily-drinks";
 
 import { ExternalLink, Star, Loader2, Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 interface CalendarDayDetailProps {
   date: string;

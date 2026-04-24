@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Filter, ChevronDown } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import { allStatuses, getStatusLabel } from "./goal-status-badge";
 import type { GoalStatus, GoalPriority } from "@/lib/db/goals";
 

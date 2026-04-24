@@ -1,12 +1,9 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { getRecentlyCompletedMedia } from "@/lib/media";
 import { SteamStatus } from "@/components/widgets/steam/steam-status";
 import { HomeAssistantWidget } from "@/components/widgets/home-assistant/home-assistant-widget";
 import { PlexStatus } from "@/components/widgets/media/plex-status";
 import { WeatherWidget } from "@/components/widgets/weather/weather-widget";
 import { getUserId } from "@/lib/auth/server";
-import { getCalendarDataForMonth } from "@/lib/db/calendar";
 import { auth } from "@/auth";
 import { getGithubEventsByDateRange } from "@/lib/db/github";
 import { queryOne } from "@/lib/db";
@@ -20,14 +17,11 @@ import { getAllParks, getParkPeople } from "@/lib/db/parks";
 import { getAllJournals } from "@/lib/db/journals";
 import { getGoalsWithProgress } from "@/lib/db/goals";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
-import { DuolingoWidget } from "@/components/widgets/duolingo/duolingo-widget";
 import { VacationModeBanner } from "@/components/widgets/vacations/vacation-mode-banner";
 import { getActiveVacation, getUpcomingVacations } from "@/lib/db/vacations";
 import { getUpcomingBirthdays, getUpcomingAnniversaries } from "@/lib/db/people";
 import { UpcomingBirthdays } from "@/components/widgets/people/upcoming-birthdays";
 import { UpcomingAnniversaries } from "@/components/widgets/people/upcoming-anniversaries";
-import { getUpcomingWorkoutActivities, getRecentWorkoutActivities } from "@/lib/db/workout-activities";
 import { BirthdayBanner } from "@/components/birthday/birthday-banner";
 
 // Editorial Components

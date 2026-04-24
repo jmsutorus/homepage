@@ -8,7 +8,6 @@ import {
   Trash2, 
   Lock, 
   Heart, 
-  Settings, 
   Sparkles, 
   ArrowRight
 } from "lucide-react";

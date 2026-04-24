@@ -6,7 +6,6 @@ import { MaterialSymbol } from '@/components/ui/MaterialSymbol';
 import type { JournalContent } from '@/lib/db/journals';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 
 interface JournalsPageClientProps {
   journals: JournalContent[];

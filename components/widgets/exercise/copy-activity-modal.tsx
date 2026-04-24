@@ -29,6 +29,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { motion, PanInfo } from "framer-motion";
 
 interface CopyActivityModalProps {
   isOpen: boolean;
@@ -115,7 +116,24 @@ export function CopyActivityModal({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-3xl p-6 h-auto">
+      <SheetContent side="bottom" className="rounded-t-3xl p-0 border-t-0 bg-media-surface-container-lowest overflow-hidden">
+        <motion.div 
+          className="flex flex-col h-full bg-media-surface-container-lowest"
+          drag="y"
+          dragConstraints={{ top: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_, info: PanInfo) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              onOpenChange(false);
+            }
+          }}
+        >
+          {/* Drag Handle */}
+          <div className="flex-none flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
+          </div>
+
+          <div className="flex flex-col h-full p-6 pt-2">
         <SheetHeader className="text-left">
           <SheetTitle>Copy Workout</SheetTitle>
           <SheetDescription>
@@ -124,6 +142,8 @@ export function CopyActivityModal({
         </SheetHeader>
         {content}
         <SheetFooter className="mt-4">{footer}</SheetFooter>
+          </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

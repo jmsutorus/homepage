@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Film, Activity, CheckSquare, Calendar, Shield, Zap, Network, Rss, Home, Infinity, Rocket, Sparkles } from "lucide-react";
+import { Film, Activity, CheckSquare, Calendar, Shield, Zap, Rss, Home, Infinity, Rocket, Sparkles } from "lucide-react";
 
 export default function FeaturesPage() {
   return (

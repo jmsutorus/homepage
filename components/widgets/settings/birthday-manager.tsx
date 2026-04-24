@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Cake, Loader2, Calendar } from "lucide-react";
+import { Loader2, Calendar } from "lucide-react";
 import { toast } from "sonner";
 
 export function BirthdayManager() {

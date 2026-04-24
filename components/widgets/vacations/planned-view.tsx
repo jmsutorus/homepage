@@ -28,7 +28,7 @@ import {
   BOOKING_STATUS_NAMES,
   Booking
 } from '@/lib/types/vacations';
-import { Edit2, ArrowLeft, PlusCircle, Check, X, Plus } from 'lucide-react';
+import { Edit2, ArrowLeft, PlusCircle, Plus } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Tooltip,

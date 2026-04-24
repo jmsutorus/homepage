@@ -29,6 +29,7 @@ import {
 import { Send } from "lucide-react";
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { toast } from 'sonner';
+import { motion, PanInfo } from 'framer-motion';
 
 interface AddVisitDialogProps {
   open: boolean;
@@ -181,7 +182,23 @@ export function AddVisitDialog({
         className="h-auto max-h-[90vh] rounded-t-3xl p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="flex flex-col h-full max-h-[90vh]">
+        <motion.div 
+          className="flex flex-col h-full font-lexend bg-media-surface-container-lowest"
+          drag="y"
+          dragConstraints={{ top: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_, info: PanInfo) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              onOpenChange(false);
+            }
+          }}
+        >
+          {/* Drag Handle */}
+          <div className="flex-none flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
+          </div>
+
+          <div className="flex flex-col h-full overflow-hidden">
           <SheetHeader className="px-6 pt-6 pb-4 border-b text-left">
             <SheetTitle>Add Visit</SheetTitle>
             <SheetDescription>
@@ -199,7 +216,8 @@ export function AddVisitDialog({
               </Button>
             </div>
           </form>
-        </div>
+          </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

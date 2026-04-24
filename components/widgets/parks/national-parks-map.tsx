@@ -27,7 +27,7 @@ export function NationalParksMap({ visitedParkTitles }: NationalParksMapProps) {
   }, [visitedParkTitles]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto my-8 relative rounded-xl border bg-card p-4 shadow-sm overflow-hidden">
+    <div className="w-full max-w-4xl mx-auto my-8 relative rounded-xl border bg-card p-4 shadow-sm overflow-hidden [--map-fill:#F2EFE9] dark:[--map-fill:hsl(var(--muted))]">
       <h3 className="text-xl font-bold text-center mb-2">National Parks Explored</h3>
       <div className="relative aspect-[3/2] w-full">
         <ComposableMap
@@ -45,7 +45,7 @@ export function NationalParksMap({ visitedParkTitles }: NationalParksMapProps) {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill="hsl(var(--muted))"
+                  fill="var(--map-fill)"
                   stroke="hsl(var(--background))"
                   strokeWidth={1}
                   style={{

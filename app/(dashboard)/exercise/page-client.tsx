@@ -13,9 +13,7 @@ import {
   Timer,
   ChevronRight,
   Flame,
-  BarChart3,
   Trophy,
-  PlusCircle,
   TrendingUp,
   FastForward,
 } from "lucide-react";

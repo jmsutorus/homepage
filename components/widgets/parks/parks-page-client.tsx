@@ -5,11 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { Button } from '@/components/ui/button';
-import { Plus, TreePine, MapPin, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { ParkFormDialog } from './park-form-dialog';
 import { NationalParksMap } from './national-parks-map';
 import { ParkCardEditorial } from './editorial/park-card-editorial';
-import { ParkCard } from './park-card';
 import { ParkContent } from '@/lib/db/parks';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
 
@@ -80,46 +79,48 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
         </header>
 
         {/* Interactive Map Visual */}
-        <section className="mb-24 relative">
-          <div className="w-full bg-media-surface-container-low rounded-[2rem] relative overflow-hidden shadow-2xl border border-media-outline-variant/10 p-8 md:p-12">
-             <div className="flex flex-col md:flex-row items-center gap-12">
-                <div className="flex-1 w-full relative">
-                  <div className="absolute inset-0 bg-media-primary/5 rounded-[2.5rem] skew-x-1 -z-10"></div>
-                   <NationalParksMap 
-                    visitedParkTitles={parks.filter(p => p.category === 'National Park').map(p => p.title)} 
-                   />
-                </div>
-                
-                <div className="md:w-80 space-y-8">
-                  <div className="bg-white/50 dark:bg-media-surface-container/50 backdrop-blur-xl p-8 rounded-3xl border border-white/20 dark:border-media-outline-variant/20 shadow-xl">
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className="material-symbols-outlined text-media-secondary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
-                      <h4 className="font-black text-xl tracking-tight text-media-primary">Current Atlas</h4>
-                    </div>
-                    <p className="text-sm text-media-on-surface-variant leading-relaxed mb-8 font-light italic">
-                      Tracking the wild frontiers of North America. {nationalParksCount} national treasures documented in this collection.
-                    </p>
-                    <div className="flex -space-x-3 mb-8">
-                      {recentExplorations.map((p, idx) => (
-                        <div key={idx} className="w-12 h-12 rounded-full border-2 border-white overflow-hidden shadow-lg group-hover:translate-x-1 transition-transform">
-                          <img src={p.poster || ""} alt="park" className="w-full h-full object-cover" />
-                        </div>
-                      ))}
-                      <div className="w-12 h-12 rounded-full bg-media-primary-fixed flex items-center justify-center border-2 border-white shadow-lg">
-                        <span className="text-[10px] font-black text-media-on-primary-fixed">+{Math.max(0, totalVisits - 3)}</span>
-                      </div>
-                    </div>
-                    <Button asChild className="w-full bg-media-secondary text-media-on-secondary rounded-2xl font-black py-7 hover:scale-[1.02] transition-all shadow-xl shadow-media-secondary/20 uppercase tracking-widest text-xs">
-                       <Link href="/parks/new" className="flex items-center justify-center gap-2">
-                         <span className="material-symbols-outlined text-xl">explore</span>
-                         Plan New Expedition
-                       </Link>
-                    </Button>
+        {nationalParksCount > 0 && (
+          <section className="mb-24 relative">
+            <div className="w-full bg-media-surface-container-low rounded-[2rem] relative overflow-hidden shadow-2xl border border-media-outline-variant/10 p-8 md:p-12">
+               <div className="flex flex-col md:flex-row items-center gap-12">
+                  <div className="flex-1 w-full relative">
+                    <div className="absolute inset-0 bg-media-primary/5 rounded-[2.5rem] skew-x-1 -z-10"></div>
+                     <NationalParksMap 
+                      visitedParkTitles={parks.filter(p => p.category === 'National Park').map(p => p.title)} 
+                     />
                   </div>
-                </div>
-             </div>
-          </div>
-        </section>
+                  
+                  <div className="md:w-80 space-y-8">
+                    <div className="bg-white/50 dark:bg-media-surface-container/50 backdrop-blur-xl p-8 rounded-3xl border border-white/20 dark:border-media-outline-variant/20 shadow-xl">
+                      <div className="flex items-center gap-3 mb-6">
+                        <span className="material-symbols-outlined text-media-secondary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
+                        <h4 className="font-black text-xl tracking-tight text-media-primary">Current Atlas</h4>
+                      </div>
+                      <p className="text-sm text-media-on-surface-variant leading-relaxed mb-8 font-light italic">
+                        Tracking the wild frontiers of North America. {nationalParksCount} national treasures documented in this collection.
+                      </p>
+                      <div className="flex -space-x-3 mb-8">
+                        {recentExplorations.map((p, idx) => (
+                          <div key={idx} className="w-12 h-12 rounded-full border-2 border-white overflow-hidden shadow-lg group-hover:translate-x-1 transition-transform">
+                            <img src={p.poster || ""} alt="park" className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                        <div className="w-12 h-12 rounded-full bg-media-primary-fixed flex items-center justify-center border-2 border-white shadow-lg">
+                          <span className="text-[10px] font-black text-media-on-primary-fixed">+{Math.max(0, totalVisits - 3)}</span>
+                        </div>
+                      </div>
+                      <Button asChild className="w-full bg-media-secondary text-media-on-secondary rounded-2xl font-black py-7 hover:scale-[1.02] transition-all shadow-xl shadow-media-secondary/20 uppercase tracking-widest text-xs">
+                         <Link href="/parks/new" className="flex items-center justify-center gap-2">
+                           <span className="material-symbols-outlined text-xl">explore</span>
+                           Plan New Expedition
+                         </Link>
+                      </Button>
+                    </div>
+                  </div>
+               </div>
+            </div>
+          </section>
+        )}
 
         {/* Recent Explorations Section */}
         <section className="mb-12">

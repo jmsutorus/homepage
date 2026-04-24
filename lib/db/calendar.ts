@@ -2,7 +2,7 @@ import { query, queryOne } from "./index";
 import type { MoodEntry } from "./mood";
 import type { MediaContent } from "./media";
 import type { Task } from "./tasks";
-import { type Event, type EventWithCoverPhoto, getEventsInRange as getEvents } from "./events";
+import { type EventWithCoverPhoto, getEventsInRange as getEvents } from "./events";
 import type { ParkContent } from "./parks";
 import type { JournalContent } from "./journals";
 import type { WorkoutActivity } from "./workout-activities";

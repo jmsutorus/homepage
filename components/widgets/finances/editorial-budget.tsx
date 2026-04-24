@@ -8,13 +8,6 @@ import {
   ArrowRight,
   TrendingUp,
   Shield,
-  Zap,
-  ShoppingCart,
-  Car,
-  Home,
-  Wifi,
-  MoreHorizontal,
-  ChevronRight,
   Lightbulb,
   Sparkles
 } from 'lucide-react';

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, ImageIcon, Upload, Link as LinkIcon, Loader2, X } from "lucide-react";
+import { Star, ImageIcon, Upload, Link as LinkIcon, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRef } from "react";
 import type { RelationshipDate } from "@/lib/db/relationship";
@@ -70,6 +70,7 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
     }
 
     setIsSaving(true);
+    let uploadedPhotoUrl: string | undefined = undefined;
     try {
       // If there's a file to upload, do it first
       if (selectedFile) {
@@ -84,9 +85,10 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
         if (!uploadResponse.ok) {
           throw new Error("Failed to upload photo");
         }
-        
-        // After upload, we don't need to send the photos field in PATCH 
-        // as the upload API already updated the DB.
+
+        // Capture the returned download URL so the PATCH can persist it
+        const uploadData = await uploadResponse.json();
+        uploadedPhotoUrl = uploadData.photoUrl;
       }
 
       const response = await fetch(`/api/relationship/dates/${initialDate.id}`, {
@@ -101,7 +103,8 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
           rating: rating || undefined,
           cost: cost ? parseFloat(cost) : undefined,
           notes: notes || undefined,
-          photos: selectedFile ? undefined : (photoUrl.trim() || undefined),
+          // Use the freshly-uploaded Firebase URL, the existing URL input, or clear it
+          photos: uploadedPhotoUrl ?? (photoUrl.trim() || undefined),
         }),
       });
 
@@ -289,7 +292,7 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
                           setSelectedFile(null);
                           setPreviewUrl(null);
                         }}
-                        className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                        className="cursor-pointer absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
                       >
                         <X className="w-4 h-4" />
                       </button>

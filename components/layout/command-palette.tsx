@@ -6,32 +6,9 @@ import { Command } from "cmdk";
 import { useDebounce } from "@/hooks/use-debounce";
 import { searchGlobal, type SearchResults, type SearchFilters, type SearchResult } from "@/lib/actions/search";
 import { getSavedSearches, createSavedSearch, deleteSavedSearch, type SavedSearch } from "@/lib/actions/saved-searches";
-import {
-  Calendar,
-  Home,
-  ListTodo,
-  BookOpen,
-  Film,
-  Mountain,
-  Activity,
-  Settings,
-  Plus,
-  Search,
-  Keyboard,
-  TrendingUp,
-  Loader2,
-  FileText,
-  CheckSquare,
-  Map as MapIcon,
-  History,
-  Repeat,
-  Save,
-  Trash2,
-  X,
-  DollarSign,
-} from "lucide-react";
+
+
 import { cn } from "@/lib/utils";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TagAutocomplete } from "@/components/search/tag-autocomplete";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

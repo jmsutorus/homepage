@@ -2,12 +2,10 @@
 
 import { useState, useMemo } from "react";
 import { MoodEntry } from "@/lib/db/mood";
-import { format, subDays, isSameDay, parseISO, startOfMonth, endOfMonth } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
+import { format, subDays, parseISO, startOfMonth, endOfMonth } from "date-fns";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 interface MoodPageClientProps {

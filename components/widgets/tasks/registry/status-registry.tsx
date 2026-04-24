@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { TaskStatusRecord } from "@/lib/db/tasks";
-import { PlusCircle, GripVertical, Trash2, Edit2, Check, X } from "lucide-react";
+import { PlusCircle, GripVertical, Trash2, Edit2, Check } from "lucide-react";
 import { toast } from "sonner";
 
 interface StatusRegistryProps {

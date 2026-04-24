@@ -148,3 +148,30 @@ export async function toggleDuolingoLessonCompletion(date: string): Promise<{ su
   }
 }
 
+/**
+ * Update the user's haptic feedback preference
+ */
+export async function updateHapticPreference(enabled: boolean): Promise<{ success: boolean; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const db = getDatabase();
+    await db.execute({
+      sql: "UPDATE user SET haptic = ?, updatedAt = ? WHERE id = ?",
+      args: [enabled ? 1 : 0, Date.now(), session.user.id]
+    });
+
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/settings");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update haptic preference:", error);
+    return { success: false, error: "Failed to update preference" };
+  }
+}
+
+

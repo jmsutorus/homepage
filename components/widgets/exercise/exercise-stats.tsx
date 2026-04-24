@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDuration } from "@/lib/utils/strava"; // We can reuse this or move it, but keeping for now as it formats seconds/minutes
+// We can reuse this or move it, but keeping for now as it formats seconds/minutes
 import type { WorkoutActivityStats } from "@/lib/db/workout-activities";
 
 interface ExerciseStatsProps {

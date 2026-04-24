@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { Smile, Frown, Meh, Activity, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils, Plane, Palmtree, Map, Star, Cake, UtensilsCrossed, Wine } from "lucide-react";
+import { Smile, Frown, Meh, Film, Tv, Book, Gamepad2, Music, CheckSquare, Clock, X, Plus, Calendar, Trees, BookOpen, Dumbbell, Github, Target, Flag, Languages, Heart, Utensils, Plane, Palmtree, Map, Star, Cake, UtensilsCrossed, Wine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getVacationTypeIcon } from "@/lib/utils/vacation-icons";
 import { BirthdayCardBackground } from "./birthday-card-background";

@@ -4,16 +4,9 @@ import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, UserPlus, X, ArrowRight, UserCheck } from 'lucide-react';
+import { Search, UserPlus, X, ArrowRight } from 'lucide-react';
 import { EventPerson } from '@/lib/db/events';
 import { type Person } from '@/lib/db/people';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';

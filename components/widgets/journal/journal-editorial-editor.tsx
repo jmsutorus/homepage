@@ -2,8 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import {
   Select,
@@ -12,14 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { LinkPicker } from '@/components/widgets/shared/link-picker';
 import { JournalLink } from '@/lib/db/journals';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { TagInput } from '@/components/search/tag-input';
 import { fireAchievementConfetti, isJournalMilestone, getJournalMilestoneMessage } from '@/lib/utils/confetti';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 import { SuccessOverlay } from '@/components/ui/animations/success-overlay';
 
 interface JournalFrontmatter {

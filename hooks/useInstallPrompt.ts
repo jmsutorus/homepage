@@ -26,7 +26,7 @@ export function useInstallPrompt() {
       setIsInstalled(isStandaloneMode);
     };
 
-    checkStandalone();
+    const timer = setTimeout(checkStandalone, 0);
 
     // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -52,6 +52,7 @@ export function useInstallPrompt() {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
+      clearTimeout(timer);
       window.removeEventListener(
         "beforeinstallprompt",
         handleBeforeInstallPrompt

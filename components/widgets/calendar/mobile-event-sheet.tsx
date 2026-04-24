@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -11,7 +10,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/com
 import { Calendar as CalendarIcon } from "lucide-react";
 import type { EventFormData } from "./event-modal";
 import type { EventCategory } from "@/lib/db/events";
-import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
+import { showCreationError } from "@/lib/success-toasts";
+import { TreeSuccess } from "@/components/ui/animations/tree-success";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
+import { HapticButton } from "@/components/ui/haptic-button";
+import { motion, PanInfo } from "framer-motion";
 
 interface MobileEventSheetProps {
   open: boolean;
@@ -40,6 +43,13 @@ export function MobileEventSheet({
   });
   const [categories, setCategories] = useState<EventCategory[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+
+  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => {
+      onOpenChange(false);
+    },
+  });
 
   // Fetch categories on mount
   useEffect(() => {
@@ -112,8 +122,7 @@ export function MobileEventSheet({
         end_date: "",
         notifications: [],
       });
-      showCreationSuccess("event");
-      onOpenChange(false);
+      triggerSuccess();
     } catch (error) {
       console.error("Failed to save event:", error);
       showCreationError("event", error);
@@ -135,12 +144,42 @@ export function MobileEventSheet({
           e.preventDefault();
         }}
       >
-        <div className="flex flex-col h-full">
+        <motion.div 
+          className="flex flex-col h-full"
+          drag="y"
+          dragConstraints={{ top: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_, info: PanInfo) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              onOpenChange(false);
+            }
+          }}
+        >
+          {/* Drag Handle */}
+          <div className="flex-none flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
+          </div>
+
+          <div className="flex flex-col h-full overflow-hidden">
           <SheetHeader className="px-6 pt-6 pb-4 border-b">
             <SheetTitle>Add Event</SheetTitle>
           </SheetHeader>
 
-          <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0">
+          {showSuccess ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
+              <div className="relative">
+                <TreeSuccess size={160} showText={false} />
+                <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
+              </div>
+              <div className="text-center space-y-3">
+                <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight uppercase">Event Scheduled</h3>
+                <p className="text-media-on-surface-variant font-medium max-w-[280px] mx-auto">
+                  Temporal coordinates locked. Event details archived in the collective timeline.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
               {/* Title */}
               <div className="space-y-2">
@@ -286,10 +325,11 @@ export function MobileEventSheet({
 
             {/* Submit Button - Fixed at bottom with safe area padding */}
             <SheetFooter className="border-t px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-              <Button
+              <HapticButton
                 type="submit"
+                hapticPattern="success"
                 disabled={isSaving || !formData.title.trim()}
-                className="w-full h-12 text-base bg-brand hover:bg-brand/90 text-brand-foreground"
+                className="w-full h-12 text-base bg-brand hover:bg-brand/90 text-brand-foreground flex items-center justify-center rounded-xl"
               >
                 {isSaving ? (
                   "Adding..."
@@ -299,10 +339,12 @@ export function MobileEventSheet({
                     Add Event
                   </>
                 )}
-              </Button>
+              </HapticButton>
             </SheetFooter>
           </form>
-        </div>
+          )}
+          </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

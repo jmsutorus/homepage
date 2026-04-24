@@ -1,18 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Wine, Search, Plus, Star, Heart, ArrowRight, Table as TableIcon, LayoutGrid, Filter } from 'lucide-react';
+import { Wine, Search, Star, Heart, ArrowRight } from 'lucide-react';
 import type { Drink } from '@/lib/db/drinks';
 import { DrinkFormDialog } from './drink-form-dialog';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { PageTabsList } from '@/components/ui/page-tabs-list';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
 
 interface DrinksPageClientProps {

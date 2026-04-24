@@ -2,11 +2,8 @@
 
 import { Habit, HabitCompletion } from "@/lib/db/habits";
 import { toggleHabitCompletionAction } from "@/lib/actions/habits";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
-import { AnimatedProgress } from "@/components/ui/animations/animated-progress";
 import { fireAchievementConfetti } from "@/lib/utils/confetti";
 
 interface DailyHabitsProps {

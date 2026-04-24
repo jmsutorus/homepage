@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Task, TaskCategory } from "@/lib/db/tasks";
-import { Plus, Trash2, Edit2, Check, X, RotateCcw } from "lucide-react";
+import { Trash2, Edit2, Check, X, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 interface CategoryRegistryProps {

@@ -2,14 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2 } from "lucide-react";
+
+import { TreeSuccess } from "./tree-success";
 
 type AnimationState =
   | "idle"
-  | "sweeping"
-  | "fading"
-  | "showing-message"
-  | "removing"
+  | "showing-success"
   | "completed";
 
 interface TaskCompletionAnimationProps {
@@ -63,141 +61,88 @@ export function TaskCompletionAnimation({
   // Check for reduced motion preference
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    // eslint-disable-next-line
-    setPrefersReducedMotion(mediaQuery.matches);
+    const initialMatches = mediaQuery.matches;
+
+    // Defer initial state update to avoid cascading renders warning
+    const timer = setTimeout(() => {
+      setPrefersReducedMotion(initialMatches);
+    }, 0);
 
     const handleChange = (e: MediaQueryListEvent) => {
       setPrefersReducedMotion(e.matches);
     };
 
     mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
+    return () => {
+      clearTimeout(timer);
+      mediaQuery.removeEventListener("change", handleChange);
+    };
   }, []);
 
   // Start animation sequence when shouldAnimate becomes true
-   
   useEffect(() => {
     if (shouldAnimate && animationState === "idle") {
-      if (prefersReducedMotion) {
-        // Skip animation, go straight to completion
-        // eslint-disable-next-line
-        setAnimationState("completed");
-        setTimeout(() => onAnimationComplete?.(), 100);
-      } else {
-        // Start animation sequence
-        setAnimationState("sweeping");
-      }
+      // Defer state update to avoid cascading renders warning
+      const timer = setTimeout(() => {
+        if (prefersReducedMotion) {
+          setAnimationState("completed");
+          onAnimationComplete?.();
+        } else {
+          setAnimationState("showing-success");
+        }
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [shouldAnimate, prefersReducedMotion, onAnimationComplete, animationState]);
 
-  // Handle animation state transitions
-  useEffect(() => {
-    if (animationState === "sweeping") {
-      // After sweep completes (400ms), start fading
-      const timer = setTimeout(() => {
-        setAnimationState("fading");
-      }, 400);
-      return () => clearTimeout(timer);
-    }
+  const handleSuccessComplete = () => {
+    // Wait a short bit after the tree finishes to let the user see the final state
+    setTimeout(() => {
+      setAnimationState("completed");
+      onAnimationComplete?.();
+    }, 375);
+  };
 
-    if (animationState === "fading") {
-      // After fade (200ms), show completion message
-      const timer = setTimeout(() => {
-        setAnimationState("showing-message");
-      }, 200);
-      return () => clearTimeout(timer);
-    }
+  const showSuccess = animationState === "showing-success";
 
-    if (animationState === "showing-message") {
-      // After showing message (1000ms), start removal
-      const timer = setTimeout(() => {
-        setAnimationState("removing");
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-
-    if (animationState === "removing") {
-      // After removal animation (300ms), mark as completed
-      const timer = setTimeout(() => {
-        setAnimationState("completed");
-        onAnimationComplete?.();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [animationState, onAnimationComplete]);
-
-  const showContent = animationState !== "removing" && animationState !== "completed";
-  const showMessage = animationState === "showing-message";
-  const contentOpacity =
-    animationState === "fading" ? 0.5 :
-    animationState === "showing-message" ? 0 :
-    1;
-
-  // Don't render anything if completed (to prevent "0" or other artifacts)
+  // Don't render anything if completed
   if (animationState === "completed") {
     return null;
   }
 
   return (
     <motion.div
-      className={`relative overflow-hidden ${className}`}
+      className={`relative ${className}`}
       layout
-      initial={false}
-      animate={{
-        opacity: animationState === "removing" ? 0 : 1,
-        x: animationState === "removing" ? 100 : 0,
-        scale: animationState === "removing" ? 0.95 : 1,
-      }}
-      transition={{
-        duration: animationState === "removing" ? 0.3 : 0.2,
-        ease: animationState === "removing" ? "easeOut" : "easeInOut",
-      }}
     >
-      {/* Task content with fade animation */}
-      {showContent ? (
-        <motion.div
-          animate={{ opacity: contentOpacity }}
-          transition={{ duration: 0.2 }}
-        >
-          {children}
-        </motion.div>
-      ) : null}
+      {/* Task content - Dimmed when successful */}
+      <motion.div
+        animate={{ 
+          opacity: showSuccess ? 0.1 : 1,
+          filter: showSuccess ? "blur(4px)" : "blur(0px)"
+        }}
+        transition={{ duration: 0.4 }}
+      >
+        {children}
+      </motion.div>
 
-      {/* Green sweep line */}
+      {/* Success Animation Inline */}
       <AnimatePresence>
-        {animationState === "sweeping" ? (
+        {showSuccess && (
           <motion.div
-            className="absolute top-1/2 left-0 right-0 h-[2px] bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
-            initial={{ x: "100%" }}
-            animate={{ x: "-100%" }}
-            exit={{ opacity: 0 }}
-            transition={{
-              duration: 0.4,
-              ease: "easeInOut",
-            }}
-            style={{ zIndex: 10 }}
-          />
-        ) : null}
-      </AnimatePresence>
-
-      {/* "Task Completed" message */}
-      <AnimatePresence>
-        {showMessage ? (
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.2 }}
-            role="status"
-            aria-live="polite"
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
           >
-            <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-semibold text-sm">
-              <CheckCircle2 className="h-5 w-5" />
-              <span>Task Completed</span>
-            </div>
+            <TreeSuccess 
+              onComplete={handleSuccessComplete} 
+              size={80} 
+              showText={false}
+              className="drop-shadow-2xl"
+            />
           </motion.div>
-        ) : null}
+        )}
       </AnimatePresence>
 
       {/* Screen reader announcement */}

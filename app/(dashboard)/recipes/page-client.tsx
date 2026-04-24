@@ -20,14 +20,10 @@ import { MobileRecipeSheet } from "@/components/widgets/meals/mobile-recipe-shee
 import { GroceryList } from "@/components/widgets/meals/grocery-list";
 import { ImportIngredientsDialog } from "@/components/widgets/meals/import-ingredients-dialog";
 import { 
-  Plus, 
   ArrowRight as ArrowForward, 
   ShoppingCart,
   Timer,
   SignalHigh,
-  Share2 as Share,
-  Rss as RssFeed,
-  Filter,
   Utensils as Recipe,
   Package as Inventory,
   BookOpen as Book,

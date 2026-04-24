@@ -7,7 +7,6 @@ import { SuccessCheck } from "@/components/ui/animations/success-check";
 import { useSuccessDialog } from "@/hooks/use-success-dialog";
 import { showCreationError } from "@/lib/success-toasts";
 import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
-import { cn } from "@/lib/utils";
 
 interface EventModalProps {
   open: boolean;

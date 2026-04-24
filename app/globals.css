@@ -362,7 +362,6 @@
   }
 
   .watercolor-texture {
-    mask-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
     filter: contrast(95%) brightness(105%) saturate(90%);
   }
 

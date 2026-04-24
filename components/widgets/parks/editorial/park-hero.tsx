@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, MapPin, Calendar, Quote, Pencil, Loader2 } from "lucide-react";
+import { Quote, Pencil, Loader2 } from "lucide-react";
 import { ParkContent } from "@/lib/db/parks";
 import { formatDateLongSafe } from "@/lib/utils";
 import { useState } from "react";

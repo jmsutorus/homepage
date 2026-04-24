@@ -5,8 +5,7 @@ import Link from "next/link";
 import { MobileNav } from "./mobile-nav";
 import { useAuth } from "@/hooks/useAuth";
 
-import { Button } from "@/components/ui/button";
-import { Settings, Search, ChevronDown, User, Shield } from "lucide-react";
+import { Settings, Shield } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import {
   DropdownMenu,

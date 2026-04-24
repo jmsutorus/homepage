@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";

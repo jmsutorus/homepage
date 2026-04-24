@@ -6,7 +6,6 @@ import {
   DialogContent,
 } from '@/components/ui/dialog';
 import { Loader2, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface IncomeFormDialogProps {
   open: boolean;

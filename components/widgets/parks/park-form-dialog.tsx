@@ -24,7 +24,10 @@ import { Send } from "lucide-react";
 import { toast } from 'sonner';
 import { PARK_CATEGORIES, DBParkCategory, ParkCategoryValue } from '@/lib/db/enums/park-enums';
 import { TagInput } from '@/components/search/tag-input';
-import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
+import { showCreationError } from '@/lib/success-toasts';
+import { TreeSuccess } from "@/components/ui/animations/tree-success";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
+import { motion, PanInfo } from "framer-motion";
 
 interface ParkFormDialogProps {
   open: boolean;
@@ -39,6 +42,14 @@ export function ParkFormDialog({
 }: ParkFormDialogProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => {
+      onOpenChange(false);
+      onSuccess?.();
+    },
+  });
 
   // Form state
   const [title, setTitle] = useState('');
@@ -90,7 +101,7 @@ export function ParkFormDialog({
         throw new Error(error.error || 'Failed to add park');
       }
 
-      showCreationSuccess('park');
+      triggerSuccess();
       
       // Reset form
       setTitle('');
@@ -104,7 +115,6 @@ export function ParkFormDialog({
       setFeatured(false);
       setPublished(true);
 
-      onOpenChange(false);
       onSuccess?.();
       router.refresh();
     } catch (error) {
@@ -122,10 +132,42 @@ export function ParkFormDialog({
         className="h-[90vh] max-h-[90vh] rounded-t-3xl p-0 flex flex-col"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
+        <motion.div 
+          className="flex flex-col h-full bg-media-surface-container-lowest"
+          drag="y"
+          dragConstraints={{ top: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_, info: PanInfo) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              onOpenChange(false);
+            }
+          }}
+        >
+          {/* Drag Handle */}
+          <div className="flex-none flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
+          </div>
+
+          <div className="flex flex-col h-full overflow-hidden">
         <SheetHeader className="px-6 pt-6 pb-4 border-b text-left shrink-0">
           <SheetTitle>Add a Park</SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+
+        {showSuccess ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
+            <div className="relative">
+              <TreeSuccess size={160} showText={false} />
+              <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
+            </div>
+            <div className="text-center space-y-3">
+              <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight uppercase">Park established</h3>
+              <p className="text-media-on-surface-variant font-medium max-w-[280px] mx-auto">
+                Geographic territory cataloged. Flora, fauna, and administrative data synced to the collective.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Park Name *</Label>
@@ -257,6 +299,9 @@ export function ParkFormDialog({
             </Button>
           </div>
         </form>
+        )}
+          </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

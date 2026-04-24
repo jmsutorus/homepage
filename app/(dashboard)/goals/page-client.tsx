@@ -8,7 +8,7 @@ import { GoalsFilter } from "@/components/widgets/goals/goals-filter";
 import { GoalSpotlight } from "@/components/widgets/goals/goal-spotlight";
 import { GoalEditorialCard } from "@/components/widgets/goals/goal-editorial-card";
 import { Button } from "@/components/ui/button";
-import { Plus, Target, Sparkles, ListFilter, ArrowRight } from "lucide-react";
+import { Target, Sparkles, ListFilter, ArrowRight } from "lucide-react";
 import type { Goal, GoalStatus, GoalPriority } from "@/lib/db/goals";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";

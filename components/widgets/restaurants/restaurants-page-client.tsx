@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Search, Star, ArrowRight, Heart, Plus } from 'lucide-react';
+import { Star, ArrowRight, Heart } from 'lucide-react';
 import type { Restaurant } from '@/lib/db/restaurants';
 import { RestaurantFormDialog } from './restaurant-form-dialog';
 import { cn } from '@/lib/utils';

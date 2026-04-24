@@ -4,9 +4,8 @@ import { format } from "date-fns";
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Dumbbell, Activity, Zap, Flame, Timer } from "lucide-react";
+import { Dumbbell, Activity, Zap, Flame, Timer } from "lucide-react";
 
 interface Exercise {
   description: string;

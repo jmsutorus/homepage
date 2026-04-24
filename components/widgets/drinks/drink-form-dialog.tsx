@@ -10,10 +10,6 @@ import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -31,8 +27,12 @@ import {
 } from '@/components/ui/sheet';
 import { toast } from 'sonner';
 import { Drink, DrinkType, DrinkStatus } from '@/lib/db/drinks';
-import { Loader2, Send, X, Infinity } from 'lucide-react';
+import { Send, X, Infinity, Image as ImageIcon, Upload, Link as LinkIcon, Loader2 } from 'lucide-react';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { cn } from '@/lib/utils';
+import { TreeSuccess } from "@/components/ui/animations/tree-success";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
+import { useRef } from 'react';
 
 interface DrinkFormDialogProps {
   open: boolean;
@@ -45,6 +45,14 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => {
+      onOpenChange(false);
+      onSuccess();
+    },
+  });
 
   // Form state
   const [name, setName] = useState('');
@@ -61,6 +69,13 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
   const [servingTemp, setServingTemp] = useState('');
   const [pairings, setPairings] = useState('');
 
+  // Photo upload state
+  const [photoMode, setPhotoMode] = useState<'upload' | 'url'>('upload');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
@@ -71,6 +86,7 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
       setRating(initialData.rating?.toString() || '');
       setNotes(initialData.notes || '');
       setImageUrl(initialData.image_url || '');
+      setPreviewUrl(initialData.image_url || null);
       setFavorite(initialData.favorite);
       setStatus(initialData.status);
       setBodyFeel(initialData.body_feel || '');
@@ -85,6 +101,8 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
       setRating('');
       setNotes('');
       setImageUrl('');
+      setPreviewUrl(null);
+      setSelectedFile(null);
       setFavorite(false);
       setStatus('tasted');
       setBodyFeel('');
@@ -93,11 +111,54 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
     }
   }, [initialData, open]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadPhoto = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/drinks/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to upload photo");
+    }
+    return data.photoUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      let finalImageUrl = imageUrl;
+
+      // Handle file upload if a file is selected
+      if (photoMode === "upload" && selectedFile) {
+        setIsUploading(true);
+        try {
+          finalImageUrl = await uploadPhoto(selectedFile);
+        } catch (error) {
+          toast.error("Photo upload failed. Proceeding with existing URL.");
+          console.error(error);
+        } finally {
+          setIsUploading(false);
+        }
+      }
+
       const data = {
         name,
         type,
@@ -106,7 +167,7 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
         abv: abv ? parseFloat(abv) : undefined,
         rating: rating ? parseInt(rating) : undefined,
         notes: notes || undefined,
-        image_url: imageUrl || undefined,
+        image_url: finalImageUrl || undefined,
         favorite,
         status,
         body_feel: bodyFeel || undefined,
@@ -130,8 +191,13 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
         throw new Error('Failed to save drink');
       }
 
-      toast.success(initialData ? 'Drink updated' : 'Drink created');
-      onSuccess();
+      if (initialData) {
+        toast.success('Drink updated');
+        onOpenChange(false);
+        onSuccess();
+      } else {
+        triggerSuccess();
+      }
     } catch (error) {
       toast.error('Something went wrong');
       console.error(error);
@@ -239,14 +305,94 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="imageUrl">Image URL (Optional)</Label>
-        <Input 
-          id="imageUrl"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder="https://..." 
-          className="text-base h-12 border-2 focus-visible:ring-brand"
-        />
+        <Label className="text-sm font-bold text-media-primary">Drink Photo</Label>
+        <div className="bg-media-surface-container border-2 border-media-outline-variant/30 rounded-xl overflow-hidden">
+          <div className="flex border-b-2 border-media-outline-variant/20">
+            <button
+              type="button"
+              onClick={() => setPhotoMode("upload")}
+              className={cn(
+                "flex-1 py-3 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors",
+                photoMode === "upload" ? "bg-media-secondary text-white" : "text-media-on-surface-variant hover:bg-media-surface-container-high"
+              )}
+            >
+              <Upload className="w-4 h-4" />
+              Upload
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhotoMode("url")}
+              className={cn(
+                "flex-1 py-3 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors",
+                photoMode === "url" ? "bg-media-secondary text-white" : "text-media-on-surface-variant hover:bg-media-surface-container-high"
+              )}
+            >
+              <LinkIcon className="w-4 h-4" />
+              URL
+            </button>
+          </div>
+
+          <div className="p-4">
+            {photoMode === "upload" ? (
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-media-outline-variant/30 rounded-xl p-4 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-media-surface-container-high transition-colors min-h-[120px]"
+              >
+                {previewUrl ? (
+                  <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-media-secondary/20 shadow-inner">
+                    <img 
+                      src={previewUrl} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 rounded-2xl bg-media-surface-container-high flex items-center justify-center text-media-on-surface-variant/30 border border-media-outline-variant/10">
+                    <ImageIcon className="w-8 h-8" />
+                  </div>
+                )}
+                <div className="text-center">
+                  <p className="text-[10px] font-bold text-media-primary uppercase tracking-tight">Click to select photo</p>
+                  <p className="text-[9px] text-media-on-surface-variant uppercase">PNG, JPG or WebP</p>
+                </div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="relative">
+                  <Input
+                    id="imageUrl"
+                    placeholder="https://example.com/photo.jpg"
+                    type="text"
+                    value={imageUrl}
+                    onChange={(e) => {
+                      setImageUrl(e.target.value);
+                      setPreviewUrl(e.target.value || null);
+                    }}
+                    className="text-base h-12 border-2 focus-visible:ring-brand pr-10"
+                  />
+                  <LinkIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-media-on-surface-variant pointer-events-none" />
+                </div>
+                {previewUrl && (
+                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-media-outline-variant/20 mx-auto">
+                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" onError={() => setPreviewUrl(null)} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -339,6 +485,21 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
           </div>
 
           <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-10 space-y-12">
+            {showSuccess ? (
+              <div className="flex-1 flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
+                <div className="relative">
+                  <TreeSuccess size={160} showText={false} />
+                  <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
+                </div>
+                <div className="text-center space-y-3">
+                  <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight uppercase">Drink saved</h3>
+                  <p className="text-media-on-surface-variant font-medium max-w-[280px] mx-auto">
+                    Drink profile archived. Sensory data and producer technicals synced to the library.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
             {/* Section 01: Core Identity */}
             <div className="space-y-8">
               <div className="flex items-center gap-4">
@@ -521,14 +682,93 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Visual Reference (URL)</label>
-                  <input 
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    className="w-full px-8 py-4 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg font-lexend placeholder:text-media-on-surface-variant/20"
-                    placeholder="https://..."
-                  />
+                  <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Visual Reference</label>
+                  <div className="bg-media-surface-container-low border-2 border-transparent rounded-2xl overflow-hidden">
+                    <div className="flex border-b-2 border-media-outline-variant/5">
+                      <button
+                        type="button"
+                        onClick={() => setPhotoMode("upload")}
+                        className={cn(
+                          "flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all",
+                          photoMode === "upload" ? "bg-media-secondary text-media-on-secondary" : "text-media-on-surface-variant hover:bg-media-surface-container-high"
+                        )}
+                      >
+                        <Upload className="w-4 h-4" />
+                        Upload
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPhotoMode("url")}
+                        className={cn(
+                          "flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all",
+                          photoMode === "url" ? "bg-media-secondary text-media-on-secondary" : "text-media-on-surface-variant hover:bg-media-surface-container-high"
+                        )}
+                      >
+                        <LinkIcon className="w-4 h-4" />
+                        URL
+                      </button>
+                    </div>
+
+                    <div className="p-6">
+                      {photoMode === "upload" ? (
+                        <div 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="border-2 border-dashed border-media-outline-variant/20 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-media-surface-container-high transition-all min-h-[160px] group"
+                        >
+                          {previewUrl ? (
+                            <div className="relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-media-secondary/20 shadow-2xl transition-transform group-hover:scale-105">
+                              <img 
+                                src={previewUrl} 
+                                alt="Preview" 
+                                className="w-full h-full object-cover"
+                              />
+                              {isUploading && (
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                  <Loader2 className="w-8 h-8 text-white animate-spin" />
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="w-24 h-24 rounded-2xl bg-media-surface-container-high flex items-center justify-center text-media-on-surface-variant/20 border-2 border-media-outline-variant/10 transition-all group-hover:border-media-secondary/30">
+                              <ImageIcon className="w-10 h-10" />
+                            </div>
+                          )}
+                          <div className="text-center space-y-1">
+                            <p className="text-[10px] font-black text-media-primary uppercase tracking-[0.1em]">Select Asset</p>
+                            <p className="text-[9px] text-media-on-surface-variant uppercase font-bold opacity-40 tracking-widest">PNG, JPG or WebP</p>
+                          </div>
+                          <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            className="hidden" 
+                            accept="image/*"
+                            onChange={handleFileChange}
+                          />
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="relative">
+                            <input 
+                              type="url"
+                              value={imageUrl}
+                              onChange={(e) => {
+                                setImageUrl(e.target.value);
+                                setPreviewUrl(e.target.value || null);
+                              }}
+                              className="w-full px-8 py-5 bg-media-surface-container border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg font-lexend placeholder:text-media-on-surface-variant/20 pr-16"
+                              placeholder="https://assets.library.com/drink-photo.jpg"
+                            />
+                            <LinkIcon className="absolute right-6 top-1/2 -translate-y-1/2 w-6 h-6 text-media-on-surface-variant/20 pointer-events-none" />
+                          </div>
+                          {previewUrl && (
+                            <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-media-outline-variant/10 mx-auto shadow-xl">
+                              <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" onError={() => setPreviewUrl(null)} />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -553,11 +793,13 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
                     Syncing...
                   </>
                 ) : (
-                  initialData ? 'Refine Protocol' : 'Establish Protocol'
+                  initialData ? 'Update Drink' : (isUploading ? 'Uploading...' : 'Save Drink')
                 )}
               </button>
             </div>
-          </form>
+          </>
+        )}
+      </form>
         </DialogContent>
       </Dialog>
     );
@@ -578,19 +820,36 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
             </SheetDescription>
           </SheetHeader>
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-              {formFields}
-            </div>
-            <div className="border-t px-6 py-4 bg-background">
-              <Button 
-                type="submit" 
-                disabled={loading} 
-                className="w-full h-16 text-lg font-black uppercase tracking-widest bg-media-secondary hover:brightness-110 text-media-on-secondary rounded-2xl shadow-xl shadow-media-secondary/20 transition-all active:scale-95"
-              >
-                <Send className="h-5 w-5 mr-2" />
-                {loading ? 'Saving...' : initialData ? 'Refine Protocol' : 'Establish Protocol'}
-              </Button>
-            </div>
+            {showSuccess ? (
+              <div className="flex-1 flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
+                <div className="relative">
+                  <TreeSuccess size={160} showText={false} />
+                  <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
+                </div>
+                <div className="text-center space-y-3">
+                  <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight uppercase">Saved drink</h3>
+                  <p className="text-media-on-surface-variant font-medium max-w-[280px] mx-auto">
+                    Drink profile archived. Sensory data and producer technicals synced to the library.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                  {formFields}
+                </div>
+                <div className="border-t px-6 py-4 bg-background">
+                  <Button 
+                    type="submit" 
+                    disabled={loading} 
+                    className="w-full h-16 text-lg font-black uppercase tracking-widest bg-media-secondary hover:brightness-110 text-media-on-secondary rounded-2xl shadow-xl shadow-media-secondary/20 transition-all active:scale-95"
+                  >
+                    <Send className="h-5 w-5 mr-2" />
+                    {loading ? 'Saving...' : (isUploading ? 'Uploading...' : (initialData ? 'Update Drink' : 'Save Drink'))}
+                  </Button>
+                </div>
+              </>
+            )}
           </form>
         </div>
       </SheetContent>

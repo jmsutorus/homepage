@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Task } from "@/lib/db/tasks";
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";

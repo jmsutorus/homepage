@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Smile, Frown, Meh } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { CuteLoader } from "@/components/ui/cute-loader";
 
 interface MoodSelectorProps {

@@ -1,4 +1,3 @@
-import { queryOne } from "@/lib/db";
 import { ExercisePageClient } from "./page-client";
 import { getUserId } from "@/lib/auth/server";
 

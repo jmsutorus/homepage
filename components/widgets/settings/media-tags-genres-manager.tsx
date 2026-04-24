@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, X, Hash, Plus } from "lucide-react";
+import { Search, X, Hash } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -125,7 +123,7 @@ export function MediaTagsGenresManager() {
               <span className="text-sm font-medium">{tag}</span>
               <button 
                 onClick={() => handleDeleteClick("tag", tag)}
-                className="opacity-0 group-hover:opacity-100 hover:text-media-error transition-all"
+                className="cursor-pointer opacity-0 group-hover:opacity-100 hover:text-media-error transition-all"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -164,7 +162,7 @@ export function MediaTagsGenresManager() {
               <span className="text-sm font-medium">{genre}</span>
               <button 
                 onClick={() => handleDeleteClick("genre", genre)}
-                className="opacity-0 group-hover:opacity-100 hover:text-media-error transition-all"
+                className="cursor-pointer opacity-0 group-hover:opacity-100 hover:text-media-error transition-all"
               >
                 <X className="h-3 w-3" />
               </button>

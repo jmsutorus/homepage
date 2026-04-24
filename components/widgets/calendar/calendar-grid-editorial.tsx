@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { EditorialDayCell } from "./editorial-day-cell";
 import type { CalendarDaySummary } from "@/lib/db/calendar";
-import { cn } from "@/lib/utils";
 
 interface CalendarGridEditorialProps {
   year: number;

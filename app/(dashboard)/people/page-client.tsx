@@ -2,17 +2,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, User, Users, UserPlus, Briefcase, Mail, Phone, Trash2, Edit, Cake, Heart, Settings, ListTodo, Search, X, Copy, Sparkles, Gift } from "lucide-react";
+import { User, Users, UserPlus, Briefcase, Heart } from "lucide-react";
 import { type Person, type RelationshipCategory } from "@/lib/db/people";
 import { calculateAge, calculateDaysUntilBirthday, formatPhoneNumber } from "@/lib/people-utils";
 import { PersonFormDialog } from "@/components/widgets/people/person-form-dialog";
 import { DeletePersonDialog } from "@/components/widgets/people/delete-person-dialog";
 import { RelationshipTypeManager } from "@/components/widgets/people/relationship-type-manager";
-import { getZodiacSignFromBirthday, getZodiacElementColor } from "@/lib/zodiac";
+import { getZodiacSignFromBirthday } from "@/lib/zodiac";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Link from "next/link";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 
 interface PeoplePageClientProps {
   initialPeople: Person[];
@@ -218,7 +219,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
         </div>
         <button 
           onClick={openAddDialog}
-          className="cursor-pointer bg-media-primary text-white px-8 py-4 rounded-lg flex items-center gap-3 self-start md:self-auto hover:scale-105 transition-transform"
+          className="cursor-pointer bg-media-primary text-white px-8 py-4 rounded-lg hidden md:flex items-center gap-3 self-start md:self-auto hover:scale-105 transition-transform"
         >
           <span className="material-symbols-outlined">person_add</span>
           <span className="font-bold tracking-tight">Add Person</span>
@@ -499,6 +500,12 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
         onOpenChange={setIsDeleteDialogOpen}
         person={deletingPerson}
         onSuccess={refreshPeople}
+      />
+
+      <FloatingActionButton 
+        onClick={openAddDialog}
+        tooltipText="Add Person"
+        icon={<UserPlus className="h-8 w-8 text-media-on-secondary" />}
       />
     </div>
   );

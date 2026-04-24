@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GoalPriority, GoalStatus } from "@/lib/db/goals";
 import { Circle, Flag } from "lucide-react";
+import { motion, PanInfo } from "framer-motion";
 
 interface MobileGoalsFilterSheetProps {
   open: boolean;
@@ -40,7 +41,23 @@ export function MobileGoalsFilterSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-auto rounded-t-[2.5rem] p-0 bg-media-surface-container border-media-outline-variant/10 shadow-2xl overflow-hidden">
-        <div className="flex flex-col h-full pb-10">
+        <motion.div 
+          className="flex flex-col bg-media-surface-container-lowest"
+          drag="y"
+          dragConstraints={{ top: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_, info: PanInfo) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              onOpenChange(false);
+            }
+          }}
+        >
+          {/* Drag Handle */}
+          <div className="flex-none flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
+          </div>
+
+          <div className="flex flex-col h-full pb-10">
           <SheetHeader className="px-8 pt-8 pb-6 border-b border-media-outline-variant/5 flex flex-row items-center justify-between">
             <SheetTitle className="text-2xl font-bold tracking-tight text-media-primary">Filter Vision</SheetTitle>
             {activeFiltersCount > 0 && (
@@ -104,7 +121,8 @@ export function MobileGoalsFilterSheet({
               Apply Filter
             </Button>
           </div>
-        </div>
+          </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

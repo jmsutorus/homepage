@@ -3,12 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Pencil, Wand2 } from 'lucide-react';
+import { Trash2, Wand2 } from 'lucide-react';
 import type { Subscription } from '@/lib/db/subscriptions';
 import { toMonthly, toYearly } from '@/lib/utils/finances';
 import { SubscriptionFormDialog } from './subscription-form-dialog';
 import { SubscriptionEditorialCard } from './subscription-editorial-card';
-import { cn } from '@/lib/utils';
 
 interface SubscriptionsTabProps {
   subscriptions: Subscription[];

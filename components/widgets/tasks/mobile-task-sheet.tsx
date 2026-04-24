@@ -18,11 +18,15 @@ import {
   Send
 } from "lucide-react";
 import { TaskPriority, TaskCategory, TaskStatusRecord, PredefinedTaskStatus } from "@/lib/db/tasks";
-import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
+import { showCreationError } from "@/lib/success-toasts";
+import { TreeSuccess } from "@/components/ui/animations/tree-success";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
+import { HapticButton } from "@/components/ui/haptic-button";
 import { TemplatePicker } from "@/components/widgets/shared/template-picker";
 import type { TaskTemplate } from "@/lib/db/task-templates";
 import { parseTaskInput, hasParseableContent } from "@/lib/utils/task-parser";
 import { cn } from "@/lib/utils";
+import { motion, PanInfo } from "framer-motion";
 
 interface MobileTaskSheetProps {
   open: boolean;
@@ -42,6 +46,13 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
   const [isAdding, setIsAdding] = useState(false);
   const [manualOverride, setManualOverride] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+
+  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => {
+      onOpenChange(false);
+    },
+  });
 
   // Parse natural language input
   const parsedContent = useMemo(() => {
@@ -125,9 +136,8 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
         setCategory("");
         setDueDate(undefined);
         setManualOverride(false);
-        showCreationSuccess("task");
+        triggerSuccess();
         onTaskAdded();
-        onOpenChange(false);
       } else {
         throw new Error("Failed to create task");
       }
@@ -170,10 +180,10 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
 
   const getPriorityColor = () => {
     switch (priority) {
-      case "high": return "text-red-500";
-      case "medium": return "text-yellow-500";
-      case "low": return "text-blue-500";
-      default: return "text-muted-foreground";
+      case "high": return "text-media-secondary";
+      case "medium": return "text-media-on-tertiary-fixed-variant";
+      case "low": return "text-media-on-primary-fixed-variant";
+      default: return "text-media-on-surface-variant/40";
     }
   };
 
@@ -186,12 +196,42 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
           e.preventDefault();
         }}
       >
-        <div className="flex flex-col h-full">
-          <SheetHeader className="px-6 pt-6 pb-4 border-b">
-            <SheetTitle>Quick Add Task</SheetTitle>
+        <motion.div 
+          className="flex flex-col h-full bg-media-surface text-media-primary font-lexend"
+          drag="y"
+          dragConstraints={{ top: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_, info: PanInfo) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              onOpenChange(false);
+            }
+          }}
+        >
+          {/* Drag Handle */}
+          <div className="flex-none flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
+          </div>
+
+          <div className="flex flex-col h-full overflow-hidden">
+          <SheetHeader className="px-6 pt-8 pb-4 border-b border-media-outline-variant/10">
+            <SheetTitle className="text-2xl font-bold tracking-tight text-media-on-surface">Quick Add Task</SheetTitle>
           </SheetHeader>
 
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          {showSuccess ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
+              <div className="relative">
+                <TreeSuccess size={160} showText={false} />
+                <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
+              </div>
+              <div className="text-center space-y-3">
+                <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight uppercase">Task committed</h3>
+                <p className="text-media-on-surface-variant font-medium max-w-[280px] mx-auto">
+                  New directive integrated into the collective. Priority and parameters archived.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
               {/* Task Name Input */}
               <div className="relative">
@@ -204,8 +244,8 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
                   }}
                   disabled={isAdding}
                   className={cn(
-                    "text-base h-12 border-2 focus-visible:ring-brand",
-                    showNLPHint && "pr-10"
+                    "text-lg h-14 border border-media-outline-variant/20 bg-media-surface-container-low/20 rounded-2xl focus-visible:ring-4 focus-visible:ring-media-secondary/5 focus-visible:border-media-secondary transition-all duration-300 outline-none",
+                    showNLPHint && "pr-12"
                   )}
                   autoFocus
                 />
@@ -222,8 +262,8 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isAdding}
-                rows={3}
-                className="resize-none text-base border-2 focus-visible:ring-brand"
+                rows={4}
+                className="resize-none text-base border border-media-outline-variant/20 bg-media-surface-container-low/20 rounded-2xl focus-visible:ring-4 focus-visible:ring-media-secondary/5 focus-visible:border-media-secondary p-4 transition-all duration-300 outline-none"
               />
 
               {/* Quick Action Icons */}
@@ -237,7 +277,7 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
                 {/* Priority */}
                 <Select value={priority} onValueChange={handleManualPriorityChange}>
                   <SelectTrigger className={cn(
-                    "h-11 w-11 rounded-full border-0 hover:bg-brand/10 p-0 [&>svg:last-child]:hidden justify-center",
+                    "h-12 w-12 rounded-xl border border-media-outline-variant/20 hover:bg-media-secondary/10 p-0 [&>svg:last-child]:hidden justify-center transition-all",
                     getPriorityColor()
                   )}>
                     <Flag className="h-5 w-5" />
@@ -252,8 +292,8 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
                 {/* Category */}
                 <Select value={category || "none"} onValueChange={(value) => setCategory(value === "none" ? "" : value)}>
                   <SelectTrigger className={cn(
-                    "h-11 w-11 rounded-full border-0 hover:bg-brand/10 p-0 [&>svg:last-child]:hidden justify-center",
-                    category && "text-brand"
+                    "h-12 w-12 rounded-xl border border-media-outline-variant/20 hover:bg-media-secondary/10 p-0 [&>svg:last-child]:hidden justify-center transition-all",
+                    category && "text-media-secondary border-media-secondary/30 bg-media-secondary/5"
                   )}>
                     <FolderKanban className="h-5 w-5" />
                   </SelectTrigger>
@@ -269,7 +309,7 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
 
                 {/* Status */}
                 <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger className="h-11 w-11 rounded-full border-0 hover:bg-brand/10 hover:text-brand p-0 [&>svg:last-child]:hidden justify-center">
+                  <SelectTrigger className="h-12 w-12 rounded-xl border border-media-outline-variant/20 hover:bg-media-secondary/10 hover:text-media-secondary p-0 [&>svg:last-child]:hidden justify-center transition-all">
                     <Circle className="h-5 w-5" />
                   </SelectTrigger>
                   <SelectContent side="top">
@@ -300,8 +340,8 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
                       variant="ghost"
                       size="icon"
                       className={cn(
-                        "h-11 w-11 rounded-full hover:bg-brand/10",
-                        dueDate && "text-brand"
+                        "h-12 w-12 rounded-xl border border-media-outline-variant/20 hover:bg-media-secondary/10 transition-all",
+                        dueDate && "text-media-secondary border-media-secondary/30 bg-media-secondary/5"
                       )}
                     >
                       <CalendarIcon className="h-5 w-5" />
@@ -320,14 +360,14 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
 
               {/* Show selected date if any */}
               {dueDate && (
-                <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
-                  <span>Due: {format(dueDate, "PPP")}</span>
+                <div className="flex items-center justify-between text-sm text-media-on-surface-variant/60 bg-media-surface-container-low/40 rounded-xl p-4 border border-media-outline-variant/5">
+                  <span className="font-medium">Due: {format(dueDate, "PPP")}</span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => handleManualDateChange(undefined)}
-                    className="h-auto py-1 px-2"
+                    className="h-auto py-1 px-3 text-[10px] uppercase font-bold tracking-widest text-media-secondary hover:bg-media-secondary/10 rounded-lg"
                   >
                     Clear
                   </Button>
@@ -336,24 +376,27 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
             </div>
 
             {/* Submit Button - Fixed at bottom */}
-            <div className="border-t px-6 py-4">
-              <Button
+            <div className="border-t border-media-outline-variant/10 px-6 py-6 bg-media-surface-container-lowest/50">
+              <HapticButton
                 type="submit"
+                hapticPattern="success"
                 disabled={isAdding || !rawInput.trim()}
-                className="w-full h-12 text-base bg-brand hover:bg-brand/90 text-brand-foreground"
+                className="w-full h-14 text-base font-bold uppercase tracking-widest bg-media-secondary hover:brightness-110 text-media-on-secondary rounded-2xl shadow-xl shadow-media-secondary/10 transition-all active:scale-[0.98] flex items-center justify-center"
               >
                 {isAdding ? (
-                  "Adding..."
+                  "Archiving Entry..."
                 ) : (
                   <>
-                    <Send className="h-5 w-5 mr-2" />
-                    Add Task
+                    <Send className="h-5 w-5 mr-3" />
+                    Commit Task
                   </>
                 )}
-              </Button>
+              </HapticButton>
             </div>
           </form>
-        </div>
+          )}
+          </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

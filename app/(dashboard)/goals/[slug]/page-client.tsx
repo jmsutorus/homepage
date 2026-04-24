@@ -5,14 +5,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Checkbox } from "@/components/ui/checkbox";
+
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,9 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AnimatedProgressRing } from "@/components/ui/animations/animated-progress";
 import { SimpleMarkdown } from "@/components/widgets/goals/simple-markdown";
-import { Checklist } from "@/components/widgets/goals/checklist";
 import {
   deleteGoalAction,
   toggleChecklistItemAction,
@@ -47,18 +39,9 @@ import {
   ArrowLeft,
   Edit,
   Trash2,
-  Calendar,
-  Flag,
-  Tag,
-  CheckCircle2,
-  Circle,
-  Milestone,
-  LinkIcon,
   Repeat,
   CheckSquare,
   BookOpen,
-  ChevronDown,
-  ChevronRight,
 } from "lucide-react";
 import type { GoalWithDetails, GoalPriority, GoalLink, GoalLinkType, GoalStatus } from "@/lib/db/goals";
 

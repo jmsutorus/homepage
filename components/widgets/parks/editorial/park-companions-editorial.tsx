@@ -84,7 +84,7 @@ export function ParkCompanionsEditorial({ parkSlug }: ParkCompanionsEditorialPro
             <button 
               key={person.id} 
               onClick={() => handleEditPerson(person)}
-              className="bg-media-surface-container-high rounded-3xl p-8 flex items-center gap-6 group hover:bg-media-surface-container-highest transition-all duration-500 shadow-xl border border-media-outline-variant/5 hover:translate-y-[-4px] text-left"
+              className="cursor-pointer bg-media-surface-container-high rounded-3xl p-8 flex items-center gap-6 group hover:bg-media-surface-container-highest transition-all duration-500 shadow-xl border border-media-outline-variant/5 hover:translate-y-[-4px] text-left"
             >
               <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-2xl border-4 border-white/50 group-hover:border-media-secondary/30 transition-colors duration-500">
                 <Avatar className="w-full h-full rounded-none">

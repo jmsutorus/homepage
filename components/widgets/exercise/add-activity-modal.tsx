@@ -2,16 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dumbbell, X } from "lucide-react";
-import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { SuccessCheck } from "@/components/ui/animations/success-check";
 import { useSuccessDialog } from "@/hooks/use-success-dialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ActivityForm } from "./activity-form";
-import { cn } from "@/lib/utils";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
+import { motion, PanInfo } from "framer-motion";
 
 interface AddActivityModalProps {
   onActivityAdded?: () => void;
@@ -70,7 +69,7 @@ export function AddActivityModal({
   };
 
   const dialogHeader = (
-    <div className="bg-media-primary-container px-10 py-12 flex flex-col gap-2 relative overflow-hidden">
+    <div className="flex-none bg-media-primary-container px-10 py-12 flex flex-col gap-2 relative overflow-hidden">
       <div className="flex justify-between items-start z-10 relative">
         <DialogTitle className="text-3xl font-bold tracking-tight text-media-on-primary-container font-lexend">
           {editActivity ? "Edit Workout Session" : "Log New Session"}
@@ -93,7 +92,7 @@ export function AddActivityModal({
   );
 
   const successContent = (
-    <div className="flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
+    <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
       <div className="relative">
         <SuccessCheck size={160} />
         <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
@@ -108,10 +107,7 @@ export function AddActivityModal({
   );
 
   const contentBody = (
-    <div className={cn(
-      "overflow-y-auto",
-      isDesktop ? "px-10 py-8 max-h-[70vh]" : "flex-1 px-10 py-8"
-    )}>
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {showSuccess ? successContent : (
         <ActivityForm 
           key={editActivity?.id || "new"}
@@ -139,7 +135,7 @@ export function AddActivityModal({
             icon={<Dumbbell className="h-8 w-8 text-media-on-secondary" />}
           />
         ))}
-        <DialogContent showCloseButton={false} className="p-0 border-none sm:max-w-3xl overflow-hidden bg-media-surface-container-lowest shadow-[0_32px_64px_-12px_rgba(6,27,14,0.12)] rounded-3xl">
+        <DialogContent showCloseButton={false} className="p-0 border-none sm:max-w-3xl overflow-hidden bg-media-surface-container-lowest shadow-[0_32px_64px_-12px_rgba(6,27,14,0.12)] rounded-3xl flex flex-col max-h-[90vh]">
           {dialogHeader}
           {contentBody}
         </DialogContent>
@@ -164,11 +160,34 @@ export function AddActivityModal({
       ))}
       <SheetContent 
         side="bottom" 
-        className="h-[95vh] max-h-[95vh] p-0 border-none rounded-t-[40px] overflow-hidden bg-media-surface-container-lowest flex flex-col [&>button:last-child]:hidden"
+        className="h-[90dvh] max-h-[90dvh] rounded-t-3xl p-0 border-t-0 bg-media-surface-container-lowest flex flex-col [&>button:last-child]:hidden"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        {dialogHeader}
-        {contentBody}
+        <motion.div 
+          className="flex flex-col h-full font-lexend bg-media-surface-container-lowest"
+          drag="y"
+          dragConstraints={{ top: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_, info: PanInfo) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              setIsModalOpen(false);
+            }
+          }}
+        >
+          {/* Drag Handle */}
+          <div className="flex-none flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
+          </div>
+
+          <div className="flex flex-col h-full overflow-hidden">
+          <SheetHeader className="px-6 pt-8 pb-6 border-b border-media-outline-variant/10">
+            <SheetTitle className="text-2xl font-bold text-media-primary tracking-tight">
+              {editActivity ? "Refine Protocol" : "Establish Protocol"}
+            </SheetTitle>
+          </SheetHeader>
+          {contentBody}
+          </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

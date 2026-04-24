@@ -5,7 +5,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { Plus, X, CalendarIcon, Flag, Target } from "lucide-react";
+import { X, CalendarIcon, Flag } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";

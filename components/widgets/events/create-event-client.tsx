@@ -18,14 +18,11 @@ import {
 import {
   ArrowLeft,
   Loader2,
-  FileText,
   Save,
   X,
-  Plus,
 } from 'lucide-react';
 import type { EventCategory } from '@/lib/db/events';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 import { SuccessOverlay } from '@/components/ui/animations/success-overlay';
 
 export function CreateEventClient() {

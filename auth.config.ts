@@ -45,7 +45,7 @@ export default {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       // Initial sign in - add user data to token
       if (user) {
         token.id = user.id;
@@ -53,7 +53,14 @@ export default {
         token.name = user.name;
         token.picture = user.image;
         token.role = (user as any).role || 'user';
+        token.haptic = (user as any).haptic !== undefined ? (user as any).haptic : true;
       }
+
+      // Handle session update
+      if (trigger === "update" && session?.haptic !== undefined) {
+        token.haptic = session.haptic;
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -64,6 +71,7 @@ export default {
         session.user.name = token.name as string | null;
         session.user.image = token.picture as string | null;
         session.user.role = (token.role as string) || 'user';
+        session.user.haptic = token.haptic !== undefined ? (token.haptic as boolean) : true;
       }
       return session;
     },

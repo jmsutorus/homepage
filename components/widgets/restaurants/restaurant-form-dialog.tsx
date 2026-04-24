@@ -2,16 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
@@ -21,16 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import { Send, X } from "lucide-react";
+
+
+import { X } from "lucide-react";
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { toast } from 'sonner';
+import { TreeSuccess } from "@/components/ui/animations/tree-success";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
+import { HapticButton } from "@/components/ui/haptic-button";
+import { useHaptic } from "@/hooks/use-haptic";
 import type { Restaurant, RestaurantStatus } from '@/lib/db/restaurants';
 
 const CUISINE_OPTIONS = [
@@ -79,6 +72,7 @@ export function RestaurantFormDialog({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const { trigger } = useHaptic();
 
   // Form state
   const [name, setName] = useState(restaurant?.name ?? '');
@@ -94,6 +88,14 @@ export function RestaurantFormDialog({
   const [notes, setNotes] = useState(restaurant?.notes ?? '');
   const [favorite, setFavorite] = useState(restaurant?.favorite ?? false);
   const [status, setStatus] = useState<RestaurantStatus>(restaurant?.status ?? 'visited');
+
+  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => {
+      onOpenChange(false);
+      onSuccess?.();
+    },
+  });
 
   const isEditing = !!restaurant;
 
@@ -140,9 +142,13 @@ export function RestaurantFormDialog({
         throw new Error(error.error || 'Failed to save restaurant');
       }
 
-      toast.success(isEditing ? 'Restaurant updated' : 'Restaurant added');
-      onOpenChange(false);
-      onSuccess?.();
+      if (isEditing) {
+        toast.success('Restaurant updated');
+        onOpenChange(false);
+        onSuccess?.();
+      } else {
+        triggerSuccess();
+      }
       router.refresh();
     } catch (error) {
       console.error('Error saving restaurant:', error);
@@ -181,7 +187,21 @@ export function RestaurantFormDialog({
           <div className="absolute bottom-0 right-0 w-64 h-64 bg-media-secondary opacity-10 blur-[80px] rounded-full translate-x-16 translate-y-16"></div>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-10 space-y-12">
+        {showSuccess ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
+            <div className="relative">
+              <TreeSuccess size={160} showText={false} />
+              <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
+            </div>
+            <div className="text-center space-y-3">
+              <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight uppercase">Registry Established</h3>
+              <p className="text-media-on-surface-variant font-medium max-w-[280px] mx-auto">
+                Gastronomic blueprint archived. Geographic coordinates and sensory evaluation saved to the collective.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-10 space-y-12">
           {/* Section 01: Identity */}
           <div className="space-y-8">
             <div className="flex items-center gap-4">
@@ -363,7 +383,10 @@ export function RestaurantFormDialog({
 
               <div className="space-y-3 flex flex-col justify-end">
                 <div 
-                  onClick={() => setFavorite(!favorite)}
+                  onClick={() => {
+                    trigger("light");
+                    setFavorite(!favorite);
+                  }}
                   className={`flex items-center justify-between px-8 py-5 rounded-2xl border-2 transition-all cursor-pointer ${favorite ? 'bg-media-secondary/10 border-media-secondary/30' : 'bg-media-surface-container-low border-transparent'}`}
                 >
                   <label className="text-[10px] uppercase tracking-widest font-bold text-media-primary">Portfolio Favorite</label>
@@ -381,13 +404,17 @@ export function RestaurantFormDialog({
           <div className="flex items-center justify-end gap-10 pt-10 border-t border-media-outline-variant/10 shrink-0">
             <button 
               type="button"
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                trigger("light");
+                onOpenChange(false);
+              }}
               className="cursor-pointer text-[10px] font-black uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
             >
               Terminate
             </button>
-            <button 
+            <HapticButton 
               type="submit"
+              hapticPattern="success"
               disabled={loading || !name.trim()}
               className="cursor-pointer px-10 h-16 bg-media-secondary text-media-on-secondary rounded-2xl font-black text-lg tracking-widest uppercase shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 flex items-center gap-3 font-lexend"
             >
@@ -402,9 +429,10 @@ export function RestaurantFormDialog({
                   {buttonText}
                 </>
               )}
-            </button>
+            </HapticButton>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );

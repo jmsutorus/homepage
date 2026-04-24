@@ -1,7 +1,7 @@
 "use client";
 
 import { format, formatDistanceToNow } from "date-fns";
-import { ExternalLink, History, Check, Paperclip, Trash2 } from "lucide-react";
+import { History, Check, Paperclip, Trash2 } from "lucide-react";
 import type { Task } from "@/lib/db/tasks";
 
 interface EditorialTaskCardProps {
@@ -53,7 +53,7 @@ export function EditorialTaskCard({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-4 md:opacity-0 group-hover:opacity-100 transition-opacity">
           {task.category && (
             <span className="text-[10px] font-lexend uppercase tracking-widest px-3 py-1 bg-media-surface-container text-media-on-surface-variant rounded-full whitespace-nowrap">
               {task.category}
@@ -106,7 +106,7 @@ export function EditorialTaskCard({
         </div>
 
         {/* Action Icons for Featured Card */}
-        <div className="absolute top-8 right-8 flex items-center gap-4 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300">
+        <div className="absolute top-8 right-8 flex items-center gap-4 z-20 md:opacity-0 group-hover:opacity-100 transition-all duration-300">
            <button 
             onClick={(e) => {
               e.stopPropagation();

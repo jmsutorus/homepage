@@ -6,8 +6,9 @@ import { calculateAge, formatPhoneNumber } from "@/lib/people-utils";
 import { getZodiacSignFromBirthday } from "@/lib/zodiac";
 import { PersonFormDialog } from "@/components/widgets/people/person-form-dialog";
 import { PhotoEditDialog } from "@/components/widgets/people/photo-edit-dialog";
+import { DeletePersonDialog } from "@/components/widgets/people/delete-person-dialog";
 import { useRouter } from "next/navigation";
-import { Heart, Mail, Phone, MapPin, Calendar, Edit, ChevronLeft, Filter, Plus, Image as ImageIcon, Gift, Pencil } from "lucide-react";
+import { Heart, MapPin, Calendar, Edit, ChevronLeft, Filter, Plus, Image as ImageIcon, Gift, Pencil, Trash2 } from "lucide-react";
 import { formatDateLongSafe } from "@/lib/utils";
 
 interface PersonDetailClientProps {
@@ -19,6 +20,7 @@ export function PersonDetailClient({ person, sharedHistory }: PersonDetailClient
   const router = useRouter();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const zodiacSign = getZodiacSignFromBirthday(person.birthday);
   const age = calculateAge(person.birthday);
@@ -28,6 +30,11 @@ export function PersonDetailClient({ person, sharedHistory }: PersonDetailClient
   const birthdayDisplay = `${monthNames[parseInt(birthdayParts[1]) - 1]} ${parseInt(birthdayParts[2])}`;
 
   const handleEditSuccess = () => {
+    router.refresh();
+  };
+
+  const handleDeleteSuccess = () => {
+    router.push('/people');
     router.refresh();
   };
 
@@ -238,6 +245,23 @@ export function PersonDetailClient({ person, sharedHistory }: PersonDetailClient
         )}
       </section>
 
+      {/* Section 4: Administrative Actions */}
+      <section className="pt-12 border-t border-media-outline-variant/10">
+        <div className="bg-media-surface-container-low rounded-xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h3 className="text-xl font-bold text-media-primary tracking-tight">Administrative Control</h3>
+            <p className="text-media-on-surface-variant text-sm">Removal from the editorial directory is permanent. All shared history links will be preserved but the person profile will be purged.</p>
+          </div>
+          <button 
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="cursor-pointer px-8 py-3 bg-media-surface-container-high text-media-error rounded-lg font-bold flex items-center gap-2 hover:bg-media-error/10 transition-all border border-media-error/20"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete Profile
+          </button>
+        </div>
+      </section>
+
       {/* Edit Dialog */}
       <PersonFormDialog
         open={isEditDialogOpen}
@@ -252,6 +276,14 @@ export function PersonDetailClient({ person, sharedHistory }: PersonDetailClient
         onOpenChange={setIsPhotoDialogOpen}
         person={person}
         onSuccess={handleEditSuccess}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeletePersonDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        person={person}
+        onSuccess={handleDeleteSuccess}
       />
     </main>
   );

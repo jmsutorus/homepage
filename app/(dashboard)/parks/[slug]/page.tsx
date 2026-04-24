@@ -3,7 +3,7 @@ import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getParkBySlug } from "@/lib/db/parks";
 import { Button } from "@/components/ui/button";
-import { Pencil, Settings, Share } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { ExportButton } from "@/components/widgets/shared/export-button";
 import { getRelatedParks } from "@/lib/actions/related-content";
 import { RelatedParks } from "@/components/widgets/shared/related-content";
@@ -16,7 +16,7 @@ import { ParkExpeditionSummary } from "@/components/widgets/parks/editorial/park
 import { ParkGalleryEditorial } from "@/components/widgets/parks/editorial/park-gallery-editorial";
 import { ParkCompanionsEditorial } from "@/components/widgets/parks/editorial/park-companions-editorial";
 import { ParkTrailsEditorial } from "@/components/widgets/parks/editorial/park-trails-editorial";
-import { ParkMapSection, ParkFooterQuote } from "@/components/widgets/parks/editorial/park-editorial-footer";
+import { ParkFooterQuote } from "@/components/widgets/parks/editorial/park-editorial-footer";
 
 interface ParkDetailPageProps {
   params: Promise<{

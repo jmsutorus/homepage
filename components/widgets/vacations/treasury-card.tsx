@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Vacation } from '@/lib/types/vacations';
-import { cn } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 
 interface TreasuryCardProps {

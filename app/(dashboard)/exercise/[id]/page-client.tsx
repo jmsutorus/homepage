@@ -7,34 +7,25 @@ import Link from "next/link";
 import { format } from "date-fns";
 import {
   ArrowLeft,
-  Calendar,
   Clock,
-  MapPin,
   Activity,
   Dumbbell,
   Zap,
   Flame,
-  Trophy,
   Timer,
-  Share2,
   Trash2,
   Pencil,
   Plus,
   Route,
-  Mountain,
   Copy,
   CheckCircle2,
   History,
   TrendingUp,
   Award,
-  ChevronRight,
   Info
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { AddActivityModal } from "@/components/widgets/exercise/add-activity-modal";
 import { ExerciseFormModal, type Exercise } from "@/components/widgets/exercise/exercise-form-modal";
 import { SplitFormModal, type Split } from "@/components/widgets/exercise/split-form-modal";
@@ -43,7 +34,6 @@ import { CompleteActivityModal } from "@/components/widgets/exercise/complete-ac
 import { MuscleMap } from "@/components/widgets/exercise/muscle-map";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 import { DetailCard } from "@/Shared/Components/Cards/DetailCard";
 import { HomepageFooter } from "@/Shared/Components/Footers/HomepageFooter";

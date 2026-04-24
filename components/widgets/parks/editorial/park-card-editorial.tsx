@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Star, MapPin, ArrowRight } from "lucide-react";
+import { MapPin, ArrowRight } from "lucide-react";
 import type { ParkContent } from "@/lib/db/parks";
 import { cn } from "@/lib/utils";
 

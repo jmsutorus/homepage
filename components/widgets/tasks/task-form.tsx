@@ -1,20 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Sparkles, ChevronDown, ChevronRight, WifiOff } from "lucide-react";
+import { CalendarIcon, Sparkles, WifiOff } from "lucide-react";
 import { TaskPriority, TaskCategory, TaskStatusRecord, PredefinedTaskStatus } from "@/lib/db/tasks";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
-import { TemplatePicker } from "@/components/widgets/shared/template-picker";
 import type { TaskTemplate } from "@/lib/db/task-templates";
 import { parseTaskInput, hasParseableContent } from "@/lib/utils/task-parser";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -197,7 +190,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         {/* Title Input Area */}
         <div className="group">
           <input
-            className="w-full text-2xl md:text-3xl font-bold tracking-tight bg-transparent border-none p-0 placeholder:text-media-outline-variant/40 focus:ring-0 text-media-on-surface"
+            className="w-full text-2xl md:text-3xl font-bold tracking-tight bg-media-surface-container-low/20 border border-media-outline-variant/20 rounded-2xl p-6 md:p-5 placeholder:text-media-outline-variant/40 focus:ring-4 focus:ring-media-secondary/5 focus:border-media-secondary text-media-on-surface transition-all duration-300 outline-none"
             placeholder="Title of the task..."
             type="text"
             value={rawInput}
@@ -212,10 +205,9 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
             }}
             disabled={isAdding}
           />
-          <div className="h-0.5 w-full bg-media-outline-variant/20 group-focus-within:bg-media-secondary transition-all duration-500 mt-2"></div>
           
           {showNLPHint && (
-            <div className="flex items-center gap-1.5 mt-2 text-amber-600 dark:text-amber-500 animate-in fade-in slide-in-from-top-1 duration-300">
+            <div className="flex items-center gap-1.5 mt-4 ml-4 text-amber-600 dark:text-amber-500 animate-in fade-in slide-in-from-top-1 duration-300">
               <Sparkles className="h-3.5 w-3.5" />
               <span className="text-xs font-medium">
                 Smart parsing: 
@@ -228,20 +220,22 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         </div>
 
         {/* Description Area */}
-        <textarea
-          className="w-full bg-transparent border-none p-0 resize-none text-media-on-surface-variant focus:ring-0 h-24 text-lg placeholder:text-media-outline-variant/30"
-          placeholder="Optional description of the objective..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          disabled={isAdding}
-        ></textarea>
+        <div className="group">
+          <textarea
+            className="w-full bg-media-surface-container-low/20 border border-media-outline-variant/20 rounded-2xl md:p-5 resize-none text-media-on-surface-variant focus:ring-4 focus:ring-media-secondary/5 focus:border-media-secondary h-32 text-lg placeholder:text-media-outline-variant/30 transition-all duration-300 outline-none"
+            placeholder="Optional description of the objective..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            disabled={isAdding}
+          ></textarea>
+        </div>
 
         {/* Controls Area */}
         <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-media-outline-variant/10">
           <div className="flex flex-wrap gap-4">
             {/* Priority Select */}
             <Select value={priority} onValueChange={handleManualPriorityChange}>
-              <SelectTrigger className="bg-media-surface-container-low border border-media-outline-variant/20 rounded-lg text-xs font-lexend uppercase tracking-widest px-4 py-3 focus:ring-media-secondary/20 h-auto w-auto min-w-[160px]">
+              <SelectTrigger className="bg-media-surface-container-low border border-media-outline-variant/20 rounded-lg text-xs font-lexend uppercase tracking-widest px-4 py-3 focus:ring-4 focus:ring-media-secondary/5 focus:border-media-secondary h-auto w-auto min-w-[160px] transition-all outline-none">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -272,9 +266,9 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
               </PopoverContent>
             </Popover>
 
-            {/* Category Select (Added to match existing functionality but styled like prototype) */}
+            {/* Category Select */}
             <Select value={category || "none"} onValueChange={(value) => setCategory(value === "none" ? "" : value)}>
-              <SelectTrigger className="bg-media-surface-container-low border border-media-outline-variant/20 rounded-lg text-xs font-lexend uppercase tracking-widest px-4 py-3 focus:ring-media-secondary/20 h-auto w-auto min-w-[160px]">
+              <SelectTrigger className="bg-media-surface-container-low border border-media-outline-variant/20 rounded-lg text-xs font-lexend uppercase tracking-widest px-4 py-3 focus:ring-4 focus:ring-media-secondary/5 focus:border-media-secondary h-auto w-auto min-w-[160px] transition-all outline-none">
                 <SelectValue placeholder="Journal Category" />
               </SelectTrigger>
               <SelectContent>

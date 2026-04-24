@@ -5,7 +5,6 @@ import Link from "next/link";
 import { format, subDays, isAfter, parseISO } from "date-fns";
 import { 
   Search, 
-  Filter, 
   RefreshCcw, 
   Download, 
   Printer, 
@@ -15,11 +14,9 @@ import {
   Dumbbell, 
   User2, 
   Zap, 
-  Timer, 
   Star,
   ChevronRight,
   TrendingUp,
-  BicepsFlexed,
   CheckCircle2,
   Circle
 } from "lucide-react";

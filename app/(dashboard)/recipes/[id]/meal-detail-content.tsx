@@ -27,9 +27,7 @@ import {
   Utensils,
   BookOpen,
   Bookmark,
-  User,
-  Share2,
-  ChevronRight
+  User
 } from "lucide-react";
 import { toast } from "sonner";
 import {

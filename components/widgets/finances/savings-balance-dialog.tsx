@@ -6,9 +6,7 @@ import {
   DialogContent,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Loader2, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface SavingsBalanceDialogProps {
   open: boolean;

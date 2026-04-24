@@ -31,8 +31,11 @@ async function generateIcons() {
     try {
       const outputPath = path.join(publicDir, filename);
 
-      let image = sharp(svgBuffer);
+      // We want all icons to have the light mode background color
+      const backgroundColor = { r: 253, g: 251, b: 247, alpha: 1 }; // #FDFBF7
 
+      let image;
+      
       if (config.padding) {
         // For maskable icons, add 20% padding
         const innerSize = Math.floor(config.width * 0.8);
@@ -50,7 +53,7 @@ async function generateIcons() {
             width: config.width,
             height: config.height,
             channels: 4,
-            background: { r: 230, g: 126, b: 34, alpha: 1 } // #E67E22
+            background: backgroundColor
           }
         })
         .composite([{
@@ -58,9 +61,30 @@ async function generateIcons() {
           top: padding,
           left: padding
         }]);
+      } else if (filename === 'apple-touch-icon.png' || filename.startsWith('icon-')) {
+        // For Apple and Android standard icons, ensure we have the background fill
+        // to match the app theme, as transparency is often filled with black/white
+        const resizedBuffer = await sharp(svgBuffer)
+          .resize(config.width, config.height)
+          .png()
+          .toBuffer();
+
+        image = sharp({
+          create: {
+            width: config.width,
+            height: config.height,
+            channels: 4,
+            background: backgroundColor
+          }
+        })
+        .composite([{
+          input: resizedBuffer,
+          top: 0,
+          left: 0
+        }]);
       } else {
-        // No padding, just resize
-        image = image.resize(config.width, config.height);
+        // Just resize for favicons etc
+        image = sharp(svgBuffer).resize(config.width, config.height);
       }
 
       await image.png().toFile(outputPath);

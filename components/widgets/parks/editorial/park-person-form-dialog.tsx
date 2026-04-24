@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -182,7 +181,7 @@ export function ParkPersonFormDialog({
                       key={p.id}
                       onClick={() => handleAddPerson(p.id)}
                       disabled={isActionLoading}
-                      className="w-full group flex items-center gap-4 p-3 rounded-2xl hover:bg-media-surface-container transition-all border border-transparent hover:border-media-outline-variant/10 text-left"
+                      className="cursor-pointer w-full group flex items-center gap-4 p-3 rounded-2xl hover:bg-media-surface-container transition-all border border-transparent hover:border-media-outline-variant/10 text-left"
                     >
                       <Avatar className="w-12 h-12 shadow-lg">
                         <AvatarImage src={p.photo || undefined} alt={p.name} />

@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Calendar, MapPin, Star, DollarSign, Trash2, Edit } from "lucide-react";
+import { Plus, Calendar, MapPin, Star, Trash2, Edit } from "lucide-react";
 import { CreateDateDialog } from "./create-date-dialog";
 import { MobileDateSheet } from "./mobile-date-sheet";
 import { EditDateDialog } from "./edit-date-dialog";
 import { DateTypeIcon } from "./date-type-icon";
-import { DateCardBackground } from "./date-card-background";
 import type { RelationshipDate } from "@/lib/db/relationship";
 import { formatDateLongSafe } from "@/lib/utils";
 import { toast } from "sonner";
@@ -101,6 +98,19 @@ export function DatesTab({
     return colors[type] || colors.other;
   };
 
+  const getPhotoUrl = (photos: string | null) => {
+    if (!photos) return null;
+    try {
+      const parsed = JSON.parse(photos);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed[0];
+      }
+      return photos;
+    } catch {
+      return photos;
+    }
+  };
+
   return (
     <div className="space-y-16">
       {/* Editorial Header */}
@@ -117,7 +127,7 @@ export function DatesTab({
         <div className="md:col-span-5 flex justify-end">
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
-            className="bg-primary text-primary-foreground px-8 py-6 rounded-xl flex items-center space-x-3 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/10 cursor-pointer"
+            className="hidden md:flex bg-primary text-primary-foreground px-8 py-6 rounded-xl items-center space-x-3 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/10 cursor-pointer"
           >
             <Plus className="h-5 w-5" />
             <span className="font-semibold tracking-wide">Add Date</span>
@@ -132,7 +142,7 @@ export function DatesTab({
           <div className="md:col-span-2 md:row-span-2 group">
             <div className="relative h-[500px] md:h-full rounded-2xl overflow-hidden bg-muted shadow-sm brush-edges">
               <img
-                src={dates[0].photos || "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop"}
+                src={getPhotoUrl(dates[0].photos) || "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop"}
                 alt="Featured Date"
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 watercolor-texture"
               />
@@ -168,7 +178,7 @@ export function DatesTab({
             <div key={date.id} className="group h-[320px]">
               <div className="relative h-full rounded-2xl overflow-hidden bg-muted transition-all brush-edges">
                 <img
-                  src={date.photos || (idx === 0
+                  src={getPhotoUrl(date.photos) || (idx === 0
                     ? "https://images.unsplash.com/photo-1514525253361-bee8718a300c?q=80&w=1974&auto=format&fit=crop"
                     : "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2071&auto=format&fit=crop"
                   )}
@@ -245,7 +255,7 @@ export function DatesTab({
                   {date.photos && (
                     <div className="flex-shrink-0">
                       <img
-                        src={date.photos}
+                        src={getPhotoUrl(date.photos) || ""}
                         alt="Date photo"
                         className="h-40 w-40 rounded-xl object-cover hover:scale-105 transition-transform shadow-md"
                       />

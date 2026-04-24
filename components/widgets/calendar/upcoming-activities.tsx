@@ -2,9 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Dumbbell, Activity, CheckCircle2, Link as LinkIcon, AlertCircle, Pencil } from "lucide-react";
+import { Calendar, Dumbbell, Activity, CheckCircle2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";

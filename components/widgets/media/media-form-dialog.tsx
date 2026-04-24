@@ -20,7 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Send, Plus, Film, Tv, Book, Gamepad2, Disc } from "lucide-react";
+import { Plus, Film, Tv, Book, Gamepad2, Disc } from "lucide-react";
 import { toast } from 'sonner';
 import { TagInput } from '@/components/search/tag-input';
 import { GenreInput } from '@/components/search/genre-input';
@@ -28,6 +28,7 @@ import { CreatorInput } from '@/components/search/creator-input';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { IMDBSearchModal } from './imdb-search-modal';
 import { BookSearchModal } from './book-search-modal';
+import { motion, PanInfo } from 'framer-motion';
 
 interface MediaFormDialogProps {
   open: boolean;
@@ -141,6 +142,23 @@ export function MediaFormDialog({
         className="h-[90vh] max-h-[90vh] rounded-t-3xl p-0 flex flex-col bg-media-surface border-none"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
+        <motion.div 
+          className='flex flex-col h-full bg-media-surface-container-lowest'
+          drag='y'
+          dragConstraints={{ top: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_, info: PanInfo) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              onOpenChange(false);
+            }
+          }}
+        >
+          {/* Drag Handle */}
+          <div className='flex-none flex justify-center pt-3 pb-1'>
+            <div className='w-12 h-1.5 bg-media-outline-variant/30 rounded-full' />
+          </div>
+
+          <div className='flex flex-col h-full overflow-hidden'>
         <SheetHeader className="px-8 pt-8 pb-4 border-b border-media-outline-variant/10 text-left shrink-0">
           <SheetTitle className="text-3xl font-black tracking-tighter text-media-primary">Add to Library</SheetTitle>
         </SheetHeader>
@@ -364,6 +382,8 @@ export function MediaFormDialog({
             </Button>
           </div>
         </form>
+          </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

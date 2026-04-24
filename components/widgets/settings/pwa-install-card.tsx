@@ -10,7 +10,6 @@ import {
   Smartphone,
   Monitor,
   CheckCircle2,
-  RefreshCw,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";

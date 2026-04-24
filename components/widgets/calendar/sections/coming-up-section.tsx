@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
 import { format } from "date-fns";
 import type { EventWithCoverPhoto } from "@/lib/db/events";
-import type { CalendarPersonEvent, CalendarVacation } from "@/lib/db/calendar";
+import type { CalendarPersonEvent } from "@/lib/db/calendar";
 import { cn } from "@/lib/utils";
 
 interface ComingUpSectionProps {

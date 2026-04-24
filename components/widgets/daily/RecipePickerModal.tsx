@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
-import { cn } from "@/lib/utils";
 import type { Meal } from "@/lib/types/meals";
 
 interface RecipePickerModalProps {

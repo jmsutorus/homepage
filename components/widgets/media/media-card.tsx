@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { MediaItem } from "@/lib/media";
-import { formatDateSafe } from "@/lib/utils";
 import { Star } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface MediaCardProps {
   item: MediaItem;

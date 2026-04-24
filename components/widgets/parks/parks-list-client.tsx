@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, X, SlidersHorizontal, ArrowLeft, Loader2, BookOpen, ChevronDown } from "lucide-react";
+import { Search, X, ArrowLeft, BookOpen, ChevronDown } from "lucide-react";
 import { ParkContent } from "@/lib/db/parks";
 import { ParkListItemEditorial } from "./editorial/park-list-item-editorial";
 import { Button } from "@/components/ui/button";

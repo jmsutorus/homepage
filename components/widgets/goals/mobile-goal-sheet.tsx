@@ -21,12 +21,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
-import { CalendarIcon, Flag, ChevronDown, Sparkles, Target } from "lucide-react";
+import { showCreationError } from "@/lib/success-toasts";
+import { TreeSuccess } from "@/components/ui/animations/tree-success";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
+import { HapticButton } from "@/components/ui/haptic-button";
+import { CalendarIcon, Flag, ChevronDown, Target } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { GoalPriority } from "@/lib/db/goals";
 import { useRouter } from "next/navigation";
+import { motion, PanInfo } from "framer-motion";
 
 interface MobileGoalSheetProps {
   open: boolean;
@@ -41,6 +45,17 @@ export function MobileGoalSheet({ open, onOpenChange }: MobileGoalSheetProps) {
   const [priority, setPriority] = useState<GoalPriority>("medium");
   const [isAdding, setIsAdding] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [newGoalSlug, setNewGoalSlug] = useState<string | null>(null);
+
+  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => {
+      onOpenChange(false);
+      if (newGoalSlug) {
+        router.push(`/goals/${newGoalSlug}/edit`);
+      }
+    },
+  });
 
   // Reset form when sheet closes
   useEffect(() => {
@@ -70,12 +85,8 @@ export function MobileGoalSheet({ open, onOpenChange }: MobileGoalSheetProps) {
           : undefined,
       });
 
-      showCreationSuccess("goal");
-      onOpenChange(false);
-      
-      setTimeout(() => {
-        router.push(`/goals/${goal.slug}/edit`);
-      }, 500);
+      setNewGoalSlug(goal.slug);
+      triggerSuccess();
 
     } catch (error) {
       console.error("Failed to create goal:", error);
@@ -92,12 +103,42 @@ export function MobileGoalSheet({ open, onOpenChange }: MobileGoalSheetProps) {
         className="h-auto max-h-[90dvh] rounded-t-3xl p-0 border-t-0 bg-media-surface-container-lowest"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="flex flex-col h-full font-lexend">
+        <motion.div 
+          className="flex flex-col h-full font-lexend bg-media-surface-container-lowest"
+          drag="y"
+          dragConstraints={{ top: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_, info: PanInfo) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              onOpenChange(false);
+            }
+          }}
+        >
+          {/* Drag Handle */}
+          <div className="flex-none flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
+          </div>
+
+          <div className="flex flex-col h-full overflow-hidden">
           <SheetHeader className="px-6 pt-8 pb-6 border-b border-media-outline-variant/10">
             <SheetTitle className="text-2xl font-bold text-media-primary tracking-tight">Establish Vision</SheetTitle>
           </SheetHeader>
 
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          {showSuccess ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
+              <div className="relative">
+                <TreeSuccess size={160} showText={false} />
+                <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
+              </div>
+              <div className="text-center space-y-3">
+                <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight uppercase">Vision established</h3>
+                <p className="text-media-on-surface-variant font-medium max-w-[280px] mx-auto">
+                  New strategic objective integrated. The path to achievement has been defined.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8">
               {/* Goal Identity */}
               <div className="space-y-3">
@@ -196,16 +237,19 @@ export function MobileGoalSheet({ open, onOpenChange }: MobileGoalSheetProps) {
             </div>
 
             <SheetFooter className="border-t border-media-outline-variant/10 px-6 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-              <Button
+              <HapticButton
                 type="submit"
+                hapticPattern="success"
                 disabled={isAdding || !title.trim()}
-                className="w-full h-16 text-sm bg-media-primary hover:bg-media-primary/90 text-media-on-primary rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95"
+                className="w-full h-16 text-sm bg-media-primary hover:bg-media-primary/90 text-media-on-primary rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 flex items-center justify-center"
               >
                 {isAdding ? "Initializing..." : "Establish Vision"}
-              </Button>
+              </HapticButton>
             </SheetFooter>
           </form>
-        </div>
+          )}
+          </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

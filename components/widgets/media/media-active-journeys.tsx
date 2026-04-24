@@ -2,7 +2,6 @@
 
 import { MediaItem } from "@/lib/media";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 interface MediaActiveJourneysProps {
   items: MediaItem[];

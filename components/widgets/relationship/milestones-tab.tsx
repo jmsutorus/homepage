@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Plus, Star, Trash2, Edit, Calendar } from "lucide-react";
 import { CreateMilestoneDialog } from "./create-milestone-dialog";
 import { MobileMilestoneSheet } from "./mobile-milestone-sheet";
 import { EditMilestoneDialog } from "./edit-milestone-dialog";
 import { MilestoneTypeIcon } from "./milestone-type-icon";
-import { MilestoneCardBackground } from "./milestone-card-background";
 import type { RelationshipMilestone } from "@/lib/db/relationship";
 import { formatDateLongSafe } from "@/lib/utils";
 import { toast } from "sonner";
@@ -144,7 +141,7 @@ export function MilestonesTab({
                   <Button
                     onClick={() => setIsCreateDialogOpen(true)}
                     variant="outline"
-                    className="bg-primary/20 backdrop-blur-md text-white border border-white/20 font-bold px-8 py-6 rounded-2xl hover:bg-primary/40 transition-all flex items-center gap-2 cursor-pointer"
+                    className="hidden md:flex bg-primary/20 backdrop-blur-md text-white border border-white/20 font-bold px-8 py-6 rounded-2xl hover:bg-primary/40 transition-all items-center gap-2 cursor-pointer"
                   >
                     <Plus className="h-5 w-5" /> New Chapter
                   </Button>
@@ -160,7 +157,7 @@ export function MilestonesTab({
             <h4 className="text-3xl font-playfair font-bold text-foreground italic">The Chapters of Our Story</h4>
             <Button
               onClick={() => setIsCreateDialogOpen(true)}
-              className="bg-primary text-primary-foreground rounded-full px-6 py-2 flex items-center gap-2 shadow-lg hover:scale-105 transition-transform cursor-pointer"
+              className="hidden md:flex bg-primary text-primary-foreground rounded-full px-6 py-2 items-center gap-2 shadow-lg hover:scale-105 transition-transform cursor-pointer"
             >
               <Plus className="h-4 w-4" /> Add Milestone
             </Button>

@@ -5,7 +5,6 @@ import type { HabitWithStats } from "@/lib/actions/habits";
 import { HabitEditorialCard } from "@/components/widgets/habits/habit-editorial-card";
 import { CreateHabitForm } from "@/components/widgets/habits/create-habit-form";
 import { MobileHabitSheet } from "@/components/widgets/habits/mobile-habit-sheet";
-import { Plus } from "lucide-react";
 import { subDays, isWithinInterval, startOfDay } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";

@@ -1,8 +1,7 @@
 "use client";
 
 import { Goal } from "@/lib/db/goals";
-import { Progress } from "@/components/ui/progress";
-import { LucideIcon, Milestone, History, Target } from "lucide-react";
+import { History } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";

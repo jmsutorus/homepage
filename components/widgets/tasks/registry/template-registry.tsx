@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { TaskTemplate } from "@/lib/db/task-templates";
 import { TaskPriority } from "@/lib/db/tasks";
-import { Plus, BookOpen, LayoutTemplate, Trash2, Edit2, Check, X } from "lucide-react";
+import { Plus, BookOpen, LayoutTemplate, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface TemplateRegistryProps {

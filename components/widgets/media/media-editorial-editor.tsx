@@ -1,11 +1,7 @@
 'use client';
 
-import { useState, useRef, FormEvent, DragEvent, useEffect } from 'react';
+import { useState, useRef, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -14,19 +10,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { IMDBSearchModal, type IMDBMediaData } from './imdb-search-modal';
-import { BookSearchModal, type BookData } from './book-search-modal';
+import { IMDBSearchModal } from './imdb-search-modal';
+import { BookSearchModal } from './book-search-modal';
 import { 
   Save, 
-  X, 
   Image as ImageIcon, 
-  Smartphone, 
   Maximize2, 
   Eye, 
   Clock, 
   Lightbulb, 
   Bookmark,
-  ChevronRight,
   Plus
 } from 'lucide-react';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';

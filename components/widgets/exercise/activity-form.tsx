@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Send, Trash2, ChevronDown, Check } from "lucide-react";
+import { Trash2, ChevronDown, Check } from "lucide-react";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { TreeSuccess } from "@/components/ui/animations/tree-success";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
 
 interface ActivityFormProps {
   editActivity?: WorkoutActivity | null;
@@ -21,6 +21,13 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [activityId, setActivityId] = useState<number | null>(null);
+
+  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => {
+      onSuccess();
+    },
+  });
   
   // Form state
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
@@ -102,7 +109,12 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
       }
 
       resetForm();
-      onSuccess();
+      if (isEditing) {
+        toast.success("Activity updated successfully");
+        onSuccess();
+      } else {
+        triggerSuccess();
+      }
     } catch (error) {
       console.error(`Error ${activityId ? "updating" : "creating"} activity:`, error);
       toast.error(`Failed to ${activityId ? "update" : "create"} activity.`);
@@ -129,14 +141,32 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
     }
   };
 
-  const inputClasses = "w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-lg font-lexend placeholder:text-media-on-surface-variant/20 appearance-none cursor-pointer";
-  const labelClasses = "block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant mb-3";
+  const inputClasses = cn(
+    "w-full px-8 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-lg font-lexend placeholder:text-media-on-surface-variant/20 appearance-none cursor-pointer",
+    isDesktop ? "py-5" : "h-14"
+  );
+  const labelClasses = "block text-[10px] uppercase tracking-widest font-black text-media-on-surface-variant mb-3";
 
   return (
-    <form onSubmit={handleSubmit} className={cn("flex flex-col h-full", isDesktop ? "space-y-12" : "")}>
-      <div className={cn("flex-1", isDesktop ? "space-y-10" : "space-y-10 overflow-y-auto px-10 py-12")}>
+    <form onSubmit={handleSubmit} className={cn("flex flex-col flex-1 min-h-0", isDesktop ? "space-y-0" : "")}>
+      {showSuccess ? (
+        <div className="flex-1 flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
+          <div className="relative">
+            <TreeSuccess size={160} showText={false} />
+            <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
+          </div>
+          <div className="text-center space-y-3">
+            <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight uppercase">Session Logged</h3>
+            <p className="text-media-on-surface-variant font-medium max-w-[280px] mx-auto">
+              Biometric performance archived. Movement data and physiological metrics integrated into the collective.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+      <div className={cn("flex-1 min-h-0 overflow-y-auto", isDesktop ? "space-y-10 px-10 py-8" : "space-y-8 px-6 py-8")}>
         {/* Date and Time Group */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div className={cn("grid", isDesktop ? "grid-cols-2 gap-10" : "grid-cols-1 gap-6")}>
           <div className="space-y-3">
             <label className={labelClasses}>Session Date</label>
             <div className="relative group">
@@ -164,8 +194,8 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
         </div>
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
-          <div className="md:col-span-4 space-y-3">
+        <div className={cn("grid", isDesktop ? "grid-cols-12 gap-10" : "grid-cols-2 gap-4")}>
+          <div className={cn(isDesktop ? "md:col-span-4" : "col-span-1", "space-y-3")}>
             <label className={labelClasses}>Duration (minutes)</label>
             <div className="relative">
               <input 
@@ -179,7 +209,11 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
             </div>
           </div>
 
-          <div className={cn("md:col-span-4 space-y-3", type !== "run" && "opacity-20 pointer-events-none")}>
+          <div className={cn(
+            isDesktop ? "md:col-span-4" : "col-span-1", 
+            "space-y-3", 
+            type !== "run" && "opacity-20 pointer-events-none"
+          )}>
             <label className={labelClasses}>Distance (miles)</label>
             <div className="relative">
               <input 
@@ -195,7 +229,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
             </div>
           </div>
 
-          <div className="md:col-span-4 space-y-3">
+          <div className={cn(isDesktop ? "md:col-span-4" : "col-span-2", "space-y-3")}>
             <label className={labelClasses}>Intensity Tier</label>
             <div className="relative">
               <select 
@@ -242,7 +276,7 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-base resize-none placeholder:text-media-on-surface-variant/20 font-lexend"
+              className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-base resize-none placeholder:text-media-on-surface-variant/20 font-lexend"
               placeholder="Record details about performance, location, or energy levels..."
             />
           </div>
@@ -279,41 +313,58 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
 
       {/* Actions */}
       <div className={cn(
-          "flex items-center py-6",
-          isDesktop ? "justify-between" : "mt-auto pt-10"
+          isDesktop 
+            ? "flex items-center justify-between py-6 px-10 border-t border-media-outline-variant/10" 
+            : "flex flex-col gap-4 border-t border-media-outline-variant/10 px-6 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
         )}>
         {isIdEditable(activityId) && (
           <button 
             type="button" 
             onClick={handleDelete} 
             disabled={loading || deleting}
-            className="cursor-pointer group flex items-center gap-2 text-red-500 font-bold text-xs uppercase tracking-widest hover:opacity-70 transition-opacity"
+            className={cn(
+              "cursor-pointer group flex items-center gap-2 text-red-500 font-bold text-xs uppercase tracking-widest hover:opacity-70 transition-opacity",
+              !isDesktop && "justify-center py-2"
+            )}
           >
             <Trash2 className="w-4 h-4" />
             {deleting ? "Removing..." : "Delete Session"}
           </button>
         )}
         
-        {!isIdEditable(activityId) && <div />}
+        {!isIdEditable(activityId) && isDesktop && <div />}
 
-        <div className="flex items-center gap-10">
+        <div className={cn(
+          "flex items-center",
+          isDesktop ? "gap-10" : "flex-col-reverse gap-4"
+        )}>
           <button 
             type="button" 
             onClick={onCancel} 
-            className="cursor-pointer text-[10px] font-bold uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
+            className={cn(
+              "cursor-pointer font-bold uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend",
+              isDesktop ? "text-[10px]" : "text-xs py-2"
+            )}
           >
             Cancel
           </button>
           <button 
             type="submit"
             disabled={loading || deleting}
-            className="cursor-pointer px-10 py-4 bg-media-secondary text-media-on-secondary rounded-xl font-bold tracking-tight shadow-xl shadow-media-secondary/20 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 flex items-center gap-2 font-lexend"
+            className={cn(
+              "cursor-pointer bg-media-primary text-media-on-primary rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 font-lexend",
+              isDesktop 
+                ? "px-10 py-4 text-sm bg-media-secondary text-media-on-secondary rounded-xl font-bold tracking-tight shadow-media-secondary/20 hover:scale-[1.02]" 
+                : "w-full h-16 text-sm"
+            )}
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {activityId ? "Update Session" : "Log Session"}
           </button>
         </div>
       </div>
+      </>
+      )}
     </form>
   );
 }

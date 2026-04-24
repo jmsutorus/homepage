@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Search, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import type { Restaurant } from '@/lib/db/restaurants';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,

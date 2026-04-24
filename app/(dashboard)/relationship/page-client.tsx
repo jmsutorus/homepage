@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { PageTabsList } from "@/components/ui/page-tabs-list";
-import { Heart, Lock, Calendar, Settings, Plus, Star } from "lucide-react";
+import { Heart, Lock, Calendar, Settings, Star } from "lucide-react";
 import { DatesTab } from "@/components/widgets/relationship/dates-tab";
 import { IntimacyTab } from "@/components/widgets/relationship/intimacy-tab";
 import { MilestonesTab } from "@/components/widgets/relationship/milestones-tab";
@@ -133,7 +133,7 @@ export function RelationshipPageClient({
       </section>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+      <div className="hidden md:grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
         <div className="p-6 bg-white dark:bg-zinc-900 border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold font-font-lexend">Total Dates</span>

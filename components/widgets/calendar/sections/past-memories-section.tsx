@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { MaterialSymbol } from "@/components/ui/MaterialSymbol";
 import type { MediaContent } from "@/lib/db/media";
 import type { JournalContent } from "@/lib/db/journals";
-import { cn } from "@/lib/utils";
 
 interface PastMemoriesSectionProps {
   media: MediaContent[];

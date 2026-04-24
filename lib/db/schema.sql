@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS user (
   emailVerified BOOLEAN DEFAULT 0,
   name TEXT,
   image TEXT,
+  haptic BOOLEAN DEFAULT 1,
   createdAt INTEGER NOT NULL,
   updatedAt INTEGER NOT NULL
 );

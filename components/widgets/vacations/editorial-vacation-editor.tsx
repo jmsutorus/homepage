@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useRef, FormEvent, useEffect } from 'react';
+import { useState, useRef, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { VacationStatus, VacationType, VACATION_STATUSES, VACATION_STATUS_NAMES, VACATION_TYPES, VACATION_TYPE_NAMES } from '@/lib/types/vacations';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { TagInput } from '@/components/search/tag-input';
-import { AlertCircle, Trash2, MapPin, Calendar, CreditCard, Plus, Camera } from 'lucide-react';
+import { AlertCircle, Trash2, MapPin, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -482,7 +482,7 @@ export function EditorialVacationEditor({
             <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
               <button 
                 type="button"
-                className="text-on-surface-variant font-medium hover:text-primary transition-colors order-2 md:order-1"
+                className="cursor-pointer text-on-surface-variant font-medium hover:text-primary transition-colors order-2 md:order-1"
                 onClick={() => router.back()}
               >
                 Discard Draft
@@ -490,7 +490,7 @@ export function EditorialVacationEditor({
               <button 
                 type="submit" 
                 disabled={isSaving || !frontmatter.title || !frontmatter.destination}
-                className="w-full md:w-auto text-white px-12 py-4 rounded-lg font-bold text-lg shadow-xl hover:scale-105 transition-transform order-1 md:order-2 disabled:opacity-50 disabled:hover:scale-100"
+                className="cursor-pointer w-full md:w-auto text-white px-12 py-4 rounded-lg font-bold text-lg shadow-xl hover:scale-105 transition-transform order-1 md:order-2 disabled:opacity-50 disabled:hover:scale-100"
                 style={{ backgroundColor: colors.secondary, boxShadow: `0 20px 25px -5px ${colors.secondary}1a` }}
               >
                 {isSaving ? 'Saving...' : 'Save Journey'}

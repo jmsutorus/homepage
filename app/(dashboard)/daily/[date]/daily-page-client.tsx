@@ -22,8 +22,7 @@ import { DuolingoCompletionToggle } from "@/components/widgets/duolingo/duolingo
 import { RecipePickerModal } from "@/components/widgets/daily/RecipePickerModal";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import type { CalendarDayData, CalendarGoal, CalendarMilestone, CalendarVacation } from "@/lib/db/calendar";
-import type { Task } from "@/lib/db/tasks";
+import type { CalendarDayData, CalendarGoal, CalendarMilestone } from "@/lib/db/calendar";
 import type { DailyMealWithRecipe, Meal, MealType } from "@/lib/types/meals";
 
 interface DailyPageClientProps {

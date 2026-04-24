@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,19 +18,24 @@ export function BirthdayBanner({ userName }: BirthdayBannerProps) {
   useEffect(() => {
     // Check if overlay was already shown this session
     const overlayShown = sessionStorage.getItem("birthday-overlay-shown");
-    if (!overlayShown) {
-       
-      setShowOverlay(true);
-      sessionStorage.setItem("birthday-overlay-shown", "true");
-    }
-
-    // Check if banner was dismissed this year
     const year = new Date().getFullYear();
-    const bannerDismissed = localStorage.getItem(`birthday-banner-dismissed-${year}`);
-    if (bannerDismissed === "true") {
-       
-      setDismissed(true);
-    }
+    const bannerDismissed = localStorage.getItem(
+      `birthday-banner-dismissed-${year}`
+    );
+
+    // Defer state updates to avoid cascading renders warning
+    const timer = setTimeout(() => {
+      if (!overlayShown) {
+        setShowOverlay(true);
+        sessionStorage.setItem("birthday-overlay-shown", "true");
+      }
+
+      if (bannerDismissed === "true") {
+        setDismissed(true);
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const handleDismiss = () => {
