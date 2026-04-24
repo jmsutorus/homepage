@@ -2,10 +2,11 @@ import { requireAdmin, getUserId } from "@/lib/auth/server";
 import { getUsers, getAllowedUsers } from "./actions";
 import { UserList } from "./user-list";
 import { AllowedUsersList } from "./allowed-users-list";
+import { HapticTester } from "./haptic-tester";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { HolidayManager } from "@/components/widgets/admin/holiday-manager";
-import { Star } from "lucide-react";
+import { Star, Smartphone } from "lucide-react";
 
 export const metadata = {
   title: "Admin Dashboard",
@@ -38,12 +39,19 @@ export default async function AdminPage() {
         <TabsList>
           <TabsTrigger value="users">Users & Roles</TabsTrigger>
           <TabsTrigger value="beta">Beta Access</TabsTrigger>
+          <TabsTrigger value="haptics">
+            <Smartphone className="h-4 w-4 mr-2" />
+            Haptics
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="users" className="space-y-4">
           <UserList users={users} currentUserId={currentUserId} />
         </TabsContent>
         <TabsContent value="beta" className="space-y-4">
           <AllowedUsersList allowedUsers={allowedUsers} />
+        </TabsContent>
+        <TabsContent value="haptics" className="space-y-4">
+          <HapticTester />
         </TabsContent>
       </Tabs>
 

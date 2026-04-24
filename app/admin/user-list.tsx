@@ -21,11 +21,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trash2, Shield, User } from "lucide-react";
 import { toast } from "sonner";
+import { useHaptic } from "@/hooks/use-haptic";
 
 export function UserList({ users, currentUserId }: { users: AdminUser[], currentUserId: string }) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const { trigger } = useHaptic();
 
   const handleRoleChange = async (userId: string, newRole: string) => {
+    trigger("light");
     setLoadingId(userId);
     try {
       await updateUserRole(userId, newRole);
@@ -42,6 +45,7 @@ export function UserList({ users, currentUserId }: { users: AdminUser[], current
   };
 
   const handleDelete = async (userId: string) => {
+    trigger("medium");
     if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) return;
     
     setLoadingId(userId);

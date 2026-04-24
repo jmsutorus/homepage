@@ -119,6 +119,8 @@ const withPWA = withPWAInit({
   ],
   workboxOptions: {
     disableDevLogs: true,
+    skipWaiting: false,
+    clientsClaim: true,
   },
   fallbacks: {
     document: "/offline",

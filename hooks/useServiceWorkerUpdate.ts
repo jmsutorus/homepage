@@ -30,7 +30,16 @@ export function useServiceWorkerUpdate() {
 
     // Listen for service worker updates
     const handleControllerChange = () => {
-      console.log("🔄 Service worker controller changed - reloading page");
+      console.log("🔄 Service worker controller changed");
+      
+      // If we are already in the process of updating, let the updateServiceWorker 
+      // function handle the reload to ensure cache busting query params are added
+      if (isUpdating) {
+        console.log("⏳ Update in progress, reload will be handled with cache bust");
+        return;
+      }
+
+      console.log("♻️ Reloading page to apply new service worker");
       window.location.reload();
     };
 
@@ -103,7 +112,7 @@ export function useServiceWorkerUpdate() {
     };
   }, []);
 
-  const updateServiceWorker = () => {
+  const updateServiceWorker = async () => {
     if (!waitingWorker) {
       console.warn("No waiting service worker to update");
       return;
@@ -111,11 +120,33 @@ export function useServiceWorkerUpdate() {
 
     setIsUpdating(true);
 
-    // Tell the waiting service worker to skip waiting
-    waitingWorker.postMessage({ type: "SKIP_WAITING" });
-
-    // The controllerchange event will trigger a reload
-    console.log("📤 Sent SKIP_WAITING message to service worker");
+    try {
+      // Cache bust: Clear all caches before reloading to ensure we get the latest assets
+      if ("caches" in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames.map((cacheName) => {
+            console.log(`🧹 Clearing cache: ${cacheName}`);
+            return caches.delete(cacheName);
+          })
+        );
+      }
+      
+      // Tell the waiting service worker to skip waiting and activate
+      waitingWorker.postMessage({ type: "SKIP_WAITING" });
+      
+      console.log("📤 Sent SKIP_WAITING message to service worker");
+      
+      // Force a reload after a short delay if controllerchange hasn't fired
+      // This is a safety measure for cache busting
+      setTimeout(() => {
+        window.location.href = window.location.origin + window.location.pathname + "?v=" + Date.now();
+      }, 1000);
+    } catch (error) {
+      console.error("Error during service worker update/cache bust:", error);
+      // Fallback to simple skip waiting if cache bust fails
+      waitingWorker.postMessage({ type: "SKIP_WAITING" });
+    }
   };
 
   const checkForUpdate = async () => {
@@ -126,8 +157,15 @@ export function useServiceWorkerUpdate() {
     try {
       const registration = await navigator.serviceWorker.getRegistration();
       if (registration) {
+        console.log("🔍 Manually checking for service worker updates...");
         await registration.update();
-        return true;
+        
+        // If there's already a waiting worker after update check, trigger the UI
+        if (registration.waiting) {
+          setWaitingWorker(registration.waiting);
+          setIsUpdateAvailable(true);
+          return true;
+        }
       }
       return false;
     } catch (error) {

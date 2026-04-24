@@ -1,11 +1,15 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { WebHaptics } from "web-haptics";
 
 /**
- * Haptic feedback patterns (in milliseconds).
+ * Haptic feedback patterns.
+ *
+ * Maps to web-haptics presets on iOS (uses the hidden switch trick via the
+ * Taptic Engine) and falls back to navigator.vibrate on Android.
  *
  * - light:   a brief, subtle tap (UI confirmation)
  * - medium:  a standard press feedback
@@ -15,19 +19,23 @@ import { useMediaQuery } from "@/hooks/use-media-query";
  */
 export type HapticPattern = "light" | "medium" | "heavy" | "success" | "error";
 
-const HAPTIC_PATTERNS: Record<HapticPattern, VibratePattern> = {
+// Map our internal pattern names to web-haptics inputs
+// web-haptics built-ins: "success", "nudge", "error", "buzz"
+// Custom durations (ms) are passed as numbers.
+const WEB_HAPTIC_PATTERNS: Record<HapticPattern, Parameters<WebHaptics["trigger"]>[0]> = {
   light:   40,
   medium:  80,
-  heavy:   120,
-  success: [60, 40, 60],
-  error:   [80, 50, 80, 50, 80],
+  heavy:   "buzz",       // Long vibration — closest to heavy
+  success: "success",    // Two taps
+  error:   "error",      // Three sharp taps
 };
 
 /**
  * useHaptic – returns a `trigger` function that fires haptic feedback only when:
  *   1. The user is on a mobile device (viewport < 768px)
  *   2. The user has haptic feedback enabled in their session settings
- *   3. The browser supports the Vibration API
+ *   3. The browser or platform supports haptics (Android via Vibration API,
+ *      iOS via the web-haptics hidden-switch Taptic Engine workaround)
  *
  * @example
  * const haptic = useHaptic();
@@ -36,17 +44,27 @@ const HAPTIC_PATTERNS: Record<HapticPattern, VibratePattern> = {
 export function useHaptic() {
   const { data: session } = useSession();
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const hapticsRef = useRef<WebHaptics | null>(null);
+
+  // Lazily create the WebHaptics instance on the client only
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      hapticsRef.current = new WebHaptics();
+    }
+    return () => {
+      hapticsRef.current?.destroy();
+      hapticsRef.current = null;
+    };
+  }, []);
 
   const isEnabled =
     isMobile &&
-    !!session?.user?.haptic &&
-    typeof navigator !== "undefined" &&
-    "vibrate" in navigator;
+    !!session?.user?.haptic;
 
   const trigger = useCallback(
     (pattern: HapticPattern = "light") => {
-      if (!isEnabled) return;
-      navigator.vibrate(HAPTIC_PATTERNS[pattern]);
+      if (!isEnabled || !hapticsRef.current) return;
+      hapticsRef.current.trigger(WEB_HAPTIC_PATTERNS[pattern]);
     },
     [isEnabled]
   );
