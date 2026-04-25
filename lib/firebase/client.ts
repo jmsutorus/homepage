@@ -7,7 +7,12 @@ const firebaseConfig = {
   apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY || "dummy-api-key",
   authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "dummy-auth-domain",
   projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "dummy-project-id",
-  storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  storageBucket:
+    env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+    (env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+      ? `gs://${env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`
+      : undefined),
+
 };
 
 // Initialize Firebase (prevent multiple instances)

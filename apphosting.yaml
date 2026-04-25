@@ -57,6 +57,10 @@ env:
   - variable: FIREBASE_PROJECT_ID
     value: "homepage-7cfc8"
 
+  - variable: FIREBASE_STORAGE_BUCKET
+    value: "gs://homepage-7cfc8.firebasestorage.app"
+
+
   # Client-side Firebase config (must be environment variables for client bundle)
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     secret: homepage-prod-nextauth-api-key
@@ -66,6 +70,10 @@ env:
 
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     value: "homepage-7cfc8"
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "gs://homepage-7cfc8.firebasestorage.app"
+
 
   # ============================================================================
   # OAUTH CLIENT IDs (PUBLIC)
