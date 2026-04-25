@@ -4,6 +4,7 @@ import { requireAuthApi } from "@/lib/auth/server";
 import { getVacationBySlug, createVacationPhoto } from "@/lib/db/vacations";
 import { getDownloadURL } from "firebase-admin/storage";
 import { revalidatePath } from "next/cache";
+import { convertToWebP } from "@/lib/services/image-processor";
 
 /**
  * POST /api/vacations/[slug]/photos/upload
@@ -36,8 +37,8 @@ export async function POST(
     }
 
     // 1. Upload to Firebase Storage via Admin SDK
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const fileExt = file.name.split('.').pop();
+    const { buffer, fileName: convertedFileName, contentType } = await convertToWebP(file);
+    const fileExt = convertedFileName.split('.').pop();
     const fileName = `vacations/${vacation.id}/photos/photo-${Date.now()}.${fileExt}`;
     
     const bucket = getAdminStorage().bucket();
@@ -45,7 +46,7 @@ export async function POST(
 
     await storageFile.save(buffer, {
       metadata: {
-        contentType: file.type,
+        contentType: contentType,
       },
     });
 
@@ -55,7 +56,7 @@ export async function POST(
     // 3. Create the vacation photo record in the database
     const photo = await createVacationPhoto(vacation.id, {
       url: downloadURL,
-      caption: file.name,
+      caption: convertedFileName,
     });
 
     revalidatePath(`/vacations/${slug}`);

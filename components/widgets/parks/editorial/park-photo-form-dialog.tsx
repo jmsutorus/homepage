@@ -167,14 +167,18 @@ export function ParkPhotoFormDialog({
     }
   };
 
+  const isNoPreviewFormat = selectedFile && 
+    (selectedFile.name.toLowerCase().endsWith(".heic") || 
+     selectedFile.name.toLowerCase().endsWith(".dng"));
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[450px] border-media-outline-variant/10 bg-white/95 backdrop-blur-xl rounded-[2rem] font-lexend">
+      <DialogContent className="sm:max-w-[425px] bg-media-surface text-media-primary border-media-outline-variant/20 font-lexend">
         <DialogHeader>
-          <DialogTitle className="text-3xl font-black text-media-primary tracking-tighter">
+          <DialogTitle className="text-2xl font-bold tracking-tight">
             {photo ? "Edit Visual Memory" : "Add New Memory"}
           </DialogTitle>
-          <DialogDescription className="text-media-on-surface-variant font-light">
+          <DialogDescription className="text-media-on-surface-variant">
             Frame a moment from your expedition.
           </DialogDescription>
         </DialogHeader>
@@ -197,7 +201,16 @@ export function ParkPhotoFormDialog({
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-media-outline-variant/30 rounded-xl p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-media-surface-container-low transition-all group"
               >
-                {previewUrl || (photo && photo.url && photo.url.includes('firebase')) ? (
+                {isNoPreviewFormat ? (
+                  <div className="relative w-full aspect-video rounded-xl bg-media-surface-container-high flex flex-col items-center justify-center gap-2 border-2 border-dashed border-media-outline-variant/50 text-media-primary p-4 shadow-lg group">
+                    <ImageIcon className="w-12 h-12 text-media-secondary/80 group-hover:scale-110 transition-transform" />
+                    <p className="text-sm font-bold text-center">Preview not available for {selectedFile?.name.split('.').pop()?.toUpperCase()}</p>
+                    <p className="text-xs text-media-on-surface-variant truncate max-w-xs">{selectedFile?.name}</p>
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+                      <p className="text-white text-sm font-medium">Change Photo</p>
+                    </div>
+                  </div>
+                ) : previewUrl || (photo && photo.url && photo.url.includes('firebase')) ? (
                   <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg">
                     <img src={previewUrl || photo?.url} alt="Preview" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -211,7 +224,7 @@ export function ParkPhotoFormDialog({
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-semibold text-media-primary">Click to upload photo</p>
-                      <p className="text-xs text-media-on-surface-variant mt-1">PNG, JPG or WebP (max. 5MB)</p>
+                      <p className="text-xs text-media-on-surface-variant mt-1">PNG, JPG, WebP, HEIC or DNG (max. 5MB)</p>
                     </div>
                   </>
                 )}
@@ -227,7 +240,7 @@ export function ParkPhotoFormDialog({
 
             <TabsContent value="url" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="url" className="text-[10px] font-black uppercase tracking-[0.2em] text-media-secondary">Photo URL</Label>
+                <Label htmlFor="url" className="text-xs font-bold uppercase tracking-widest text-media-on-surface-variant">Photo URL</Label>
                 <Input 
                   id="url" 
                   value={formData.url}
@@ -241,7 +254,7 @@ export function ParkPhotoFormDialog({
 
           <div className="grid gap-4">
             <div className="space-y-2">
-              <Label htmlFor="caption" className="text-[10px] font-black uppercase tracking-[0.2em] text-media-secondary">Caption</Label>
+              <Label htmlFor="caption" className="text-xs font-bold uppercase tracking-widest text-media-on-surface-variant">Caption</Label>
               <Input 
                 id="caption" 
                 value={formData.caption}
@@ -253,7 +266,7 @@ export function ParkPhotoFormDialog({
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="date" className="text-[10px] font-black uppercase tracking-[0.2em] text-media-secondary">Date Taken</Label>
+                <Label htmlFor="date" className="text-xs font-bold uppercase tracking-widest text-media-on-surface-variant">Date Taken</Label>
                 <Input 
                   id="date" 
                   type="date"
@@ -263,7 +276,7 @@ export function ParkPhotoFormDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="order" className="text-[10px] font-black uppercase tracking-[0.2em] text-media-secondary">Display Order</Label>
+                <Label htmlFor="order" className="text-xs font-bold uppercase tracking-widest text-media-on-surface-variant">Display Order</Label>
                 <Input 
                   id="order" 
                   type="number"
@@ -275,36 +288,29 @@ export function ParkPhotoFormDialog({
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            {photo && (
-              <Button 
-                type="button" 
-                variant="ghost" 
-                onClick={handleDelete}
-                disabled={isDeleting || isLoading}
-                className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl"
-              >
-                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
-                Delete
-              </Button>
-            )}
-            <div className="flex-grow" />
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              className="rounded-xl border-media-outline-variant/20"
-            >
-              Cancel
-            </Button>
+          <DialogFooter className="flex flex-col sm:flex-col w-full">
             <Button 
               type="submit" 
               disabled={isLoading || isDeleting}
-              className="bg-media-primary text-white rounded-xl px-8 hover:bg-media-secondary transition-all font-black uppercase tracking-widest text-[10px]"
+              className="w-full bg-media-secondary hover:bg-media-secondary/90 text-white font-bold rounded-xl"
             >
               {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
               {photo ? "Update Photo" : "Add Photo"}
             </Button>
+            <div className="flex justify-between w-full">
+              {photo && (
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={handleDelete}
+                  disabled={isDeleting || isLoading}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl flex-grow"
+                >
+                  {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                  Delete
+                </Button>
+              )}
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

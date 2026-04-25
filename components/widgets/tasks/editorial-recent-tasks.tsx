@@ -3,16 +3,12 @@
 import { useState, useEffect } from "react";
 import { Task } from "@/lib/db/tasks";
 import Link from "next/link";
-import { AnimatePresence } from "framer-motion";
-import {
-  TaskCompletionAnimation,
-  useTaskCompletionAnimation,
-} from "@/components/ui/animations/task-completion-animation";
+import { useHaptic } from "@/hooks/use-haptic";
 
 export function EditorialRecentTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
+  const haptic = useHaptic();
 
   useEffect(() => {
     fetchTasks();
@@ -44,30 +40,33 @@ export function EditorialRecentTasks() {
 
   const handleToggleComplete = async (taskId: number, completed: boolean) => {
     if (!completed) {
-      startAnimation(taskId);
+      haptic.trigger("success");
+      // Optimistically remove from list for snappy feel
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+    } else {
+      haptic.trigger("medium");
     }
+
     try {
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !completed }),
       });
-      if (response.ok) {
+      
+      if (!response.ok) {
+        // Revert on error
+        fetchTasks();
+      } else {
         if (completed) {
+          // If we uncompleted it, we need to refresh the list (though it's usually already filtered)
           fetchTasks();
         }
       }
     } catch (error) {
       console.error("Failed to update task:", error);
-      if (!completed) {
-        cleanupTask(taskId);
-      }
+      fetchTasks();
     }
-  };
-
-  const handleAnimationComplete = (taskId: number) => {
-    cleanupTask(taskId);
-    setTasks((prev) => prev.filter((task) => task.id !== taskId));
   };
 
   return (
@@ -87,31 +86,19 @@ export function EditorialRecentTasks() {
           </div>
         ) : (
           <div className="space-y-4 flex-1">
-            <AnimatePresence mode="popLayout">
-              {tasks.map((task) => {
-                 const isChecked = task.completed || isAnimating(task.id);
-                 return (
-                   <TaskCompletionAnimation
-                     key={task.id}
-                     isCompleted={task.completed}
-                     shouldAnimate={isAnimating(task.id)}
-                     onAnimationComplete={() => handleAnimationComplete(task.id)}
-                   >
-                     <label className="flex items-center gap-3 cursor-pointer group">
-                       <input
-                         type="checkbox"
-                         checked={isChecked}
-                         onChange={() => handleToggleComplete(task.id, task.completed)}
-                         className="rounded border-white/30 bg-transparent text-media-secondary focus:ring-offset-0 focus:ring-0 w-4 h-4 cursor-pointer"
-                       />
-                       <span className={`text-sm font-medium transition-colors ${isChecked ? 'line-through opacity-50' : 'group-hover:text-media-primary-fixed-dim'}`}>
-                         {task.title}
-                       </span>
-                     </label>
-                   </TaskCompletionAnimation>
-                 );
-              })}
-            </AnimatePresence>
+            {tasks.map((task) => (
+              <label key={task.id} className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={task.completed}
+                  onChange={() => handleToggleComplete(task.id, task.completed)}
+                  className="rounded border-white/30 bg-transparent text-media-secondary focus:ring-offset-0 focus:ring-0 w-4 h-4 cursor-pointer"
+                />
+                <span className={`text-sm font-medium transition-colors ${task.completed ? 'line-through opacity-50' : 'group-hover:text-media-primary-fixed-dim'}`}>
+                  {task.title}
+                </span>
+              </label>
+            ))}
           </div>
         )}
         <Link href="/tasks" className="mt-auto pt-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-media-secondary-fixed-dim hover:text-white transition-colors group">

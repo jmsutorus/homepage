@@ -109,6 +109,10 @@ export function PersonForm({ editingPerson, onSaved, onCancel, isDesktop = true 
     }
   }, [editingPerson]);
 
+  const isNoPreviewFormat = selectedFile && 
+    (selectedFile.name.toLowerCase().endsWith(".heic") || 
+     selectedFile.name.toLowerCase().endsWith(".dng"));
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -305,18 +309,30 @@ export function PersonForm({ editingPerson, onSaved, onCancel, isDesktop = true 
                       className="border-2 border-dashed border-media-outline-variant/30 rounded-xl p-4 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-media-surface-container-high transition-colors min-h-[120px]"
                     >
                       {previewUrl ? (
-                        <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-media-secondary/20 shadow-inner">
-                          <img 
-                            src={previewUrl} 
-                            alt="Preview" 
-                            className="w-full h-full object-cover"
-                          />
-                          {isUploading && (
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                              <Loader2 className="w-6 h-6 text-white animate-spin" />
-                            </div>
-                          )}
-                        </div>
+                        isNoPreviewFormat ? (
+                          <div className="relative w-24 h-24 rounded-full bg-media-surface-container-high flex flex-col items-center justify-center gap-1 border-2 border-dashed border-media-outline-variant/50 text-media-primary p-2">
+                            <ImageIcon className="w-6 h-6 text-media-secondary/80" />
+                            <p className="text-[8px] font-bold text-center leading-tight">No preview for {selectedFile?.name.split('.').pop()?.toUpperCase()}</p>
+                            {isUploading && (
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-full">
+                                <Loader2 className="w-6 h-6 text-white animate-spin" />
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-media-secondary/20 shadow-inner">
+                            <img 
+                              src={previewUrl} 
+                              alt="Preview" 
+                              className="w-full h-full object-cover"
+                            />
+                            {isUploading && (
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                <Loader2 className="w-6 h-6 text-white animate-spin" />
+                              </div>
+                            )}
+                          </div>
+                        )
                       ) : (
                         <div className="w-20 h-20 rounded-full bg-media-surface-container-high flex items-center justify-center text-media-on-surface-variant/30 border border-media-outline-variant/10">
                           <ImageIcon className="w-8 h-8" />
@@ -324,7 +340,7 @@ export function PersonForm({ editingPerson, onSaved, onCancel, isDesktop = true 
                       )}
                       <div className="text-center">
                         <p className="text-[10px] font-bold text-media-primary uppercase tracking-tight">Click to select photo</p>
-                        <p className="text-[9px] text-media-on-surface-variant uppercase">PNG, JPG or WebP</p>
+                        <p className="text-[9px] text-media-on-surface-variant uppercase">PNG, JPG, WebP, HEIC or DNG</p>
                       </div>
                       <input 
                         type="file" 

@@ -16,7 +16,6 @@ interface ExportButtonProps {
 export function ExportButton({
   content,
   filename,
-  label = "Export",
   variant = "outline",
   size = "sm",
   className,
@@ -42,7 +41,6 @@ export function ExportButton({
       title="Download Markdown file"
     >
       <Download className="h-4 w-4" />
-      {label}
     </Button>
   );
 }

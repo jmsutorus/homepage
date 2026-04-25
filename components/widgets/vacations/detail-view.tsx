@@ -309,7 +309,7 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
             {/* Photo Edit Button */}
             <button 
               onClick={() => setIsPosterDialogOpen(true)}
-              className="absolute top-8 right-8 z-20 bg-media-background/20 backdrop-blur-md p-3 rounded-full hover:bg-media-background/40 transition-all text-media-on-primary cursor-pointer group"
+              className="absolute top-8 right-8 z-20 bg-media-background/20 backdrop-blur-md p-3 rounded-full hover:bg-media-background/40 transition-all text-white cursor-pointer group"
               title="Edit Vacation Poster"
             >
               <Pencil className="h-6 w-6 group-hover:scale-110 transition-transform" />

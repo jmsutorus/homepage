@@ -4,6 +4,7 @@ import { requireAuthApi } from "@/lib/auth/server";
 import { getRelationshipDateById, updateRelationshipDate } from "@/lib/db/relationship";
 import { getDownloadURL } from "firebase-admin/storage";
 import { revalidatePath } from "next/cache";
+import { convertToWebP } from "@/lib/services/image-processor";
 
 /**
  * POST /api/relationship/dates/[id]/photo
@@ -37,8 +38,8 @@ export async function POST(
     }
 
     // 1. Prepare for upload
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const fileExt = file.name.split('.').pop();
+    const { buffer, fileName: convertedFileName, contentType } = await convertToWebP(file);
+    const fileExt = convertedFileName.split('.').pop();
     const fileName = `relationship/dates/${dateId}/photo-${Date.now()}.${fileExt}`;
     
     const bucket = getAdminStorage().bucket();
@@ -68,7 +69,7 @@ export async function POST(
     const storageFile = bucket.file(fileName);
     await storageFile.save(buffer, {
       metadata: {
-        contentType: file.type,
+        contentType: contentType,
       },
     });
 

@@ -105,6 +105,10 @@ export function DrinkPhotoEditDialog({ open, onOpenChange, drink, onSuccess }: D
     }
   };
 
+  const isNoPreviewFormat = selectedFile && 
+    (selectedFile.name.toLowerCase().endsWith(".heic") || 
+     selectedFile.name.toLowerCase().endsWith(".dng"));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-media-surface text-media-primary border-media-outline-variant/20 font-lexend">
@@ -133,12 +137,23 @@ export function DrinkPhotoEditDialog({ open, onOpenChange, drink, onSuccess }: D
               className="border-2 border-dashed border-media-outline-variant/30 rounded-xl p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-media-surface-container-low transition-all group"
             >
               {previewUrl ? (
-                <div className="relative w-full aspect-square max-w-[200px] rounded-lg overflow-hidden shadow-lg mx-auto">
-                  <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <p className="text-white text-sm font-medium">Change Photo</p>
+                isNoPreviewFormat ? (
+                  <div className="relative w-full aspect-square max-w-[200px] rounded-xl bg-media-surface-container-high flex flex-col items-center justify-center gap-2 border-2 border-dashed border-media-outline-variant/50 text-media-primary p-4 shadow-lg mx-auto group">
+                    <ImageIcon className="w-12 h-12 text-media-secondary/80 group-hover:scale-110 transition-transform" />
+                    <p className="text-sm font-bold text-center">Preview not available for {selectedFile?.name.split('.').pop()?.toUpperCase()}</p>
+                    <p className="text-xs text-media-on-surface-variant truncate max-w-xs">{selectedFile?.name}</p>
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+                      <p className="text-white text-sm font-medium">Change Photo</p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="relative w-full aspect-square max-w-[200px] rounded-lg overflow-hidden shadow-lg mx-auto">
+                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <p className="text-white text-sm font-medium">Change Photo</p>
+                    </div>
+                  </div>
+                )
               ) : (
                 <>
                   <div className="w-16 h-16 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary group-hover:scale-110 transition-transform">
@@ -146,7 +161,7 @@ export function DrinkPhotoEditDialog({ open, onOpenChange, drink, onSuccess }: D
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-semibold text-media-primary">Click to upload photo</p>
-                    <p className="text-xs text-media-on-surface-variant mt-1">PNG, JPG or WebP (max. 5MB)</p>
+                    <p className="text-xs text-media-on-surface-variant mt-1">PNG, JPG, WebP, HEIC or DNG (max. 5MB)</p>
                   </div>
                 </>
               )}

@@ -442,7 +442,7 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
               {/* Photo Edit Button */}
               <button 
                 onClick={() => setIsPhotoDialogOpen(true)}
-                className="absolute top-8 right-8 z-20 bg-media-background/20 backdrop-blur-md p-3 rounded-full hover:bg-media-background/40 transition-all text-media-on-primary cursor-pointer group"
+                className="absolute top-8 right-8 z-20 bg-media-background/20 backdrop-blur-md p-3 rounded-full hover:bg-media-background/40 transition-all text-white cursor-pointer group"
                 title="Add Event Photo"
               >
                 <Pencil className="h-6 w-6 group-hover:scale-110 transition-transform" />
@@ -544,7 +544,7 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                     <h2 className="text-3xl font-black text-media-primary tracking-tight uppercase border-b-4 border-media-secondary inline-block pb-1">
                       Event Memories
                     </h2>
-                    <Button variant="ghost" size="sm" onClick={handleStartEdit} className="text-media-secondary hover:bg-media-secondary/10 font-bold uppercase tracking-widest text-[10px]">
+                    <Button variant="ghost" size="sm" onClick={() => setIsPhotoDialogOpen(true)} className="text-media-secondary hover:bg-media-secondary/10 font-bold uppercase tracking-widest text-[10px]">
                       <Plus className="w-4 h-4 mr-1" /> Add Frame
                     </Button>
                   </div>

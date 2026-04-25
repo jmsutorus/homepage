@@ -110,6 +110,10 @@ export function PhotoEditDialog({ open, onOpenChange, person, onSuccess }: Photo
     }
   };
 
+  const isNoPreviewFormat = selectedFile && 
+    (selectedFile.name.toLowerCase().endsWith(".heic") || 
+     selectedFile.name.toLowerCase().endsWith(".dng"));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-media-surface text-media-primary border-media-outline-variant/20 font-lexend">
@@ -138,13 +142,20 @@ export function PhotoEditDialog({ open, onOpenChange, person, onSuccess }: Photo
               className="border-2 border-dashed border-media-outline-variant/30 rounded-xl p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-media-surface-container-low transition-colors"
             >
               {previewUrl || person.photo ? (
-                <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-media-secondary/20">
-                  <img 
-                    src={previewUrl || person.photo || ""} 
-                    alt="Preview" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                isNoPreviewFormat ? (
+                  <div className="relative w-32 h-32 rounded-full bg-media-surface-container-high flex flex-col items-center justify-center gap-1 border-2 border-dashed border-media-outline-variant/50 text-media-primary p-2">
+                    <ImageIcon className="w-8 h-8 text-media-secondary/80" />
+                    <p className="text-[8px] font-bold text-center leading-tight">No preview for {selectedFile?.name.split('.').pop()?.toUpperCase()}</p>
+                  </div>
+                ) : (
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-media-secondary/20">
+                    <img 
+                      src={previewUrl || person.photo || ""} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )
               ) : (
                 <div className="w-32 h-32 rounded-full bg-media-surface-container-high flex items-center justify-center text-media-primary/20">
                   <ImageIcon className="w-12 h-12" />
@@ -152,7 +163,7 @@ export function PhotoEditDialog({ open, onOpenChange, person, onSuccess }: Photo
               )}
               <div className="text-center">
                 <p className="text-sm font-bold text-media-primary">Click to select a file</p>
-                <p className="text-xs text-media-on-surface-variant">PNG, JPG or WebP up to 5MB</p>
+                <p className="text-xs text-media-on-surface-variant">PNG, JPG, WebP, HEIC or DNG up to 5MB</p>
               </div>
               <input 
                 type="file" 

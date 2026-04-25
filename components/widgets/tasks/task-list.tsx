@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Task } from "@/lib/db/tasks";
-import { AnimatePresence } from "framer-motion";
-import { TaskCompletionAnimation, useTaskCompletionAnimation } from "@/components/ui/animations/task-completion-animation";
+import { useHaptic } from "@/hooks/use-haptic";
 import { toast } from "sonner";
 import { EditorialTaskCard } from "./editorial-task-card";
 
@@ -16,7 +15,7 @@ interface TaskListProps {
 
 export function TaskList({ tasks, onTasksChanged, featuredTaskId, variant = "standard" }: TaskListProps) {
   const [localTasks, setLocalTasks] = useState(tasks);
-  const { startAnimation, cleanupTask, isAnimating } = useTaskCompletionAnimation();
+  const haptic = useHaptic();
 
   // Update local tasks when prop changes
   useEffect(() => {
@@ -26,9 +25,12 @@ export function TaskList({ tasks, onTasksChanged, featuredTaskId, variant = "sta
   const handleToggleComplete = async (task: Task) => {
     const isCompleting = !task.completed;
     
-    // If marking as complete, start animation first
     if (isCompleting) {
-      startAnimation(task.id);
+      haptic.trigger("success");
+      // Optimistically remove from list for snappy feel
+      setLocalTasks(prev => prev.filter(t => t.id !== task.id));
+    } else {
+      haptic.trigger("medium");
     }
 
     try {
@@ -39,17 +41,15 @@ export function TaskList({ tasks, onTasksChanged, featuredTaskId, variant = "sta
       });
 
       if (response.ok) {
-        if (!isCompleting) {
-          // If marking incomplete, refresh immediately
-          onTasksChanged();
-        }
-        // For completion, task will be removed after animation finishes
+        onTasksChanged();
+      } else {
+        // Revert on error
+        setLocalTasks(tasks);
+        toast.error("Failed to update task");
       }
     } catch (error) {
       console.error("Failed to update task:", error);
-      if (isCompleting) {
-        cleanupTask(task.id);
-      }
+      setLocalTasks(tasks);
       toast.error("Failed to update task");
     }
   };
@@ -58,6 +58,8 @@ export function TaskList({ tasks, onTasksChanged, featuredTaskId, variant = "sta
     if (!confirm("Are you sure you want to delete this task?")) {
       return;
     }
+
+    haptic.trigger("error");
 
     try {
       const response = await fetch(`/api/tasks/${task.id}`, {
@@ -75,14 +77,6 @@ export function TaskList({ tasks, onTasksChanged, featuredTaskId, variant = "sta
     }
   };
 
-  const handleAnimationComplete = (taskId: number) => {
-    cleanupTask(taskId);
-    // Remove task from local state without refetching for smooth UI
-    setLocalTasks(prev => prev.filter(task => task.id !== taskId));
-    // Trigger parent refresh to sync with DB
-    onTasksChanged();
-  };
-
   if (localTasks.length === 0) {
     return (
       <div className="text-center py-12 text-media-on-surface-variant/40 font-lexend uppercase tracking-widest text-xs border border-dashed border-media-outline-variant/30 rounded-2xl">
@@ -93,28 +87,18 @@ export function TaskList({ tasks, onTasksChanged, featuredTaskId, variant = "sta
 
   return (
     <div className={variant === "archived" ? "space-y-2" : "space-y-8"}>
-      <AnimatePresence mode="popLayout">
-        {localTasks.map((task) => (
-          <TaskCompletionAnimation
-            key={task.id}
-            isCompleted={task.completed}
-            shouldAnimate={isAnimating(task.id)}
-            onAnimationComplete={() => handleAnimationComplete(task.id)}
-          >
-            <EditorialTaskCard
-              task={task}
-              variant={variant === "archived" ? "archived" : (task.id === featuredTaskId ? "featured" : "standard")}
-              onToggleComplete={() => handleToggleComplete(task)}
-              onDelete={handleDelete}
-              onOpenDetails={() => {
-                // For now, toggle complete or maybe we'll add a detail sheet later
-                // The prototype has an "open_in_new" icon, we can use it for opening a sheet
-                // But let's stick to the basics for now
-              }}
-            />
-          </TaskCompletionAnimation>
-        ))}
-      </AnimatePresence>
+      {localTasks.map((task) => (
+        <EditorialTaskCard
+          key={task.id}
+          task={task}
+          variant={variant === "archived" ? "archived" : (task.id === featuredTaskId ? "featured" : "standard")}
+          onToggleComplete={() => handleToggleComplete(task)}
+          onDelete={handleDelete}
+          onOpenDetails={() => {
+            // Placeholder for detail sheet
+          }}
+        />
+      ))}
     </div>
   );
 }

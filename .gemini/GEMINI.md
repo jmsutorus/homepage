@@ -65,3 +65,20 @@ The following MCP servers are available for this project:
 - `context7`: Provides access to pull the latest documentation on libraries
 - `next-devtools`: Provides tools for interacting with the Next.js development server.
 - `shadcn`: Offers utilities for working with shadcn components.
+
+## Photo Upload Locations
+
+Users can upload photos in the following areas of the application:
+
+- **Events**
+- **Vacation Posters**
+- **Vacation Memories**
+- **Park Posters**
+- **Park Memories**
+- **Trails**
+- **Journals**
+- **Recipes**
+- **Restaurants**
+- **Drinks**
+- **People**
+- **Relationship Dates**

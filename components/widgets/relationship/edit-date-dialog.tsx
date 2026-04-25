@@ -126,6 +126,10 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split("T")[0];
 
+  const isNoPreviewFormat = selectedFile && 
+    (selectedFile.name.toLowerCase().endsWith(".heic") || 
+     selectedFile.name.toLowerCase().endsWith(".dng"));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -281,22 +285,43 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
                   className="border-2 border-dashed border-muted-foreground/20 rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-muted/30 transition-all group relative overflow-hidden"
                 >
                   {previewUrl || (initialDate.photos && initialDate.photos.includes('firebase')) ? (
-                    <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-md">
-                      <img src={previewUrl || initialDate.photos || undefined} alt="Preview" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <p className="text-white text-sm font-medium">Change Photo</p>
+                    isNoPreviewFormat ? (
+                      <div className="relative w-full aspect-video rounded-xl bg-muted/30 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-muted-foreground/50 text-foreground p-4 group">
+                        <ImageIcon className="w-12 h-12 text-muted-foreground/80 group-hover:scale-110 transition-transform" />
+                        <p className="text-sm font-bold text-center">Preview not available for {selectedFile?.name.split('.').pop()?.toUpperCase()}</p>
+                        <p className="text-xs text-muted-foreground truncate max-w-xs">{selectedFile?.name}</p>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+                          <p className="text-white text-sm font-medium">Change Photo</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedFile(null);
+                            setPreviewUrl(null);
+                          }}
+                          className="cursor-pointer absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedFile(null);
-                          setPreviewUrl(null);
-                        }}
-                        className="cursor-pointer absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
+                    ) : (
+                      <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-md">
+                        <img src={previewUrl || initialDate.photos || undefined} alt="Preview" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <p className="text-white text-sm font-medium">Change Photo</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedFile(null);
+                            setPreviewUrl(null);
+                          }}
+                          className="cursor-pointer absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )
                   ) : (
                     <>
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
@@ -304,7 +329,7 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
                       </div>
                       <div className="text-center">
                         <p className="text-sm font-semibold text-foreground">Click to upload photo</p>
-                        <p className="text-xs text-muted-foreground mt-1">Update this memory</p>
+                        <p className="text-xs text-muted-foreground mt-1">Update memory (PNG, JPG, WebP, HEIC, DNG)</p>
                       </div>
                     </>
                   )}

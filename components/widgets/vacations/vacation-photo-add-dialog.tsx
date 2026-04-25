@@ -114,6 +114,10 @@ export function VacationPhotoAddDialog({ open, onOpenChange, vacation, onSuccess
     }
   };
 
+  const isNoPreviewFormat = selectedFile && 
+    (selectedFile.name.toLowerCase().endsWith(".heic") || 
+     selectedFile.name.toLowerCase().endsWith(".dng"));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-media-surface text-media-primary border-media-outline-variant/20 font-lexend">
@@ -155,13 +159,21 @@ export function VacationPhotoAddDialog({ open, onOpenChange, vacation, onSuccess
               className="border-2 border-dashed border-media-outline-variant/30 rounded-xl p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-media-surface-container-low transition-colors"
             >
               {previewUrl ? (
-                <div className="relative aspect-video w-full rounded-xl overflow-hidden border-2 border-media-secondary/20">
-                  <img 
-                    src={previewUrl} 
-                    alt="Preview" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                isNoPreviewFormat ? (
+                  <div className="aspect-video w-full rounded-xl bg-media-surface-container-high flex flex-col items-center justify-center gap-2 border-2 border-dashed border-media-outline-variant/50 text-media-primary p-4">
+                    <ImageIcon className="w-12 h-12 text-media-secondary/80" />
+                    <p className="text-sm font-bold text-center">Preview not available for {selectedFile?.name.split('.').pop()?.toUpperCase()}</p>
+                    <p className="text-xs text-media-on-surface-variant truncate max-w-xs">{selectedFile?.name}</p>
+                  </div>
+                ) : (
+                  <div className="relative aspect-video w-full rounded-xl overflow-hidden border-2 border-media-secondary/20">
+                    <img 
+                      src={previewUrl} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )
               ) : (
                 <div className="aspect-video w-full rounded-xl bg-media-surface-container-high flex items-center justify-center text-media-primary/20">
                   <ImageIcon className="w-12 h-12" />
@@ -169,7 +181,7 @@ export function VacationPhotoAddDialog({ open, onOpenChange, vacation, onSuccess
               )}
               <div className="text-center">
                 <p className="text-sm font-bold text-media-primary">Click to select a file</p>
-                <p className="text-xs text-media-on-surface-variant">PNG, JPG or WebP up to 10MB</p>
+                <p className="text-xs text-media-on-surface-variant">PNG, JPG, WebP, HEIC or DNG up to 10MB</p>
               </div>
               <input 
                 type="file" 

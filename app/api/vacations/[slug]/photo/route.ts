@@ -5,6 +5,7 @@ import { getVacationBySlug, updateVacation } from "@/lib/db/vacations";
 import { getDownloadURL } from "firebase-admin/storage";
 import { revalidatePath } from "next/cache";
 import { deleteFromStorage } from "@/lib/firebase/storage-utils";
+import { convertToWebP } from "@/lib/services/image-processor";
 
 /**
  * POST /api/vacations/[slug]/photo
@@ -37,8 +38,8 @@ export async function POST(
     }
 
     // 1. Upload to Firebase Storage via Admin SDK
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const fileExt = file.name.split('.').pop();
+    const { buffer, fileName: convertedFileName, contentType } = await convertToWebP(file);
+    const fileExt = convertedFileName.split('.').pop();
     const fileName = `vacations/${vacation.id}/poster-${Date.now()}.${fileExt}`;
     
     const bucket = getAdminStorage().bucket();
@@ -52,7 +53,7 @@ export async function POST(
 
     await storageFile.save(buffer, {
       metadata: {
-        contentType: file.type,
+        contentType: contentType,
       },
     });
 

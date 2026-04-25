@@ -3,6 +3,7 @@ import { getAdminStorage } from "@/lib/firebase/admin";
 import { requireAuthApi } from "@/lib/auth/server";
 import { getMealById, updateMeal } from "@/lib/db/meals";
 import { getDownloadURL } from "firebase-admin/storage";
+import { convertToWebP } from "@/lib/services/image-processor";
 
 /**
  * POST /api/meals/[id]/photo
@@ -40,8 +41,8 @@ export async function POST(
     }
 
     // 1. Upload to Firebase Storage via Admin SDK
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const fileExt = file.name.split('.').pop();
+    const { buffer, fileName: convertedFileName, contentType } = await convertToWebP(file);
+    const fileExt = convertedFileName.split('.').pop();
     const fileName = `meals/${mealId}/photo-${Date.now()}.${fileExt}`;
     
     const bucket = getAdminStorage().bucket();
@@ -69,7 +70,7 @@ export async function POST(
 
     await storageFile.save(buffer, {
       metadata: {
-        contentType: file.type,
+        contentType: contentType,
       },
     });
 

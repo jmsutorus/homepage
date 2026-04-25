@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -13,6 +13,7 @@ import { parseTaskInput, hasParseableContent } from "@/lib/utils/task-parser";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { addToQueue } from "@/lib/pwa/offline-queue";
 import { generateTempId } from "@/lib/pwa/optimistic-updates";
+import { useHaptic } from "@/hooks/use-haptic";
 import { toast } from "sonner";
 
 interface TaskFormProps {
@@ -21,6 +22,7 @@ interface TaskFormProps {
 
 export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const { isOnline } = useNetworkStatus();
+  const haptic = useHaptic();
   const [rawInput, setRawInput] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
@@ -76,6 +78,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
 
     if (!rawInput.trim()) return;
 
+    haptic.trigger("medium");
     setIsAdding(true);
     try {
       // Parse natural language input
@@ -121,6 +124,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
           icon: <WifiOff className="h-4 w-4" />,
         });
 
+        haptic.trigger("success");
         onTaskAdded();
         return;
       }
@@ -142,6 +146,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         setManualOverride(false);
         setShowDescription(false);
         showCreationSuccess("task");
+        haptic.trigger("success");
         onTaskAdded();
       } else {
         throw new Error("Failed to create task");

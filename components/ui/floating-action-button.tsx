@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useHaptic } from "@/hooks/use-haptic"
 import { cn } from "@/lib/utils"
 
 interface FloatingActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -7,10 +8,18 @@ interface FloatingActionButtonProps extends React.ButtonHTMLAttributes<HTMLButto
 }
 
 export const FloatingActionButton = React.forwardRef<HTMLButtonElement, FloatingActionButtonProps>(
-  ({ className, tooltipText, icon, ...props }, ref) => {
+  ({ className, tooltipText, icon, onClick, ...props }, ref) => {
+    const haptic = useHaptic();
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      haptic.trigger("light");
+      if (onClick) onClick(e);
+    };
+
     return (
       <button 
         ref={ref}
+        onClick={handleClick}
         className={cn(
           "cursor-pointer fixed bottom-24 right-8 lg:bottom-12 lg:right-12 w-16 h-16 bg-media-secondary text-media-on-secondary rounded-2xl flex items-center justify-center shadow-2xl shadow-media-secondary/30 hover:scale-110 active:scale-95 transition-all z-40 group hover:bg-media-secondary/90",
           className
