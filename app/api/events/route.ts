@@ -8,10 +8,14 @@ import {
   updateEvent,
   deleteEvent,
   getUpcomingEvents,
+  eventSlugExists,
   type CreateEventInput,
   type UpdateEventInput,
+
 } from "@/lib/db/events";
 import { requireAuthApi } from "@/lib/auth/server";
+import { scheduleEventNotifications, cancelEventNotifications } from "@/lib/firebase/notifications";
+
 
 /**
  * GET /api/events
@@ -131,12 +135,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate slug from title if not provided
-    const slug = body.slug || body.title
+    const baseSlug = body.slug || body.title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
+
+    let slug = baseSlug;
+    let counter = 1;
+    while (await eventSlugExists(slug, userId)) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
 
     const input: CreateEventInput = {
       slug,
@@ -154,7 +166,15 @@ export async function POST(request: NextRequest) {
     };
 
     const event = await createEvent(input, userId);
+    
+    try {
+      await scheduleEventNotifications(event, userId);
+    } catch (e) {
+      console.error("Failed to schedule notifications for new event:", e);
+    }
+
     return NextResponse.json(event, { status: 201 });
+
   } catch (error) {
     console.error("Error creating event:", error);
     return NextResponse.json(
@@ -213,7 +233,18 @@ export async function PATCH(request: NextRequest) {
     }
 
     const event = await getEvent(parseInt(id, 10), userId);
+    
+    if (event) {
+      try {
+        await cancelEventNotifications(event.id, userId);
+        await scheduleEventNotifications(event, userId);
+      } catch (e) {
+        console.error("Failed to update notifications for event:", e);
+      }
+    }
+
     return NextResponse.json(event);
+
   } catch (error) {
     console.error("Error updating event:", error);
     return NextResponse.json(
@@ -250,7 +281,14 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
+    try {
+      await cancelEventNotifications(parseInt(id, 10), userId);
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted event:", e);
+    }
+
     return NextResponse.json({ success: true });
+
   } catch (error) {
     console.error("Error deleting event:", error);
     return NextResponse.json(

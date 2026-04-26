@@ -2,6 +2,8 @@ import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getAuth, type Auth } from "firebase-admin/auth";
 import { getRemoteConfig, type RemoteConfig } from "firebase-admin/remote-config";
 import { getStorage, type Storage } from "firebase-admin/storage";
+import { getFirestore, type Firestore } from "firebase-admin/firestore";
+
 
 let app: App | undefined;
 
@@ -70,12 +72,23 @@ export const getAdminStorage = (): Storage => {
   return getStorage(getFirebaseAdmin());
 };
 
+export const getAdminFirestore = (): Firestore => {
+  return getFirestore(getFirebaseAdmin());
+};
+
 // For backwards compatibility, export these as getters that throw helpful errors
 export const adminAuth = new Proxy({} as Auth, {
   get(target, prop) {
     return getAdminAuth()[prop as keyof Auth];
   },
 });
+
+export const adminDb = new Proxy({} as Firestore, {
+  get(target, prop) {
+    return getAdminFirestore()[prop as keyof Firestore];
+  },
+});
+
 
 export const remoteConfig = new Proxy({} as RemoteConfig, {
   get(target, prop) {

@@ -121,7 +121,9 @@ const withPWA = withPWAInit({
     disableDevLogs: true,
     skipWaiting: false,
     clientsClaim: true,
+    importScripts: ["/firebase-messaging-sw.js"],
   },
+
   fallbacks: {
     document: "/offline",
   },

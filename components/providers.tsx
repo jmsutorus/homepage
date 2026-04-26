@@ -9,8 +9,12 @@ import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { UpdatePrompt } from "@/components/pwa/update-prompt";
 import { SyncStatus } from "@/components/pwa/sync-status";
 
+import { useFCMToken } from "@/hooks/use-fcm-token";
+
 export function Providers({ children }: { children: React.ReactNode }) {
+  useFCMToken();
   return (
+
     <SessionProvider>
       <ThemeProvider
         attribute="class"

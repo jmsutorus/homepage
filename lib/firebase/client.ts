@@ -12,8 +12,10 @@ const firebaseConfig = {
     (env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
       ? `gs://${env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`
       : undefined),
-
+  messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
+
 
 // Initialize Firebase (prevent multiple instances)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
@@ -22,4 +24,11 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 
+export const getClientMessaging = () => {
+  if (typeof window === "undefined") return null;
+  const { getMessaging } = require("firebase/messaging");
+  return getMessaging(app);
+};
+
 export default app;
+
