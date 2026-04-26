@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTask, updateTask, deleteTask, TaskPriority, TaskStatus, isValidTaskStatus } from "@/lib/db/tasks";
 import { requireAuthApi } from "@/lib/auth/server";
+import { scheduleTaskNotifications, cancelTaskNotifications } from "@/lib/firebase/notifications";
+import { cookies } from "next/headers";
+
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -39,6 +42,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       due_date?: string;
       priority?: TaskPriority;
       category?: string | null;
+      notification_setting?: string | null;
     } = {};
 
     if (body.title !== undefined) {
@@ -76,6 +80,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       updates.category = body.category || null;
     }
 
+    if (body.notification_setting !== undefined) {
+      updates.notification_setting = body.notification_setting || null;
+    }
+
     const success = await updateTask(taskId, updates);
 
     if (!success) {
@@ -86,6 +94,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     const updatedTask = await getTask(taskId, userId);
+    
+    if (updatedTask) {
+      try {
+        await cancelTaskNotifications(taskId, userId);
+        // Only reschedule if NOT completed/cancelled
+        if (updatedTask.status !== 'completed' && updatedTask.status !== 'cancelled' && !updatedTask.completed && updatedTask.notification_setting && updatedTask.notification_setting !== 'none') {
+          const cookieStore = await cookies();
+          const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+          await scheduleTaskNotifications(updatedTask, userId, timezoneOffset);
+        }
+      } catch (e) {
+        console.error("Failed to update notifications for task:", e);
+      }
+    }
+
     return NextResponse.json(updatedTask);
   } catch (error) {
     console.error("Error updating task:", error);
@@ -117,6 +140,12 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     if (!success) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    try {
+      await cancelTaskNotifications(taskId, userId);
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted task:", e);
     }
 
     return NextResponse.json({ success: true }, { status: 200 });

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, MapPin, Calendar, DollarSign, Trash2, Edit2, Check, X } from 'lucide-react';
 import { ItineraryDay, Vacation, parseLocalDate } from '@/lib/types/vacations';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ItinerarySectionProps {
   vacation: Vacation;
@@ -36,6 +37,7 @@ export function ItinerarySection({ vacation, itinerary, onUpdate }: ItinerarySec
       location: '',
       activities: [],
       notes: '',
+      notification_setting: 'night_before',
     });
     setIsAdding(true);
   };
@@ -203,6 +205,25 @@ export function ItinerarySection({ vacation, itinerary, onUpdate }: ItinerarySec
                     />
                   </div>
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-notification">Notification</Label>
+                  <Select
+                    value={formData.notification_setting || 'none'}
+                    onValueChange={(value) => setFormData({ ...formData, notification_setting: value })}
+                  >
+                    <SelectTrigger id="edit-notification">
+                      <SelectValue placeholder="Select notification timing" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="night_before">Night Before (8 PM)</SelectItem>
+                      <SelectItem value="day_before">1 Day Before (9 AM)</SelectItem>
+                      <SelectItem value="2_days_before">2 Days Before (9 AM)</SelectItem>
+                      <SelectItem value="1_week_before">1 Week Before (9 AM)</SelectItem>
+                      <SelectItem value="at_time">On the Day (9 AM)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex gap-2">
                   <Button onClick={handleSave} size="sm" disabled={isSaving}>
                     <Check className="w-4 h-4 mr-1" />
@@ -343,6 +364,25 @@ export function ItinerarySection({ vacation, itinerary, onUpdate }: ItinerarySec
                   onChange={(e) => setFormData({ ...formData, budget_actual: parseFloat(e.target.value) })}
                 />
               </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="new-notification">Notification</Label>
+              <Select
+                value={formData.notification_setting || 'none'}
+                onValueChange={(value) => setFormData({ ...formData, notification_setting: value })}
+              >
+                <SelectTrigger id="new-notification">
+                  <SelectValue placeholder="Select notification timing" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="night_before">Night Before (8 PM)</SelectItem>
+                  <SelectItem value="day_before">1 Day Before (9 AM)</SelectItem>
+                  <SelectItem value="2_days_before">2 Days Before (9 AM)</SelectItem>
+                  <SelectItem value="1_week_before">1 Week Before (9 AM)</SelectItem>
+                  <SelectItem value="at_time">On the Day (9 AM)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSave} size="sm" disabled={isSaving}>

@@ -30,6 +30,9 @@ import { EditorialScratchPad } from "@/components/widgets/scratch-pad/editorial-
 import { EditorialRecentTasks } from "@/components/widgets/tasks/editorial-recent-tasks";
 import { EditorialDailyHabits } from "@/components/widgets/habits/editorial-daily-habits";
 import { EditorialHomeGoals } from "@/components/widgets/goals/editorial-home-goals";
+import { HomeFAB } from "./home-fab";
+import { Footer } from "@/components/layout/footer";
+
 
 export const dynamic = "force-dynamic";
 
@@ -376,10 +379,14 @@ export default async function DashboardPage({
         </div>
       </section>
 
+      {/* Footer Section */}
+      <div className="mt-24 -mx-4 md:-mx-8">
+        <Footer />
+      </div>
+
       {/* Contextual FAB for New Entry */}
-      <Link href="/journals" className="fixed bottom-8 right-8 bg-media-secondary text-media-on-secondary w-16 h-16 rounded-2xl shadow-2xl shadow-media-secondary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 group z-40 md:hidden hover:bg-media-secondary/90">
-        <span className="material-symbols-outlined text-3xl font-bold">edit_note</span>
-      </Link>
+
+      <HomeFAB todayStr={todayStr} />
 
     </div>
   );

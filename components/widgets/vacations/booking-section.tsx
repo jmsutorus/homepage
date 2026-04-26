@@ -47,7 +47,11 @@ export function BookingSection({ vacation, bookings, onUpdate }: BookingSectionP
   }, {} as Record<string, Booking[]>);
 
   const handleAdd = () => {
-    setFormData({ type: 'flight' as BookingType, status: 'pending' as BookingStatus });
+    setFormData({ 
+      type: 'flight' as BookingType, 
+      status: 'pending' as BookingStatus,
+      notification_setting: 'day_before'
+    });
     setIsAdding(true);
   };
 
@@ -224,6 +228,26 @@ export function BookingSection({ vacation, bookings, onUpdate }: BookingSectionP
           placeholder="Address or location"
         />
       </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-2">
+          <Label htmlFor={`${isNew ? 'new' : 'edit'}-origin`}>Origin Location</Label>
+          <Input
+            id={`${isNew ? 'new' : 'edit'}-origin`}
+            value={formData.origin || ''}
+            onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
+            placeholder="Starting point"
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor={`${isNew ? 'new' : 'edit'}-destination`}>Destination Location</Label>
+          <Input
+            id={`${isNew ? 'new' : 'edit'}-destination`}
+            value={formData.destination || ''}
+            onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+            placeholder="Ending point"
+          />
+        </div>
+      </div>
       <div className="grid gap-2">
         <Label htmlFor={`${isNew ? 'new' : 'edit'}-url`}>Confirmation URL</Label>
         <Input
@@ -233,6 +257,24 @@ export function BookingSection({ vacation, bookings, onUpdate }: BookingSectionP
           onChange={(e) => setFormData({ ...formData, url: e.target.value })}
           placeholder="https://..."
         />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor={`${isNew ? 'new' : 'edit'}-notification`}>Notification</Label>
+        <Select
+          value={formData.notification_setting || 'none'}
+          onValueChange={(value) => setFormData({ ...formData, notification_setting: value })}
+        >
+          <SelectTrigger id={`${isNew ? 'new' : 'edit'}-notification`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">None</SelectItem>
+            <SelectItem value="day_before">1 day before</SelectItem>
+            <SelectItem value="2_days_before">2 days before</SelectItem>
+            <SelectItem value="1_week_before">1 week before</SelectItem>
+            <SelectItem value="at_time">At time of event</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="grid gap-2">
         <Label htmlFor={`${isNew ? 'new' : 'edit'}-notes`}>Notes</Label>

@@ -7,6 +7,9 @@ import {
   type BookingInput,
 } from "@/lib/db/vacations";
 import { requireAuthApi } from "@/lib/auth/server";
+import { cookies } from "next/headers";
+import { scheduleBookingNotifications, cancelBookingNotifications } from "@/lib/firebase/notifications";
+import { getBooking } from "@/lib/db/vacations";
 
 interface RouteParams {
   params: Promise<{ slug: string; id: string }>;
@@ -48,6 +51,9 @@ export async function PATCH(
     if (body.status !== undefined) updateData.status = body.status;
     if (body.notes !== undefined) updateData.notes = body.notes;
     if (body.url !== undefined) updateData.url = body.url;
+    if (body.notification_setting !== undefined) updateData.notification_setting = body.notification_setting;
+    if (body.origin !== undefined) updateData.origin = body.origin;
+    if (body.destination !== undefined) updateData.destination = body.destination;
 
     const success = await updateBooking(
       parseInt(id),
@@ -60,6 +66,18 @@ export async function PATCH(
         { error: "Booking not found or update failed" },
         { status: 404 }
       );
+    }
+
+    try {
+      await cancelBookingNotifications(parseInt(id), session.user.id);
+      const updatedBooking = await getBooking(parseInt(id), vacation.id);
+      if (updatedBooking) {
+        const cookieStore = await cookies();
+        const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+        await scheduleBookingNotifications(updatedBooking, session.user.id, timezoneOffset);
+      }
+    } catch (e) {
+      console.error("Failed to update notifications for booking:", e);
     }
 
     // Revalidate paths
@@ -97,6 +115,12 @@ export async function DELETE(
     }
 
     const success = await deleteBooking(parseInt(id), vacation.id);
+
+    try {
+      await cancelBookingNotifications(parseInt(id), session.user.id);
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted booking:", e);
+    }
 
     if (!success) {
       return NextResponse.json(

@@ -15,7 +15,8 @@ import {
   Flag,
   FolderKanban,
   Circle,
-  Send
+  Send,
+  Bell
 } from "lucide-react";
 import { TaskPriority, TaskCategory, TaskStatusRecord, PredefinedTaskStatus } from "@/lib/db/tasks";
 import { showCreationError } from "@/lib/success-toasts";
@@ -43,6 +44,8 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
   const [status, setStatus] = useState<string>("active");
   const [statuses, setStatuses] = useState<{ predefined: PredefinedTaskStatus[]; custom: TaskStatusRecord[] }>({ predefined: [], custom: [] });
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [notificationSetting, setNotificationSetting] = useState<string>("");
+  const [notificationTime, setNotificationTime] = useState<string>("09:00");
   const [isAdding, setIsAdding] = useState(false);
   const [manualOverride, setManualOverride] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -124,6 +127,7 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
           priority: finalPriority,
           category: category || undefined,
           dueDate: dueDateString,
+          notification_setting: notificationSetting || undefined,
         }),
       });
 
@@ -135,6 +139,8 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
         setPriority("medium");
         setCategory("");
         setDueDate(undefined);
+        setNotificationSetting("");
+        setNotificationTime("09:00");
         setManualOverride(false);
         triggerSuccess();
         onTaskAdded();
@@ -176,6 +182,10 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
     setDueDate(date);
     setManualOverride(true);
     setDatePickerOpen(false);
+    if (date && !notificationSetting) {
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      setNotificationSetting(`${dateStr}T${notificationTime}:00.000Z`);
+    }
   };
 
   const getPriorityColor = () => {
@@ -359,6 +369,49 @@ export function MobileTaskSheet({ open, onOpenChange, onTaskAdded }: MobileTaskS
                       onSelect={handleManualDateChange}
                       initialFocus
                     />
+                  </PopoverContent>
+                </Popover>
+
+                {/* Notification Picker */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "h-12 w-12 rounded-xl border border-media-outline-variant/20 hover:bg-media-secondary/10 transition-all",
+                        notificationSetting && notificationSetting !== 'none' && "text-media-secondary border-media-secondary/30 bg-media-secondary/5"
+                      )}
+                    >
+                      <Bell className="h-5 w-5" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-4 flex flex-col gap-3 bg-media-surface border border-media-outline-variant/20 rounded-xl" align="center">
+                    <div className="text-xs font-bold uppercase tracking-wider text-media-on-surface-variant mb-1">Notification Time</div>
+                    <input 
+                      type="time" 
+                      value={notificationTime}
+                      onChange={(e) => {
+                        setNotificationTime(e.target.value);
+                        if (dueDate) {
+                          const dateStr = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${String(dueDate.getDate()).padStart(2, '0')}`;
+                          setNotificationSetting(`${dateStr}T${e.target.value}:00.000Z`);
+                        } else {
+                          const today = new Date();
+                          const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                          setNotificationSetting(`${dateStr}T${e.target.value}:00.000Z`);
+                        }
+                      }}
+                      className="bg-media-surface-container-low border border-media-outline-variant/20 rounded p-2 text-media-on-surface outline-none"
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setNotificationSetting('none')}
+                      className="text-xs font-bold uppercase tracking-widest text-media-secondary hover:bg-media-secondary/10 p-2 rounded transition-colors cursor-pointer"
+                    >
+                      Clear Notification
+                    </button>
                   </PopoverContent>
                 </Popover>
               </div>

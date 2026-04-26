@@ -7,6 +7,8 @@ import {
   type ItineraryDayInput,
 } from "@/lib/db/vacations";
 import { requireAuthApi } from "@/lib/auth/server";
+import { cookies } from "next/headers";
+import { scheduleItineraryDayNotifications } from "@/lib/firebase/notifications";
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -90,9 +92,19 @@ export async function POST(
         photo: dayData.photo,
         budget_planned: dayData.budget_planned,
         budget_actual: dayData.budget_actual,
+        notification_setting: dayData.notification_setting,
       };
 
       const day = await createItineraryDay(vacation.id, dayInput);
+
+      try {
+        const cookieStore = await cookies();
+        const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+        await scheduleItineraryDayNotifications(day, session.user.id, timezoneOffset);
+      } catch (e) {
+        console.error("Failed to schedule notifications for new itinerary day:", e);
+      }
+
       createdDays.push(day);
     }
 

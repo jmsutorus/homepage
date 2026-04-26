@@ -4,6 +4,13 @@ import app from "@/lib/firebase/client";
 export function useFCMToken() {
   const [permission, setPermission] = useState<NotificationPermission>("default");
   const [isSupported, setIsSupported] = useState<boolean>(false);
+  const [optedOut, setOptedOut] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOptedOut(localStorage.getItem("notifications_opt_out") === "true");
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -18,6 +25,7 @@ export function useFCMToken() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (permission !== "granted") return;
+    if (optedOut) return;
 
     const registerFCMToken = async () => {
       try {
@@ -114,7 +122,7 @@ export function useFCMToken() {
     };
 
     registerFCMToken();
-  }, [permission]);
+  }, [permission, optedOut]);
 
   const requestPermission = async () => {
     if (typeof window === "undefined" || typeof Notification === "undefined") return "default";
@@ -128,6 +136,46 @@ export function useFCMToken() {
     }
   };
 
-  return { permission, requestPermission, isSupported };
+  const optIn = async () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("notifications_opt_out");
+      setOptedOut(false);
+    }
+    return await requestPermission();
+  };
+
+  const optOut = async () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("notifications_opt_out", "true");
+      setOptedOut(true);
+    }
+
+    try {
+      const { getMessaging, isSupported } = await import("firebase/messaging");
+      const supported = await isSupported();
+      if (!supported) return;
+
+      const messaging = getMessaging(app);
+      const { getToken } = await import("firebase/messaging");
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+      const swRegistration = await navigator.serviceWorker.getRegistration();
+
+      if (swRegistration) {
+        const token = await getToken(messaging, {
+          vapidKey,
+          serviceWorkerRegistration: swRegistration,
+        });
+        if (token) {
+          await fetch(`/api/notifications/unregister-token?token=${encodeURIComponent(token)}`, {
+            method: "DELETE",
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Failed to unregister token:", e);
+    }
+  };
+
+  return { permission, requestPermission, isSupported, optedOut, optIn, optOut };
 }
 

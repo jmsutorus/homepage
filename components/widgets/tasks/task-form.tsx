@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Sparkles, WifiOff } from "lucide-react";
+import { CalendarIcon, Sparkles, WifiOff, Bell } from "lucide-react";
 import { TaskPriority, TaskCategory, TaskStatusRecord, PredefinedTaskStatus } from "@/lib/db/tasks";
 import { showCreationSuccess, showCreationError } from "@/lib/success-toasts";
 import type { TaskTemplate } from "@/lib/db/task-templates";
@@ -32,6 +32,8 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const [statuses, setStatuses] = useState<{ predefined: PredefinedTaskStatus[]; custom: TaskStatusRecord[] }>({ predefined: [], custom: [] });
   const [showDescription, setShowDescription] = useState(false);
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [notificationSetting, setNotificationSetting] = useState<string>("");
+  const [notificationTime, setNotificationTime] = useState<string>("09:00");
   const [isAdding, setIsAdding] = useState(false);
   const [manualOverride, setManualOverride] = useState(false);
 
@@ -101,6 +103,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         priority: finalPriority,
         category: category || undefined,
         dueDate: dueDateString,
+        notification_setting: notificationSetting || undefined,
       };
 
       // Handle offline mode
@@ -143,6 +146,8 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         setPriority("medium");
         setCategory("");
         setDueDate(undefined);
+        setNotificationSetting("");
+        setNotificationTime("09:00");
         setManualOverride(false);
         setShowDescription(false);
         showCreationSuccess("task");
@@ -187,6 +192,10 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const handleManualDateChange = (date: Date | undefined) => {
     setDueDate(date);
     setManualOverride(true);
+    if (date && !notificationSetting) {
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      setNotificationSetting(`${dateStr}T${notificationTime}:00.000Z`);
+    }
   };
 
   return (
@@ -268,6 +277,49 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
                   onSelect={handleManualDateChange}
                   initialFocus
                 />
+              </PopoverContent>
+            </Popover>
+
+            {/* Notification Picker */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button 
+                  className="cursor-pointer flex items-center gap-2 text-media-on-surface-variant text-xs font-lexend uppercase tracking-widest hover:text-media-primary transition-colors px-4 border border-media-outline-variant/20 rounded-lg h-[46px]" 
+                  type="button"
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                  {notificationSetting && notificationSetting !== 'none' ? (
+                    notificationSetting.includes('T') 
+                      ? format(new Date(notificationSetting.replace('Z', '')), "MMM d, h:mm a")
+                      : "Notification Set"
+                  ) : "No Notification"}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4 flex flex-col gap-3 bg-media-surface border border-media-outline-variant/20 rounded-xl" align="start">
+                <div className="text-xs font-bold uppercase tracking-wider text-media-on-surface-variant mb-1">Notification Time</div>
+                <input 
+                  type="time" 
+                  value={notificationTime}
+                  onChange={(e) => {
+                    setNotificationTime(e.target.value);
+                    if (dueDate) {
+                      const dateStr = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${String(dueDate.getDate()).padStart(2, '0')}`;
+                      setNotificationSetting(`${dateStr}T${e.target.value}:00.000Z`);
+                    } else {
+                      const today = new Date();
+                      const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                      setNotificationSetting(`${dateStr}T${e.target.value}:00.000Z`);
+                    }
+                  }}
+                  className="bg-media-surface-container-low border border-media-outline-variant/20 rounded p-2 text-media-on-surface outline-none"
+                />
+                <button 
+                  type="button"
+                  onClick={() => setNotificationSetting('none')}
+                  className="text-xs font-bold uppercase tracking-widest text-media-secondary hover:bg-media-secondary/10 p-2 rounded transition-colors cursor-pointer"
+                >
+                  Clear Notification
+                </button>
               </PopoverContent>
             </Popover>
 

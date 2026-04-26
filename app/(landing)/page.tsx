@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Footer } from "@/components/layout/footer";
+
 
 export default function LandingPage() {
   return (
@@ -186,19 +188,9 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-media-surface-container-highest flex flex-col md:flex-row justify-between items-center px-12 py-16 w-full border-t border-media-primary/5 text-sm uppercase tracking-widest">
-        <div className="flex flex-col items-center md:items-start gap-4 mb-8 md:mb-0">
-          <div className="font-black text-media-primary text-xl">Homepage</div>
-        </div>
-        <nav className="flex flex-wrap justify-center gap-8">
-          <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">About</Link>
-          <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">Philosophy</Link>
-          <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">Privacy</Link>
-          <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">Terms</Link>
-          <Link href="#" className="text-media-on-surface-variant hover:text-media-secondary hover:translate-x-1 transition-all">Support</Link>
-        </nav>
-      </footer>
+      {/* Dynamic Responsive Footer */}
+      <Footer />
+
     </div>
   );
 }

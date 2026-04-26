@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createTask, getAllTasks, TaskPriority, TaskFilter, isValidTaskStatus } from "@/lib/db/tasks";
 import { requireAuthApi } from "@/lib/auth/server";
+import { scheduleTaskNotifications } from "@/lib/firebase/notifications";
+import { cookies } from "next/headers";
+
 
 /**
  * GET /api/tasks
@@ -70,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
     const userId = session.user.id;
     const body = await request.json();
-    const { title, description, dueDate, priority, category, status } = body;
+    const { title, description, dueDate, priority, category, status, notification_setting } = body;
 
     // Validate input
     if (!title || typeof title !== "string" || title.trim().length === 0) {
@@ -96,8 +99,19 @@ export async function POST(request: NextRequest) {
       category || undefined,
       userId,
       description || undefined,
-      status || "active"
+      status || "active",
+      notification_setting || undefined
     );
+
+    try {
+      if (notification_setting && notification_setting !== 'none') {
+        const cookieStore = await cookies();
+        const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+        await scheduleTaskNotifications(task, userId, timezoneOffset);
+      }
+    } catch (e) {
+      console.error("Failed to schedule notifications for new task:", e);
+    }
 
     return NextResponse.json(task, { status: 201 });
   } catch (error) {

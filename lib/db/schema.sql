@@ -117,6 +117,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   category TEXT,
   description TEXT,
   status TEXT DEFAULT 'active',
+  notification_setting TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
@@ -1305,6 +1306,7 @@ CREATE TABLE IF NOT EXISTS vacation_itinerary_days (
   photo TEXT,
   budget_planned REAL,
   budget_actual REAL,
+  notification_setting TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (vacationId) REFERENCES vacations(id) ON DELETE CASCADE,
@@ -1339,6 +1341,9 @@ CREATE TABLE IF NOT EXISTS vacation_bookings (
   status TEXT CHECK(status IN ('pending', 'confirmed', 'cancelled')) DEFAULT 'pending',
   notes TEXT,
   url TEXT, -- Link to confirmation
+  notification_setting TEXT,
+  origin TEXT,
+  destination TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (vacationId) REFERENCES vacations(id) ON DELETE CASCADE

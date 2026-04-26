@@ -27,6 +27,7 @@ export interface Task {
   category: string | null;
   status: TaskStatus;
   userId: string | null;
+  notification_setting: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -79,10 +80,11 @@ export async function createTask(
   category?: string,
   userId?: string,
   description?: string,
-  status: TaskStatus = "active"
+  status: TaskStatus = "active",
+  notificationSetting?: string
 ): Promise<Task> {
   const result = await execute(
-    "INSERT INTO tasks (title, description, due_date, priority, category, status, userId, completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO tasks (title, description, due_date, priority, category, status, userId, completed, notification_setting) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
       title,
       description || null,
@@ -91,7 +93,8 @@ export async function createTask(
       category || null,
       status,
       userId || null,
-      isStatusCompleted(status) ? 1 : 0 // Auto-set completed boolean
+      isStatusCompleted(status) ? 1 : 0, // Auto-set completed boolean
+      notificationSetting || null
     ]
   );
 
@@ -197,7 +200,7 @@ export async function getUpcomingTasks(userId: string): Promise<Task[]> {
  */
 export async function updateTask(
   id: number,
-  updates: Partial<Pick<Task, "title" | "description" | "completed" | "status" | "due_date" | "priority" | "category">>
+  updates: Partial<Pick<Task, "title" | "description" | "completed" | "status" | "due_date" | "priority" | "category" | "notification_setting">>
 ): Promise<boolean> {
   const fields: string[] = [];
   const params: unknown[] = [];
@@ -266,6 +269,11 @@ export async function updateTask(
   if (updates.category !== undefined) {
     fields.push("category = ?");
     params.push(updates.category);
+  }
+
+  if (updates.notification_setting !== undefined) {
+    fields.push("notification_setting = ?");
+    params.push(updates.notification_setting);
   }
 
   if (fields.length === 0) {

@@ -8,6 +8,8 @@ import {
   type BookingInput,
 } from "@/lib/db/vacations";
 import { requireAuthApi } from "@/lib/auth/server";
+import { cookies } from "next/headers";
+import { scheduleBookingNotifications } from "@/lib/firebase/notifications";
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -96,9 +98,20 @@ export async function POST(
       status: body.status || 'pending',
       notes: body.notes,
       url: body.url,
+      notification_setting: body.notification_setting,
+      origin: body.origin,
+      destination: body.destination,
     };
 
     const booking = await createBooking(vacation.id, bookingInput);
+
+    try {
+      const cookieStore = await cookies();
+      const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+      await scheduleBookingNotifications(booking, session.user.id, timezoneOffset);
+    } catch (e) {
+      console.error("Failed to schedule notifications for new booking:", e);
+    }
 
     // Revalidate paths
     revalidatePath(`/vacations/${slug}`);

@@ -123,6 +123,7 @@ export interface ItineraryDay {
   photo: string | null;
   budget_planned: number | null;
   budget_actual: number | null;
+  notification_setting: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -140,6 +141,7 @@ export interface ItineraryDayInput {
   photo?: string;
   budget_planned?: number;
   budget_actual?: number;
+  notification_setting?: string;
 }
 
 /**
@@ -160,6 +162,9 @@ export interface Booking {
   status: BookingStatus;
   notes: string | null;
   url: string | null;
+  notification_setting: string | null;
+  origin: string | null;
+  destination: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -180,6 +185,9 @@ export interface BookingInput {
   status?: BookingStatus;
   notes?: string;
   url?: string;
+  notification_setting?: string;
+  origin?: string;
+  destination?: string;
 }
 
 /**

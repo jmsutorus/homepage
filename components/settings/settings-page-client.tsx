@@ -11,6 +11,7 @@ import { SignOutButton } from "@/components/widgets/settings/sign-out-button";
 import { PWAInstallCard } from "@/components/widgets/settings/pwa-install-card";
 import { CalendarColorsManager } from "@/components/widgets/settings/calendar-colors-manager";
 import { HapticSettings } from "@/components/widgets/settings/haptic-settings";
+import { NotificationSettings } from "@/components/widgets/settings/notification-settings";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
@@ -46,6 +47,7 @@ export function SettingsPageClient({ connectedAccounts }: SettingsPageClientProp
             <div className="space-y-6">
               <ThemeSettings />
               {isMobile && <HapticSettings />}
+              <NotificationSettings />
               <CalendarColorsManager />
             </div>
           </section>

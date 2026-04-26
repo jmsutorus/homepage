@@ -106,7 +106,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
     <div className="min-h-screen text-media-on-background font-lexend pb-20">
       <main className="max-w-[1200px] mx-auto">
         {/* Header / Tabs */}
-        <div className="px-8 pt-8">
+        <div className="px-4 md:px-8 pt-8">
           <Tabs value={viewTab} onValueChange={(v) => setViewTab(v)}>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
               <div>
@@ -153,7 +153,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
               ) : (
                 <>
                   {featuredEvent && (
-                    <section className="px-8 pb-16">
+                    <section className="px-0 md:px-8 pb-16">
                   <Link href={`/events/${featuredEvent.slug}`}>
                     <div className="relative overflow-hidden rounded-3xl group h-[500px] md:h-[600px] flex items-end shadow-2xl transition-transform duration-500 hover:scale-[1.01]">
                       {featuredEvent.cover_photo ? (
@@ -200,7 +200,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
               )}
 
               {weeklyEvents.length > 0 && (
-                <section className="px-8 pb-16">
+                <section className="px-0 md:px-8 pb-16">
                   <div className="mb-8 flex justify-between items-end">
                     <div>
                       <h3 className="text-3xl font-bold tracking-tight text-media-primary">This Week</h3>
@@ -236,7 +236,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
                 </section>
               )}
 
-              <section className="px-8 pb-32 flex flex-col gap-12">
+              <section className="px-0 md:px-8 pb-32 flex flex-col gap-12">
                 <div className="flex justify-between items-end">
                   <div>
                     <h3 className="text-3xl font-bold tracking-tight text-media-primary">Following</h3>

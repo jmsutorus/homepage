@@ -9,6 +9,8 @@ import {
 } from "@/lib/db/vacations";
 import { requireAuthApi } from "@/lib/auth/server";
 import { deleteFromStorage } from "@/lib/firebase/storage-utils";
+import { cookies } from "next/headers";
+import { scheduleItineraryDayNotifications, cancelItineraryDayNotifications } from "@/lib/firebase/notifications";
 
 interface RouteParams {
   params: Promise<{ slug: string; id: string }>;
@@ -55,6 +57,7 @@ export async function PATCH(
     }
     if (body.budget_planned !== undefined) updateData.budget_planned = body.budget_planned;
     if (body.budget_actual !== undefined) updateData.budget_actual = body.budget_actual;
+    if (body.notification_setting !== undefined) updateData.notification_setting = body.notification_setting;
 
     const success = await updateItineraryDay(
       parseInt(id),
@@ -67,6 +70,18 @@ export async function PATCH(
         { error: "Itinerary day not found or update failed" },
         { status: 404 }
       );
+    }
+
+    try {
+      await cancelItineraryDayNotifications(parseInt(id), session.user.id);
+      const updatedDay = await getItineraryDay(parseInt(id), vacation.id);
+      if (updatedDay) {
+        const cookieStore = await cookies();
+        const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+        await scheduleItineraryDayNotifications(updatedDay, session.user.id, timezoneOffset);
+      }
+    } catch (e) {
+      console.error("Failed to update notifications for itinerary day:", e);
     }
 
     // Revalidate paths
@@ -110,6 +125,12 @@ export async function DELETE(
     }
 
     const success = await deleteItineraryDay(parseInt(id), vacation.id);
+
+    try {
+      await cancelItineraryDayNotifications(parseInt(id), session.user.id);
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted itinerary day:", e);
+    }
 
     if (!success) {
       return NextResponse.json(

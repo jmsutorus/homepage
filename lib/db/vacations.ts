@@ -341,8 +341,8 @@ export async function createItineraryDay(
   const result = await execute(
     `INSERT INTO vacation_itinerary_days (
       vacationId, date, day_number, title, location,
-      activities, notes, photo, budget_planned, budget_actual
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      activities, notes, photo, budget_planned, budget_actual, notification_setting
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       vacationId,
       data.date,
@@ -354,6 +354,7 @@ export async function createItineraryDay(
       data.photo || null,
       data.budget_planned || null,
       data.budget_actual || null,
+      data.notification_setting || null,
     ]
   );
 
@@ -439,6 +440,10 @@ export async function updateItineraryDay(
     updates.push("budget_actual = ?");
     values.push(data.budget_actual);
   }
+  if (data.notification_setting !== undefined) {
+    updates.push("notification_setting = ?");
+    values.push(data.notification_setting);
+  }
 
   if (updates.length === 0) return true;
 
@@ -487,8 +492,9 @@ export async function createBooking(
   const result = await execute(
     `INSERT INTO vacation_bookings (
       vacationId, type, title, date, start_time, end_time,
-      confirmation_number, provider, location, cost, status, notes, url
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      confirmation_number, provider, location, cost, status, notes, url,
+      notification_setting, origin, destination
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       vacationId,
       data.type,
@@ -503,6 +509,9 @@ export async function createBooking(
       data.status || 'pending',
       data.notes || null,
       data.url || null,
+      data.notification_setting || null,
+      data.origin || null,
+      data.destination || null,
     ]
   );
 
@@ -610,6 +619,18 @@ export async function updateBooking(
   if (data.url !== undefined) {
     updates.push("url = ?");
     values.push(data.url);
+  }
+  if (data.notification_setting !== undefined) {
+    updates.push("notification_setting = ?");
+    values.push(data.notification_setting);
+  }
+  if (data.origin !== undefined) {
+    updates.push("origin = ?");
+    values.push(data.origin);
+  }
+  if (data.destination !== undefined) {
+    updates.push("destination = ?");
+    values.push(data.destination);
   }
 
   if (updates.length === 0) return true;

@@ -17,12 +17,6 @@ import {
   VacationWithDetails,
   parseLocalDate,
   calculateTotalBudget,
-  BookingType,
-  BOOKING_TYPES,
-  BOOKING_TYPE_NAMES,
-  BookingStatus,
-  BOOKING_STATUSES,
-  BOOKING_STATUS_NAMES,
   ItineraryDay,
   Booking
 } from '@/lib/types/vacations';
@@ -31,13 +25,8 @@ import { VacationPosterEditDialog } from './vacation-poster-edit-dialog';
 import { VacationPhotoAddDialog } from './vacation-photo-add-dialog';
 import { VacationDayPhotoEditDialog } from './vacation-day-photo-edit-dialog';
 import { toast } from 'sonner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BookingFormModal } from "./booking-form-modal";
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
 import { AddPersonDialog } from './add-person-dialog';
 
@@ -58,7 +47,6 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
   const [isDayPhotoEditDialogOpen, setIsDayPhotoEditDialogOpen] = useState(false);
   const [activeDayForPhotoEdit, setActiveDayForPhotoEdit] = useState<ItineraryDay | null>(null);
   const [dayFormData, setDayFormData] = useState<Partial<ItineraryDay>>({});
-  const [bookingFormData, setBookingFormData] = useState<Partial<Booking>>({});
   const [isSaving, setIsSaving] = useState(false);
 
   const handleOpeningAddDay = () => {
@@ -150,68 +138,15 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
 
   const handleOpeningAddBooking = () => {
     setEditingBookingId(null);
-    setBookingFormData({ type: 'flight' as BookingType, status: 'pending' as BookingStatus });
     setIsAddingBooking(true);
   };
 
   const handleOpeningEditBooking = (booking: Booking) => {
     setEditingBookingId(booking.id as number);
-    setBookingFormData({
-      ...booking,
-      date: booking.date ? parseLocalDate(booking.date).toISOString().split('T')[0] : '',
-    });
     setIsAddingBooking(true);
   };
 
-  const handleSaveBooking = async () => {
-    if (!bookingFormData.type || !bookingFormData.title) return;
-    setIsSaving(true);
-    try {
-      const endpoint = editingBookingId 
-        ? `/api/vacations/${vacation.slug}/bookings/${editingBookingId}`
-        : `/api/vacations/${vacation.slug}/bookings`;
-      
-      const method = editingBookingId ? 'PATCH' : 'POST';
 
-      const response = await fetch(endpoint, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bookingFormData),
-      });
-
-      if (!response.ok) throw new Error('Failed to save booking');
-
-      showCreationSuccess('event');
-      setIsAddingBooking(false);
-      setEditingBookingId(null);
-      onUpdate();
-    } catch (error) {
-      showCreationError('event', error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleDeleteBooking = async () => {
-    if (!editingBookingId || !confirm('Delete this booking?')) return;
-    setIsSaving(true);
-    try {
-      const response = await fetch(`/api/vacations/${vacation.slug}/bookings/${editingBookingId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) throw new Error('Failed to delete booking');
-
-      showCreationSuccess('event');
-      setIsAddingBooking(false);
-      setEditingBookingId(null);
-      onUpdate();
-    } catch (error) {
-      showCreationError('event', error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleRemovePerson = async (personAssociationId: number, personName: string) => {
     if (!confirm(`Remove ${personName} from this vacation?`)) return;
@@ -726,126 +661,16 @@ export function DetailView({ vacationData, onUpdate }: DetailViewProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Add/Edit Booking Dialog */}
-      <Dialog open={isAddingBooking} onOpenChange={(open) => {
-        setIsAddingBooking(open);
-        if (!open) setEditingBookingId(null);
-      }}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{editingBookingId ? 'Edit' : 'Add'} Booking</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="b-type">Type</Label>
-                <Select
-                  value={bookingFormData.type || 'flight'}
-                  onValueChange={(value) => setBookingFormData({ ...bookingFormData, type: value as BookingType })}
-                >
-                  <SelectTrigger id="b-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BOOKING_TYPES.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {BOOKING_TYPE_NAMES[type]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="b-status">Status</Label>
-                <Select
-                  value={bookingFormData.status || 'pending'}
-                  onValueChange={(value) => setBookingFormData({ ...bookingFormData, status: value as BookingStatus })}
-                >
-                  <SelectTrigger id="b-status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BOOKING_STATUSES.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {BOOKING_STATUS_NAMES[status]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="b-title">Title *</Label>
-              <Input
-                id="b-title"
-                value={bookingFormData.title || ''}
-                onChange={(e) => setBookingFormData({ ...bookingFormData, title: e.target.value })}
-                placeholder="e.g., United Flight 1234"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="b-provider">Provider</Label>
-              <Input
-                id="b-provider"
-                value={bookingFormData.provider || ''}
-                onChange={(e) => setBookingFormData({ ...bookingFormData, provider: e.target.value })}
-                placeholder="e.g., Delta, Hilton"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="b-date">Date</Label>
-                <Input
-                  id="b-date"
-                  type="date"
-                  value={bookingFormData.date || ''}
-                  onChange={(e) => setBookingFormData({ ...bookingFormData, date: e.target.value })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="b-cost">Cost</Label>
-                <Input
-                  id="b-cost"
-                  type="number"
-                  value={bookingFormData.cost || ''}
-                  onChange={(e) => setBookingFormData({ ...bookingFormData, cost: parseFloat(e.target.value) })}
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="b-confirmation">Confirmation #</Label>
-              <Input
-                id="b-confirmation"
-                value={bookingFormData.confirmation_number || ''}
-                onChange={(e) => setBookingFormData({ ...bookingFormData, confirmation_number: e.target.value })}
-                placeholder="XYZ123"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="b-location">Location</Label>
-              <Input
-                id="b-location"
-                value={bookingFormData.location || ''}
-                onChange={(e) => setBookingFormData({ ...bookingFormData, location: e.target.value })}
-                placeholder="Address or airports"
-              />
-            </div>
-          </div>
-          <DialogFooter className="flex justify-between items-center sm:justify-between w-full">
-            {editingBookingId ? (
-              <Button variant="destructive" onClick={handleDeleteBooking} disabled={isSaving} size="sm">
-                Delete Booking
-              </Button>
-            ) : <div />}
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsAddingBooking(false)} disabled={isSaving} size="sm">Cancel</Button>
-              <Button onClick={handleSaveBooking} disabled={isSaving} size="sm">
-                {isSaving ? 'Saving...' : editingBookingId ? 'Save Changes' : 'Add Booking'}
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <BookingFormModal
+        isOpen={isAddingBooking}
+        onOpenChange={(open) => {
+          setIsAddingBooking(open);
+          if (!open) setEditingBookingId(null);
+        }}
+        booking={editingBookingId ? bookings.find(b => b.id === editingBookingId) : null}
+        vacationSlug={vacation.slug}
+        onSave={onUpdate}
+      />
 
       <AddPersonDialog
         vacationSlug={vacation.slug}
