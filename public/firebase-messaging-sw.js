@@ -20,7 +20,11 @@ const messaging = firebase.messaging();
 // before the OS has a chance to display the alert.
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message:', payload);
-  console.log('[firebase-messaging-sw.js] Notification permission state:', Notification.permission);
+  if (typeof Notification !== 'undefined') {
+    console.log('[firebase-messaging-sw.js] Notification permission state:', Notification.permission);
+  } else {
+    console.log('[firebase-messaging-sw.js] Notification API not available in SW scope');
+  }
 
   const title = payload.notification?.title || payload?.data?.title || 'Notification';
   console.log('[firebase-messaging-sw.js] Resolving alert titled:', title);

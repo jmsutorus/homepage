@@ -58,7 +58,8 @@ export async function scheduleEventNotifications(event: Event, userId: string, t
           sourceId: event.id,
           scheduledAt: Timestamp.fromDate(nightBefore),
           status: 'pending',
-          clickAction: `/calendar?date=${event.date}`,
+          clickAction: `/events/${event.slug}`,
+
           createdAt: Timestamp.now(),
           updatedAt: Timestamp.now(),
         });
@@ -77,7 +78,8 @@ export async function scheduleEventNotifications(event: Event, userId: string, t
           sourceId: event.id,
           scheduledAt: Timestamp.fromDate(morningOf),
           status: 'pending',
-          clickAction: `/calendar?date=${event.date}`,
+          clickAction: `/events/${event.slug}`,
+
           createdAt: Timestamp.now(),
           updatedAt: Timestamp.now(),
         });
@@ -131,7 +133,8 @@ export async function scheduleEventNotifications(event: Event, userId: string, t
             sourceId: event.id,
             scheduledAt: Timestamp.fromDate(scheduledAtDate),
             status: 'pending',
-            clickAction: `/calendar?date=${event.date}`,
+            clickAction: `/events/${event.slug}`,
+
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
           });

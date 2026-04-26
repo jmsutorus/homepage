@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 export function PWAInstallCard() {
   const { canInstall, isInstalled, isStandalone, promptInstall } = useInstallPrompt();
   const { isUpdateAvailable, updateServiceWorker, checkForUpdate } = useServiceWorkerUpdate();
-  const { permission, requestPermission } = useFCMToken();
+  const { permission, requestPermission, isSupported } = useFCMToken();
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -123,10 +123,12 @@ export function PWAInstallCard() {
                     ? "Notifications are enabled for this device." 
                     : permission === "denied"
                       ? "Notifications are blocked. Please enable them in your browser settings."
-                      : "Stay updated with alerts and reminders."}
+                      : !isSupported
+                        ? "Push notifications are not supported by this browser. On iOS, you must add the app to your Home Screen first."
+                        : "Stay updated with alerts and reminders."}
                 </p>
               </div>
-              {permission === "default" && (
+              {isSupported && permission === "default" && (
                 <Button 
                   size="sm" 
                   onClick={async (e) => {

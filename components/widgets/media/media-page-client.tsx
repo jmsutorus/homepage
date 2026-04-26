@@ -166,7 +166,7 @@ export function MediaPageClient({
   };
 
   return (
-    <div className="flex bg-media-surfacedark:bg-media-primary min-h-screen font-lexend -mx-4 -my-8 sm:-mx-6 md:-mx-8">
+    <div className="flex bg-media-surface dark:bg-media-primary min-h-screen font-lexend -mx-4 -my-8 md:-mx-8">
       {/* Floating Action Button */}
       <FloatingActionButton 
         onClick={() => isMobile ? setShowForm(true) : router.push("/media/new")}
@@ -180,7 +180,7 @@ export function MediaPageClient({
           {/* Hero Section */}
           {featuredItem && <MediaHero item={featuredItem} />}
 
-          <div className="px-8 mt-12 pb-24">
+          <div className="px-4 sm:px-8 mt-12 pb-24">
             {/* Active Journeys (In Progress) */}
             <MediaActiveJourneys items={inProgressMedia} />
 
@@ -189,7 +189,7 @@ export function MediaPageClient({
 
             {/* Sub-Navigation & Search (Integrated into page per feedback) */}
             <div className="mb-12">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 bg-white/40 dark:bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-media-outline-variant/10 shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 bg-white/40 dark:bg-white/5 backdrop-blur-md p-4 sm:p-8 rounded-[2rem] border border-media-outline-variant/10 shadow-sm">
                 <div className="flex-1 max-w-2xl relative group">
                   <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-media-outline transition-colors group-hover:text-media-secondary">search</span>
                   <input 
@@ -201,7 +201,7 @@ export function MediaPageClient({
                   />
                 </div>
                 
-                <nav className="flex items-center gap-1 sm:gap-4 md:gap-8 text-xs sm:text-sm uppercase tracking-widest font-black">
+                <nav className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm uppercase tracking-widest font-black">
                   {(["all", "movie", "tv", "book", "game", "planned"] as const).map((tab) => (
                     <button
                       key={tab}

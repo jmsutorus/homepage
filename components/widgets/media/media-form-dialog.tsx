@@ -59,6 +59,7 @@ export function MediaFormDialog({
   const [title, setTitle] = useState('');
   const [type, setType] = useState<'movie' | 'tv' | 'book' | 'game' | 'album'>('movie');
   const [status, setStatus] = useState<'planned' | 'in-progress' | 'completed'>('planned');
+  const [completed, setCompleted] = useState('');
   const [rating, setRating] = useState('');
   const [released, setReleased] = useState('');
   const [poster, setPoster] = useState('');
@@ -87,6 +88,7 @@ export function MediaFormDialog({
           status,
           rating: rating ? parseFloat(rating) : undefined,
           released: released || undefined,
+          completed: status === 'completed' ? (completed || undefined) : undefined,
           poster: poster || undefined,
           description: description || undefined,
           genres,
@@ -117,6 +119,7 @@ export function MediaFormDialog({
       setStatus('planned');
       setRating('');
       setReleased('');
+      setCompleted('');
       setPoster('');
       setDescription('');
       setGenres([]);
@@ -160,7 +163,7 @@ export function MediaFormDialog({
           </div>
 
           <div className='flex flex-col h-full overflow-hidden'>
-        <SheetHeader className="px-8 pt-8 pb-4 border-b border-media-outline-variant/10 text-left shrink-0">
+        <SheetHeader className="px-4 sm:px-8 pt-8 pb-4 border-b border-media-outline-variant/10 text-left shrink-0">
           <SheetTitle className="text-3xl font-black tracking-tighter text-media-primary">Add to Library</SheetTitle>
         </SheetHeader>
 
@@ -196,11 +199,11 @@ export function MediaFormDialog({
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden font-lexend">
           <div 
-            className="flex-1 overflow-y-auto px-8 py-6 space-y-8"
+            className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-8"
             onScroll={(e) => setIsAtTop(e.currentTarget.scrollTop <= 0)}
           >
             {/* Quick Search Buttons */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button 
                 type="button" 
                 variant="outline" 
@@ -293,6 +296,19 @@ export function MediaFormDialog({
                 </div>
               </div>
 
+              {status === 'completed' && (
+                <div className="space-y-2">
+                  <Label htmlFor="completed" className="text-[10px] uppercase tracking-[0.2em] font-black text-media-secondary ml-1">Completion Date</Label>
+                  <Input
+                    id="completed"
+                    type="date"
+                    value={completed}
+                    onChange={(e) => setCompleted(e.target.value)}
+                    className="h-12 bg-media-surface-container-low border-none rounded-xl focus-visible:ring-2 focus-visible:ring-media-secondary/20"
+                  />
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="poster" className="text-[10px] uppercase tracking-[0.2em] font-black text-media-secondary ml-1">Poster URL</Label>
                 <Input
@@ -366,7 +382,7 @@ export function MediaFormDialog({
             </div>
           </div>
 
-          <div className="border-t border-media-outline-variant/10 px-8 py-6 bg-media-surface shrink-0 pb-safe">
+          <div className="border-t border-media-outline-variant/10 px-4 sm:px-8 py-6 bg-media-surface shrink-0 pb-safe">
             <Button
               type="submit"
               disabled={loading}

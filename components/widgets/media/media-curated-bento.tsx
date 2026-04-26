@@ -3,7 +3,7 @@
 
 export function MediaCuratedBento() {
   return (
-    <section className="px-8 mb-24 font-lexend">
+    <section className="px-4 sm:px-8 mb-24 font-lexend">
       <h2 className="text-2xl font-black tracking-tight mb-8 ml-2">Curated Collections</h2>
       <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 h-[600px]">
         {/* Large Feature: High Fantasy */}

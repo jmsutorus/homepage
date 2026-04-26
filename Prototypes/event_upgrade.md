@@ -1,0 +1,13 @@
+- Add a notification field for events
+- This will let users set a custom date and time to be notified about the event
+- Add some defaults that they can choose from:
+    - The day of the event
+    - The day before the event
+    - 1 hour before the event
+    - 5 minutes before the event
+- If the user does not set a custom date and time, then use the already set default.
+- Inform users of the default on the page.
+- On the event detail page inform user of when the notification will go off.
+- Allow users to remove the notification
+- Add this field to the DB for the event
+- Ensure that this field is used when creating the notification in firebase

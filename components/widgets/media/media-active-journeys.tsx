@@ -11,7 +11,7 @@ export function MediaActiveJourneys({ items }: MediaActiveJourneysProps) {
   if (items.length === 0) return null;
 
   return (
-    <section className="px-8 mb-12 font-lexend">
+    <section className="px-4 sm:px-8 mb-12 font-lexend">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-black tracking-tight text-media-primary dark:text-media-surface">Active Journeys</h2>
       </div>

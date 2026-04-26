@@ -3,10 +3,15 @@ import app from "@/lib/firebase/client";
 
 export function useFCMToken() {
   const [permission, setPermission] = useState<NotificationPermission>("default");
+  const [isSupported, setIsSupported] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setPermission(Notification.permission);
+      const supported = typeof Notification !== "undefined";
+      setIsSupported(supported);
+      if (supported) {
+        setPermission(Notification.permission);
+      }
     }
   }, []);
 
@@ -96,7 +101,7 @@ export function useFCMToken() {
             const title = payload.notification?.title ?? "Notification";
             const body = payload.notification?.body ?? "";
             const icon = payload.notification?.icon ?? "/favicon-96x96.png";
-            if (Notification.permission === "granted") {
+            if (typeof Notification !== "undefined" && Notification.permission === "granted") {
               new Notification(title, { body, icon });
             }
           });
@@ -112,7 +117,7 @@ export function useFCMToken() {
   }, [permission]);
 
   const requestPermission = async () => {
-    if (typeof window === "undefined") return "default";
+    if (typeof window === "undefined" || typeof Notification === "undefined") return "default";
     try {
       const result = await Notification.requestPermission();
       setPermission(result);
@@ -123,6 +128,6 @@ export function useFCMToken() {
     }
   };
 
-  return { permission, requestPermission };
+  return { permission, requestPermission, isSupported };
 }
 
