@@ -53,6 +53,7 @@ export function MediaFormDialog({
   const [loading, setLoading] = useState(false);
   const [isIMDBModalOpen, setIsIMDBModalOpen] = useState(false);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -144,7 +145,7 @@ export function MediaFormDialog({
       >
         <motion.div 
           className='flex flex-col h-full bg-media-surface-container-lowest'
-          drag='y'
+          drag={isAtTop ? 'y' : false}
           dragConstraints={{ top: 0 }}
           dragElastic={0.2}
           onDragEnd={(_, info: PanInfo) => {
@@ -194,7 +195,10 @@ export function MediaFormDialog({
         />
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden font-lexend">
-          <div className="flex-1 overflow-y-auto px-8 py-6 space-y-8">
+          <div 
+            className="flex-1 overflow-y-auto px-8 py-6 space-y-8"
+            onScroll={(e) => setIsAtTop(e.currentTarget.scrollTop <= 0)}
+          >
             {/* Quick Search Buttons */}
             <div className="flex gap-3">
               <Button 

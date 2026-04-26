@@ -5,6 +5,7 @@ import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { useServiceWorkerUpdate } from "@/hooks/useServiceWorkerUpdate";
 import { PWAStatus } from "@/components/pwa/pwa-status";
 import { Button } from "@/components/ui/button";
+import { useFCMToken } from "@/hooks/use-fcm-token";
 import {
   Download,
   Smartphone,
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 export function PWAInstallCard() {
   const { canInstall, isInstalled, isStandalone, promptInstall } = useInstallPrompt();
   const { isUpdateAvailable, updateServiceWorker, checkForUpdate } = useServiceWorkerUpdate();
+  const { permission, requestPermission } = useFCMToken();
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -108,6 +110,45 @@ export function PWAInstallCard() {
               <p className="text-[11px] text-media-on-surface-variant">
                 Use &quot;Add to Home Screen&quot; from your browser menu.
               </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 pt-4 border-t border-media-outline-variant/10">
+            <span className="material-symbols-outlined text-media-primary h-5 w-5 mt-0.5">notifications</span>
+            <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <p className="font-bold text-media-on-surface">Push Notifications</p>
+                <p className="text-xs text-media-on-surface-variant">
+                  {permission === "granted" 
+                    ? "Notifications are enabled for this device." 
+                    : permission === "denied"
+                      ? "Notifications are blocked. Please enable them in your browser settings."
+                      : "Stay updated with alerts and reminders."}
+                </p>
+              </div>
+              {permission === "default" && (
+                <Button 
+                  size="sm" 
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    const result = await requestPermission();
+                    if (result === "granted") {
+                      toast.success("Notifications enabled!");
+                    } else if (result === "denied") {
+                      toast.error("Notifications blocked");
+                    }
+                  }}
+                  className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest bg-media-secondary text-media-on-secondary hover:bg-media-secondary/90 shrink-0"
+                >
+                  Enable
+                </Button>
+              )}
+              {permission === "granted" && (
+                <div className="flex items-center gap-1 text-green-500 text-xs font-bold shrink-0">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Enabled</span>
+                </div>
+              )}
             </div>
           </div>
 

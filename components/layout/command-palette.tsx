@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MobileCommandPalette } from "./mobile-command-palette";
+import { DialogTitle } from "@/components/ui/dialog";
 
 interface CommandPaletteProps {
   className?: string;
@@ -505,6 +506,7 @@ export function CommandPalette({ className }: CommandPaletteProps) {
           className
         )}
       >
+        <DialogTitle className="sr-only">Global Command Menu</DialogTitle>
         {/* Backdrop integrated with Dialog for better control */}
         <div className="absolute inset-x-0 -top-full h-full bg-media-primary/40 backdrop-blur-xl -z-10" />
 

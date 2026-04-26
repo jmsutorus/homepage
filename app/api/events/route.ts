@@ -15,6 +15,7 @@ import {
 } from "@/lib/db/events";
 import { requireAuthApi } from "@/lib/auth/server";
 import { scheduleEventNotifications, cancelEventNotifications } from "@/lib/firebase/notifications";
+import { cookies } from "next/headers";
 
 
 /**
@@ -168,7 +169,9 @@ export async function POST(request: NextRequest) {
     const event = await createEvent(input, userId);
     
     try {
-      await scheduleEventNotifications(event, userId);
+      const cookieStore = await cookies();
+      const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+      await scheduleEventNotifications(event, userId, timezoneOffset);
     } catch (e) {
       console.error("Failed to schedule notifications for new event:", e);
     }
@@ -237,7 +240,9 @@ export async function PATCH(request: NextRequest) {
     if (event) {
       try {
         await cancelEventNotifications(event.id, userId);
-        await scheduleEventNotifications(event, userId);
+        const cookieStore = await cookies();
+        const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+        await scheduleEventNotifications(event, userId, timezoneOffset);
       } catch (e) {
         console.error("Failed to update notifications for event:", e);
       }

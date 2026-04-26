@@ -18,29 +18,36 @@ interface NotificationDocument {
   updatedAt: Timestamp;
 }
 
-function parseLocalDate(dateStr: string, timeStr: string = "00:00"): Date {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  return new Date(year, month - 1, day, hours, minutes, 0, 0);
+function parseLocalDate(dateStr: string, timeStr: string = "00:00", offset: string = "+00:00"): Date {
+  const [year, month, day] = dateStr.split("-");
+  const [hours, minutes] = timeStr.split(":");
+  const isoString = `${year}-${month}-${day}T${hours}:${minutes}:00.000${offset}`;
+  return new Date(isoString);
 }
 
 /**
  * Creates one or more Firestore notification documents for an event
  */
-export async function scheduleEventNotifications(event: Event, userId: string): Promise<void> {
+export async function scheduleEventNotifications(event: Event, userId: string, timezoneOffset: string = "+00:00"): Promise<void> {
   try {
     const notificationsToSchedule: Omit<NotificationDocument, 'id'>[] = [];
     const now = new Date();
     
-    console.log(`[notifications.ts] scheduleEventNotifications for event:`, event.id, "all_day:", event.all_day, "notifications count:", event.notifications?.length);
+    console.log(`[notifications.ts] scheduleEventNotifications for event:`, event.id, "all_day:", event.all_day, "notifications count:", event.notifications?.length, "timezoneOffset:", timezoneOffset);
 
 
     if (event.all_day) {
       // 1. Night before at 8:00 PM (20:00)
-      const eventDate = parseLocalDate(event.date);
-      const nightBefore = new Date(eventDate);
-      nightBefore.setDate(nightBefore.getDate() - 1);
-      nightBefore.setHours(20, 0, 0, 0);
+      const [year, month, day] = event.date.split("-").map(Number);
+      const nightBeforeDate = new Date(year, month - 1, day);
+      nightBeforeDate.setDate(nightBeforeDate.getDate() - 1);
+      
+      const nbYear = nightBeforeDate.getFullYear();
+      const nbMonth = String(nightBeforeDate.getMonth() + 1).padStart(2, "0");
+      const nbDay = String(nightBeforeDate.getDate()).padStart(2, "0");
+      
+      const nightBeforeIso = `${nbYear}-${nbMonth}-${nbDay}T20:00:00.000${timezoneOffset}`;
+      const nightBefore = new Date(nightBeforeIso);
 
       if (nightBefore > now) {
         notificationsToSchedule.push({
@@ -58,8 +65,8 @@ export async function scheduleEventNotifications(event: Event, userId: string): 
       }
 
       // 2. Morning of at 8:00 AM (08:00)
-      const morningOf = new Date(eventDate);
-      morningOf.setHours(8, 0, 0, 0);
+      const morningOfIso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T08:00:00.000${timezoneOffset}`;
+      const morningOf = new Date(morningOfIso);
 
       if (morningOf > now) {
         notificationsToSchedule.push({
@@ -84,7 +91,7 @@ export async function scheduleEventNotifications(event: Event, userId: string): 
       }
 
       const eventTime = event.start_time || "00:00";
-      const baseDate = parseLocalDate(event.date, eventTime);
+      const baseDate = parseLocalDate(event.date, eventTime, timezoneOffset);
       console.log(`[notifications.ts] baseDate:`, baseDate, "now:", now);
       
       for (const notification of relativeNotifications) {

@@ -15,9 +15,10 @@ interface ActivityFormProps {
   onCancel: () => void;
   onDelete?: () => void;
   isDesktop?: boolean;
+  onScrollTopChange?: (atTop: boolean) => void;
 }
 
-export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDesktop = true }: ActivityFormProps) {
+export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDesktop = true, onScrollTopChange }: ActivityFormProps) {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [activityId, setActivityId] = useState<number | null>(null);
@@ -164,7 +165,10 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete, isDe
         </div>
       ) : (
         <>
-      <div className={cn("flex-1 min-h-0 overflow-y-auto", isDesktop ? "space-y-10 px-10 py-8" : "space-y-8 px-6 py-8")}>
+      <div 
+        className={cn("flex-1 min-h-0 overflow-y-auto", isDesktop ? "space-y-10 px-10 py-8" : "space-y-8 px-6 py-8")}
+        onScroll={(e) => onScrollTopChange?.(e.currentTarget.scrollTop <= 0)}
+      >
         {/* Date and Time Group */}
         <div className={cn("grid", isDesktop ? "grid-cols-2 gap-10" : "grid-cols-1 gap-6")}>
           <div className="space-y-3">

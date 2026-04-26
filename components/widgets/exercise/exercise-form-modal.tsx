@@ -48,6 +48,7 @@ export function ExerciseFormModal({ editExercise, isOpen, onOpenChange, onSave }
     muscle: "",
   });
   const [selectedGroup, setSelectedGroup] = useState<string>("");
+  const [isAtTop, setIsAtTop] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
@@ -231,7 +232,7 @@ export function ExerciseFormModal({ editExercise, isOpen, onOpenChange, onSave }
       <SheetContent side="bottom" className="rounded-t-3xl p-0 border-t-0 bg-media-surface-container-lowest overflow-hidden">
         <motion.div 
           className="flex flex-col h-full bg-media-surface-container-lowest"
-          drag="y"
+          drag={isAtTop ? "y" : false}
           dragConstraints={{ top: 0 }}
           dragElastic={0.2}
           onDragEnd={(_, info: PanInfo) => {
@@ -245,7 +246,10 @@ export function ExerciseFormModal({ editExercise, isOpen, onOpenChange, onSave }
             <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
           </div>
 
-          <div className="flex flex-col h-full p-6 pt-2 overflow-y-auto">
+          <div 
+            className="flex flex-col h-full p-6 pt-2 overflow-y-auto"
+            onScroll={(e) => setIsAtTop(e.currentTarget.scrollTop <= 0)}
+          >
         <SheetHeader className="mb-4 text-left">
           <SheetTitle>{editExercise ? "Edit Exercise" : "Add Exercise"}</SheetTitle>
            <SheetDescription>

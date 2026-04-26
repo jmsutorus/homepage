@@ -42,6 +42,7 @@ export function ParkFormDialog({
 }: ParkFormDialogProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
 
   const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
     duration: 2000,
@@ -134,7 +135,7 @@ export function ParkFormDialog({
       >
         <motion.div 
           className="flex flex-col h-full bg-media-surface-container-lowest"
-          drag="y"
+          drag={isAtTop ? "y" : false}
           dragConstraints={{ top: 0 }}
           dragElastic={0.2}
           onDragEnd={(_, info: PanInfo) => {
@@ -168,7 +169,10 @@ export function ParkFormDialog({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          <div 
+            className="flex-1 overflow-y-auto px-6 py-4 space-y-4"
+            onScroll={(e) => setIsAtTop(e.currentTarget.scrollTop <= 0)}
+          >
             <div className="space-y-2">
               <Label htmlFor="title">Park Name *</Label>
               <Input

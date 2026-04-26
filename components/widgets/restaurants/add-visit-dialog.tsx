@@ -53,6 +53,7 @@ export function AddVisitDialog({
   const [rating, setRating] = useState('');
   const [notes, setNotes] = useState('');
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [isAtTop, setIsAtTop] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,7 +185,7 @@ export function AddVisitDialog({
       >
         <motion.div 
           className="flex flex-col h-full font-lexend bg-media-surface-container-lowest"
-          drag="y"
+          drag={isAtTop ? "y" : false}
           dragConstraints={{ top: 0 }}
           dragElastic={0.2}
           onDragEnd={(_, info: PanInfo) => {
@@ -206,7 +207,10 @@ export function AddVisitDialog({
             </SheetDescription>
           </SheetHeader>
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <div 
+              className="flex-1 overflow-y-auto px-6 py-4 space-y-4"
+              onScroll={(e) => setIsAtTop(e.currentTarget.scrollTop <= 0)}
+            >
               {formFields}
             </div>
             <div className="border-t px-6 py-4 bg-background">

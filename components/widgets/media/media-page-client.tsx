@@ -76,7 +76,7 @@ export function MediaPageClient({
 }: MediaPageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game" | "album">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game" | "album" | "planned">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("completed-desc");
   const [genreSearch, setGenreSearch] = useState("");
@@ -136,13 +136,13 @@ export function MediaPageClient({
     [initialCompletedMedia]
   );
 
-  // Build filters for paginated completed media
+  // Build filters for paginated media
   const completedFilters = useMemo(() => {
     const filters: any = {
-      status: "completed",
+      status: activeTab === "planned" ? "planned" : "completed",
       sortBy,
     };
-    if (activeTab !== "all") filters.type = activeTab;
+    if (activeTab !== "all" && activeTab !== "planned") filters.type = activeTab;
     if (searchQuery) filters.search = searchQuery;
     if (activeGenres.length > 0) filters.genres = activeGenres;
     if (activeTags.length > 0) filters.tags = activeTags;
@@ -202,7 +202,7 @@ export function MediaPageClient({
                 </div>
                 
                 <nav className="flex items-center gap-1 sm:gap-4 md:gap-8 text-xs sm:text-sm uppercase tracking-widest font-black">
-                  {(["all", "movie", "tv", "book", "game"] as const).map((tab) => (
+                  {(["all", "movie", "tv", "book", "game", "planned"] as const).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
@@ -213,7 +213,7 @@ export function MediaPageClient({
                           : "text-media-on-surface-variant dark:text-media-surface-variant/60 hover:text-media-secondary opacity-70 hover:opacity-100"
                       )}
                     >
-                      {tab === "all" ? "LIBRARY" : tab === "movie" ? "MOVIES" : tab === "tv" ? "TV" : tab === "book" ? "BOOKS" : "GAMES"}
+                      {tab === "all" ? "LIBRARY" : tab === "movie" ? "MOVIES" : tab === "tv" ? "TV" : tab === "book" ? "BOOKS" : tab === "game" ? "GAMES" : "PLANNED"}
                       {activeTab === tab && (
                         <span className="absolute bottom-0 left-0 w-full h-1 bg-media-secondary rounded-full"></span>
                       )}
@@ -314,9 +314,13 @@ export function MediaPageClient({
             <section className="mt-24">
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
                 <div>
-                  <h2 className="text-3xl font-black tracking-tight text-media-primary dark:text-media-surface mb-2">My Library</h2>
+                  <h2 className="text-3xl font-black tracking-tight text-media-primary dark:text-media-surface mb-2">
+                    {activeTab === "planned" ? "Planned Media" : "My Library"}
+                  </h2>
                   <p className="text-media-on-surface-variant font-medium">
-                    Everything you&apos;ve finished, organized and rated.
+                    {activeTab === "planned" 
+                      ? "Media you are planning to experience." 
+                      : "Everything you've finished, organized and rated."}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -333,7 +337,9 @@ export function MediaPageClient({
                 emptyMessage={
                   searchQuery
                     ? `No results found for "${searchQuery}"`
-                    : "No completed media found"
+                    : activeTab === "planned"
+                      ? "No planned media found"
+                      : "No completed media found"
                 }
               />
             </section>

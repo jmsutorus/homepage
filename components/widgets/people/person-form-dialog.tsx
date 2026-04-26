@@ -33,9 +33,10 @@ interface PersonFormProps {
   onSaved: () => void;
   onCancel: () => void;
   isDesktop?: boolean;
+  onScrollTopChange?: (atTop: boolean) => void;
 }
 
-export function PersonForm({ editingPerson, onSaved, onCancel, isDesktop = true }: PersonFormProps) {
+export function PersonForm({ editingPerson, onSaved, onCancel, isDesktop = true, onScrollTopChange }: PersonFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [photoMode, setPhotoMode] = useState<"upload" | "url">("upload");
@@ -227,7 +228,10 @@ export function PersonForm({ editingPerson, onSaved, onCancel, isDesktop = true 
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-      <div className={cn("flex-1 overflow-y-auto custom-scrollbar space-y-10", isDesktop ? "p-8" : "p-6")}>
+      <div 
+        className={cn("flex-1 overflow-y-auto custom-scrollbar space-y-10", isDesktop ? "p-8" : "p-6")}
+        onScroll={(e) => onScrollTopChange?.(e.currentTarget.scrollTop <= 0)}
+      >
         {/* Section: Basic Information */}
         <div className="space-y-6">
           <div className="flex items-center gap-2 border-b border-media-outline-variant/20 pb-2">
@@ -601,6 +605,7 @@ export function PersonForm({ editingPerson, onSaved, onCancel, isDesktop = true 
 
 export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess }: PersonFormDialogProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [isAtTop, setIsAtTop] = useState(true);
 
   const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
     duration: 2000,
@@ -647,6 +652,7 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
       onSaved={handleSaved}
       onCancel={() => onOpenChange(false)}
       isDesktop={isDesktop}
+      onScrollTopChange={setIsAtTop}
     />
   );
 
@@ -696,7 +702,7 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
       >
         <motion.div 
           className="flex flex-col h-full bg-media-surface-container-lowest"
-          drag="y"
+          drag={isAtTop ? "y" : false}
           dragConstraints={{ top: 0 }}
           dragElastic={0.2}
           onDragEnd={(_, info: PanInfo) => {

@@ -144,6 +144,7 @@ export function PaginatedMediaGrid({
     }
 
     // Reset state for new fetch
+    setItems([]);
     setPage(1);
     setError(null);
     prefetchedPageRef.current = null;

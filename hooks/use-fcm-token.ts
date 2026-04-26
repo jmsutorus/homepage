@@ -1,24 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import app from "@/lib/firebase/client";
 
-
-
 export function useFCMToken() {
+  const [permission, setPermission] = useState<NotificationPermission>("default");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPermission(Notification.permission);
+    }
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (permission !== "granted") return;
 
     const registerFCMToken = async () => {
       try {
-        // 1. Request Permission
-        if (Notification.permission === "default") {
-          await Notification.requestPermission();
-        }
-
-        if (Notification.permission !== "granted") {
-          console.warn("FCM push permissions were denied.");
-          return;
-        }
-
         const { getMessaging, isSupported } = await import("firebase/messaging");
         const supported = await isSupported();
         if (!supported) {
@@ -41,7 +38,6 @@ export function useFCMToken() {
         let swRegistration: ServiceWorkerRegistration | undefined;
         if ("serviceWorker" in navigator) {
           // 1. Clean up old standalone firebase-messaging-sw.js registrations if they exist.
-          // This prevents both the main PWA worker and the standalone worker from firing push events.
           const allRegistrations = await navigator.serviceWorker.getRegistrations();
           for (const reg of allRegistrations) {
             const scriptUrl = reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL || "";
@@ -61,7 +57,6 @@ export function useFCMToken() {
             );
           }
 
-
           // Await activation if a worker is currently installing or waiting
           const sw =
             swRegistration.installing ??
@@ -80,8 +75,6 @@ export function useFCMToken() {
           }
         }
 
-
-
         const token = await getToken(messaging, {
           vapidKey,
           serviceWorkerRegistration: swRegistration,
@@ -99,8 +92,6 @@ export function useFCMToken() {
           });
           console.log("FCM token registered successfully.");
 
-          // Handle foreground notifications — onBackgroundMessage in the SW
-          // only fires when the tab is not in focus. onMessage catches the rest.
           onMessage(messaging, (payload) => {
             const title = payload.notification?.title ?? "Notification";
             const body = payload.notification?.body ?? "";
@@ -118,6 +109,20 @@ export function useFCMToken() {
     };
 
     registerFCMToken();
-  }, []);
+  }, [permission]);
+
+  const requestPermission = async () => {
+    if (typeof window === "undefined") return "default";
+    try {
+      const result = await Notification.requestPermission();
+      setPermission(result);
+      return result;
+    } catch (error) {
+      console.error("Failed to request notification permission:", error);
+      return "default";
+    }
+  };
+
+  return { permission, requestPermission };
 }
 

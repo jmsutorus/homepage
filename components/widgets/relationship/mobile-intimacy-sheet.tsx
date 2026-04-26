@@ -94,6 +94,8 @@ export function MobileIntimacySheet({ open, onOpenChange, onEntryAdded }: Mobile
     }
   };
 
+  const [isAtTop, setIsAtTop] = useState(true);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -103,7 +105,7 @@ export function MobileIntimacySheet({ open, onOpenChange, onEntryAdded }: Mobile
       >
         <motion.div 
           className="flex flex-col h-full font-lexend bg-media-surface-container-lowest"
-          drag="y"
+          drag={isAtTop ? "y" : false}
           dragConstraints={{ top: 0 }}
           dragElastic={0.2}
           onDragEnd={(_, info: PanInfo) => {
@@ -126,7 +128,10 @@ export function MobileIntimacySheet({ open, onOpenChange, onEntryAdded }: Mobile
           </SheetHeader>
 
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8">
+            <div 
+              className="flex-1 overflow-y-auto px-6 py-8 space-y-8"
+              onScroll={(e) => setIsAtTop(e.currentTarget.scrollTop <= 0)}
+            >
               {/* Date and Time Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-3">

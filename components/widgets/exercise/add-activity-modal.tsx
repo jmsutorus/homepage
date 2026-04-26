@@ -33,6 +33,7 @@ export function AddActivityModal({
 }: AddActivityModalProps) {
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [isAtTop, setIsAtTop] = useState(true);
 
   // Use controlled open state if provided
   const isModalOpen = isOpen !== undefined ? isOpen : open;
@@ -116,6 +117,7 @@ export function AddActivityModal({
           onCancel={() => setIsModalOpen(false)} 
           onDelete={editActivity ? handleDelete : undefined}
           isDesktop={isDesktop}
+          onScrollTopChange={setIsAtTop}
         />
       )}
     </div>
@@ -165,7 +167,7 @@ export function AddActivityModal({
       >
         <motion.div 
           className="flex flex-col h-full font-lexend bg-media-surface-container-lowest"
-          drag="y"
+          drag={isAtTop ? "y" : false}
           dragConstraints={{ top: 0 }}
           dragElastic={0.2}
           onDragEnd={(_, info: PanInfo) => {

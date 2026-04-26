@@ -13,6 +13,18 @@ import { useFCMToken } from "@/hooks/use-fcm-token";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useFCMToken();
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const offsetMinutes = new Date().getTimezoneOffset();
+      const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+      const remainingMinutes = Math.abs(offsetMinutes) % 60;
+      const sign = offsetMinutes > 0 ? "-" : "+"; // getTimezoneOffset returns positive for behind UTC
+      const offsetStr = `${sign}${String(offsetHours).padStart(2, "0")}:${String(remainingMinutes).padStart(2, "0")}`;
+      document.cookie = `timezone-offset=${offsetStr}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+  }, []);
+
   return (
 
     <SessionProvider>

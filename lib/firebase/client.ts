@@ -24,11 +24,12 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 
-export const getClientMessaging = () => {
+export const getClientMessaging = async () => {
   if (typeof window === "undefined") return null;
-  const { getMessaging } = require("firebase/messaging");
+  const { getMessaging } = await import("firebase/messaging");
   return getMessaging(app);
 };
+
 
 export default app;
 
