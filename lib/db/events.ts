@@ -27,6 +27,7 @@ export interface Event {
   end_date: string | null; // YYYY-MM-DD format - for multi-day events
   category: string | null;
   notifications: EventNotification[];
+  notification_setting: string | null;
   content: string | null; // Markdown content
   created_at: string;
   updated_at: string;
@@ -44,6 +45,7 @@ export interface CreateEventInput {
   end_date?: string;
   category?: string;
   notifications?: EventNotification[];
+  notification_setting?: string;
   content?: string;
 }
 
@@ -59,6 +61,7 @@ export interface UpdateEventInput {
   end_date?: string;
   category?: string;
   notifications?: EventNotification[];
+  notification_setting?: string | null;
   content?: string;
 }
 
@@ -140,6 +143,7 @@ interface DBEvent {
   end_date: string | null;
   category: string | null;
   notifications: string | null;
+  notification_setting: string | null;
   content: string | null;
   created_at: string;
   updated_at: string;
@@ -150,6 +154,7 @@ function transformEvent(row: DBEvent): Event {
     ...row,
     all_day: Boolean(row.all_day),
     notifications: deserializeNotifications(row.notifications || "[]"),
+    notification_setting: row.notification_setting || null,
   };
 }
 
@@ -159,8 +164,8 @@ function transformEvent(row: DBEvent): Event {
 export async function createEvent(input: CreateEventInput, userId: string): Promise<Event> {
   const result = await execute(
     `INSERT INTO events (
-      userId, slug, title, description, location, date, start_time, end_time, all_day, end_date, category, notifications, content
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      userId, slug, title, description, location, date, start_time, end_time, all_day, end_date, category, notifications, notification_setting, content
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       input.slug,
@@ -174,6 +179,7 @@ export async function createEvent(input: CreateEventInput, userId: string): Prom
       input.end_date || null,
       input.category || null,
       serializeNotifications(input.notifications),
+      input.notification_setting || null,
       input.content || null,
     ]
   );
@@ -368,6 +374,11 @@ export async function updateEvent(id: number, userId: string, updates: UpdateEve
   if (updates.notifications !== undefined) {
     fields.push("notifications = ?");
     params.push(serializeNotifications(updates.notifications));
+  }
+
+  if (updates.notification_setting !== undefined) {
+    fields.push("notification_setting = ?");
+    params.push(updates.notification_setting || null);
   }
 
   if (updates.slug !== undefined) {

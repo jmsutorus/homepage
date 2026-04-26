@@ -43,6 +43,9 @@ export function CreateEventClient() {
     end_date: '',
     category: '',
     content: '',
+    notification_setting: '',
+    custom_notification_date: '',
+    custom_notification_time: '',
   });
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -70,6 +73,15 @@ export function CreateEventClient() {
       return;
     }
 
+    let finalSetting = form.notification_setting;
+    if (form.notification_setting === 'custom') {
+      if (form.custom_notification_date && form.custom_notification_time) {
+        finalSetting = `${form.custom_notification_date}T${form.custom_notification_time}:00.000Z`;
+      } else {
+        finalSetting = ''; // Default
+      }
+    }
+
     setIsSaving(true);
     try {
       const response = await fetch('/api/events', {
@@ -84,6 +96,7 @@ export function CreateEventClient() {
           end_date: form.end_date || null,
           category: form.category || null,
           content: form.content || null,
+          notification_setting: finalSetting || null,
         }),
       });
 
@@ -298,6 +311,60 @@ export function CreateEventClient() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Notification */}
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="notification_setting" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">
+                    Notification Setting (Default: {form.all_day ? 'Day of event' : '1 hour before'})
+                  </Label>
+                  <select
+                    id="notification_setting"
+                    value={form.notification_setting}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setForm({ 
+                        ...form, 
+                        notification_setting: val,
+                        custom_notification_date: val === 'custom' ? form.date : form.custom_notification_date,
+                        custom_notification_time: val === 'custom' ? (form.start_time || '08:00') : form.custom_notification_time
+                      });
+                    }}
+                    className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12 w-full px-4 text-sm text-media-on-surface"
+                  >
+                    <option value="">Default ({form.all_day ? 'Day of event' : '1 hour before'})</option>
+                    <option value="day_of">The day of the event</option>
+                    <option value="day_before">The day before the event</option>
+                    <option value="1_hour_before">1 hour before the event</option>
+                    <option value="15_minutes_before">15 minutes before the event</option>
+                    <option value="custom">Custom date & time</option>
+                    <option value="none">Remove notification</option>
+                  </select>
+                </div>
+
+                {form.notification_setting === 'custom' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="custom_notification_date" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Custom Notification Date</Label>
+                      <Input
+                        id="custom_notification_date"
+                        type="date"
+                        value={form.custom_notification_date}
+                        onChange={(e) => setForm({ ...form, custom_notification_date: e.target.value })}
+                        className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="custom_notification_time" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Custom Notification Time</Label>
+                      <Input
+                        id="custom_notification_time"
+                        type="time"
+                        value={form.custom_notification_time}
+                        onChange={(e) => setForm({ ...form, custom_notification_time: e.target.value })}
+                        className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </section>

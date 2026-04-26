@@ -9,6 +9,8 @@ import {
 } from "@/lib/db/events";
 import { requireAuthApi } from "@/lib/auth/server";
 import { getAdminStorage } from "@/lib/firebase/admin";
+import { scheduleEventNotifications, cancelEventNotifications } from "@/lib/firebase/notifications";
+import { cookies } from "next/headers";
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -74,6 +76,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (body.end_date !== undefined) updates.end_date = body.end_date;
     if (body.category !== undefined) updates.category = body.category;
     if (body.notifications !== undefined) updates.notifications = body.notifications;
+    if (body.notification_setting !== undefined) updates.notification_setting = body.notification_setting;
     if (body.slug !== undefined) updates.slug = body.slug;
     if (body.content !== undefined) updates.content = body.content;
 
@@ -89,6 +92,18 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Return updated event data
     const updatedSlug = body.slug || slug;
     const updatedData = await getEventWithDetails(updatedSlug, userId);
+
+    if (updatedData && updatedData.event) {
+      try {
+        await cancelEventNotifications(updatedData.event.id, userId);
+        const cookieStore = await cookies();
+        const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+        await scheduleEventNotifications(updatedData.event, userId, timezoneOffset);
+      } catch (e) {
+        console.error("Failed to update notifications for event:", e);
+      }
+    }
+
     return NextResponse.json(updatedData);
   } catch (error) {
     console.error("Error updating event:", error);
@@ -147,6 +162,12 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     if (!success) {
       return NextResponse.json({ error: "Failed to delete event" }, { status: 500 });
+    }
+
+    try {
+      await cancelEventNotifications(event.id, userId);
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted event:", e);
     }
 
     return NextResponse.json({ success: true });

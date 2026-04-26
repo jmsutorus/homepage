@@ -33,113 +33,116 @@ export async function scheduleEventNotifications(event: Event, userId: string, t
     const notificationsToSchedule: Omit<NotificationDocument, 'id'>[] = [];
     const now = new Date();
     
-    console.log(`[notifications.ts] scheduleEventNotifications for event:`, event.id, "all_day:", event.all_day, "notifications count:", event.notifications?.length, "timezoneOffset:", timezoneOffset);
+    console.log(`[notifications.ts] scheduleEventNotifications for event:`, event.id, "all_day:", event.all_day, "notification_setting:", event.notification_setting, "timezoneOffset:", timezoneOffset);
 
+    // If setting is explicitly 'none', do not schedule any notifications
+    if (event.notification_setting === 'none') {
+      console.log(`[notifications.ts] notifications disabled for event ${event.id}`);
+      return;
+    }
 
-    if (event.all_day) {
-      // 1. Night before at 8:00 PM (20:00)
-      const [year, month, day] = event.date.split("-").map(Number);
-      const nightBeforeDate = new Date(year, month - 1, day);
-      nightBeforeDate.setDate(nightBeforeDate.getDate() - 1);
-      
-      const nbYear = nightBeforeDate.getFullYear();
-      const nbMonth = String(nightBeforeDate.getMonth() + 1).padStart(2, "0");
-      const nbDay = String(nightBeforeDate.getDate()).padStart(2, "0");
-      
-      const nightBeforeIso = `${nbYear}-${nbMonth}-${nbDay}T20:00:00.000${timezoneOffset}`;
-      const nightBefore = new Date(nightBeforeIso);
+    // Determine the setting to use: if null/empty, use the default
+    const setting = event.notification_setting || (event.all_day ? 'day_of' : '1_hour_before');
 
-      if (nightBefore > now) {
-        notificationsToSchedule.push({
-          userId,
-          title: `Tomorrow: ${event.title}`,
-          body: event.description || "All-day event tomorrow",
-          sourceType: 'event',
-          sourceId: event.id,
-          scheduledAt: Timestamp.fromDate(nightBefore),
-          status: 'pending',
-          clickAction: `/events/${event.slug}`,
+    let scheduledAtDate: Date | null = null;
+    let notificationTitle = event.title;
+    let notificationBody = event.description || "Event notification";
 
-          createdAt: Timestamp.now(),
-          updatedAt: Timestamp.now(),
-        });
-      }
-
-      // 2. Morning of at 8:00 AM (08:00)
-      const morningOfIso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T08:00:00.000${timezoneOffset}`;
-      const morningOf = new Date(morningOfIso);
-
-      if (morningOf > now) {
-        notificationsToSchedule.push({
-          userId,
-          title: `Today: ${event.title}`,
-          body: event.description || "All-day event today",
-          sourceType: 'event',
-          sourceId: event.id,
-          scheduledAt: Timestamp.fromDate(morningOf),
-          status: 'pending',
-          clickAction: `/events/${event.slug}`,
-
-          createdAt: Timestamp.now(),
-          updatedAt: Timestamp.now(),
-        });
+    // Calculate scheduled date and format the message
+    if (setting.includes("T")) {
+      // Custom date-time ISO string
+      try {
+        // Strip 'Z' if present and apply the user's local timezone offset
+        const cleanSetting = setting.replace('Z', '');
+        scheduledAtDate = new Date(`${cleanSetting}${timezoneOffset}`);
+      } catch {
+        scheduledAtDate = null;
       }
     } else {
-      // Standard timed event
-      const relativeNotifications = [...(event.notifications || [])];
-      const has30Min = relativeNotifications.some(n => n.time === 30 && n.timeObject === 'minutes');
-      if (!has30Min) {
-        relativeNotifications.push({ type: 'push', time: 30, timeObject: 'minutes' });
-      }
-
       const eventTime = event.start_time || "00:00";
       const baseDate = parseLocalDate(event.date, eventTime, timezoneOffset);
-      console.log(`[notifications.ts] baseDate:`, baseDate, "now:", now);
-      
-      for (const notification of relativeNotifications) {
 
-        let intervalMs = 0;
-        const timeValue = notification.time;
+      if (event.all_day) {
+        const [year, month, day] = event.date.split("-").map(Number);
+        const dayOfDate = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T08:00:00.000${timezoneOffset}`);
 
-
-        switch (notification.timeObject) {
-          case 'minutes':
-            intervalMs = timeValue * 60 * 1000;
+        switch (setting) {
+          case 'day_of':
+            scheduledAtDate = dayOfDate;
+            notificationTitle = `Today: ${event.title}`;
+            notificationBody = event.description || "All-day event today";
             break;
-          case 'hours':
-            intervalMs = timeValue * 60 * 60 * 1000;
+          case 'day_before':
+            const dayBefore = new Date(dayOfDate);
+            dayBefore.setDate(dayBefore.getDate() - 1);
+            scheduledAtDate = dayBefore;
+            notificationTitle = `Tomorrow: ${event.title}`;
+            notificationBody = event.description || "All-day event tomorrow";
             break;
-          case 'days':
-            intervalMs = timeValue * 24 * 60 * 60 * 1000;
+          case '1_hour_before':
+            const hourBefore = new Date(dayOfDate);
+            hourBefore.setHours(hourBefore.getHours() - 1);
+            scheduledAtDate = hourBefore;
+            notificationBody = `Starts in 1 hour`;
             break;
-          case 'weeks':
-            intervalMs = timeValue * 7 * 24 * 60 * 60 * 1000;
+          case '15_minutes_before':
+            const minsBefore = new Date(dayOfDate);
+            minsBefore.setMinutes(minsBefore.getMinutes() - 15);
+            scheduledAtDate = minsBefore;
+            notificationBody = `Starts in 15 minutes`;
             break;
           default:
-            console.warn(`Unknown notification timeObject: ${notification.timeObject}`);
-            continue;
+            scheduledAtDate = dayOfDate;
+            notificationTitle = `Today: ${event.title}`;
+            notificationBody = event.description || "All-day event today";
         }
-
-        const scheduledAtDate = new Date(baseDate.getTime() - intervalMs);
-        console.log(`[notifications.ts] scheduledAtDate:`, scheduledAtDate, "is future:", scheduledAtDate > now);
-
-        if (scheduledAtDate > now) {
-
-          notificationsToSchedule.push({
-            userId,
-            title: event.title,
-            body: `Starts in ${timeValue} ${notification.timeObject} (at ${eventTime})`,
-            sourceType: 'event',
-            sourceId: event.id,
-            scheduledAt: Timestamp.fromDate(scheduledAtDate),
-            status: 'pending',
-            clickAction: `/events/${event.slug}`,
-
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-          });
+      } else {
+        switch (setting) {
+          case 'day_of':
+            scheduledAtDate = baseDate;
+            notificationBody = `Starts now (at ${eventTime})`;
+            break;
+          case 'day_before':
+            const dayBefore = new Date(baseDate);
+            dayBefore.setDate(dayBefore.getDate() - 1);
+            scheduledAtDate = dayBefore;
+            notificationTitle = `Tomorrow: ${event.title}`;
+            notificationBody = `Starts at ${eventTime}`;
+            break;
+          case '1_hour_before':
+            const hourBefore = new Date(baseDate);
+            hourBefore.setHours(hourBefore.getHours() - 1);
+            scheduledAtDate = hourBefore;
+            notificationBody = `Starts in 1 hour (at ${eventTime})`;
+            break;
+          case '15_minutes_before':
+            const minsBefore = new Date(baseDate);
+            minsBefore.setMinutes(minsBefore.getMinutes() - 15);
+            scheduledAtDate = minsBefore;
+            notificationBody = `Starts in 15 minutes (at ${eventTime})`;
+            break;
+          default:
+            const defHourBefore = new Date(baseDate);
+            defHourBefore.setHours(defHourBefore.getHours() - 1);
+            scheduledAtDate = defHourBefore;
+            notificationBody = `Starts in 1 hour (at ${eventTime})`;
         }
       }
+    }
+
+    if (scheduledAtDate && scheduledAtDate > now) {
+      notificationsToSchedule.push({
+        userId,
+        title: notificationTitle,
+        body: notificationBody,
+        sourceType: 'event',
+        sourceId: event.id,
+        scheduledAt: Timestamp.fromDate(scheduledAtDate),
+        status: 'pending',
+        clickAction: `/events/${event.slug}`,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      });
     }
 
     if (notificationsToSchedule.length === 0) return;

@@ -8,6 +8,7 @@ import { AchievementToastListener } from "@/components/widgets/achievements/achi
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { UpdatePrompt } from "@/components/pwa/update-prompt";
 import { SyncStatus } from "@/components/pwa/sync-status";
+import { IOSPwaPushPrompt } from "@/components/pwa/ios-pwa-push-prompt";
 
 import { useFCMToken } from "@/hooks/use-fcm-token";
 
@@ -40,6 +41,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <InstallPrompt />
         <UpdatePrompt />
         <SyncStatus />
+        <IOSPwaPushPrompt />
       </ThemeProvider>
     </SessionProvider>
   );

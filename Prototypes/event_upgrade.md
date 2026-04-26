@@ -4,7 +4,8 @@
     - The day of the event
     - The day before the event
     - 1 hour before the event
-    - 5 minutes before the event
+    - 15 minutes before the event
+- They should also be able to set a custom date and time
 - If the user does not set a custom date and time, then use the already set default.
 - Inform users of the default on the page.
 - On the event detail page inform user of when the notification will go off.

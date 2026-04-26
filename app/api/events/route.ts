@@ -163,6 +163,7 @@ export async function POST(request: NextRequest) {
       end_date: body.end_date,
       category: body.category,
       notifications: body.notifications || [],
+      notification_setting: body.notification_setting,
       content: body.content,
     };
 
@@ -223,6 +224,7 @@ export async function PATCH(request: NextRequest) {
     if (body.end_date !== undefined) updates.end_date = body.end_date;
     if (body.category !== undefined) updates.category = body.category;
     if (body.notifications !== undefined) updates.notifications = body.notifications;
+    if (body.notification_setting !== undefined) updates.notification_setting = body.notification_setting;
     if (body.slug !== undefined) updates.slug = body.slug;
     if (body.content !== undefined) updates.content = body.content;
 

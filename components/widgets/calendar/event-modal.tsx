@@ -27,6 +27,7 @@ export interface EventFormData {
   all_day: boolean;
   end_date: string;
   notifications: EventNotification[];
+  notification_setting?: string | null;
 }
 
 export function EventModal({
@@ -47,6 +48,7 @@ export function EventModal({
     all_day: false,
     end_date: "",
     notifications: [],
+    notification_setting: "",
   });
   const [categories, setCategories] = useState<EventCategory[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -90,6 +92,7 @@ export function EventModal({
         all_day: event.all_day,
         end_date: event.end_date || "",
         notifications: event.notifications || [],
+        notification_setting: event.notification_setting || "",
       });
     } else {
       setFormData({
@@ -103,6 +106,7 @@ export function EventModal({
         all_day: false,
         end_date: "",
         notifications: [],
+        notification_setting: "",
       });
     }
   }, [event, date]);
@@ -121,9 +125,23 @@ export function EventModal({
       return;
     }
 
+    let finalSetting = formData.notification_setting;
+    if (formData.notification_setting === 'custom') {
+      finalSetting = null; // Use already set default if custom is chosen but not filled
+    } else if (formData.notification_setting && formData.notification_setting.includes('T')) {
+      // Validate custom date
+      const parts = formData.notification_setting.split('T');
+      if (!parts[0] || !parts[1] || parts[1].startsWith('00:00:00.000Z')) {
+        finalSetting = null; // Use already set default
+      }
+    }
+
     setIsSaving(true);
     try {
-      await onSave(formData);
+      await onSave({
+        ...formData,
+        notification_setting: finalSetting || null,
+      });
       // Show success animation for create, close immediately for edit
       if (event) {
         onOpenChange(false);
@@ -308,6 +326,57 @@ export function EventModal({
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Notification Section */}
+                  <div className="space-y-4 pt-4">
+                    <label className="text-[10px] font-bold text-media-on-surface-variant uppercase tracking-widest block">
+                      Notification Setting (Default: {formData.all_day ? 'Day of event' : '1 hour before'})
+                    </label>
+                    <select
+                      className="w-full bg-media-surface-container border-2 border-transparent rounded-lg p-4 text-sm focus:ring-0 focus:border-media-secondary outline-none transition-all text-media-on-surface"
+                      value={formData.notification_setting && formData.notification_setting.includes('T') ? 'custom' : (formData.notification_setting || '')}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === 'custom') {
+                          const targetTime = formData.start_time || '08:00';
+                          handleChange("notification_setting", `${formData.date}T${targetTime}:00.000Z`);
+                        } else {
+                          handleChange("notification_setting", val);
+                        }
+                      }}
+                    >
+                      <option value="">Default ({formData.all_day ? 'Day of event' : '1 hour before'})</option>
+                      <option value="day_of">The day of the event</option>
+                      <option value="day_before">The day before the event</option>
+                      <option value="1_hour_before">1 hour before the event</option>
+                      <option value="15_minutes_before">15 minutes before the event</option>
+                      <option value="custom">Custom date & time</option>
+                      <option value="none">Remove notification</option>
+                    </select>
+
+                    {(formData.notification_setting === 'custom' || (formData.notification_setting && formData.notification_setting.includes('T'))) && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                        <input
+                          className="w-full bg-media-surface-container border-2 border-transparent rounded-lg p-4 text-sm focus:ring-0 focus:border-media-secondary outline-none transition-all text-media-on-surface"
+                          type="date"
+                          value={(formData.notification_setting && formData.notification_setting.includes('T')) ? formData.notification_setting.split('T')[0] : ''}
+                          onChange={(e) => {
+                            const prevTime = (formData.notification_setting && formData.notification_setting.includes('T')) ? formData.notification_setting.split('T')[1] : '00:00:00.000Z';
+                            handleChange("notification_setting", `${e.target.value}T${prevTime}`);
+                          }}
+                        />
+                        <input
+                          className="w-full bg-media-surface-container border-2 border-transparent rounded-lg p-4 text-sm focus:ring-0 focus:border-media-secondary outline-none transition-all text-media-on-surface"
+                          type="time"
+                          value={(formData.notification_setting && formData.notification_setting.includes('T')) ? formData.notification_setting.split('T')[1].substring(0, 5) : ''}
+                          onChange={(e) => {
+                            const prevDate = (formData.notification_setting && formData.notification_setting.includes('T')) ? formData.notification_setting.split('T')[0] : new Date().toISOString().split('T')[0];
+                            handleChange("notification_setting", `${prevDate}T${e.target.value}:00.000Z`);
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

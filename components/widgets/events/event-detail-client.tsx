@@ -63,6 +63,9 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
     end_date: event.end_date || '',
     category: event.category || '',
     content: event.content || '',
+    notification_setting: event.notification_setting || '',
+    custom_notification_date: (event.notification_setting && event.notification_setting.includes('T')) ? event.notification_setting.split('T')[0] : '',
+    custom_notification_time: (event.notification_setting && event.notification_setting.includes('T')) ? event.notification_setting.split('T')[1].substring(0, 5) : '',
   });
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -152,6 +155,9 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
       end_date: event.end_date || '',
       category: event.category || '',
       content: event.content || '',
+      notification_setting: event.notification_setting || '',
+      custom_notification_date: (event.notification_setting && event.notification_setting.includes('T')) ? event.notification_setting.split('T')[0] : '',
+      custom_notification_time: (event.notification_setting && event.notification_setting.includes('T')) ? event.notification_setting.split('T')[1].substring(0, 5) : '',
     });
     setIsEditing(true);
   };
@@ -162,6 +168,15 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
 
   const handleSaveEdit = async () => {
     setIsSaving(true);
+    let finalSetting = editForm.notification_setting;
+    if (editForm.notification_setting === 'custom' || (editForm.notification_setting && editForm.notification_setting.includes('T'))) {
+      if (editForm.custom_notification_date && editForm.custom_notification_time) {
+        finalSetting = `${editForm.custom_notification_date}T${editForm.custom_notification_time}:00.000Z`;
+      } else {
+        finalSetting = ''; // Use already set default
+      }
+    }
+
     try {
       const response = await fetch(`/api/events/${event.slug}`, {
         method: 'PUT',
@@ -175,6 +190,7 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
           end_date: editForm.end_date || null,
           category: editForm.category || null,
           content: editForm.content || null,
+          notification_setting: finalSetting || null,
         }),
       });
 
@@ -213,6 +229,30 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
       const newCursorPos = start + before.length + selectedText.length;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
+  };
+
+  const getNotificationText = (setting: string | null, isAllDay: boolean) => {
+    if (setting === 'none') return 'Notifications removed';
+    
+    // If not explicitly set or empty, use default
+    const actualSetting = setting || (isAllDay ? 'day_of' : '1_hour_before');
+    
+    if (actualSetting === 'day_of') return isAllDay ? 'Notification: Day of event (8:00 AM)' : 'Notification: At event start';
+    if (actualSetting === 'day_before') return isAllDay ? 'Notification: Day before event (8:00 AM)' : 'Notification: 24 hours before';
+    if (actualSetting === '1_hour_before') return 'Notification: 1 hour before';
+    if (actualSetting === '15_minutes_before') return 'Notification: 15 minutes before';
+    
+    // Custom date
+    if (actualSetting.includes('T')) {
+      try {
+        const date = new Date(actualSetting);
+        return `Notification: ${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'})}`;
+      } catch {
+        return 'Notification: Custom';
+      }
+    }
+    
+    return isAllDay ? 'Notification: Day of event' : 'Notification: 1 hour before';
   };
 
   const formatDate = (dateStr: string) => {
@@ -390,6 +430,59 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                     />
                     <Label htmlFor="all_day" className="cursor-pointer text-sm font-medium">All day duration</Label>
                   </div>
+
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="notification_setting" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">
+                      Notification Setting (Default: {editForm.all_day ? 'Day of event' : '1 hour before'})
+                    </Label>
+                    <select
+                      id="notification_setting"
+                      value={editForm.notification_setting && editForm.notification_setting.includes('T') ? 'custom' : (editForm.notification_setting || '')}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditForm({ 
+                          ...editForm, 
+                          notification_setting: val,
+                          custom_notification_date: val === 'custom' ? editForm.date : editForm.custom_notification_date,
+                          custom_notification_time: val === 'custom' ? (editForm.start_time || '08:00') : editForm.custom_notification_time
+                        });
+                      }}
+                      className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12 w-full px-4 text-sm text-media-on-surface"
+                    >
+                      <option value="">Default ({editForm.all_day ? 'Day of event' : '1 hour before'})</option>
+                      <option value="day_of">The day of the event</option>
+                      <option value="day_before">The day before the event</option>
+                      <option value="1_hour_before">1 hour before the event</option>
+                      <option value="15_minutes_before">15 minutes before the event</option>
+                      <option value="custom">Custom date & time</option>
+                      <option value="none">Remove notification</option>
+                    </select>
+                  </div>
+
+                  {(editForm.notification_setting === 'custom' || (editForm.notification_setting && editForm.notification_setting.includes('T'))) && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="custom_notification_date" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Custom Notification Date</Label>
+                        <Input
+                          id="custom_notification_date"
+                          type="date"
+                          value={editForm.custom_notification_date}
+                          onChange={(e) => setEditForm({ ...editForm, custom_notification_date: e.target.value })}
+                          className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="custom_notification_time" className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Custom Notification Time</Label>
+                        <Input
+                          id="custom_notification_time"
+                          type="time"
+                          value={editForm.custom_notification_time}
+                          onChange={(e) => setEditForm({ ...editForm, custom_notification_time: e.target.value })}
+                          className="bg-media-surface border-media-outline-variant focus:ring-media-primary rounded-xl h-12"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </section>
@@ -483,6 +576,34 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                         <span className="hover:underline underline-offset-4">{event.location}</span>
                       </a>
                     )}
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-media-secondary" style={{ fontSize: '20px' }}>
+                        {event.notification_setting === 'none' ? 'notifications_off' : 'notifications'}
+                      </span>
+                      <span>{getNotificationText(event.notification_setting, event.all_day)}</span>
+                      {event.notification_setting !== 'none' && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(`/api/events/${event.slug}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ notification_setting: 'none' }),
+                              });
+                              if (response.ok) {
+                                const updatedData = await response.json();
+                                setData(updatedData);
+                              }
+                            } catch (error) {
+                              console.error('Error removing notification:', error);
+                            }
+                          }}
+                          className="ml-2 cursor-pointer text-xs text-media-secondary hover:text-white hover:underline uppercase tracking-widest font-black"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="hidden md:flex items-center gap-4">
