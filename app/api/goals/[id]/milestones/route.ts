@@ -5,6 +5,9 @@ import {
   getMilestonesByGoalId,
   createMilestone,
 } from "@/lib/db/goals";
+import { scheduleMilestoneNotifications } from "@/lib/firebase/notifications";
+import { cookies } from "next/headers";
+
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -28,13 +31,14 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     // Verify user owns the goal
-    const goal = getGoalById(goalId, userId);
+    const goal = await getGoalById(goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
 
-    const milestones = getMilestonesByGoalId(goalId);
+    const milestones = await getMilestonesByGoalId(goalId);
     return NextResponse.json(milestones);
+
   } catch (error) {
     console.error("Error fetching milestones:", error);
     return NextResponse.json(
@@ -63,7 +67,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // Verify user owns the goal
-    const goal = getGoalById(goalId, userId);
+    const goal = await getGoalById(goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
@@ -78,13 +82,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const milestone = createMilestone(goalId, {
+    const milestone = await createMilestone(goalId, {
       title: title.trim(),
       description: description?.trim() || undefined,
       target_date: target_date || undefined,
     });
 
+    try {
+      if (milestone.target_date) {
+        const cookieStore = await cookies();
+        const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+        await scheduleMilestoneNotifications(milestone, goal.slug, userId, timezoneOffset);
+      }
+    } catch (e) {
+      console.error("Failed to schedule notifications for new milestone:", e);
+    }
+
     return NextResponse.json(milestone, { status: 201 });
+
   } catch (error) {
     console.error("Error creating milestone:", error);
     return NextResponse.json(

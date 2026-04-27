@@ -6,6 +6,9 @@ import {
   updateMilestone,
   deleteMilestone,
 } from "@/lib/db/goals";
+import { scheduleMilestoneNotifications, cancelMilestoneNotifications } from "@/lib/firebase/notifications";
+import { cookies } from "next/headers";
+
 
 interface RouteContext {
   params: Promise<{ id: string; milestoneId: string }>;
@@ -63,8 +66,23 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       updates.completed = body.completed;
     }
 
-    const updatedMilestone = updateMilestone(mId, updates);
+    const updatedMilestone = await updateMilestone(mId, updates);
+
+    try {
+      const cookieStore = await cookies();
+      const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+      
+      if (!updatedMilestone.completed && updatedMilestone.target_date) {
+        await scheduleMilestoneNotifications(updatedMilestone, goal.slug, userId, timezoneOffset);
+      } else {
+        await cancelMilestoneNotifications(mId, userId);
+      }
+    } catch (e) {
+      console.error("Failed to update notifications for milestone:", e);
+    }
+
     return NextResponse.json(updatedMilestone);
+
   } catch (error) {
     console.error("Error updating milestone:", error);
     return NextResponse.json(
@@ -93,18 +111,25 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     }
 
     // Verify user owns the goal
-    const goal = getGoalById(goalId, userId);
+    const goal = await getGoalById(goalId, userId);
     if (!goal) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
 
-    const success = deleteMilestone(mId);
+    const success = await deleteMilestone(mId);
 
     if (!success) {
       return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
     }
 
+    try {
+      await cancelMilestoneNotifications(mId, userId);
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted milestone:", e);
+    }
+
     return NextResponse.json({ success: true });
+
   } catch (error) {
     console.error("Error deleting milestone:", error);
     return NextResponse.json(

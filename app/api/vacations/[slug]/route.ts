@@ -10,6 +10,8 @@ import {
 import { requireAuthApi } from "@/lib/auth/server";
 import { checkAchievement } from "@/lib/achievements";
 import { getAdminStorage } from "@/lib/firebase/admin";
+import { scheduleVacationFollowUpNotification, cancelVacationFollowUpNotification } from "@/lib/firebase/notifications";
+import { cookies } from "next/headers";
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -140,6 +142,17 @@ export async function PATCH(
       session.user.id
     );
 
+    if (updatedVacation) {
+      try {
+        await cancelVacationFollowUpNotification(updatedVacation.id, session.user.id);
+        const cookieStore = await cookies();
+        const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+        await scheduleVacationFollowUpNotification(updatedVacation, session.user.id, timezoneOffset);
+      } catch (e) {
+        console.error("Failed to update follow-up notifications for vacation:", e);
+      }
+    }
+
     // Check achievements (status changes, ratings, etc.)
     // Wrap in try-catch to prevent achievement errors from breaking the vacation update
     try {
@@ -188,6 +201,14 @@ export async function DELETE(
 
     if (!vacation) {
       return NextResponse.json({ error: "Vacation not found" }, { status: 404 });
+    }
+
+    if (vacation.status !== 'completed') {
+      try {
+        await cancelVacationFollowUpNotification(vacation.id, session.user.id);
+      } catch (e) {
+        console.error("Failed to cancel notifications for deleted vacation:", e);
+      }
     }
 
     const success = await deleteVacation(vacation.id, session.user.id);

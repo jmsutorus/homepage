@@ -142,7 +142,7 @@ export function HomeFAB({ todayStr }: HomeFABProps) {
             "material-symbols-outlined text-3xl font-bold transition-transform duration-300",
             isOpen ? "rotate-90" : ""
           )}>
-            {isOpen ? "close" : "edit_note"}
+            {isOpen ? "close" : "add"}
           </span>
         </button>
       </div>

@@ -9,6 +9,8 @@ import {
 } from "@/lib/db/vacations";
 import { requireAuthApi } from "@/lib/auth/server";
 import { checkAchievement } from "@/lib/achievements";
+import { scheduleVacationFollowUpNotification } from "@/lib/firebase/notifications";
+import { cookies } from "next/headers";
 
 /**
  * GET /api/vacations
@@ -105,6 +107,14 @@ export async function POST(request: NextRequest) {
       for (const booking of bookings) {
         await createBooking(vacation.id, booking);
       }
+    }
+
+    try {
+      const cookieStore = await cookies();
+      const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+      await scheduleVacationFollowUpNotification(vacation, session.user.id, timezoneOffset);
+    } catch (e) {
+      console.error("Failed to schedule follow-up notification for vacation:", e);
     }
 
     // Check achievements

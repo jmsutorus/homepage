@@ -31,7 +31,27 @@ import {
   toggleChecklistItemAction,
   toggleMilestoneAction,
   updateGoalAction,
+  createMilestoneAction,
 } from "@/lib/actions/goals";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+
 import { format, parseISO, isPast, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -42,6 +62,8 @@ import {
   Repeat,
   CheckSquare,
   BookOpen,
+  Plus,
+  CalendarIcon,
 } from "lucide-react";
 import type { GoalWithDetails, GoalPriority, GoalLink, GoalLinkType, GoalStatus } from "@/lib/db/goals";
 
@@ -87,6 +109,45 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [linkDetails, setLinkDetails] = useState<Map<string, LinkDetails>>(new Map());
   const [expandedMilestones, setExpandedMilestones] = useState<Set<number>>(new Set());
+  const [isAddingMilestone, setIsAddingMilestone] = useState(false);
+  const [formTitle, setFormTitle] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formTargetDate, setFormTargetDate] = useState<Date | undefined>(undefined);
+  const [formLoading, setFormLoading] = useState(false);
+
+  const handleAddMilestone = async () => {
+    if (!formTitle.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+
+    setFormLoading(true);
+    try {
+      const milestone = await createMilestoneAction(goal.id, {
+        title: formTitle.trim(),
+        description: formDescription.trim() || undefined,
+        target_date: formTargetDate
+          ? `${formTargetDate.getFullYear()}-${String(formTargetDate.getMonth() + 1).padStart(2, "0")}-${String(formTargetDate.getDate()).padStart(2, "0")}`
+          : undefined,
+      });
+
+      setGoal((prev) => ({
+        ...prev,
+        milestones: [...prev.milestones, { ...milestone, checklist: [] }],
+      }));
+      setIsAddingMilestone(false);
+      setFormTitle("");
+      setFormDescription("");
+      setFormTargetDate(undefined);
+      toast.success("Milestone added");
+    } catch (error) {
+      console.error("Error adding milestone:", error);
+      toast.error("Failed to add milestone");
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
 
   // Fetch details for linked items
   useEffect(() => {
@@ -314,13 +375,17 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
   }, [goal]);
 
   return (
-    <main className="pt-12 pb-32 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto min-h-screen font-lexend">
-      {/* Editorial Hero Section */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-end mb-20 pt-12">
-        <div className="lg:col-span-8 space-y-6">
-          <div className="flex flex-wrap gap-3 items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+    <div className="min-h-screen text-media-on-background font-lexend">
+      <main className="pt-12 pb-32 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto min-h-screen font-lexend">
+        {/* Editorial Hero Section */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-end mb-20 pt-12">
+          <div className="lg:col-span-8 space-y-6">
+            <div className="flex flex-wrap gap-3 items-center">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+
+
+
                 <button
                   className="px-3 py-1 bg-media-primary text-media-on-primary text-[10px] uppercase tracking-widest font-bold rounded-full cursor-pointer hover:opacity-90 transition-opacity"
                   disabled={isUpdatingStatus}
@@ -497,10 +562,98 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
         <div className="md:col-span-7 lg:col-span-7 bg-media-surface-container-lowest rounded-xl p-8 border border-media-outline-variant/10 shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-media-on-surface-variant">Milestones Timeline</h3>
-            <span className="text-xs font-bold text-media-primary bg-media-surface-container-high px-3 py-1 rounded-full">
-              {completedMilestones}/{goal.milestones.length}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-media-primary bg-media-surface-container-high px-3 py-1 rounded-full">
+                {completedMilestones}/{goal.milestones.length}
+              </span>
+              
+              <Dialog open={isAddingMilestone} onOpenChange={setIsAddingMilestone} modal={false}>
+                <DialogTrigger asChild>
+
+
+
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-media-primary hover:bg-media-primary/10 rounded-full cursor-pointer">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-media-surface-container border border-media-outline-variant/10 rounded-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-media-primary">Add Milestone</DialogTitle>
+                    <DialogDescription className="text-media-on-surface-variant">
+                      Break down your goal into smaller, achievable milestones.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="milestone-title" className="text-media-on-surface">Title</Label>
+                      <Input
+                        id="milestone-title"
+                        value={formTitle}
+                        onChange={(e) => setFormTitle(e.target.value)}
+                        placeholder="e.g., Complete first module"
+                        className="bg-media-surface border-media-outline-variant/20 rounded-xl text-media-on-surface"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="milestone-description" className="text-media-on-surface">Description (Optional)</Label>
+                      <Textarea
+                        id="milestone-description"
+                        value={formDescription}
+                        onChange={(e) => setFormDescription(e.target.value)}
+                        placeholder="What does this milestone involve?"
+                        rows={2}
+                        className="bg-media-surface border-media-outline-variant/20 rounded-xl text-media-on-surface"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-media-on-surface">Target Date (Optional)</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal cursor-pointer bg-media-surface border-media-outline-variant/20 rounded-xl",
+                              !formTargetDate && "text-media-outline-variant"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {formTargetDate ? format(formTargetDate, "PPP") : "Pick a date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 bg-media-surface-container border-media-outline-variant/10 rounded-xl" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={formTargetDate}
+                            onSelect={setFormTargetDate}
+                            initialFocus
+                            disabled={(date) => {
+                              if (goal.target_date && date > parseISO(goal.target_date)) return true;
+                              return false;
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {goal.target_date && (
+                        <p className="text-[10px] text-media-outline-variant">
+                          Must be on or before goal deadline: {format(parseISO(goal.target_date), "PPP")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      onClick={handleAddMilestone}
+                      disabled={formLoading || !formTitle.trim()}
+                      className="cursor-pointer bg-media-primary text-media-on-primary hover:bg-media-primary/90 rounded-xl font-bold tracking-tight px-6"
+                    >
+                      {formLoading ? "Adding..." : "Add Milestone"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
+
           
           <div className="space-y-12 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-media-outline-variant/30">
             {goal.milestones.length > 0 ? (
@@ -687,6 +840,8 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
           </div>
         </div>
       </div>
-    </main>
+      </main>
+    </div>
   );
 }
+

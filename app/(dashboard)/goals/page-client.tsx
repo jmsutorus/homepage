@@ -76,7 +76,7 @@ export function GoalsPageClient({ initialGoals }: GoalsPageClientProps) {
   }, [initialGoals]);
 
   return (
-    <div className="min-h-screen text-media-on-background transition-colors duration-500 font-lexend pb-32">
+    <div className="min-h-screen text-media-on-background transition-colors duration-500 font-lexend">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 py-12">
         {/* Cinematic Header */}
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-24">
@@ -249,17 +249,7 @@ export function GoalsPageClient({ initialGoals }: GoalsPageClientProps) {
         onApply={handleMobileFilterApply}
       />
       
-      <footer className="px-8 py-24 border-t border-media-outline-variant/10 flex flex-col items-center">
-        <div className="w-14 h-14 bg-media-secondary/5 rounded-full flex items-center justify-center mb-8 shadow-sm">
-          <Target className="text-media-secondary h-7 w-7" />
-        </div>
-        <p className="text-[10px] text-media-on-surface-variant uppercase tracking-[0.4em] font-black">Kinetic Forest Design System</p>
-        <div className="mt-10 flex gap-10 text-[10px] uppercase font-black tracking-widest text-media-secondary/60">
-          <button className="cursor-pointer hover:text-media-secondary transition-colors">Archives</button>
-          <button className="cursor-pointer hover:text-media-secondary transition-colors">Reflections</button>
-          <button className="cursor-pointer hover:text-media-secondary transition-colors">Vision</button>
-        </div>
-      </footer>
     </div>
   );
 }
+

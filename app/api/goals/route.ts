@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuthApi } from "@/lib/auth/server";
+import { scheduleGoalNotifications } from "@/lib/firebase/notifications";
+import { cookies } from "next/headers";
+
 import {
   getGoals,
   getGoalsWithProgress,
@@ -94,7 +97,18 @@ export async function POST(request: NextRequest) {
       priority: priority as GoalPriority || undefined,
     });
 
+    try {
+      if (goal.status === 'in_progress' && goal.target_date) {
+        const cookieStore = await cookies();
+        const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+        await scheduleGoalNotifications(goal, userId, timezoneOffset);
+      }
+    } catch (e) {
+      console.error("Failed to schedule notifications for new goal:", e);
+    }
+
     return NextResponse.json(goal, { status: 201 });
+
   } catch (error) {
     console.error("Error creating goal:", error);
     return NextResponse.json(

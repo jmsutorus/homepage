@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { deleteWorkoutActivity } from "@/lib/db/workout-activities";
 import { requireAuthApi } from "@/lib/auth/server";
+import { cancelWorkoutNotifications } from "@/lib/firebase/notifications";
 
 /**
  * DELETE /api/activities/[id]
@@ -27,6 +28,12 @@ export async function DELETE(
     }
 
     await deleteWorkoutActivity(activityId, userId);
+
+    try {
+      await cancelWorkoutNotifications(activityId, userId);
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted workout:", e);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

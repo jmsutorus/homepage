@@ -40,6 +40,16 @@ import {
   type GoalLinkType,
 } from "@/lib/db/goals";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import {
+  scheduleGoalNotifications,
+  cancelGoalNotifications,
+  scheduleMilestoneNotifications,
+  cancelMilestoneNotifications,
+  cancelAllGoalMilestoneNotifications,
+
+} from "@/lib/firebase/notifications";
+
 
 // ============================================================================
 // Goal Actions
@@ -96,8 +106,20 @@ export async function createGoalAction(data: {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const goal = await createGoal(session.user.id, data);
+
+  try {
+    if (goal.status === 'in_progress' && goal.target_date) {
+      const cookieStore = await cookies();
+      const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+      await scheduleGoalNotifications(goal, session.user.id, timezoneOffset);
+    }
+  } catch (e) {
+    console.error("Failed to schedule notifications for goal:", e);
+  }
+
   revalidatePath("/goals");
   return goal;
+
 }
 
 export async function updateGoalAction(id: number, data: {
@@ -114,9 +136,25 @@ export async function updateGoalAction(id: number, data: {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const goal = await updateGoal(id, session.user.id, data);
+
+  try {
+    const cookieStore = await cookies();
+    const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+    if (goal.status === 'in_progress' && goal.target_date) {
+      await scheduleGoalNotifications(goal, session.user.id, timezoneOffset);
+    } else {
+      await cancelGoalNotifications(goal.id, session.user.id);
+      await cancelAllGoalMilestoneNotifications(goal.id, session.user.id);
+
+    }
+  } catch (e) {
+    console.error("Failed to update notifications for goal:", e);
+  }
+
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return goal;
+
 }
 
 export async function deleteGoalAction(id: number): Promise<boolean> {
@@ -124,8 +162,20 @@ export async function deleteGoalAction(id: number): Promise<boolean> {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const success = await deleteGoal(id, session.user.id);
+
+  if (success) {
+    try {
+      await cancelGoalNotifications(id, session.user.id);
+      await cancelAllGoalMilestoneNotifications(id, session.user.id);
+
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted goal:", e);
+    }
+  }
+
   revalidatePath("/goals");
   return success;
+
 }
 
 export async function getAllGoalTagsAction(): Promise<string[]> {
@@ -162,9 +212,21 @@ export async function createMilestoneAction(goalId: number, data: {
   if (!goal) throw new Error("Goal not found");
 
   const milestone = await createMilestone(goalId, data);
+
+  try {
+    if (milestone.target_date) {
+      const cookieStore = await cookies();
+      const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+      await scheduleMilestoneNotifications(milestone, goal.slug, session.user.id, timezoneOffset);
+    }
+  } catch (e) {
+    console.error("Failed to schedule notifications for new milestone:", e);
+  }
+
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return milestone;
+
 }
 
 export async function updateMilestoneAction(id: number, goalId: number, data: {
@@ -181,9 +243,23 @@ export async function updateMilestoneAction(id: number, goalId: number, data: {
   if (!goal) throw new Error("Goal not found");
 
   const milestone = await updateMilestone(id, data);
+
+  try {
+    const cookieStore = await cookies();
+    const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+    if (!milestone.completed && milestone.target_date) {
+      await scheduleMilestoneNotifications(milestone, goal.slug, session.user.id, timezoneOffset);
+    } else {
+      await cancelMilestoneNotifications(milestone.id, session.user.id);
+    }
+  } catch (e) {
+    console.error("Failed to update notifications for milestone:", e);
+  }
+
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return milestone;
+
 }
 
 export async function toggleMilestoneAction(id: number, goalId: number): Promise<GoalMilestone> {
@@ -198,9 +274,23 @@ export async function toggleMilestoneAction(id: number, goalId: number): Promise
   if (!current) throw new Error("Milestone not found");
 
   const milestone = await updateMilestone(id, { completed: !current.completed });
+
+  try {
+    const cookieStore = await cookies();
+    const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+    if (!milestone.completed && milestone.target_date) {
+      await scheduleMilestoneNotifications(milestone, goal.slug, session.user.id, timezoneOffset);
+    } else {
+      await cancelMilestoneNotifications(milestone.id, session.user.id);
+    }
+  } catch (e) {
+    console.error("Failed to update notifications for milestone toggle:", e);
+  }
+
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return milestone;
+
 }
 
 export async function deleteMilestoneAction(id: number, goalId: number): Promise<boolean> {
@@ -212,9 +302,19 @@ export async function deleteMilestoneAction(id: number, goalId: number): Promise
   if (!goal) throw new Error("Goal not found");
 
   const success = await deleteMilestone(id);
+
+  if (success) {
+    try {
+      await cancelMilestoneNotifications(id, session.user.id);
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted milestone:", e);
+    }
+  }
+
   revalidatePath("/goals");
   revalidatePath(`/goals/${goal.slug}`);
   return success;
+
 }
 
 export async function reorderMilestonesAction(goalId: number, milestoneIds: number[]): Promise<boolean> {

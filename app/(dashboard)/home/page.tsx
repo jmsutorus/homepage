@@ -31,8 +31,6 @@ import { EditorialRecentTasks } from "@/components/widgets/tasks/editorial-recen
 import { EditorialDailyHabits } from "@/components/widgets/habits/editorial-daily-habits";
 import { EditorialHomeGoals } from "@/components/widgets/goals/editorial-home-goals";
 import { HomeFAB } from "./home-fab";
-import { Footer } from "@/components/layout/footer";
-
 
 export const dynamic = "force-dynamic";
 
@@ -378,11 +376,6 @@ export default async function DashboardPage({
           <div className="text-3xl font-bold text-media-primary">{totalJournals}</div>
         </div>
       </section>
-
-      {/* Footer Section */}
-      <div className="mt-24 -mx-4 md:-mx-8">
-        <Footer />
-      </div>
 
       {/* Contextual FAB for New Entry */}
 

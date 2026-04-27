@@ -9,8 +9,9 @@ import { X, CalendarIcon, Flag } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { SuccessCheck } from "@/components/ui/animations/success-check";
+import { TreeSuccess } from "@/components/ui/animations/tree-success";
 import { useRouter } from "next/navigation";
+
 import type { GoalPriority } from "@/lib/db/goals";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -64,8 +65,9 @@ export function CreateGoalForm({ open, onOpenChange, onCreated }: CreateGoalForm
         setTargetDate(undefined);
         setPriority("medium");
         onCreated?.();
-        router.push(`/goals/${goal.slug}/edit`);
-      }, 1500);
+        router.push(`/goals/${goal.slug}`);
+      }, 2500);
+
     } catch (error) {
       console.error("Failed to create goal:", error);
     } finally {
@@ -80,15 +82,16 @@ export function CreateGoalForm({ open, onOpenChange, onCreated }: CreateGoalForm
         className="p-0 border-none sm:max-w-3xl bg-media-surface-container-lowest overflow-hidden shadow-[0_32px_64px_-12px_rgba(6,27,14,0.12)] rounded-3xl max-h-[90vh] flex flex-col font-lexend"
       >
         {showSuccess ? (
-          <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <SuccessCheck size={120} />
+          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <TreeSuccess size={160} showText={false} />
             <h3 className="text-3xl font-bold text-media-primary tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-500">
               Vision Manifested
             </h3>
             <p className="text-media-on-surface-variant text-center animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
-              Opening the tactical editor to refine your trajectory...
+              Opening your tactical dashboard...
             </p>
           </div>
+
         ) : (
           <>
             {/* Premium Header */}

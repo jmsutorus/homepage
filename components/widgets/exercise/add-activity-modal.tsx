@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dumbbell, X } from "lucide-react";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
-import { SuccessCheck } from "@/components/ui/animations/success-check";
+import { TreeSuccess } from "@/components/ui/animations/tree-success";
 import { useSuccessDialog } from "@/hooks/use-success-dialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ActivityForm } from "./activity-form";
@@ -93,17 +93,8 @@ export function AddActivityModal({
   );
 
   const successContent = (
-    <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center py-20 px-10 space-y-8 animate-in fade-in slide-in-from-bottom-8">
-      <div className="relative">
-        <SuccessCheck size={160} />
-        <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
-      </div>
-      <div className="text-center space-y-3">
-        <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight">Activity Logged</h3>
-        <p className="text-media-on-surface-variant font-medium max-w-[240px]">
-          Target metrics achieved. Your progress has been documented.
-        </p>
-      </div>
+    <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center py-20 px-10 animate-in fade-in slide-in-from-bottom-8">
+      <TreeSuccess size={200} showText={false} />
     </div>
   );
 

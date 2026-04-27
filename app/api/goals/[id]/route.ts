@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuthApi } from "@/lib/auth/server";
+import { scheduleGoalNotifications, cancelGoalNotifications, cancelAllGoalMilestoneNotifications } from "@/lib/firebase/notifications";
+
+import { cookies } from "next/headers";
+
 import {
   getGoalById,
   getGoalWithDetails,
@@ -115,7 +119,24 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     const updatedGoal = await updateGoal(goalId, userId, updates);
+
+    try {
+      const cookieStore = await cookies();
+      const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+      
+      if (updatedGoal.status === 'in_progress' && updatedGoal.target_date) {
+        await scheduleGoalNotifications(updatedGoal, userId, timezoneOffset);
+      } else {
+        await cancelGoalNotifications(goalId, userId);
+        await cancelAllGoalMilestoneNotifications(goalId, userId);
+
+      }
+    } catch (e) {
+      console.error("Failed to update notifications for goal:", e);
+    }
+
     return NextResponse.json(updatedGoal);
+
   } catch (error) {
     console.error("Error updating goal:", error);
     return NextResponse.json(
@@ -148,7 +169,16 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
 
+    try {
+      await cancelGoalNotifications(goalId, userId);
+      await cancelAllGoalMilestoneNotifications(goalId, userId);
+
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted goal:", e);
+    }
+
     return NextResponse.json({ success: true });
+
   } catch (error) {
     console.error("Error deleting goal:", error);
     return NextResponse.json(

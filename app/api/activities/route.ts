@@ -6,9 +6,12 @@ import {
   deleteWorkoutActivity,
   getWorkoutActivitiesByDateRange,
   markWorkoutActivityCompleted,
+  getWorkoutActivity,
   type CreateWorkoutActivity,
 } from "@/lib/db/workout-activities";
 import { requireAuthApi } from "@/lib/auth/server";
+import { cookies } from "next/headers";
+import { scheduleWorkoutNotifications, cancelWorkoutNotifications } from "@/lib/firebase/notifications";
 
 /**
  * GET /api/activities
@@ -86,6 +89,18 @@ export async function POST(request: NextRequest) {
 
     const activityId = await createWorkoutActivity(activity, userId);
 
+    try {
+      const cookieStore = await cookies();
+      const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+      await scheduleWorkoutNotifications(
+        { id: activityId, date, time, type, completed },
+        userId,
+        timezoneOffset
+      );
+    } catch (e) {
+      console.error("Failed to schedule notifications for new workout:", e);
+    }
+
     return NextResponse.json({ success: true, id: activityId });
   } catch (error) {
     console.error("Error creating workout activity:", error);
@@ -117,6 +132,28 @@ export async function PATCH(request: NextRequest) {
 
     // Update workout activity
     await updateWorkoutActivity(id, userId, updates);
+
+    try {
+      await cancelWorkoutNotifications(id, userId);
+      const updatedWorkout = await getWorkoutActivity(id, userId);
+      if (updatedWorkout) {
+        const cookieStore = await cookies();
+        const timezoneOffset = cookieStore.get("timezone-offset")?.value || "+00:00";
+        await scheduleWorkoutNotifications(
+          {
+            id: updatedWorkout.id,
+            date: updatedWorkout.date,
+            time: updatedWorkout.time,
+            type: updatedWorkout.type,
+            completed: !!updatedWorkout.completed
+          },
+          userId,
+          timezoneOffset
+        );
+      }
+    } catch (e) {
+      console.error("Failed to update notifications for workout:", e);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -150,6 +187,12 @@ export async function PUT(request: NextRequest) {
     // Mark workout activity as completed
     await markWorkoutActivityCompleted(id, userId, completion_notes);
 
+    try {
+      await cancelWorkoutNotifications(id, userId);
+    } catch (e) {
+      console.error("Failed to cancel notifications for completed workout:", e);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error marking workout activity as complete:", error);
@@ -181,6 +224,12 @@ export async function DELETE(request: NextRequest) {
 
     // Delete workout activity
     await deleteWorkoutActivity(parseInt(id), userId);
+
+    try {
+      await cancelWorkoutNotifications(parseInt(id), userId);
+    } catch (e) {
+      console.error("Failed to cancel notifications for deleted workout:", e);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
