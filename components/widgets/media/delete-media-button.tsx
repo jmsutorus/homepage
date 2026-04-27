@@ -68,7 +68,7 @@ export function DeleteMediaButton({ slug, mediaType, className }: DeleteMediaBut
           <HomePageButton 
             disabled={isDeleting} 
             className={cn(
-              "bg-media-surface-container text-media-on-surface-variant hover:bg-media-error-container hover:text-media-on-error-container transition-all duration-300 border-none",
+              "bg-media-surface-container text-media-on-surface-variant hover:bg-media-error-container hover:text-media-on-error-container transition-all duration-300 border-none shadow-xl",
               className
             )}
             icon={<Trash2 className="w-4 h-4" />}

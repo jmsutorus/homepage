@@ -11,6 +11,7 @@ import { getUserId } from "@/lib/auth/server";
 import { cn } from "@/lib/utils";
 import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
 import { MediaProgressSlider } from "@/components/widgets/media/media-progress-slider";
+import { MediaVisibilityControls } from "@/components/widgets/media/media-visibility-controls";
 
 interface MediaDetailPageProps {
   params: Promise<{
@@ -71,6 +72,7 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
           )}
         </div>
 
+
         <div className="">
           <div className="flex items-center justify-center gap-2 mb-8 flex-wrap">
             {frontmatter.tags?.slice(0, 2).map((tag, i) => (
@@ -96,7 +98,8 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
             </p>
           )}
 
-          <div className="flex flex-wrap justify-center gap-4 mb-16">
+          <div className="flex flex-wrap justify-center items-center gap-4 mb-16">
+          
             <HomePageButton asChild variant="primary" className="bg-media-secondary h-[60px] px-8 shadow-xl">
               <Link href={`/media/${type}/${slug}/edit`} className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-base">edit</span>
@@ -108,6 +111,13 @@ export default async function MediaDetailPage({ params }: MediaDetailPageProps) 
               slug={slug} 
               mediaType={type} 
               className="h-[60px] px-8 shadow-xl font-bold uppercase tracking-widest text-[10px] gap-3"
+            />
+
+            <MediaVisibilityControls 
+              slug={slug} 
+              type={frontmatter.type} 
+              initialFeatured={frontmatter.featured || false} 
+              initialPublished={frontmatter.published !== false} 
             />
             
             {content && (

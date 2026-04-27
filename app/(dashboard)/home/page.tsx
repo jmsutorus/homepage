@@ -22,6 +22,8 @@ import { getActiveVacation, getUpcomingVacations } from "@/lib/db/vacations";
 import { getUpcomingBirthdays, getUpcomingAnniversaries } from "@/lib/db/people";
 import { UpcomingBirthdays } from "@/components/widgets/people/upcoming-birthdays";
 import { UpcomingAnniversaries } from "@/components/widgets/people/upcoming-anniversaries";
+import { getWorkoutActivitiesByDateRange } from "@/lib/db/workout-activities";
+import { UpcomingWorkoutBanner } from "@/components/widgets/exercise/upcoming-workout-banner";
 import { BirthdayBanner } from "@/components/birthday/birthday-banner";
 
 // Editorial Components
@@ -63,6 +65,8 @@ export default async function DashboardPage({
   const currentYear = params.year ? parseInt(params.year) : now.getFullYear();
   const currentMonth = params.month ? parseInt(params.month) : now.getMonth() + 1;
   const todayStr = now.toLocaleDateString("en-CA"); // YYYY-MM-DD local time
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-CA");
+  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toLocaleDateString("en-CA");
 
   const isPlexEnabledPromise = getFeatureFlag("Plex", false);
   const isSteamEnabledPromise = getFeatureFlag("Steam", false);
@@ -99,7 +103,8 @@ export default async function DashboardPage({
     userBirthdayRaw,
     session,
     upcomingBirthdaysRaw,
-    upcomingAnniversariesRaw
+    upcomingAnniversariesRaw,
+    workoutActivitiesRaw
   ] = await Promise.all([
     getHabits(userId),
     getHabitCompletions(userId, todayStr),
@@ -126,7 +131,8 @@ export default async function DashboardPage({
     ),
     sessionPromise,
     getUpcomingBirthdays(userId, 30),
-    getUpcomingAnniversaries(userId, 30)
+    getUpcomingAnniversaries(userId, 30),
+    getWorkoutActivitiesByDateRange(yesterday, tomorrow, userId)
   ]);
 
   const habits = serialize(habitsRaw);
@@ -138,6 +144,7 @@ export default async function DashboardPage({
   const upcomingVacations = serialize(upcomingVacationsRaw);
   const upcomingBirthdays = serialize(upcomingBirthdaysRaw);
   const upcomingAnniversaries = serialize(upcomingAnniversariesRaw);
+  const workoutActivities = serialize(workoutActivitiesRaw);
   const allParks = serialize(allParksRaw);
   const completedMedia = serialize(completedMediaRaw);
   const recentMediaEntries = completedMedia.slice(0, 3);
@@ -166,6 +173,7 @@ export default async function DashboardPage({
       {isBirthday && <BirthdayBanner userName={session?.user?.name} />}
       {activeVacation && <VacationModeBanner vacation={activeVacation} todayDate={todayStr} />}
       <ActionBanner />
+      <UpcomingWorkoutBanner workouts={workoutActivities} />
 
       {/* Legacy banners for people not placed in bento intentionally */}
       {(upcomingBirthdays.length > 0 || upcomingAnniversaries.length > 0) && (

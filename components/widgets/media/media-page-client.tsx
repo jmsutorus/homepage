@@ -121,7 +121,16 @@ export function MediaPageClient({
 
   // Latest featured item for Hero
   const featuredItem = useMemo(() => {
-    return allMedia.find(m => m.frontmatter.featured) || allMedia[0];
+    const featuredItems = allMedia.filter(m => m.frontmatter.featured);
+    const completedFeatured = featuredItems.filter(m => m.frontmatter.completed);
+    
+    if (completedFeatured.length > 0) {
+      return completedFeatured.sort((a, b) => 
+        (b.frontmatter.completed || "").localeCompare(a.frontmatter.completed || "")
+      )[0];
+    }
+    
+    return featuredItems[0] || allMedia[0];
   }, [allMedia]);
 
   // Convert initial completed media to MediaItem format

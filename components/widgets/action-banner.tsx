@@ -20,8 +20,6 @@ export async function ActionBanner() {
     getHabits(userId),
     getHabitCompletions(userId, today)
   ]);
-  console.log(habitCompletions);
-  console.log(habits);
 
   const hasMoodOrJournal = !!(moodEntry || dailyJournal);
   const hasActiveHabits = habits.length > 0;
@@ -45,7 +43,7 @@ export async function ActionBanner() {
         
         <Link 
           href={`/daily/${today}`}
-          className="relative z-10 shrink-0 bg-media-on-secondary text-media-secondary px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center gap-2"
+          className="relative z-10 shrink-0 bg-media-on-secondary text-media-secondary px-8 py-3 rounded-md text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center gap-2"
         >
           Check In
           <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -72,7 +70,7 @@ export async function ActionBanner() {
         
         <Link 
           href={`/daily/${today}`}
-          className="relative z-10 shrink-0 bg-media-on-secondary text-media-primary px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center gap-2"
+          className="relative z-10 shrink-0 bg-media-on-secondary text-media-primary px-8 py-3 rounded-md text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center gap-2"
         >
           View Habits
           <span className="material-symbols-outlined text-sm">arrow_forward</span>

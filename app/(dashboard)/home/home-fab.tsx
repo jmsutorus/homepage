@@ -36,31 +36,31 @@ export function HomeFAB({ todayStr }: HomeFABProps) {
       href: "/media/new", 
       label: "Add Media", 
       icon: "add_to_queue", 
-      color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" 
+      color: "bg-media-secondary/25 text-media-secondary border-media-secondary/40" 
     },
     { 
       href: "/journals/new", 
       label: "New Journal", 
       icon: "edit_note", 
-      color: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" 
+      color: "bg-media-primary/25 text-media-primary border-media-primary/40" 
     },
     { 
       href: "/vacations/new", 
       label: "Plan Vacation", 
       icon: "flight_takeoff", 
-      color: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20" 
+      color: "bg-media-tertiary/25 text-media-tertiary border-media-tertiary/40" 
     },
     { 
       href: `/daily/${todayStr}`, 
       label: "Log Mood", 
       icon: "mood", 
-      color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" 
+      color: "bg-media-primary/25 text-media-primary border-media-primary/40" 
     },
     { 
       href: "/tasks", 
       label: "Manage Tasks", 
       icon: "check_circle", 
-      color: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20" 
+      color: "bg-media-secondary/25 text-media-secondary border-media-secondary/40" 
     },
   ];
 
@@ -68,12 +68,9 @@ export function HomeFAB({ todayStr }: HomeFABProps) {
     <>
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-black/20 dark:bg-black/60 backdrop-blur-[2px] z-40 cursor-pointer"
+            className="fixed inset-0 z-40"
           />
         )}
       </AnimatePresence>

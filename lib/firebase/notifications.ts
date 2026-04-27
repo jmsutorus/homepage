@@ -154,7 +154,10 @@ export async function scheduleEventNotifications(event: Event, userId: string, t
     const followUpDate = parseLocalDate(event.end_date || event.date, "09:00", timezoneOffset);
     followUpDate.setDate(followUpDate.getDate() + 1);
 
-    if (followUpDate > now) {
+    const allowedTypes = ['family', 'holiday', 'vacation', 'event', 'concert', 'sports'];
+    const eventType = event.category?.toLowerCase() || '';
+
+    if (allowedTypes.includes(eventType) && followUpDate > now) {
       notificationsToSchedule.push({
         userId,
         title: `Memories: ${event.title}`,
