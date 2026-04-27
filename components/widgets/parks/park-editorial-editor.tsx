@@ -82,6 +82,7 @@ export function ParkEditorialEditor({
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [savedPath, setSavedPath] = useState<string | null>(null);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
 
 
   // Helper function to convert ISO date to YYYY-MM-DD format
@@ -607,8 +608,27 @@ export function ParkEditorialEditor({
               </div>
             </section>
 
+            {/* Mobile Toggle for Content Section */}
+            <div className="md:hidden">
+              <button 
+                type="button"
+                onClick={() => {
+                  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                    navigator.vibrate(10);
+                  }
+                  setIsContentExpanded(!isContentExpanded);
+                }}
+                className="w-full py-4 bg-media-surface-container-low rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-media-primary hover:bg-media-surface-container-high transition-colors shadow-sm border border-media-outline-variant/10 mb-6"
+              >
+                <span className="material-symbols-outlined">
+                  {isContentExpanded ? 'expand_less' : 'expand_more'}
+                </span>
+                {isContentExpanded ? 'Collapse Narrative Section' : 'Expand Narrative Section'}
+              </button>
+            </div>
+
             {/* Narrative / Content Area */}
-            <section className="space-y-8 h-full min-h-[600px] flex flex-col">
+            <section className={`space-y-8 flex flex-col md:h-full ${!isContentExpanded ? 'hidden md:flex' : ''}`}>
               <div className="flex items-center justify-between border-b border-media-outline-variant/10 pb-4">
                 <h2 className="text-2xl font-bold text-media-primary tracking-tight">The Narrative</h2>
                 <div className="flex items-center gap-1">
@@ -648,12 +668,12 @@ export function ParkEditorialEditor({
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col">
+              <div className="flex flex-col md:flex-1">
                 <textarea 
                   ref={textareaRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full flex-1 bg-transparent border-none focus:ring-0 p-0 text-xl leading-[1.8] text-media-on-surface-variant font-light resize-none placeholder:text-media-outline-variant/30 min-h-[400px]" 
+                  className="w-full flex-1 bg-transparent border-none focus:ring-0 p-0 text-xl leading-[1.8] text-media-on-surface-variant font-light resize-none placeholder:text-media-outline-variant/30 min-h-[250px] md:min-h-0" 
                   placeholder="Begin your story here... Describe the air, the sounds of the birds, and the path beneath your feet." 
                 />
               </div>
@@ -661,21 +681,13 @@ export function ParkEditorialEditor({
 
             <div className="pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-6">
               <p className="text-media-on-surface-variant text-sm font-light italic">Your entry will be saved to your local journal instantly.</p>
-              <div className="flex items-center gap-4 w-full md:w-auto">
+              <div className="flex items-center w-full md:w-auto">
                 <button 
                   type="button"
                   onClick={() => {
-                    setFrontmatter(prev => ({ ...prev, published: false }));
-                    setTimeout(() => handleSave(), 0);
-                  }}
-                  disabled={isSaving}
-                  className="cursor-pointer w-full md:w-auto px-8 py-4 text-media-secondary font-semibold hover:bg-media-secondary-container/10 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  Save Draft
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => {
+                    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                      navigator.vibrate(50);
+                    }
                     setFrontmatter(prev => ({ ...prev, published: true }));
                     setTimeout(() => handleSave(), 0);
                   }}
@@ -690,36 +702,6 @@ export function ParkEditorialEditor({
         </form>
       </div>
 
-      {/* Bottom Navigation Shell (Mobile Only) */}
-      <footer className="md:hidden fixed bottom-0 left-0 w-full bg-[#faf9f6] dark:bg-[#061b0e] h-24 px-4 flex justify-around items-center z-50 shadow-[0_-8px_40px_rgba(0,0,0,0.03)] border-t border-media-outline-variant/5">
-        <button 
-          onClick={() => router.push('/')}
-          className="cursor-pointer flex flex-col items-center justify-center text-media-on-surface-variant/40 px-4 py-2 hover:text-media-secondary transition-all"
-        >
-          <span className="material-symbols-outlined mb-1">home_max</span>
-          <span className="text-[10px] uppercase font-bold tracking-[0.1em]">Home</span>
-        </button>
-        <button 
-          className="cursor-pointer flex flex-col items-center justify-center text-media-secondary bg-media-secondary-container/10 rounded-2xl px-6 py-2 transition-all"
-        >
-          <span className="material-symbols-outlined mb-1">park</span>
-          <span className="text-[10px] uppercase font-bold tracking-[0.1em]">Parks</span>
-        </button>
-        <button 
-          onClick={() => router.push('/journals')}
-          className="cursor-pointer flex flex-col items-center justify-center text-media-on-surface-variant/40 px-4 py-2 hover:text-media-secondary transition-all"
-        >
-          <span className="material-symbols-outlined mb-1">menu_book</span>
-          <span className="text-[10px] uppercase font-bold tracking-[0.1em]">Journal</span>
-        </button>
-        <button 
-          onClick={() => router.push('/recipes')}
-          className="cursor-pointer flex flex-col items-center justify-center text-media-on-surface-variant/40 px-4 py-2 hover:text-media-secondary transition-all"
-        >
-          <span className="material-symbols-outlined mb-1">restaurant</span>
-          <span className="text-[10px] uppercase font-bold tracking-[0.1em]">Kitchen</span>
-        </button>
-      </footer>
       <SuccessOverlay 
         show={showSuccess} 
         onComplete={() => {

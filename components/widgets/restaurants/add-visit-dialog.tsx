@@ -158,7 +158,7 @@ export function AddVisitDialog({
           <form onSubmit={handleSubmit} className="space-y-4">
             {formFields}
             <div className="flex gap-2 pt-4">
-              <Button type="submit" disabled={loading} className="flex-1">
+              <Button type="submit" disabled={loading} className="flex-1 bg-media-secondary text-media-on-secondary hover:bg-media-secondary/90">
                 {buttonText}
               </Button>
               <Button
@@ -214,7 +214,7 @@ export function AddVisitDialog({
               {formFields}
             </div>
             <div className="border-t px-6 py-4 bg-background">
-              <Button type="submit" disabled={loading} className="w-full h-12 text-base bg-brand hover:bg-brand/90 text-brand-foreground">
+              <Button type="submit" disabled={loading} className="w-full h-12 text-base bg-media-secondary hover:bg-media-secondary/90 text-media-on-secondary">
               <Send className="h-5 w-5 mr-2" />
                 {buttonText}
               </Button>

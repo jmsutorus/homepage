@@ -1,12 +1,10 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMediaQuery } from '@/hooks/use-media-query';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-import { ParkFormDialog } from './park-form-dialog';
 import { NationalParksMap } from './national-parks-map';
 import { ParkCardEditorial } from './editorial/park-card-editorial';
 import { ParkContent } from '@/lib/db/parks';
@@ -18,10 +16,8 @@ interface ParksPageClientProps {
 }
 
 export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps) {
-  const [showForm, setShowForm] = useState(false);
   const fullCollectionRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const isMobile = useMediaQuery('(max-width: 768px)');
 
   // Calculate stats
   const totalVisits = parks.length;
@@ -39,15 +35,11 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
       .slice(0, 3);
   }, [parks]);
 
-  const scrollToFullCollection = () => {
-    fullCollectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
     <div className="min-h-screen font-lexend -mt-8 -mx-4 md:-mx-8">
       {/* Floating Action Button */}
       <FloatingActionButton 
-        onClick={() => isMobile ? setShowForm(true) : router.push('/parks/new')}
+        onClick={() => router.push('/parks/new')}
         tooltipText="New Park"
       />
 
@@ -145,9 +137,6 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
           </div>
         </section>
       </div>
-
-      <ParkFormDialog open={showForm} onOpenChange={setShowForm} />
     </div>
   );
 }
-

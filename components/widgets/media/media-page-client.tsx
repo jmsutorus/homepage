@@ -15,14 +15,12 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X } from "lucide-react";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import type { MediaTimelineData, PaginatedMediaResult, MediaContent } from "@/lib/db/media";
 import { cn } from "@/lib/utils";
 
 import { MediaHero } from "./media-hero";
 import { MediaActiveJourneys } from "./media-active-journeys";
 import { MediaCuratedBento } from "./media-curated-bento";
-import { MediaFormDialog } from "./media-form-dialog";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
 
 // Convert MediaContent to MediaItem
@@ -81,7 +79,6 @@ export function MediaPageClient({
   const [sortBy, setSortBy] = useState<SortOption>("completed-desc");
   const [genreSearch, setGenreSearch] = useState("");
   const [tagSearch, setTagSearch] = useState("");
-  const [showForm, setShowForm] = useState(false);
   
   // Read genres and tags directly from URL parameters on initialization
   const [activeGenres, setActiveGenres] = useState<string[]>(() => {
@@ -98,9 +95,6 @@ export function MediaPageClient({
     return [];
   });
   
-  // Detect mobile screen for responsive UI
-  const isMobile = useMediaQuery("(max-width: 639px)");
-
   // Extract all unique genres and tags
   const allGenres = useMemo(() => {
     const genreSet = new Set<string>();
@@ -169,7 +163,7 @@ export function MediaPageClient({
     <div className="flex bg-media-surface dark:bg-media-primary min-h-screen font-lexend -mx-4 -my-8 md:-mx-8">
       {/* Floating Action Button */}
       <FloatingActionButton 
-        onClick={() => isMobile ? setShowForm(true) : router.push("/media/new")}
+        onClick={() => router.push("/media/new")}
         tooltipText="New Media"
       />
 
@@ -346,7 +340,6 @@ export function MediaPageClient({
           </div>
         </div>
       </main>
-    <MediaFormDialog open={showForm} onOpenChange={setShowForm} />
     </div>
   );
 }

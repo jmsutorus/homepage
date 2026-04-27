@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Star, ArrowRight, Heart } from 'lucide-react';
 import type { Restaurant } from '@/lib/db/restaurants';
-import { RestaurantFormDialog } from './restaurant-form-dialog';
 import { cn } from '@/lib/utils';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
 
@@ -18,7 +17,6 @@ export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProp
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [showForm, setShowForm] = useState(false);
 
   // Spotlight logic: Highest recency (lastVisitDate), then rating
   const spotlightRestaurant = useMemo(() => {
@@ -69,10 +67,7 @@ export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProp
 
   const [showAllArchive, setShowAllArchive] = useState(false);
 
-  const handleCreated = () => {
-    setShowForm(false);
-    router.refresh();
-  };
+
 
   const getPlaceholder = (cuisine: string | null) => {
     const c = (cuisine || 'restaurant').toLowerCase();
@@ -90,7 +85,7 @@ export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProp
     <div className="min-h-screen font-lexend selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed -mx-4 md:-mx-8 -mt-8">
       {/* Floating Action Button */}
       <FloatingActionButton 
-        onClick={() => setShowForm(true)}
+        onClick={() => router.push('/restaurants/new')}
         tooltipText="New Restaurant"
       />
 
@@ -298,11 +293,7 @@ export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProp
         </div>
       </footer>
 
-      <RestaurantFormDialog
-        open={showForm}
-        onOpenChange={setShowForm}
-        onSuccess={handleCreated}
-      />
+
     </div>
   );
 }

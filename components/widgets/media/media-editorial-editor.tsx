@@ -88,6 +88,7 @@ export function MediaEditorialEditor({
   const [savedPath, setSavedPath] = useState<string | null>(null);
   const [isIMDBModalOpen, setIsIMDBModalOpen] = useState(false);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Monitor scroll for sticky header effects
@@ -516,10 +517,32 @@ export function MediaEditorialEditor({
           </div>
         </section>
 
+        {/* Mobile Toggle for Content Section */}
+        <div className="md:hidden">
+          <button 
+            type="button"
+            onClick={() => {
+              if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                navigator.vibrate(10);
+              }
+              setIsContentExpanded(!isContentExpanded);
+            }}
+            className="w-full py-4 bg-media-surface-container-low rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-media-primary hover:bg-media-surface-container-high transition-colors shadow-sm border border-media-outline-variant/10"
+          >
+            <span className="material-symbols-outlined">
+              {isContentExpanded ? 'expand_less' : 'expand_more'}
+            </span>
+            {isContentExpanded ? 'Collapse Content Section' : 'Expand Content Section'}
+          </button>
+        </div>
+
         {/* Markdown Editor Section */}
-        <section className="space-y-6">
+        <section className={cn(
+          "space-y-6",
+          !isContentExpanded && "hidden md:block"
+        )}>
           <div className={cn(
-            "bg-media-surface-container-lowest rounded-3xl shadow-xl overflow-hidden flex flex-col h-full min-h-[800px] border border-media-surface-container transition-all duration-500",
+            "bg-media-surface-container-lowest rounded-3xl shadow-xl overflow-hidden flex flex-col h-full md:min-h-[800px] min-h-[400px] border border-media-surface-container transition-all duration-500",
             isScrolled ? "ring-1 ring-media-outline-variant/20" : ""
           )}>
             {/* Custom Header Toolbar */}
@@ -593,7 +616,7 @@ export function MediaEditorialEditor({
                 ref={textareaRef}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full h-full border-none focus:ring-0 bg-transparent text-xl leading-[1.8] text-media-on-surface-variant font-light resize-none placeholder:text-media-outline-variant/30 selection:bg-media-secondary-fixed min-h-[600px]" 
+                className="w-full h-full border-none focus:ring-0 bg-transparent text-xl leading-[1.8] text-media-on-surface-variant font-light resize-none placeholder:text-media-outline-variant/30 selection:bg-media-secondary-fixed md:min-h-[600px] min-h-[250px]" 
                 placeholder="Start weaving your analytical reflections here..."
               />
             </div>
@@ -620,7 +643,7 @@ export function MediaEditorialEditor({
         </section>
 
         {/* Insight Sections */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
+        <section className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
           <div className="bg-media-primary-container p-8 rounded-3xl text-media-on-primary-container flex gap-6 group/insight transition-transform hover:-translate-y-1">
             <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0 group-hover/insight:scale-110 transition-transform">
               <Lightbulb className="w-6 h-6 text-media-inverse-primary" />
@@ -645,6 +668,21 @@ export function MediaEditorialEditor({
             </div>
           </div>
         </section>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            if (typeof navigator !== 'undefined' && navigator.vibrate) {
+              navigator.vibrate(50);
+            }
+            handleSave(e);
+          }}
+          disabled={isSaving}
+          className="w-full py-4 bg-media-secondary text-media-on-secondary font-bold text-lg rounded-2xl shadow-xl shadow-media-secondary/20 hover:brightness-110 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 mt-8 cursor-pointer flex items-center justify-center gap-2"
+        >
+          {isSaving ? 'Saving...' : (mode === 'create' ? 'Create Entry' : 'Save Changes')}
+          {!isSaving && <Save className="w-5 h-5" />}
+        </button>
       </div>
       <SuccessOverlay 
         show={showSuccess} 

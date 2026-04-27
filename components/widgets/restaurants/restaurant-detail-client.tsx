@@ -99,7 +99,7 @@ export function RestaurantDetailClient({ restaurantData: initialData }: Restaura
   };
 
   return (
-    <div className="flex flex-col min-h-screen font-lexend text-media-on-surface bg-media-background -m-8">
+    <div className="flex flex-col min-h-screen font-lexend text-media-on-surface bg-media-background -mx-4 md:-mx-8 -my-8">
       {/* Hero Section */}
       <section className="relative h-[614px] w-full overflow-hidden">
         <img
