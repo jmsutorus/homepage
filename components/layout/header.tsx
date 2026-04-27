@@ -5,7 +5,8 @@ import Link from "next/link";
 import { MobileNav } from "./mobile-nav";
 import { useAuth } from "@/hooks/useAuth";
 
-import { Settings, Shield } from "lucide-react";
+import { Settings, Shield, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import {
   DropdownMenu,
@@ -87,6 +88,12 @@ export function Header() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <Button variant="ghost" size="icon" asChild className="lg:hidden text-[#434843] dark:text-[#e3e2e0]">
+              <Link href="/calendar">
+                <Calendar className="h-[1.2rem] w-[1.2rem]" />
+                <span className="sr-only">Calendar</span>
+              </Link>
+            </Button>
             {isAuthenticated && user && (
               <div className="flex items-center gap-3 bg-[#f4f3f1] dark:bg-[#1b3022]/40 px-3 py-1 rounded-full border border-outline-variant/30">
                  <div className="w-6 h-6 rounded-full border border-[#b4cdb8] bg-[#061b0e] flex items-center justify-center text-[#ffffff] overflow-hidden">
@@ -101,7 +108,7 @@ export function Header() {
                  </span>
                  <DropdownMenu>
                    <DropdownMenuTrigger asChild>
-                     <button className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors">
+                     <button className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors lg:hidden">
                        <span className="material-symbols-outlined text-sm block">settings</span>
                      </button>
                    </DropdownMenuTrigger>

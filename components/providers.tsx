@@ -11,6 +11,7 @@ import { SyncStatus } from "@/components/pwa/sync-status";
 import { IOSPwaPushPrompt } from "@/components/pwa/ios-pwa-push-prompt";
 
 import { useFCMToken } from "@/hooks/use-fcm-token";
+import { UserActivityTracker } from "@/components/user-activity-tracker";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useFCMToken();
@@ -42,6 +43,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <UpdatePrompt />
         <SyncStatus />
         <IOSPwaPushPrompt />
+        <UserActivityTracker />
       </ThemeProvider>
     </SessionProvider>
   );
