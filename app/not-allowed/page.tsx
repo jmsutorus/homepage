@@ -50,6 +50,12 @@ export default function NotAllowed() {
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-4">
             <Link
+              href="/request-access"
+              className="bg-media-secondary text-media-on-secondary px-8 py-4 rounded-lg font-medium tracking-wide hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            >
+              <span>Request Access</span>
+            </Link>
+            <Link
               href="/journals"
               className="bg-media-surface-container-low text-media-primary px-8 py-4 rounded-lg font-medium tracking-wide hover:bg-media-surface-container-high transition-colors duration-300 flex items-center justify-center gap-2"
             >

@@ -60,6 +60,8 @@ export const env = createEnv({
     FIREBASE_PRIVATE_KEY: z.string().optional(),
     FIREBASE_STORAGE_BUCKET: z.string().optional(),
     FIREBASE_CURATION_FUNCTION_URL: z.string().url().optional(),
+    FIREBASE_SEND_ACCESS_EMAIL: z.string().url().optional(),
+
 
     // Feature Flags
     ENABLE_STEAM: z
@@ -180,6 +182,7 @@ export const env = createEnv({
     FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
     FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET,
     FIREBASE_CURATION_FUNCTION_URL: process.env.FIREBASE_CURATION_FUNCTION_URL,
+    FIREBASE_SEND_ACCESS_EMAIL: process.env.FIREBASE_SEND_ACCESS_EMAIL,
 
     // Firebase Client
     NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,

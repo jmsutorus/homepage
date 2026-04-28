@@ -954,6 +954,26 @@ CREATE TABLE IF NOT EXISTS allowed_users (
 
 -- Seed the initial allowed user
 INSERT OR IGNORE INTO allowed_users (email) VALUES ('jmsutorus@gmail.com');
+
+-- Beta Access Requests Table
+-- Captures incoming user requests for beta access
+CREATE TABLE IF NOT EXISTS beta_access_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  reason TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Denied Access Requests Table
+-- Captures users who have been explicitly denied access
+CREATE TABLE IF NOT EXISTS denied_access_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  reason TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 -- Task Templates Table
 -- User-defined templates for creating tasks quickly
 CREATE TABLE IF NOT EXISTS task_templates (

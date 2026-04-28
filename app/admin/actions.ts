@@ -3,6 +3,7 @@
 import { requireAdmin } from "@/lib/auth/server";
 import { query, execute } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { GoogleAuth } from "google-auth-library";
 
 export type AdminUser = {
   id: string;
@@ -88,5 +89,63 @@ export async function addAllowedUser(email: string) {
 export async function removeAllowedUser(email: string) {
   await requireAdmin();
   execute("DELETE FROM allowed_users WHERE email = ?", [email]);
+  revalidatePath("/admin");
+}
+
+export type AccessRequest = {
+  id: number;
+  name: string;
+  email: string;
+  reason: string | null;
+  created_at: string;
+};
+
+export async function getAccessRequests(): Promise<AccessRequest[]> {
+  await requireAdmin();
+  return await query<AccessRequest>("SELECT * FROM beta_access_requests ORDER BY created_at DESC");
+}
+
+export async function approveAccessRequest(id: number, email: string) {
+  await requireAdmin();
+  
+  // 1. Add to allowed_users
+  await execute("INSERT OR IGNORE INTO allowed_users (email) VALUES (?)", [email]);
+  
+  // 2. Delete from beta_access_requests
+  await execute("DELETE FROM beta_access_requests WHERE id = ?", [id]);
+  
+  // 3. Invoke Firebase function
+  try {
+    const targetAudience = process.env.FIREBASE_SEND_ACCESS_EMAIL || "https://sendaccessemail-xe2v24bjoq-uc.a.run.app";
+    const auth = new GoogleAuth();
+    const client = await auth.getIdTokenClient(targetAudience);
+    
+    const response = await client.request({
+      url: `${targetAudience}?email=${encodeURIComponent(email)}`,
+      method: "GET",
+    });
+    
+    if (response.status !== 200) {
+      console.error(`Failed to invoke Firebase function for ${email}: Status ${response.status}`);
+    }
+  } catch (error) {
+    console.error(`Error invoking Firebase function for ${email}:`, error);
+  }
+  
+  revalidatePath("/admin");
+}
+
+export async function denyAccessRequest(id: number, email: string, name: string, reason: string) {
+  await requireAdmin();
+  
+  // 1. Add to denied_access_requests
+  await execute(
+    "INSERT INTO denied_access_requests (name, email, reason) VALUES (?, ?, ?)",
+    [name, email, reason || ""]
+  );
+  
+  // 2. Delete from beta_access_requests
+  await execute("DELETE FROM beta_access_requests WHERE id = ?", [id]);
+  
   revalidatePath("/admin");
 }

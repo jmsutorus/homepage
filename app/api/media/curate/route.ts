@@ -3,6 +3,8 @@ import { env } from "@/lib/env";
 import { requireAuthApi } from "@/lib/auth/server";
 import { GoogleAuth } from 'google-auth-library';
 
+import { getAdminFirestore } from "@/lib/firebase/admin";
+
 export async function POST(_request: NextRequest) {
   try {
     const session = await requireAuthApi();
@@ -34,7 +36,16 @@ export async function POST(_request: NextRequest) {
        // ... handle error ...
     }
     
-    return NextResponse.json({ success: true });
+    const curationDoc = await getAdminFirestore()
+      .collection("curations")
+      .doc("media")
+      .collection("users")
+      .doc(userId)
+      .get();
+      
+    const curations = curationDoc.exists ? (curationDoc.data()?.bentoBoxes || []) : [];
+    
+    return NextResponse.json({ success: true, curations });
   } catch (error: any) {
     return NextResponse.json({ error: error.toString() }, { status: 500 });
     // ... handle error ...

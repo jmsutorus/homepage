@@ -87,9 +87,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!allowed) {
           console.warn(`Sign-in blocked: ${user.email} not in allowed_users`);
+          return false;
         }
 
-        return !!allowed;
+        return true;
       } catch (error) {
         console.error("Error checking allowed users:", error);
         // On error, allow sign-in to prevent lockout (log the error for debugging)
