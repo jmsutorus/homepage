@@ -2,6 +2,7 @@ import { getAllMediaItems } from "@/lib/media";
 import { MediaPageClient } from "@/components/widgets/media/media-page-client";
 import { getPaginatedMedia } from "@/lib/db/media";
 import { getUserId } from "@/lib/auth/server";
+import { getAdminFirestore } from "@/lib/firebase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -45,22 +46,53 @@ export default async function MediaPage() {
 
   const [
     allMedia,
-    initialCompletedMediaRaw
+    initialCompletedMediaRaw,
+    curationDoc
   ] = await Promise.all([
     getAllMediaItems(userId),
     getPaginatedMedia(userId, 1, 25, {
       status: "completed",
       sortBy: "completed-desc",
     }),
+    getAdminFirestore()
+      .collection("curations")
+      .doc("media")
+      .collection("users")
+      .doc(userId)
+      .get()
   ]);
 
   // Convert to plain serializable object
   const initialCompletedMedia = serializePaginatedResult(initialCompletedMediaRaw);
+  
+  const curations = curationDoc.exists ? (curationDoc.data()?.bentoBoxes || []) : [];
+  
+  const updatedAtRaw = curationDoc.exists ? curationDoc.data()?.updatedAt : null;
+  let updatedAt: number | null = null;
+  if (updatedAtRaw) {
+    if (typeof updatedAtRaw === 'number') {
+      updatedAt = updatedAtRaw;
+    } else if (typeof updatedAtRaw.toMillis === 'function') {
+      updatedAt = updatedAtRaw.toMillis();
+    } else if (typeof updatedAtRaw.seconds === 'number') {
+      updatedAt = updatedAtRaw.seconds * 1000;
+    } else if (updatedAtRaw instanceof Date) {
+      updatedAt = updatedAtRaw.getTime();
+    } else if (typeof updatedAtRaw === 'string') {
+      const parsed = Date.parse(updatedAtRaw);
+      if (!isNaN(parsed)) {
+        updatedAt = parsed;
+      }
+    }
+  }
 
   return (
     <MediaPageClient
       allMedia={allMedia}
       initialCompletedMedia={initialCompletedMedia}
+      curations={curations}
+      updatedAt={updatedAt}
+      userId={userId}
     />
   );
 }

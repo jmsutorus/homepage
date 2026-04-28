@@ -54,6 +54,9 @@ interface MediaPageClientProps {
   allMedia: MediaItem[];
   initialCompletedMedia: PaginatedMediaResult;
   timelineData?: MediaTimelineData;
+  curations?: any[];
+  updatedAt?: number | null;
+  userId?: string;
 }
 
 type SortOption =
@@ -71,6 +74,9 @@ export function MediaPageClient({
   allMedia,
   initialCompletedMedia,
   timelineData,
+  curations = [],
+  updatedAt = null,
+  userId,
 }: MediaPageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -188,7 +194,7 @@ export function MediaPageClient({
             <MediaActiveJourneys items={inProgressMedia} />
 
             {/* Curated Bento Grid */}
-            <MediaCuratedBento />
+            <MediaCuratedBento curations={curations} updatedAt={updatedAt} userId={userId} />
 
             {/* Sub-Navigation & Search (Integrated into page per feedback) */}
             <div className="mb-12">
