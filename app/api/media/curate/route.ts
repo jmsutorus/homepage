@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuthApi } from "@/lib/auth/server";
-import { GoogleAuth } from "google-auth-library";
+import { JWT } from "google-auth-library";
 import { env } from "@/lib/env";
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await requireAuthApi();
     if (!session) {
@@ -16,14 +16,6 @@ export async function POST(request: NextRequest) {
       ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n") 
       : undefined;
 
-    const auth = new GoogleAuth({
-      credentials: {
-        client_email: process.env.FIREBASE_CLIENT_EMAIL,
-        private_key: privateKey,
-      },
-      projectId: process.env.FIREBASE_PROJECT_ID,
-    });
-
     const targetAudience = env.FIREBASE_CURATION_FUNCTION_URL;
     if (!targetAudience) {
       console.error("Missing FIREBASE_CURATION_FUNCTION_URL in production environment.");
@@ -32,18 +24,28 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    const client = await auth.getIdTokenClient(targetAudience);
-    
+
+    const client = new JWT({
+      email: process.env.FIREBASE_CLIENT_EMAIL,
+      key: privateKey,
+    });
+
+    console.log(`Fetching ID token for Cloud Run targeting ${targetAudience}`);
+    const idToken = await client.fetchIdToken(targetAudience);
+
     console.log(`Executing authenticated request for user ${userId} targeting Cloud Run.`);
 
     const url = `${targetAudience}?userId=${userId}`;
-    const response = await client.request({
-      url,
+    const response = await fetch(url, {
       method: "GET",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
     });
 
     if (response.status !== 200) {
-      console.error(`Cloud Run Error (${response.status}):`, response.data);
+      const errorText = await response.text();
+      console.error(`Cloud Run Error (${response.status}):`, errorText);
       return NextResponse.json(
         { error: `Cloud function failed: ${response.statusText}` }, 
         { status: response.status }
