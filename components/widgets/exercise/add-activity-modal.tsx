@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dumbbell, X } from "lucide-react";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
-import { TreeSuccess } from "@/components/ui/animations/tree-success";
-import { useSuccessDialog } from "@/hooks/use-success-dialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ActivityForm } from "./activity-form";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
