@@ -34,6 +34,7 @@ import { CompleteActivityModal } from "@/components/widgets/exercise/complete-ac
 import { MuscleMap } from "@/components/widgets/exercise/muscle-map";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 import { toast } from "sonner";
+import { SuccessOverlay } from "@/components/ui/animations/success-overlay";
 
 import { DetailCard } from "@/Shared/Components/Cards/DetailCard";
 import { HomepageFooter } from "@/Shared/Components/Footers/HomepageFooter";
@@ -46,6 +47,7 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
   const router = useRouter();
   const [activity, setActivity] = useState<WorkoutActivity>(initialActivity);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   
   // Exercise Modal State
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
@@ -81,6 +83,21 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
   };
   
   const handleActivityCompleted = () => {
+    // Update local state so UI updates immediately without a hard refresh
+    setActivity((prev) => ({
+      ...prev,
+      completed: true,
+      completed_at: new Date().toISOString(),
+    }));
+
+    // Trigger haptic feedback for mobile users
+    if (typeof window !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate([100, 30, 100, 30, 150]);
+    }
+
+    // Show success overlay with tree animation
+    setShowSuccessOverlay(true);
+
     router.refresh();
     toast.success("Workout marked as complete!");
   };
@@ -176,6 +193,28 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
   const handleActivityDeleted = () => {
     router.push("/exercise");
     toast.success("Workout deleted");
+  };
+
+  const handleDeleteWorkout = async () => {
+    if (!confirm("Are you sure you want to delete this workout? This action cannot be undone.")) return;
+
+    if (typeof window !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate([200, 100, 200]);
+    }
+
+    try {
+      const response = await fetch(`/api/activities/${activity.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete workout");
+
+      toast.success("Workout deleted");
+      router.push("/exercise");
+    } catch (error) {
+      toast.error("Failed to delete workout");
+      console.error(error);
+    }
   };
 
   const handleCopy = async (date: Date) => {
@@ -282,6 +321,9 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
           </Button>
           <Button variant="ghost" size="icon" className="hover:bg-evergreen/10" onClick={() => setIsEditModalOpen(true)}>
             <Pencil className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="hover:bg-red-500/10 text-red-500" onClick={handleDeleteWorkout}>
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -542,6 +584,8 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
         onOpenChange={setIsCompleteModalOpen}
         onActivityCompleted={handleActivityCompleted}
       />
+
+      <SuccessOverlay show={showSuccessOverlay} onComplete={() => setShowSuccessOverlay(false)} />
     </div>
   );
 }

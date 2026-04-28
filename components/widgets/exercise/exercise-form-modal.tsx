@@ -96,7 +96,12 @@ export function ExerciseFormModal({ editExercise, isOpen, onOpenChange, onSave }
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="description">Description *</Label>
+          <Label 
+            htmlFor="description"
+            className="text-xs font-bold text-soft-earth dark:text-white/40 uppercase tracking-tight"
+          >
+            Description *
+          </Label>
           <Input
             id="description"
             placeholder="e.g., Bench Press or Treadmill Run"
@@ -104,12 +109,18 @@ export function ExerciseFormModal({ editExercise, isOpen, onOpenChange, onSave }
             onChange={(e) => updateField("description", e.target.value)}
             required
             autoFocus
+            className="rounded-xl border-stone-200 focus-visible:ring-evergreen dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="sets">Sets</Label>
+            <Label 
+              htmlFor="sets"
+              className="text-xs font-bold text-soft-earth dark:text-white/40 uppercase tracking-tight"
+            >
+              Sets
+            </Label>
             <Input
               id="sets"
               type="number"
@@ -117,10 +128,16 @@ export function ExerciseFormModal({ editExercise, isOpen, onOpenChange, onSave }
               placeholder="3"
               value={exercise.sets || ""}
               onChange={(e) => updateField("sets", e.target.value ? parseInt(e.target.value) : undefined)}
+              className="rounded-xl border-stone-200 focus-visible:ring-evergreen dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="reps">Reps</Label>
+            <Label 
+              htmlFor="reps"
+              className="text-xs font-bold text-soft-earth dark:text-white/40 uppercase tracking-tight"
+            >
+              Reps
+            </Label>
             <Input
               id="reps"
               type="number"
@@ -128,13 +145,19 @@ export function ExerciseFormModal({ editExercise, isOpen, onOpenChange, onSave }
               placeholder="10"
               value={exercise.reps || ""}
               onChange={(e) => updateField("reps", e.target.value ? parseInt(e.target.value) : undefined)}
+              className="rounded-xl border-stone-200 focus-visible:ring-evergreen dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="weight">Weight (lbs)</Label>
+            <Label 
+              htmlFor="weight"
+              className="text-xs font-bold text-soft-earth dark:text-white/40 uppercase tracking-tight"
+            >
+              Weight (lbs)
+            </Label>
             <Input
               id="weight"
               type="number"
@@ -142,69 +165,98 @@ export function ExerciseFormModal({ editExercise, isOpen, onOpenChange, onSave }
               placeholder="45"
               value={exercise.weight || ""}
               onChange={(e) => updateField("weight", e.target.value ? parseInt(e.target.value) : undefined)}
+              className="rounded-xl border-stone-200 focus-visible:ring-evergreen dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
             />
           </div>
           <div className="space-y-2">
-               <Label htmlFor="duration">Duration (min)</Label>
-               <Input
-                 id="duration"
-                 type="number"
-                 min="0"
-                 placeholder="10"
-                 value={exercise.duration || ""}
-                 onChange={(e) => updateField("duration", e.target.value ? parseInt(e.target.value) : undefined)}
-               />
+            <Label 
+              htmlFor="duration"
+              className="text-xs font-bold text-soft-earth dark:text-white/40 uppercase tracking-tight"
+            >
+              Duration (min)
+            </Label>
+            <Input
+              id="duration"
+              type="number"
+              min="0"
+              placeholder="10"
+              value={exercise.duration || ""}
+              onChange={(e) => updateField("duration", e.target.value ? parseInt(e.target.value) : undefined)}
+              className="rounded-xl border-stone-200 focus-visible:ring-evergreen dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
+            />
           </div>
         </div>
         
-         <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-                <Label htmlFor="muscleGroup">Muscle Group</Label>
-                <Select 
-                    value={selectedGroup} 
-                    onValueChange={handleGroupChange}
-                >
-                    <SelectTrigger id="muscleGroup">
-                        <SelectValue placeholder="Select Group" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Object.keys(MUSCLE_GROUPS).map((group) => (
-                            <SelectItem key={group} value={group}>
-                                {group}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="muscle">Target Muscle</Label>
-                <Select 
-                    value={exercise.muscle || ""} 
-                    onValueChange={(value) => updateField("muscle", value)}
-                    disabled={!selectedGroup}
-                >
-                    <SelectTrigger id="muscle">
-                        <SelectValue placeholder="Select Muscle" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {selectedGroup && (MUSCLE_GROUPS as any)[selectedGroup]?.map((muscle: string) => (
-                            <SelectItem key={muscle} value={muscle}>
-                                {muscle}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-         </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label 
+              htmlFor="muscleGroup"
+              className="text-xs font-bold text-soft-earth dark:text-white/40 uppercase tracking-tight"
+            >
+              Muscle Group
+            </Label>
+            <Select 
+              value={selectedGroup} 
+              onValueChange={handleGroupChange}
+            >
+              <SelectTrigger 
+                id="muscleGroup"
+                className="rounded-xl border-stone-200 focus:ring-evergreen dark:border-white/10 dark:bg-white/5 dark:text-white"
+              >
+                <SelectValue placeholder="Select Group" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl dark:bg-[#1b251e] dark:border-white/10 dark:text-white">
+                {Object.keys(MUSCLE_GROUPS).map((group) => (
+                  <SelectItem key={group} value={group} className="focus:bg-evergreen/10 focus:text-evergreen dark:focus:bg-white/10 dark:focus:text-white rounded-lg">
+                    {group}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label 
+              htmlFor="muscle"
+              className="text-xs font-bold text-soft-earth dark:text-white/40 uppercase tracking-tight"
+            >
+              Target Muscle
+            </Label>
+            <Select 
+              value={exercise.muscle || ""} 
+              onValueChange={(value) => updateField("muscle", value)}
+              disabled={!selectedGroup}
+            >
+              <SelectTrigger 
+                id="muscle"
+                className="rounded-xl border-stone-200 focus:ring-evergreen dark:border-white/10 dark:bg-white/5 dark:text-white"
+              >
+                <SelectValue placeholder="Select Muscle" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl dark:bg-[#1b251e] dark:border-white/10 dark:text-white">
+                {selectedGroup && (MUSCLE_GROUPS as any)[selectedGroup]?.map((muscle: string) => (
+                  <SelectItem key={muscle} value={muscle} className="focus:bg-evergreen/10 focus:text-evergreen dark:focus:bg-white/10 dark:focus:text-white rounded-lg">
+                    {muscle}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
-      <div className={cn(isDesktop ? "flex justify-end gap-2" : "grid gap-2")}>
-        {isDesktop && (
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-            </Button>
-        )}
-        <Button type="submit">
+      <div className={cn(isDesktop ? "flex justify-end gap-3" : "grid gap-3")}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => onOpenChange(false)}
+          className="rounded-xl border-evergreen/20 hover:bg-evergreen/5 hover:text-evergreen-dark text-soft-earth dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+        >
+          Cancel
+        </Button>
+        <Button 
+          type="submit"
+          className="bg-evergreen hover:bg-evergreen-dark text-white font-bold rounded-xl px-6"
+        >
           {editExercise ? "Update Exercise" : "Add Exercise"}
         </Button>
       </div>
@@ -214,11 +266,13 @@ export function ExerciseFormModal({ editExercise, isOpen, onOpenChange, onSave }
   if (isDesktop) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-white dark:bg-[#1b251e] rounded-[2rem] border border-stone-200/50 dark:border-white/5 p-6 md:p-8">
           <DialogHeader>
-            <DialogTitle>{editExercise ? "Edit Exercise" : "Add Exercise"}</DialogTitle>
-             <DialogDescription>
-                {editExercise ? "Update the details of this exercise." : "Add a new exercise to your workout."}
+            <DialogTitle className="text-2xl font-black tracking-tight text-evergreen-dark dark:text-white">
+              {editExercise ? "Edit Exercise" : "Add Exercise"}
+            </DialogTitle>
+            <DialogDescription className="text-soft-earth dark:text-white/60 font-medium">
+              {editExercise ? "Update the details of this exercise." : "Add a new exercise to your workout."}
             </DialogDescription>
           </DialogHeader>
           {formContent}
@@ -251,10 +305,12 @@ export function ExerciseFormModal({ editExercise, isOpen, onOpenChange, onSave }
             onScroll={(e) => setIsAtTop(e.currentTarget.scrollTop <= 0)}
           >
         <SheetHeader className="mb-4 text-left">
-          <SheetTitle>{editExercise ? "Edit Exercise" : "Add Exercise"}</SheetTitle>
-           <SheetDescription>
-                {editExercise ? "Update details" : "Add new exercise"}
-            </SheetDescription>
+          <SheetTitle className="text-2xl font-black tracking-tight text-evergreen-dark dark:text-white">
+            {editExercise ? "Edit Exercise" : "Add Exercise"}
+          </SheetTitle>
+          <SheetDescription className="text-soft-earth dark:text-white/60 font-medium">
+            {editExercise ? "Update details" : "Add new exercise"}
+          </SheetDescription>
         </SheetHeader>
         {formContent}
           </div>

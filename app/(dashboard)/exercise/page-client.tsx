@@ -462,48 +462,67 @@ export function ExercisePageClient({
                 No recorded activities. Start your journey today.
               </div>
             ) : (
-              recentCompleted.map((activity) => (
-                <Link
-                  key={activity.id}
-                  href={`/exercise/${activity.id}`}
-                  className="group flex items-center gap-6 bg-card p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all border border-transparent hover:border-border/60"
-                >
-                  {/* Icon circle */}
-                  <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center shadow-inner"
-                       style={{ background: "rgba(163,230,53,0.15)" }}>
-                    <TypeIcon type={activity.type} className="h-7 w-7 text-emerald-800 dark:text-lime-400" />
-                  </div>
+              recentCompleted.map((activity) => {
+                const exerciseCount = (() => {
+                  if (!activity.exercises) return 0;
+                  try {
+                    const exercises = typeof activity.exercises === 'string' 
+                      ? JSON.parse(activity.exercises) 
+                      : activity.exercises;
+                    return Array.isArray(exercises) ? exercises.length : 0;
+                  } catch {
+                    return 0;
+                  }
+                })();
 
-                  {/* Details */}
-                  <div className="flex-grow min-w-0">
-                    <div className="flex justify-between items-start gap-4 mb-1.5">
-                      <h4 className="text-lg font-black capitalize tracking-tight group-hover:text-emerald-700 dark:group-hover:text-lime-400 transition-colors">
-                        {activity.type} Session
-                      </h4>
-                      <span className="text-xs text-muted-foreground font-bold shrink-0 bg-muted px-2 py-1 rounded-md">
-                        {formatActivityDate(activity.date)}
-                      </span>
+                return (
+                  <Link
+                    key={activity.id}
+                    href={`/exercise/${activity.id}`}
+                    className="group flex items-center gap-6 bg-card p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all border border-transparent hover:border-border/60"
+                  >
+                    {/* Icon circle */}
+                    <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center shadow-inner"
+                         style={{ background: "rgba(163,230,53,0.15)" }}>
+                      <TypeIcon type={activity.type} className="h-7 w-7 text-emerald-800 dark:text-lime-400" />
                     </div>
-                    <div className="flex flex-wrap gap-4 text-sm font-bold text-muted-foreground/80">
-                      <span className="flex items-center gap-1.5">
-                        <Timer className="h-4 w-4 opacity-70" />
-                        {activity.length}m
-                      </span>
-                      {activity.distance && activity.distance > 0 && (
-                        <span className="flex items-center gap-1.5">
-                          <TrendingUp className="h-4 w-4 opacity-70" />
-                          {activity.distance.toFixed(2)} mi
+
+                    {/* Details */}
+                    <div className="flex-grow min-w-0">
+                      <div className="flex justify-between items-start gap-4 mb-1.5">
+                        <h4 className="text-lg font-black capitalize tracking-tight group-hover:text-emerald-700 dark:group-hover:text-lime-400 transition-colors">
+                          {activity.type} Session
+                        </h4>
+                        <span className="text-xs text-muted-foreground font-bold shrink-0 bg-muted px-2 py-1 rounded-md">
+                          {formatActivityDate(activity.date)}
                         </span>
-                      )}
-                      <span className={`capitalize px-3 py-0.5 rounded-full text-[10px] uppercase tracking-wider ${getDifficultyBadge(activity.difficulty)}`}>
-                        {activity.difficulty}
-                      </span>
+                      </div>
+                      <div className="flex flex-wrap gap-4 text-sm font-bold text-muted-foreground/80">
+                        <span className="flex items-center gap-1.5">
+                          <Timer className="h-4 w-4 opacity-70" />
+                          {activity.length}m
+                        </span>
+                        {activity.type === "strength" && exerciseCount > 0 ? (
+                          <span className="flex items-center gap-1.5">
+                            <Dumbbell className="h-4 w-4 opacity-70" />
+                            {exerciseCount} {exerciseCount === 1 ? 'exercise' : 'exercises'}
+                          </span>
+                        ) : activity.distance && activity.distance > 0 ? (
+                          <span className="flex items-center gap-1.5">
+                            <TrendingUp className="h-4 w-4 opacity-70" />
+                            {activity.distance.toFixed(2)} mi
+                          </span>
+                        ) : null}
+                        <span className={`capitalize px-3 py-0.5 rounded-full text-[10px] uppercase tracking-wider ${getDifficultyBadge(activity.difficulty)}`}>
+                          {activity.difficulty}
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  <ChevronRight className="h-6 w-6 text-muted-foreground opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all flex-shrink-0" />
-                </Link>
-              ))
+                    <ChevronRight className="h-6 w-6 text-muted-foreground opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                  </Link>
+                );
+              })
             )}
           </div>
 

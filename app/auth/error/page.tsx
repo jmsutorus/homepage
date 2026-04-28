@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -36,7 +36,14 @@ function getErrorMessage(error: string | null) {
 
 function ErrorContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const error = searchParams.get("error");
+
+  useEffect(() => {
+    if (error === "AccessDenied" || error === "Forbidden") {
+      router.push("/request-access");
+    }
+  }, [error, router]);
 
   if (error === "AccessDenied" || error === "Forbidden") {
     return (
@@ -80,6 +87,12 @@ function ErrorContent() {
             </div>
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-4">
+              <Link
+                href="/request-access"
+                className="bg-media-secondary text-media-on-secondary px-8 py-4 rounded-lg font-medium tracking-wide hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              >
+                <span>Request Access</span>
+              </Link>
               <Link
                 href="/"
                 className="bg-media-surface-container-low text-media-primary px-8 py-4 rounded-lg font-medium tracking-wide hover:bg-media-surface-container-high transition-colors duration-300 flex items-center justify-center gap-2"

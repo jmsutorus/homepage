@@ -1,12 +1,13 @@
 import { requireAdmin, getUserId } from "@/lib/auth/server";
-import { getUsers, getAllowedUsers } from "./actions";
+import { getUsers, getAllowedUsers, getAccessRequests } from "./actions";
 import { UserList } from "./user-list";
 import { AllowedUsersList } from "./allowed-users-list";
+import { AccessRequestsList } from "./access-requests-list";
 import { HapticTester } from "./haptic-tester";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { HolidayManager } from "@/components/widgets/admin/holiday-manager";
-import { Star, Smartphone } from "lucide-react";
+import { Star, Smartphone, CalendarDays } from "lucide-react";
 
 export const metadata = {
   title: "Admin Dashboard",
@@ -16,9 +17,10 @@ export const metadata = {
 export default async function AdminPage() {
   await requireAdmin();
   const currentUserId = await getUserId();
-  const [users, allowedUsers] = await Promise.all([
+  const [users, allowedUsers, accessRequests] = await Promise.all([
     getUsers(),
-    getAllowedUsers()
+    getAllowedUsers(),
+    getAccessRequests()
   ]);
 
   return (
@@ -39,6 +41,10 @@ export default async function AdminPage() {
         <TabsList>
           <TabsTrigger value="users">Users & Roles</TabsTrigger>
           <TabsTrigger value="beta">Beta Access</TabsTrigger>
+          <TabsTrigger value="holidays">
+            <CalendarDays className="h-4 w-4 mr-2" />
+            Holidays
+          </TabsTrigger>
           <TabsTrigger value="haptics">
             <Smartphone className="h-4 w-4 mr-2" />
             Haptics
@@ -49,27 +55,28 @@ export default async function AdminPage() {
         </TabsContent>
         <TabsContent value="beta" className="space-y-4">
           <AllowedUsersList allowedUsers={allowedUsers} />
+          <AccessRequestsList requests={accessRequests} />
+        </TabsContent>
+        <TabsContent value="holidays" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-amber-500" />
+                <CardTitle>Holidays</CardTitle>
+              </div>
+              <CardDescription>
+                Manage holidays that appear on the calendar for all users.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <HolidayManager />
+            </CardContent>
+          </Card>
         </TabsContent>
         <TabsContent value="haptics" className="space-y-4">
           <HapticTester />
         </TabsContent>
       </Tabs>
-
-      {/* Holiday Management */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-amber-500" />
-              <CardTitle>Holidays</CardTitle>
-            </div>
-            <CardDescription>
-              Manage holidays that appear on the calendar for all users.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <HolidayManager />
-          </CardContent>
-        </Card>
     </div>
   );
 }

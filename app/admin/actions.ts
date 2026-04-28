@@ -90,3 +90,43 @@ export async function removeAllowedUser(email: string) {
   execute("DELETE FROM allowed_users WHERE email = ?", [email]);
   revalidatePath("/admin");
 }
+
+export type AccessRequest = {
+  id: number;
+  name: string;
+  email: string;
+  reason: string | null;
+  created_at: string;
+};
+
+export async function getAccessRequests(): Promise<AccessRequest[]> {
+  await requireAdmin();
+  return await query<AccessRequest>("SELECT * FROM beta_access_requests ORDER BY created_at DESC");
+}
+
+export async function approveAccessRequest(id: number, email: string) {
+  await requireAdmin();
+  
+  // 1. Add to allowed_users
+  await execute("INSERT OR IGNORE INTO allowed_users (email) VALUES (?)", [email]);
+  
+  // 2. Delete from beta_access_requests
+  await execute("DELETE FROM beta_access_requests WHERE id = ?", [id]);
+  
+  revalidatePath("/admin");
+}
+
+export async function denyAccessRequest(id: number, email: string, name: string, reason: string) {
+  await requireAdmin();
+  
+  // 1. Add to denied_access_requests
+  await execute(
+    "INSERT INTO denied_access_requests (name, email, reason) VALUES (?, ?, ?)",
+    [name, email, reason || ""]
+  );
+  
+  // 2. Delete from beta_access_requests
+  await execute("DELETE FROM beta_access_requests WHERE id = ?", [id]);
+  
+  revalidatePath("/admin");
+}

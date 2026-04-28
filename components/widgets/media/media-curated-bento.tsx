@@ -10,8 +10,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import app from "@/lib/firebase/client";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/hooks/useAuth";
 
 interface CurationItem {
@@ -69,13 +67,12 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
         throw new Error(`Cloud function generation failed: ${errorData.error || response.statusText}`);
       }
       
+      const data = await response.json();
+      
       toast.success("Collections generated successfully!");
       
-      const db = getFirestore(app);
-      const docRef = doc(db, "curations", "media", "users", finalUserId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setLocalCurations(docSnap.data()?.bentoBoxes || []);
+      if (data.curations) {
+        setLocalCurations(data.curations);
       }
     } catch (error: any) {
       console.error("Failed to generate collections", error);

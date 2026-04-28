@@ -39,29 +39,9 @@ export function AddActivityModal({
   const isModalOpen = isOpen !== undefined ? isOpen : open;
   const setIsModalOpen = onOpenChange || setOpen;
 
-  // Success dialog state
-  const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
-    duration: 2000,
-    onClose: () => {
-      setIsModalOpen(false);
-      onActivityAdded?.();
-    },
-  });
-
-  // Reset success state when dialog opens
-  useEffect(() => {
-    if (isModalOpen) {
-      resetSuccess();
-    }
-  }, [isModalOpen, resetSuccess]);
-
   const handleSuccess = () => {
-    if (editActivity) {
-      setIsModalOpen(false);
-      onActivityAdded?.();
-    } else {
-      triggerSuccess();
-    }
+    setIsModalOpen(false);
+    onActivityAdded?.();
   };
 
   const handleDelete = () => {
@@ -92,28 +72,19 @@ export function AddActivityModal({
     </div>
   );
 
-  const successContent = (
-    <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center py-20 px-10 animate-in fade-in slide-in-from-bottom-8">
-      <TreeSuccess size={200} showText={false} />
-    </div>
-  );
-
   const contentBody = (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-      {showSuccess ? successContent : (
-        <ActivityForm 
-          key={editActivity?.id || "new"}
-          editActivity={editActivity} 
-          onSuccess={handleSuccess} 
-          onCancel={() => setIsModalOpen(false)} 
-          onDelete={editActivity ? handleDelete : undefined}
-          isDesktop={isDesktop}
-          onScrollTopChange={setIsAtTop}
-        />
-      )}
+      <ActivityForm 
+        key={editActivity?.id || "new"}
+        editActivity={editActivity} 
+        onSuccess={handleSuccess} 
+        onCancel={() => setIsModalOpen(false)} 
+        onDelete={editActivity ? handleDelete : undefined}
+        isDesktop={isDesktop}
+        onScrollTopChange={setIsAtTop}
+      />
     </div>
   );
-
   if (isDesktop) {
     return (
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
