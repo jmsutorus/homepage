@@ -24,7 +24,14 @@ export async function POST(request: NextRequest) {
       projectId: process.env.FIREBASE_PROJECT_ID,
     });
 
-    const targetAudience = env.FIREBASE_CURATION_FUNCTION_URL || "";
+    const targetAudience = env.FIREBASE_CURATION_FUNCTION_URL;
+    if (!targetAudience) {
+      console.error("Missing FIREBASE_CURATION_FUNCTION_URL in production environment.");
+      return NextResponse.json(
+        { error: "Configuration Error: FIREBASE_CURATION_FUNCTION_URL is not set in the production environment variables." },
+        { status: 500 }
+      );
+    }
     const client = await auth.getIdTokenClient(targetAudience);
     
     console.log(`Executing authenticated request for user ${userId} targeting Cloud Run.`);
