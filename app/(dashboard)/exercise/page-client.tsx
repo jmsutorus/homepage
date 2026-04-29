@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Dumbbell,
   Activity,
@@ -16,14 +17,24 @@ import {
   Trophy,
   TrendingUp,
   FastForward,
+  CheckCircle2,
+  Trash2,
 } from "lucide-react";
 import { AddActivityModal } from "@/components/widgets/exercise/add-activity-modal";
 import { AddPrModal } from "@/components/widgets/exercise/add-pr-modal";
 import { EditPrModal } from "@/components/widgets/exercise/edit-pr-modal";
+import { AddGoalModal } from "@/components/widgets/exercise/add-goal-modal";
+import { GeneratedPlanModal } from "@/components/widgets/exercise/generated-plan-modal";
+import { PlanQuestionnaireModal } from "@/components/widgets/exercise/plan-questionnaire-modal";
 import { HomePageButton } from "@/Shared/Components/Buttons/HomePageButton";
+import { useHaptic } from "@/hooks/use-haptic";
+import { toggleWorkoutGoalMetAction, deleteWorkoutGoalAction } from "@/lib/actions/workout-goals";
+import { toast } from "sonner";
+import { Sparkles, Loader2 } from "lucide-react";
 
 import type { WorkoutActivity, WorkoutActivityStats, Exercise } from "@/lib/db/workout-activities";
 import type { PersonalRecord, ExerciseSettings } from "@/lib/db/personal-records";
+import type { WorkoutGoal } from "@/lib/db/workout-goals";
 
 interface ExercisePageClientProps {
   initialUpcomingActivities: WorkoutActivity[];
@@ -32,6 +43,8 @@ interface ExercisePageClientProps {
   initialStats: WorkoutActivityStats;
   initialSettings: ExerciseSettings;
   initialRecords: PersonalRecord[];
+  initialGoals: WorkoutGoal[];
+  initialGeneratedPlan?: any;
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -88,12 +101,54 @@ export function ExercisePageClient({
   initialStats,
   initialRecords,
   initialSettings,
+  initialGoals,
+  initialGeneratedPlan,
 }: ExercisePageClientProps) {
   const router = useRouter();
+  const haptic = useHaptic();
   const [refreshKey, setRefreshKey] = useState(0);
+  
+  const [generatedPlan, setGeneratedPlan] = useState<any>(initialGeneratedPlan);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+
+  const allPlannedAdded = generatedPlan?.days?.every((day: any) => day.type === 'rest' || day.added) || false;
+  const isPlanLocked = generatedPlan?.updatedAt ? (
+    (new Date().getTime() - new Date(generatedPlan.updatedAt).getTime()) < 7 * 24 * 60 * 60 * 1000
+  ) : false;
 
   const handleActivityAdded = () => {
     setRefreshKey((prev) => prev + 1);
+    router.refresh();
+  };
+
+  const handleGeneratePlan = async () => {
+    haptic.trigger("heavy");
+    setIsGeneratingPlan(true);
+    try {
+      const res = await fetch("/api/workouts/generate", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate");
+      setGeneratedPlan(data.plan);
+      toast.success("Workout plan generated!");
+      haptic.trigger("success");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Something went wrong.");
+      haptic.trigger("error");
+    } finally {
+      setIsGeneratingPlan(false);
+    }
+  };
+
+  const handleToggleGoal = async (id: number, currentMet: boolean) => {
+    haptic.trigger("medium");
+    await toggleWorkoutGoalMetAction(id, !currentMet);
+    router.refresh();
+  };
+
+  const handleDeleteGoal = async (id: number) => {
+    haptic.trigger("heavy");
+    await deleteWorkoutGoalAction(id);
     router.refresh();
   };
 
@@ -323,23 +378,71 @@ export function ExercisePageClient({
           </div>
 
           {/* Right CTA */}
-          <div className="z-10 shrink-0 self-start md:self-center">
-            {nextUp ? (
-              <div className="flex items-center gap-6">
-                 <div className="hidden lg:block text-right">
-                    <div className="text-4xl font-black mb-0.5">{formatActivityTime(nextUp.time)}</div>
-                    <div className="text-xs font-bold uppercase tracking-widest opacity-60">Scheduled</div>
-                 </div>
-                 <div className="hidden lg:block w-[1px] h-14 bg-white/20"></div>
-                 <HomePageButton asChild>
-                   <Link href={`/exercise/${nextUp.id}`}>
-                     PREPARE SESSION
-                   </Link>
-                 </HomePageButton>
-              </div>
-            ) : (
-              <AddActivityModal onActivityAdded={handleActivityAdded} showButton={true} />
-            )}
+          <div className="z-10 shrink-0 self-start md:self-center flex flex-col items-end md:items-center gap-3">
+            <div className="flex items-center gap-6">
+              {nextUp && (
+                <>
+                  <div className="hidden lg:block text-right">
+                     <div className="text-4xl font-black mb-0.5">{formatActivityTime(nextUp.time)}</div>
+                     <div className="text-xs font-bold uppercase tracking-widest opacity-60">Scheduled</div>
+                  </div>
+                  <div className="hidden lg:block w-[1px] h-14 bg-white/20"></div>
+                  <HomePageButton asChild>
+                    <Link href={`/exercise/${nextUp.id}`}>
+                      PREPARE SESSION
+                    </Link>
+                  </HomePageButton>
+                </>
+              )}
+            </div>
+
+            <div className="flex flex-col md:flex-row items-end md:items-center gap-3 mt-2 md:mt-0">
+              {generatedPlan && isPlanLocked && !allPlannedAdded ? (
+                <GeneratedPlanModal plan={generatedPlan} onAdded={handleActivityAdded}>
+                  <Button 
+                    className="rounded-xl bg-gradient-to-r from-emerald-600 to-lime-500 hover:from-emerald-700 hover:to-lime-600 text-white font-black tracking-tight px-6 h-12 shadow-md transition-all hover:scale-105 border-none"
+                    onClick={() => haptic.trigger("light")}
+                  >
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Show AI Plan
+                  </Button>
+                </GeneratedPlanModal>
+              ) : isPlanLocked && allPlannedAdded ? (
+                <div className="bg-muted text-muted-foreground border border-border rounded-xl px-4 py-2.5 flex items-center gap-2 font-semibold text-xs shadow-sm">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <span>All planned workouts added</span>
+                </div>
+              ) : (
+                <>
+                  {!generatedPlan?.profileAnswers && (
+                    <PlanQuestionnaireModal onPlanGenerated={(plan) => { setGeneratedPlan(plan); router.refresh(); }}>
+                      <div className="contents" onClick={() => haptic.trigger("light")}>
+                        <Button 
+                          className="rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold tracking-tight px-4 h-12 shadow-md transition-all hover:scale-105"
+                          disabled={isGeneratingPlan}
+                        >
+                          <Sparkles className="w-4 h-4 mr-2 text-lime-400 animate-pulse" />
+                          New to Workout?
+                        </Button>
+                      </div>
+                    </PlanQuestionnaireModal>
+                  )}
+
+                  <Button 
+                    className="rounded-xl bg-gradient-to-r from-emerald-600 to-lime-500 hover:from-emerald-700 hover:to-lime-600 text-white font-black tracking-tight px-6 h-12 shadow-md transition-all hover:scale-105 border-none disabled:opacity-70 disabled:hover:scale-100"
+                    onClick={handleGeneratePlan}
+                    disabled={isGeneratingPlan}
+                  >
+                    {isGeneratingPlan ? (
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-5 h-5 mr-2" />
+                    )}
+                    {isGeneratingPlan ? "Generating..." : "Generate AI Plan"}
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -444,6 +547,59 @@ export function ExercisePageClient({
             ) : (
               <div className="rounded-2xl border-2 border-dashed border-border/50 p-12 text-center text-muted-foreground font-medium">
                 No personal records logged yet. Click the button above to add your first PR.
+              </div>
+            )}
+          </div>
+
+          {/* Workout Goals Section */}
+          <div className="flex flex-col gap-6 mt-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold tracking-tight">Workout Goals</h3>
+              {initialGoals.length > 0 && <AddGoalModal />}
+            </div>
+
+            {initialGoals.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {initialGoals.map((goal) => (
+                  <div key={goal.id} className="group bg-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col gap-4 relative overflow-hidden border border-border/40">
+                    <div className="flex-grow">
+                      <p className={cn("text-lg font-bold transition-colors", goal.met && "text-muted-foreground line-through opacity-70")}>
+                        {goal.goal}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Button 
+                        variant={goal.met ? "secondary" : "default"} 
+                        size="sm" 
+                        className={cn("flex-grow rounded-md font-bold", !goal.met && "bg-lime-500 hover:bg-lime-600 text-black")}
+                        onClick={() => handleToggleGoal(goal.id, goal.met)}
+                      >
+                        {goal.met ? (
+                          <><CheckCircle2 className="h-4 w-4 mr-2" /> Met</>
+                        ) : (
+                          "Mark Met"
+                        )}
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="rounded-xl px-3 hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => handleDeleteGoal(goal.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border-2 border-dashed border-border/50 p-12 text-center flex flex-col items-center justify-center gap-4">
+                <p className="text-muted-foreground font-medium">No goals set yet. Define what you want to achieve.</p>
+                <AddGoalModal>
+                  <Button variant="default" className="rounded-full px-6 font-bold" onClick={() => haptic.trigger("light")}>
+                    Set a Goal
+                  </Button>
+                </AddGoalModal>
               </div>
             )}
           </div>

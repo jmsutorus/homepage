@@ -1,5 +1,6 @@
 import { ExercisePageClient } from "./page-client";
 import { getUserId } from "@/lib/auth/server";
+import { getAdminFirestore } from "@/lib/firebase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ import {
   getExerciseSettings,
   getPersonalRecords
 } from "@/lib/db/personal-records";
+import { getWorkoutGoals } from "@/lib/db/workout-goals";
 
 export default async function ExercisePage() {
   const currentUserId = await getUserId();
@@ -26,15 +28,26 @@ export default async function ExercisePage() {
     completedActivities,
     workoutStats,
     exerciseSettings,
-    personalRecords
+    personalRecords,
+    workoutGoals,
+    curationDoc
   ] = await Promise.all([
     getUpcomingWorkoutActivities(currentUserId, 3),
     getRecentWorkoutActivities(currentUserId, 5),
     getCompletedWorkoutActivities(currentUserId, 20),
     getWorkoutActivityStats(currentUserId, startOfYear, endOfYear),
     getExerciseSettings(currentUserId),
-    getPersonalRecords(currentUserId)
+    getPersonalRecords(currentUserId),
+    getWorkoutGoals(currentUserId),
+    getAdminFirestore()
+      .collection("curations")
+      .doc("workouts")
+      .collection("users")
+      .doc(currentUserId)
+      .get()
   ]);
+
+  const generatedPlan = curationDoc.exists ? curationDoc.data() : null;
 
   // Sanitize data to ensure plain objects are passed to Client Component
   const sanitizedUpcoming = JSON.parse(JSON.stringify(upcomingActivities));
@@ -43,6 +56,15 @@ export default async function ExercisePage() {
   const sanitizedStats = JSON.parse(JSON.stringify(workoutStats));
   const sanitizedSettings = JSON.parse(JSON.stringify(exerciseSettings));
   const sanitizedRecords = JSON.parse(JSON.stringify(personalRecords));
+  const sanitizedGoals = JSON.parse(JSON.stringify(workoutGoals));
+  let sanitizedPlan = null;
+  if (generatedPlan?.plan) {
+    sanitizedPlan = {
+      ...JSON.parse(JSON.stringify(generatedPlan.plan)),
+      updatedAt: generatedPlan.updatedAt ? (typeof generatedPlan.updatedAt.toDate === 'function' ? generatedPlan.updatedAt.toDate().toISOString() : generatedPlan.updatedAt) : null,
+      profileAnswers: generatedPlan.profileAnswers || null
+    };
+  }
 
   return (
     <ExercisePageClient 
@@ -52,6 +74,8 @@ export default async function ExercisePage() {
       initialStats={sanitizedStats}
       initialSettings={sanitizedSettings}
       initialRecords={sanitizedRecords}
+      initialGoals={sanitizedGoals}
+      initialGeneratedPlan={sanitizedPlan}
     />
   );
 }

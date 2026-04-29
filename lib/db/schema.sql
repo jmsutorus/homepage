@@ -1657,3 +1657,26 @@ AFTER UPDATE ON budget_fixed_costs
 BEGIN
   UPDATE budget_fixed_costs SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+-- Workout Goals Table
+-- Stores user goals for using the workout section
+CREATE TABLE IF NOT EXISTS workout_goals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  goal TEXT NOT NULL,
+  met BOOLEAN DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+);
+
+-- Indexes for workout_goals
+CREATE INDEX IF NOT EXISTS idx_workout_goals_userId ON workout_goals(userId);
+
+-- Trigger to update updated_at timestamp on workout_goals
+CREATE TRIGGER IF NOT EXISTS update_workout_goals_timestamp
+AFTER UPDATE ON workout_goals
+BEGIN
+  UPDATE workout_goals SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+

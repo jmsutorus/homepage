@@ -407,10 +407,10 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
                 <Button 
                   size="sm" 
                   variant="outline"
-                  className="rounded-xl border-evergreen/20 hover:bg-evergreen/5"
+                  className="gap-2"
                   onClick={openAddItem}
                 >
-                  <Plus className="h-4 w-4 mr-1" />
+                  <Plus className="w-4 h-4" />
                   Add
                 </Button>
               </div>
@@ -453,24 +453,30 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
                           </>
                         ) : (
                           <div className="flex items-center gap-4 text-right">
-                            {(item as Exercise).sets && (
+                            {(item as Exercise).sets && (item as Exercise).sets! > 0 ? (
                               <div>
                                 <div className="text-lg font-bold text-evergreen-dark">{(item as Exercise).sets}</div>
                                 <div className="text-[10px] font-bold text-soft-earth uppercase">Sets</div>
                               </div>
-                            )}
-                            {(item as Exercise).reps && (
+                            ) : null}
+                            {(item as Exercise).reps && (item as Exercise).reps! > 0 ? (
                               <div>
                                 <div className="text-lg font-bold text-evergreen-dark">{(item as Exercise).reps}</div>
                                 <div className="text-[10px] font-bold text-soft-earth uppercase">Reps</div>
                               </div>
-                            )}
-                             {(item as Exercise).weight && (
+                            ) : null}
+                            {!(((item as Exercise).sets && (item as Exercise).sets! > 0) || ((item as Exercise).reps && (item as Exercise).reps! > 0)) && ((item as Exercise).duration || (item as any).time) ? (
+                              <div>
+                                <div className="text-lg font-bold text-evergreen-dark">{(item as Exercise).duration || (item as any).time}</div>
+                                <div className="text-[10px] font-bold text-soft-earth uppercase">min</div>
+                              </div>
+                            ) : null}
+                            {(item as Exercise).weight && (item as Exercise).weight! > 0 ? (
                               <div>
                                 <div className="text-lg font-bold text-evergreen-dark">{(item as Exercise).weight}</div>
                                 <div className="text-[10px] font-bold text-soft-earth uppercase">lbs</div>
                               </div>
-                            )}
+                            ) : null}
                           </div>
                         )}
                         

@@ -280,6 +280,10 @@
   html {
     scrollbar-gutter: stable;
   }
+  body[data-scroll-locked] {
+    padding-right: 0px !important;
+    margin-right: 0px !important;
+  }
   * {
     @apply border-border outline-ring/50;
   }
