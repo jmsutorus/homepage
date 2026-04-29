@@ -1,19 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
+
 import { signIn as nextAuthSignIn } from "next-auth/react";
 import { auth } from "@/lib/firebase/client";
 import Link from "next/link";
 
-export default function SignUpPage() {
+function SignUpContent() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
+  const [verificationSent, setVerificationSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+
+  const searchParams = useSearchParams();
+
+
+  const callbackUrl = searchParams.get("callbackUrl") || "/home";
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,23 +43,18 @@ export default function SignUpPage() {
     try {
       // Create user with Firebase
       const credential = await createUserWithEmailAndPassword(auth, email, password);
-      const idToken = await credential.user.getIdToken();
-
-      // Exchange Firebase token for Auth.js session
-      const response = await fetch("/api/auth/firebase-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create session");
+      
+      if (name) {
+        await updateProfile(credential.user, { displayName: name });
       }
 
-      // Redirect to homepage
-      router.push("/home");
-      router.refresh();
+      // Send verification email
+      await sendEmailVerification(credential.user);
+
+      setVerificationSent(true);
+      setLoading(false);
     } catch (err: any) {
+
       console.error("Sign up error:", err);
       if (err.code === "auth/email-already-in-use") {
         setError("An account with this email already exists");
@@ -72,7 +76,7 @@ export default function SignUpPage() {
 
     try {
       // Use Auth.js native Google OAuth
-      await nextAuthSignIn("google", { callbackUrl: "/home" });
+      await nextAuthSignIn("google", { callbackUrl });
     } catch (err: any) {
       console.error("Google sign up error:", err);
       setError(err.message || "Failed to sign up with Google");
@@ -81,126 +85,217 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Create your account</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/sign-in" className="font-medium text-primary hover:underline">
-              Sign in
-            </Link>
+    <main className="flex min-h-screen flex-col lg:flex-row font-lexend bg-media-surface text-media-on-surface antialiased overflow-x-hidden">
+      {/* Split-Screen Image Section */}
+      <section className="relative hidden h-screen w-full lg:flex lg:w-1/2 bg-media-primary overflow-hidden">
+        <div className="absolute inset-0 z-10 bg-gradient-to-r from-media-primary/20 to-transparent"></div>
+        <img
+          alt="Atmospheric forest"
+          className="h-full w-full object-cover"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKYmMsbPz7YQNhCqnohvfSwzYYq92MM54sjDeyWxSCKYwkDVGJ1g03iA6sJdiPyCVELGyz8HXaDoe0cG7A_VbI03THeR_1HWnWlsxmcoD2B9EVAmCd2FckvfpljeKZBrRfp5QagJkwV7aS3m3OwSVDSoGkI1VcPijURhQPsOwbdmCQmSAnGYani36pT2H0uQ3OQ59ficW8pHucoGPlNFmPtedMSfqaIZfJoxgCq5831CvvGkwt7StYCiZXGrSdFq-_uBMAq8ta0C0"
+        />
+        <div className="absolute bottom-16 left-16 z-20 max-w-md">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="size-8 text-media-primary">
+              <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z" fill="currentColor"></path>
+              </svg>
+            </div>
+            <span className="text-media-primary font-bold text-xl tracking-tight">Earthbound</span>
+          </div>
+          <h2 className="text-media-primary text-4xl font-bold leading-tight tracking-tight mb-4">
+            The sanctuary for those who belong to the wild.
+          </h2>
+          <p className="text-media-primary/80 text-lg leading-relaxed">
+            Join an international guild dedicated to the preservation and silent exploration of our planet&apos;s remaining wonders.
           </p>
         </div>
+      </section>
 
-        <div className="mt-8 space-y-6">
-          {error && (
-            <div className="rounded-md bg-destructive/15 p-3">
-              <p className="text-sm text-destructive">{error}</p>
+      {/* Split-Screen Form Section */}
+      <section className="flex flex-1 flex-col items-center justify-center px-6 pb-12 pt-16 lg:px-24 bg-media-surface relative min-h-screen">
+        {/* Back Button Navigation */}
+        <div className="absolute top-8 left-8 lg:left-12">
+          <Link href={callbackUrl} className="flex items-center gap-2 text-media-on-surface-variant hover:text-media-primary transition-colors group">
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            <span className="text-sm font-medium uppercase tracking-widest">Back</span>
+          </Link>
+        </div>
+
+        <div className="w-full max-w-[440px]">
+          {/* Header */}
+          <header className="mb-10">
+            <h1 className="text-media-primary text-4xl font-bold leading-tight tracking-tighter mb-3">
+              Create your sanctuary account
+            </h1>
+            <p className="text-media-on-surface-variant text-base leading-relaxed">
+              Begin your journey into the Earthbound Editorial. Already have an account?{" "}
+              <Link href={`/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="text-media-secondary font-bold hover:underline underline-offset-4 ml-1">
+                Sign In
+              </Link>
+            </p>
+          </header>
+
+          {verificationSent ? (
+            <div className="text-center py-8 animate-fade-in">
+              <div className="mb-6 flex justify-center">
+                <span className="material-symbols-outlined text-6xl text-green-500">mark_email_unread</span>
+              </div>
+              <h2 className="text-3xl font-bold text-media-primary mb-4">Verify your email</h2>
+              <p className="text-media-on-surface-variant text-base leading-relaxed mb-8">
+                We&apos;ve sent a verification link to <strong className="text-media-primary">{email}</strong>. Please check your inbox and click the link to activate your account.
+              </p>
+              <Link
+                href={`/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+                className="inline-flex items-center justify-center h-14 px-8 bg-media-secondary text-media-on-secondary font-bold text-base rounded-lg hover:opacity-90 transition-all cursor-pointer"
+              >
+                Proceed to Sign In
+              </Link>
             </div>
+          ) : (
+            <>
+              {error && (
+                <div className="mb-6 rounded-md bg-destructive/15 p-3">
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
+              )}
+
+              {/* Form */}
+              <form onSubmit={handleEmailSignUp} className="space-y-6">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-widest text-media-on-surface-variant ml-1">Full Name</label>
+                  <div className="relative">
+                    <input
+                      className="w-full h-14 px-5 bg-media-surface-container-low rounded-lg border-0 focus:ring-0 focus:bg-media-surface-container-high transition-all text-media-on-surface placeholder:text-media-outline-variant text-base"
+                      placeholder="Julian Thorne"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      disabled={loading}
+                    />
+                    <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-media-secondary transition-all duration-300 peer-focus:w-full"></div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-widest text-media-on-surface-variant ml-1">Email Address</label>
+                  <div className="relative">
+                    <input
+                      className="w-full h-14 px-5 bg-media-surface-container-low rounded-lg border-0 focus:ring-0 focus:bg-media-surface-container-high transition-all text-media-on-surface placeholder:text-media-outline-variant text-base"
+                      placeholder="julian@earthbound.com"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-widest text-media-on-surface-variant ml-1">Secure Password</label>
+                  <div className="relative">
+                    <input
+                      className="w-full h-14 px-5 bg-media-surface-container-low rounded-lg border-0 focus:ring-0 focus:bg-media-surface-container-high transition-all text-media-on-surface placeholder:text-media-outline-variant text-base"
+                      placeholder="••••••••••••"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={loading}
+                      minLength={6}
+                    />
+                    <button
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-media-on-surface-variant cursor-pointer"
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <span className="material-symbols-outlined">
+                        {showPassword ? "visibility_off" : "visibility"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-widest text-media-on-surface-variant ml-1">Confirm Password</label>
+                  <div className="relative">
+                    <input
+                      className="w-full h-14 px-5 bg-media-surface-container-low rounded-lg border-0 focus:ring-0 focus:bg-media-surface-container-high transition-all text-media-on-surface placeholder:text-media-outline-variant text-base"
+                      placeholder="••••••••••••"
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      disabled={loading}
+                      minLength={6}
+                    />
+                    <button
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-media-on-surface-variant cursor-pointer"
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      <span className="material-symbols-outlined">
+                        {showConfirmPassword ? "visibility_off" : "visibility"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    className="kinetic-hover w-full h-14 bg-media-secondary text-media-on-secondary font-bold text-base rounded-lg editorial-shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    type="submit"
+                    disabled={loading}
+                  >
+                    <span>{loading ? "Creating..." : "Create Account"}</span>
+                    <span className="material-symbols-outlined">arrow_forward</span>
+                  </button>
+                </div>
+              </form>
+
+              {/* Social Provider Integration */}
+              <div className="mt-12 text-center relative">
+                <div aria-hidden="true" className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-media-surface-container-high"></div>
+                </div>
+                <div className="relative flex justify-center text-sm uppercase tracking-[0.2em]">
+                  <span className="bg-media-surface px-4 text-media-outline">Or join with</span>
+                </div>
+              </div>
+
+              <div className="mt-8 grid grid-cols-1 gap-4">
+                <button
+                  onClick={handleGoogleSignUp}
+                  disabled={loading}
+                  className="kinetic-hover flex items-center justify-center gap-3 h-12 rounded-lg bg-media-surface-container text-media-on-surface font-bold text-xs uppercase tracking-widest cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="size-4" viewBox="0 0 24 24">
+                    <path
+                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.9 3.14-1.92 4.16-1.12 1.12-2.8 2.34-5.92 2.34-4.82 0-8.76-3.86-8.76-8.68s3.94-8.68 8.76-8.68c2.6 0 4.6 1.02 6.02 2.38l2.32-2.32C18.84 1.34 15.9 0 12.48 0 6.1 0 0 5.1 0 12s6.1 12 12.48 12c3.48 0 6.1-1.14 8.12-3.26 2.1-2.1 2.76-5.06 2.76-7.44 0-.68-.06-1.34-.18-1.98h-10.74z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Google
+                </button>
+              </div>
+            </>
           )}
 
-          {/* <form onSubmit={handleEmailSignUp} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium">
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="you@example.com"
-                disabled={loading}
-              />
-            </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="••••••••"
-                disabled={loading}
-                minLength={6}
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Must be at least 6 characters
-              </p>
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="••••••••"
-                disabled={loading}
-                minLength={6}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="cursor-pointer w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Creating account..." : "Create account"}
-            </button>
-          </form> */}
-
-          {/* <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-muted" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div> */}
-
-          <button
-            onClick={handleGoogleSignUp}
-            disabled={loading}
-            className="cursor-pointer w-full rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <div className="flex items-center justify-center gap-2">
-              <svg className="h-5 w-5" viewBox="0 0 24 24">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              Sign up with Google
-            </div>
-          </button>
+          <footer className="mt-16 text-center text-xs text-media-on-surface-variant leading-relaxed opacity-60">
+            By joining Earthbound, you agree to our <Link href="/guidelines" className="underline">Editorial Integrity Guidelines</Link> and <Link href="/privacy" className="underline">Privacy Covenant</Link>. Our commitment is to the land and the digital footprint we leave upon it.
+          </footer>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-media-surface flex items-center justify-center font-lexend text-media-primary">Loading...</div>}>
+      <SignUpContent />
+    </Suspense>
   );
 }

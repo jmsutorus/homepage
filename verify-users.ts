@@ -1,4 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 import { getDatabase } from './lib/db';
+
+
+
 
 (async () => {
   const db = getDatabase();

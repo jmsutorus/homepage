@@ -40,9 +40,60 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Get user from Firebase
           const firebaseUser = await adminAuth.getUser(decodedToken.uid);
 
+          if (!firebaseUser.email) {
+            console.error("Firebase user missing email");
+            return null;
+          }
+
+          // Check if user exists in local database
+          const { queryOne, execute } = await import("@/lib/db");
+          const { populateUserColorsFromDefaults } = await import("@/lib/db/calendar-colors");
+
+          const existingUser = await queryOne<{ id: string }>(
+            "SELECT id FROM user WHERE email = ?",
+            [firebaseUser.email]
+          );
+
+          let userId = firebaseUser.uid;
+
+          if (existingUser) {
+            userId = existingUser.id;
+          } else {
+            // Create user in database
+            const now = Date.now();
+            await execute(
+              `INSERT INTO user (id, email, emailVerified, name, image, haptic, createdAt, updatedAt)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                firebaseUser.uid,
+                firebaseUser.email,
+                firebaseUser.emailVerified ? 1 : 0,
+                firebaseUser.displayName || null,
+                firebaseUser.photoURL || null,
+                1,
+                now,
+                now
+              ]
+            );
+
+            // Populate default calendar colors
+            try {
+              await populateUserColorsFromDefaults(firebaseUser.uid);
+            } catch (error) {
+              console.error("Failed to populate default calendar colors for user:", firebaseUser.uid, error);
+            }
+
+            // Add default role
+            try {
+              await execute("INSERT INTO user_roles (userId, role) VALUES (?, 'user')", [firebaseUser.uid]);
+            } catch (error) {
+              console.error("Failed to create user role:", error);
+            }
+          }
+
           return {
-            id: firebaseUser.uid,
-            email: firebaseUser.email!,
+            id: userId,
+            email: firebaseUser.email,
             name: firebaseUser.displayName || null,
             image: firebaseUser.photoURL || null,
             emailVerified: firebaseUser.emailVerified ? new Date() : null,
@@ -52,6 +103,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
       },
+
     }),
   ],
   callbacks: {

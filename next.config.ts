@@ -132,11 +132,16 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   // Allow webpack-based PWA plugin with Turbopack
   turbopack: {},
+  
   // Reduce memory usage during build by limiting workers
   experimental: {
     // Limit the number of workers for static page generation
     workerThreads: false,
     cpus: 1,
+    // Increase body size limit for Server Actions (e.g. for profile photo uploads)
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
   },
   images: {
     remotePatterns: [

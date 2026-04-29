@@ -86,6 +86,15 @@ export function Header() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            {isAuthenticated && (user as any)?.provider === "credentials" && (
+              <Button variant="ghost" size="icon" asChild className="text-[#434843] dark:text-[#e3e2e0]">
+                <Link href="/settings">
+                  <Settings className="h-[1.2rem] w-[1.2rem]" />
+                  <span className="sr-only">Settings</span>
+                </Link>
+              </Button>
+            )}
+
             <Button 
               variant="ghost" 
               size="icon" 
@@ -121,29 +130,33 @@ export function Header() {
                  <span className="text-[11px] font-bold text-[#1a1c1a] dark:text-[#faf9f6] truncate hidden md:block max-w-[100px]">
                    {user.name || user.email}
                  </span>
-                 <DropdownMenu>
-                   <DropdownMenuTrigger asChild>
-                     <button className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors lg:hidden">
-                       <span className="material-symbols-outlined text-sm block">settings</span>
-                     </button>
-                   </DropdownMenuTrigger>
-                   <DropdownMenuContent align="end">
-                      {(user as any).role === 'admin' && (
+                  {(user as any).role === 'admin' ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors lg:hidden">
+                          <span className="material-symbols-outlined text-sm block">settings</span>
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
                           <Link href="/admin" className="w-full cursor-pointer">
                             <Shield className="mr-2 h-4 w-4" />
                             Admin
                           </Link>
                         </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem asChild>
-                        <Link href="/settings" className="w-full cursor-pointer">
-                          <Settings className="mr-2 h-4 w-4" />
-                          Settings
-                        </Link>
-                      </DropdownMenuItem>
-                   </DropdownMenuContent>
-                 </DropdownMenu>
+                        <DropdownMenuItem asChild>
+                          <Link href="/settings" className="w-full cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" />
+                            Settings
+                          </Link>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <Link href="/settings" className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors lg:hidden">
+                      <span className="material-symbols-outlined text-sm block">settings</span>
+                    </Link>
+                  )}
               </div>
             )}
           </div>

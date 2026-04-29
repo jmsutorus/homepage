@@ -16,6 +16,7 @@ export function DashboardFooter() {
         <Link className="cursor-pointer hover:text-media-secondary transition-colors" href="/privacy">Privacy Policy</Link>
         <Link className="cursor-pointer hover:text-media-secondary transition-colors" href="https://buymeacoffee.com/homepage_sutorus" target="_blank">Buy me a coffee</Link>
         <Link className="cursor-pointer hover:text-media-secondary transition-colors" href="/contact">Support</Link>
+        <Link className="cursor-pointer hover:text-media-secondary transition-colors" href="https://docs.myterra.app">Docs</Link>
       </div>
     </footer>
   );

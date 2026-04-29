@@ -12,6 +12,7 @@ import { PWAInstallCard } from "@/components/widgets/settings/pwa-install-card";
 import { CalendarColorsManager } from "@/components/widgets/settings/calendar-colors-manager";
 import { HapticSettings } from "@/components/widgets/settings/haptic-settings";
 import { NotificationSettings } from "@/components/widgets/settings/notification-settings";
+import { ProfileManager } from "@/components/widgets/settings/profile-manager";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
@@ -59,6 +60,7 @@ export function SettingsPageClient({ connectedAccounts }: SettingsPageClientProp
               <h2 className="text-xl font-bold text-media-on-surface">Personal Profile</h2>
             </div>
             <div className="space-y-6 flex-1">
+              <ProfileManager />
               <BirthdayManager />
               <WeatherLocationManager />
               

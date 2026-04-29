@@ -39,7 +39,6 @@ export const footerContent: FooterContent = {
       links: [
         { label: "GitHub", href: "https://github.com/jmsutorus/homepage", icon: "code" },
         { label: "Discord", href: "#", icon: "forum" },
-        { label: "Instagram", href: "https://www.instagram.com/josephsutorus/", icon: "photo_camera" },
         { label: "About", href: "/about" },
       ],
     },
@@ -48,6 +47,7 @@ export const footerContent: FooterContent = {
       links: [
         { label: "Buy Me A Coffee", href: "https://buymeacoffee.com/homepage_sutorus", icon: "local_cafe", isHighlight: true },
         { label: "Support", href: "#" },
+        { label: "Docs", href: "https://docs.myterra.app" },
       ],
     },
   ],

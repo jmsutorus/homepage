@@ -13,7 +13,7 @@ export default function NotFound() {
       <main className="w-full max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12 lg:gap-24">
         {/* Illustration Side */}
         <div className="w-full md:w-1/2 flex justify-center order-2 md:order-1">
-          <div className="relative w-64 h-64 md:w-96 md:h-96 rounded-full overflow-hidden bg-media-surface-container-low isolate">
+          <div className="relative w-64 h-64 md:w-96 md:h-96 rounded-full overflow-hidden bg-media-surface-container-low dark:bg-white/80 isolate">
             <Image
               alt="Lost hiker illustration"
               className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-90"

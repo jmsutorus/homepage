@@ -22,7 +22,7 @@ export default function PrivacyPage() {
       </header>
 
       <div className="px-4 md:px-10 lg:px-20 xl:px-40 flex flex-1 justify-center py-16 mt-16">
-        <div className="layout-content-container flex flex-col w-full max-w-[1200px] flex-1 bg-media-surface shadow-[0_0_64px_rgba(6,27,14,0.02)] rounded-2xl overflow-hidden">
+        <div className="layout-content-container flex flex-col w-full max-w-[1200px] flex-1 bg-media-surface rounded-2xl overflow-hidden">
           {/* Main Content Area */}
           <main className="flex-1 flex flex-col px-6 py-12 md:px-16 lg:px-24 max-w-4xl bg-media-surface relative mx-auto">
             {/* Header Section */}

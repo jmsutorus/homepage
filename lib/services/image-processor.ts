@@ -30,37 +30,62 @@ export async function convertToWebP(
 
   console.log(`Image processor: converting file ${file.name} (${extension}) to WebP...`);
 
-  // Fetch token using google-auth-library if not testing locally
+  let currentBackendUrl = BACKEND_URL;
   let token = "";
-  if (!BACKEND_URL.includes("localhost") && !BACKEND_URL.includes("127.0.0.1")) {
-    try {
-      const auth = new GoogleAuth();
-      const client = await auth.getIdTokenClient(BACKEND_URL);
-      if (client.idTokenProvider) {
-        token = await client.idTokenProvider.fetchIdToken(BACKEND_URL);
+
+  const fetchToken = async (url: string) => {
+    if (!url.includes("localhost") && !url.includes("127.0.0.1")) {
+      try {
+        const auth = new GoogleAuth();
+        const client = await auth.getIdTokenClient(url);
+        if (client.idTokenProvider) {
+          return await client.idTokenProvider.fetchIdToken(url);
+        }
+      } catch (authError) {
+        console.error(`Failed to fetch OIDC token for ${url}:`, authError);
       }
-    } catch (authError) {
-      console.error("Failed to fetch OIDC token for image conversion:", authError);
     }
-  }
+    return "";
+  };
+
+  token = await fetchToken(currentBackendUrl);
 
   const formData = new FormData();
   formData.append("file", file);
 
-  const targetUrl = new URL(`${BACKEND_URL}/convert-to-webp`);
-  targetUrl.searchParams.append("quality", quality.toString());
-  targetUrl.searchParams.append("lossless", lossless.toString());
+  const tryFetch = async (baseUrl: string, authToken: string) => {
+    const targetUrl = new URL(`${baseUrl}/convert-to-webp`);
+    targetUrl.searchParams.append("quality", quality.toString());
+    targetUrl.searchParams.append("lossless", lossless.toString());
 
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    const headers: Record<string, string> = {};
+    if (authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
+    return await fetch(targetUrl.toString(), {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+  };
+
+  let response;
+  try {
+    response = await tryFetch(currentBackendUrl, token);
+  } catch (error) {
+    if (
+      ((error as any).code === "ECONNREFUSED" || (error as Error).message.includes("fetch failed")) &&
+      currentBackendUrl.includes("localhost")
+    ) {
+      console.warn(`Local image processing service at ${currentBackendUrl} not running. Falling back to production...`);
+      currentBackendUrl = "https://image-processing-backend-705251858590.us-central1.run.app";
+      token = await fetchToken(currentBackendUrl);
+      response = await tryFetch(currentBackendUrl, token);
+    } else {
+      throw error;
+    }
   }
-
-  const response = await fetch(targetUrl.toString(), {
-    method: "POST",
-    headers,
-    body: formData,
-  });
 
   if (!response.ok) {
     const errorText = await response.text();

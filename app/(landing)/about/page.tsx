@@ -21,7 +21,7 @@ export default function AboutPage() {
         </div>
       </header>
 
-      <main className="flex-grow pt-24 md:pt-32">
+      <main className="flex-growmd:pt-32">
         {/* Hero Section */}
         <section className="relative w-full h-[614px] md:h-[819px] flex items-center justify-center bg-media-surface-container-low mb-24 overflow-hidden">
           <div className="absolute inset-0 w-full h-full">
