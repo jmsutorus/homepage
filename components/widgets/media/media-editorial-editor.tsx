@@ -269,7 +269,7 @@ export function MediaEditorialEditor({
 
 
   return (
-    <main className="min-h-screen bg-media-surface text-media-primary selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed font-lexend">
+    <main className="min-h-screen text-media-primary selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed font-lexend">
       {/* Search Modals */}
       <IMDBSearchModal
         open={isIMDBModalOpen}
@@ -596,19 +596,19 @@ export function MediaEditorialEditor({
             isScrolled ? "ring-1 ring-media-outline-variant/20" : ""
           )}>
             {/* Custom Header Toolbar */}
-            <div className="px-8 py-3 border-b border-media-surface-container-low flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
+            <div className="px-8 py-3 border-b border-media-surface-container-low flex items-center justify-between bg-media-surface-container-lowest/80 backdrop-blur-md sticky top-0 z-20">
               <div className="flex items-center gap-1">
                 <button 
                   type="button"
                   onClick={() => insertMarkdown('# ', '')}
-                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl">format_h1</span>
                 </button>
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('## ', '')}
-                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl">format_h2</span>
                 </button>
@@ -616,21 +616,21 @@ export function MediaEditorialEditor({
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('**', '**')}
-                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl font-bold">format_bold</span>
                 </button>
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('*', '*')}
-                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl italic">format_italic</span>
                 </button>
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('> ', '')}
-                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl">format_quote</span>
                 </button>
@@ -638,20 +638,20 @@ export function MediaEditorialEditor({
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('- ', '')}
-                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl">format_list_bulleted</span>
                 </button>
                 <button 
                    type="button"
                    onClick={() => insertMarkdown('[', '](url)')}
-                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface-variant hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
+                  className="cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center text-media-on-surface hover:bg-media-surface-container-low hover:text-media-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-xl">link</span>
                 </button>
               </div>
 
-              <div className="flex items-center gap-4 text-[10px] font-bold text-media-on-surface-variant uppercase tracking-widest opacity-60">
+              <div className="flex items-center gap-4 text-[10px] font-bold text-media-on-surface uppercase tracking-widest opacity-80">
                 <span>{content.split(/\s+/).filter(Boolean).length} Words</span>
                 <span className="text-media-secondary flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-media-secondary animate-pulse" />
