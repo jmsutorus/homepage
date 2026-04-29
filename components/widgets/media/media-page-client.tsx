@@ -22,6 +22,7 @@ import { MediaHero } from "./media-hero";
 import { MediaActiveJourneys } from "./media-active-journeys";
 import { MediaCuratedBento } from "./media-curated-bento";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
+import { useHaptic } from "@/hooks/use-haptic";
 
 // Convert MediaContent to MediaItem
 function dbToMediaItem(dbMedia: MediaContent): MediaItem {
@@ -80,6 +81,7 @@ export function MediaPageClient({
 }: MediaPageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const haptic = useHaptic();
   const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "book" | "game" | "album" | "planned">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("completed-desc");
@@ -174,8 +176,31 @@ export function MediaPageClient({
     setActiveTags(newTags);
   };
 
+  if (allMedia.length === 0) {
+    return (
+      <div className="flex min-h-screen font-lexend -mx-4 -my-8 md:-mx-8 items-center justify-center w-full">
+        <div className="flex flex-col items-center text-center px-4 max-w-md">
+          <div className="w-24 h-24 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary mb-6 shadow-inner">
+            <span className="material-symbols-outlined text-5xl">library_music</span>
+          </div>
+          <h2 className="text-3xl font-black text-media-primary mb-3 tracking-tight">Your Media Library is Empty</h2>
+          <p className="text-media-on-surface-variant font-medium mb-8">
+            Start tracking your favorite movies, TV shows, books, and games. Curate your personal collection and rating archive.
+          </p>
+          <button 
+            onClick={() => { haptic.trigger("light"); router.push("/media/new"); }}
+            className="cursor-pointer bg-media-secondary text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-media-secondary/20 border-none"
+          >
+            <span className="material-symbols-outlined text-xl">add</span>
+            <span>Add Your First Entry</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex bg-media-surface dark:bg-media-primary min-h-screen font-lexend -mx-4 -my-8 md:-mx-8">
+    <div className="flex min-h-screen font-lexend -mx-4 -my-8 md:-mx-8">
       {/* Floating Action Button */}
       <FloatingActionButton 
         onClick={() => router.push("/media/new")}
@@ -194,7 +219,9 @@ export function MediaPageClient({
             <MediaActiveJourneys items={inProgressMedia} />
 
             {/* Curated Bento Grid */}
-            <MediaCuratedBento curations={curations} updatedAt={updatedAt} userId={userId} />
+            {allMedia.length >= 5 && (
+              <MediaCuratedBento curations={curations} updatedAt={updatedAt} userId={userId} />
+            )}
 
             {/* Sub-Navigation & Search (Integrated into page per feedback) */}
             <div className="mb-12">
@@ -219,7 +246,7 @@ export function MediaPageClient({
                         "pb-2 transition-all duration-300 relative border-none bg-transparent cursor-pointer",
                         activeTab === tab 
                           ? "text-media-secondary" 
-                          : "text-media-on-surface-variant dark:text-media-surface-variant/60 hover:text-media-secondary opacity-70 hover:opacity-100"
+                          : "text-media-on-surface-variant hover:text-media-secondary opacity-70 hover:opacity-100"
                       )}
                     >
                       {tab === "all" ? "LIBRARY" : tab === "movie" ? "MOVIES" : tab === "tv" ? "TV" : tab === "book" ? "BOOKS" : tab === "game" ? "GAMES" : "PLANNED"}
@@ -323,7 +350,7 @@ export function MediaPageClient({
             <section className="mt-24">
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
                 <div>
-                  <h2 className="text-3xl font-black tracking-tight text-media-primary dark:text-media-surface mb-2">
+                  <h2 className="text-3xl font-black tracking-tight text-media-primary mb-2">
                     {activeTab === "planned" ? "Planned Media" : "My Library"}
                   </h2>
                   <p className="text-media-on-surface-variant font-medium">

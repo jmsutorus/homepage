@@ -10,7 +10,7 @@ export default async function ManageTasksPage() {
 
   const [tasks, categories, customStatuses, templates] = await Promise.all([
     getAllTasks({}, userId),
-    getAllTaskCategories(), // This one doesn't take userId in the lib, it seems? Wait, let me re-check lib/db/tasks.ts
+    getAllTaskCategories(userId),
     getCustomTaskStatuses(userId),
     getTaskTemplates(userId),
   ]);

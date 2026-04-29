@@ -9,6 +9,7 @@ import type { EventWithCoverPhoto } from '@/lib/db/events';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { HomePageButton } from '@/Shared/Components/Buttons/HomePageButton';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
+import { useHaptic } from "@/hooks/use-haptic";
 
 interface EventsPageClientProps {
   events: EventWithCoverPhoto[];
@@ -16,6 +17,7 @@ interface EventsPageClientProps {
 
 export function EventsPageClient({ events }: EventsPageClientProps) {
   const router = useRouter();
+  const haptic = useHaptic();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [viewTab, setViewTab] = useState('events');
@@ -133,22 +135,27 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
 
             <TabsContent value="events" className="mt-0">
               {filteredEvents.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-32 text-center">
-                  <div className="w-20 h-20 bg-surface-container rounded-full flex items-center justify-center mb-6 text-on-surface-variant/30">
-                    <Calendar className="w-10 h-10" />
+                <div className="flex min-h-[60vh] items-center justify-center w-full py-12">
+                  <div className="flex flex-col items-center text-center px-4 max-w-md">
+                    <div className="w-24 h-24 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary mb-6 shadow-inner">
+                      <span className="material-symbols-outlined text-5xl">event</span>
+                    </div>
+                    <h2 className="text-3xl font-black text-media-primary mb-3 tracking-tight">
+                      {searchTerm || categoryFilter !== 'all' ? "No Events Found" : "Your Calendar is Clear"}
+                    </h2>
+                    <p className="text-media-on-surface-variant font-medium mb-8">
+                      {searchTerm || categoryFilter !== 'all' 
+                        ? "Try adjusting your search or filters to find what you're looking for."
+                        : "Start documenting your curated moments and upcoming milestones. Create a record of your social journeys."}
+                    </p>
+                    <button 
+                      onClick={() => { haptic.trigger("light"); router.push("/events/new"); }}
+                      className="cursor-pointer bg-media-secondary text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-media-secondary/20 border-none"
+                    >
+                      <span className="material-symbols-outlined text-xl">add</span>
+                      <span>{searchTerm || categoryFilter !== 'all' ? "Add New Event" : "Create Your First Event"}</span>
+                    </button>
                   </div>
-                  <h3 className="text-2xl font-bold text-primary">No events found</h3>
-                  <p className="text-on-surface-variant font-light mt-2 max-w-xs mx-auto">
-                    {searchTerm || categoryFilter !== 'all' 
-                      ? "Try adjusting your search or filters to find what you're looking for."
-                      : "Your calendar is clear. Time to plan something new!"}
-                  </p>
-                  <HomePageButton 
-                    onClick={() => router.push('/events/new')}
-                    className="mt-8 px-8 py-6 h-auto"
-                  >
-                    Create your first event
-                  </HomePageButton>
                 </div>
               ) : (
                 <>

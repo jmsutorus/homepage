@@ -13,6 +13,7 @@ import { EditorialVacationCard } from './editorial-vacation-card';
 import { TreasuryCard } from './treasury-card';
 import { cn } from '@/lib/utils';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
+import { useHaptic } from "@/hooks/use-haptic";
 
 interface VacationPageClientProps {
   vacations: Vacation[];
@@ -20,6 +21,7 @@ interface VacationPageClientProps {
 
 export function VacationPageClient({ vacations }: VacationPageClientProps) {
   const router = useRouter();
+  const haptic = useHaptic();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<VacationStatus | 'all'>('all');
 
@@ -63,8 +65,31 @@ export function VacationPageClient({ vacations }: VacationPageClientProps) {
     });
   }, [archived, searchTerm, statusFilter]);
 
+  if (vacations.length === 0) {
+    return (
+      <div className="flex min-h-screen font-lexend -mx-4 -my-8 md:-mx-8 items-center justify-center w-full">
+        <div className="flex flex-col items-center text-center px-4 max-w-md">
+          <div className="w-24 h-24 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary mb-6 shadow-inner">
+            <span className="material-symbols-outlined text-5xl">flight_takeoff</span>
+          </div>
+          <h2 className="text-3xl font-black text-media-primary mb-3 tracking-tight">Your Atlas is Empty</h2>
+          <p className="text-media-on-surface-variant font-medium mb-8">
+            Start planning your next getaway, road trip, or international voyage. Curate your personal travel archive.
+          </p>
+          <button 
+            onClick={() => { haptic.trigger("light"); router.push("/vacations/new"); }}
+            className="cursor-pointer bg-media-secondary text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-media-secondary/20 border-none"
+          >
+            <span className="material-symbols-outlined text-xl">add</span>
+            <span>Add Your First Entry</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-media-background selection:bg-media-secondary/30">
+    <div className="min-h-screen selection:bg-media-secondary/30">
       <main>
         {/* Section 1: Hero / Spotlight */}
         {spotlight && (
@@ -153,7 +178,7 @@ export function VacationPageClient({ vacations }: VacationPageClientProps) {
         )}
 
         {/* Section 3: Travel Treasury */}
-        <section className="bg-media-surface-container-low/50 py-24 lg:py-32">
+        <section className="py-24 lg:py-32">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="flex flex-col items-center text-center mb-16 lg:mb-20">
               <h3 className="text-3xl lg:text-4xl font-bold text-media-primary tracking-tight mb-8 font-lexend">

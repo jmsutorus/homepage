@@ -18,7 +18,7 @@ export async function GET() {
     // Ensure user has default categories if they don't have any
     await ensureDefaultCategories(userId);
 
-    const categories = await getAllTaskCategories();
+    const categories = await getAllTaskCategories(userId);
     return NextResponse.json(categories);
   } catch (error) {
     console.error("Error fetching task categories:", error);

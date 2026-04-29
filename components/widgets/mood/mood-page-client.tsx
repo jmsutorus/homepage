@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useHaptic } from "@/hooks/use-haptic";
 
 interface MoodPageClientProps {
   initialMoodData: MoodEntry[];
@@ -24,6 +25,7 @@ const MOODS = [
 export function MoodPageClient({ initialMoodData, userId }: MoodPageClientProps) {
   const [moodData, setMoodData] = useState<MoodEntry[]>(initialMoodData);
   const [isLogging, setIsLogging] = useState(false);
+  const haptic = useHaptic();
 
   // Last 30 days of mood data for the landscape
   const last30Days = useMemo(() => {
@@ -81,6 +83,7 @@ export function MoodPageClient({ initialMoodData, userId }: MoodPageClientProps)
   }, [moodData]);
 
   const handleMoodSelect = async (rating: number) => {
+    haptic.trigger("light");
     const today = format(new Date(), "yyyy-MM-dd");
     setIsLogging(true);
 
@@ -326,34 +329,7 @@ export function MoodPageClient({ initialMoodData, userId }: MoodPageClientProps)
           <div className="absolute right-[-10%] bottom-[-20%] w-96 h-96 bg-media-secondary opacity-20 rounded-full blur-3xl"></div>
           <div className="absolute left-[-5%] top-[-10%] w-64 h-64 bg-media-primary opacity-30 rounded-full blur-3xl"></div>
         </motion.section>
-
-        {/* Footer */}
-        <footer className="mt-24 py-12 border-t border-media-outline-variant/20 text-center">
-          <p className="font-label uppercase tracking-widest text-[10px] text-media-on-surface-variant">
-            © {new Date().getFullYear()} Journal — The Earthbound Editorial
-          </p>
-        </footer>
       </main>
-
-      {/* BottomNavBar for Mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-media-surface/80 backdrop-blur-xl flex justify-around items-center py-5 px-4 z-50 border-t border-media-outline-variant/10 shadow-2xl safe-area-bottom">
-        <a className="flex flex-col items-center gap-1.5 text-media-secondary" href="#">
-          <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>mood</span>
-          <span className="text-[10px] font-bold uppercase tracking-wider">Daily</span>
-        </a>
-        <a className="flex flex-col items-center gap-1.5 text-media-on-surface-variant" href="#">
-          <span className="material-symbols-outlined text-2xl">edit_note</span>
-          <span className="text-[10px] uppercase tracking-wider">Entry</span>
-        </a>
-        <a className="flex flex-col items-center gap-1.5 text-media-on-surface-variant" href="#">
-          <span className="material-symbols-outlined text-2xl">landscape</span>
-          <span className="text-[10px] uppercase tracking-wider">Trends</span>
-        </a>
-        <a className="flex flex-col items-center gap-1.5 text-media-on-surface-variant" href="#">
-          <span className="material-symbols-outlined text-2xl">analytics</span>
-          <span className="text-[10px] uppercase tracking-wider">Insights</span>
-        </a>
-      </nav>
 
       <style jsx global>{`
         .landscape-gradient {

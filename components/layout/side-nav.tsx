@@ -70,9 +70,7 @@ export function SideNav() {
       <div className="flex flex-col gap-1 py-6 h-full w-full">
         <div className="px-8 mb-8">
           <Link href="/home" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-lg bg-[#061b0e] flex items-center justify-center text-[#ffffff]">
-              <span className="material-symbols-outlined">temp_preferences_custom</span>
-            </div>
+             <img src="/favicon-96x96.png" alt="Homepage" className="w-10 h-10 rounded-lg object-contain" />
             <div>
               <h1 className="text-xl font-bold text-[#061b0e] dark:text-[#faf9f6] tracking-tighter group-hover:text-[#9f402d] transition-colors">
                 Homepage

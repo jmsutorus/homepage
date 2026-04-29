@@ -93,9 +93,7 @@ export function MobileNav() {
       <SheetContent side="left" className="w-[300px] p-0 bg-[#faf9f6] dark:bg-[#061b0e]">
         <SheetHeader className="p-6 border-b border-outline-variant/10">
           <SheetTitle className="text-left flex items-center gap-2">
-            <div className="w-8 h-8 rounded bg-[#061b0e] flex items-center justify-center text-[#ffffff]">
-              <span className="material-symbols-outlined text-sm">temp_preferences_custom</span>
-            </div>
+             <img src="/favicon-96x96.png" alt="Homepage" className="w-8 h-8 rounded object-contain" />
             <span className="font-bold tracking-tighter">Homepage</span>
           </SheetTitle>
         </SheetHeader>

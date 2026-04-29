@@ -23,6 +23,7 @@ import {
   Plus
 } from 'lucide-react';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
+import { toast } from 'sonner';
 import { TagInput } from '@/components/search/tag-input';
 import { GenreInput } from '@/components/search/genre-input';
 import { CreatorInput } from '@/components/search/creator-input';
@@ -90,6 +91,7 @@ export function MediaEditorialEditor({
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const hasAutoSearched = useRef(false);
 
   // Monitor scroll for sticky header effects
   useEffect(() => {
@@ -99,6 +101,54 @@ export function MediaEditorialEditor({
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Auto-search IMDB if title is present on mount (e.g. from curated suggestions)
+  useEffect(() => {
+    if (hasAutoSearched.current) return;
+    
+    const triggerInitialSearch = async () => {
+      if (mode === 'create' && initialFrontmatter?.title) {
+        hasAutoSearched.current = true;
+        try {
+          const searchTitle = initialFrontmatter.title.replace(/\s*\([^)]*\)/g, '').trim();
+          toast.info(`Searching IMDB for "${searchTitle}"...`);
+          
+          const response = await fetch('/api/imdb/search', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: searchTitle }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.title) {
+              setFrontmatter(prev => ({
+                ...prev,
+                title: data.title || prev.title,
+                type: data.type || prev.type,
+                rating: data.rating !== undefined ? data.rating : prev.rating,
+                released: data.released || prev.released,
+                genres: data.genres && data.genres.length > 0 ? data.genres : prev.genres,
+                poster: data.poster || prev.poster,
+                description: data.description || prev.description,
+                length: data.length || prev.length,
+                creator: data.creator && data.creator.length > 0 ? data.creator : prev.creator,
+              }));
+              toast.success(`Loaded "${data.title}" from IMDB!`);
+            }
+          } else {
+            console.log("IMDB search did not return a result or failed.");
+          }
+        } catch (err) {
+          console.error("Failed to auto-search IMDB", err);
+        }
+      }
+    };
+
+    triggerInitialSearch();
+  }, [mode, initialFrontmatter]);
 
   const normalizeDate = (dateString: string): string => {
     try {
@@ -527,7 +577,7 @@ export function MediaEditorialEditor({
               }
               setIsContentExpanded(!isContentExpanded);
             }}
-            className="w-full py-4 bg-media-surface-container-low rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-media-primary hover:bg-media-surface-container-high transition-colors shadow-sm border border-media-outline-variant/10"
+            className="cursor-pointer w-full py-4 bg-media-surface-container-low rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-media-primary hover:bg-media-surface-container-high transition-colors shadow-sm border border-media-outline-variant/10"
           >
             <span className="material-symbols-outlined">
               {isContentExpanded ? 'expand_less' : 'expand_more'}

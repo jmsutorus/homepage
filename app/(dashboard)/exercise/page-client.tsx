@@ -414,7 +414,7 @@ export function ExercisePageClient({
                 </div>
               ) : (
                 <>
-                  {!generatedPlan?.profileAnswers && (
+                  {!generatedPlan?.profileAnswers ? (
                     <PlanQuestionnaireModal onPlanGenerated={(plan) => { setGeneratedPlan(plan); router.refresh(); }}>
                       <div className="contents" onClick={() => haptic.trigger("light")}>
                         <Button 
@@ -426,20 +426,20 @@ export function ExercisePageClient({
                         </Button>
                       </div>
                     </PlanQuestionnaireModal>
+                  ) : (
+                    <Button 
+                      className="rounded-xl bg-gradient-to-r from-emerald-600 to-lime-500 hover:from-emerald-700 hover:to-lime-600 text-white font-black tracking-tight px-6 h-12 shadow-md transition-all hover:scale-105 border-none disabled:opacity-70 disabled:hover:scale-100"
+                      onClick={handleGeneratePlan}
+                      disabled={isGeneratingPlan}
+                    >
+                      {isGeneratingPlan ? (
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-5 h-5 mr-2" />
+                      )}
+                      {isGeneratingPlan ? "Generating..." : "Generate AI Plan"}
+                    </Button>
                   )}
-
-                  <Button 
-                    className="rounded-xl bg-gradient-to-r from-emerald-600 to-lime-500 hover:from-emerald-700 hover:to-lime-600 text-white font-black tracking-tight px-6 h-12 shadow-md transition-all hover:scale-105 border-none disabled:opacity-70 disabled:hover:scale-100"
-                    onClick={handleGeneratePlan}
-                    disabled={isGeneratingPlan}
-                  >
-                    {isGeneratingPlan ? (
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-5 h-5 mr-2" />
-                    )}
-                    {isGeneratingPlan ? "Generating..." : "Generate AI Plan"}
-                  </Button>
                 </>
               )}
             </div>
@@ -596,7 +596,7 @@ export function ExercisePageClient({
               <div className="rounded-2xl border-2 border-dashed border-border/50 p-12 text-center flex flex-col items-center justify-center gap-4">
                 <p className="text-muted-foreground font-medium">No goals set yet. Define what you want to achieve.</p>
                 <AddGoalModal>
-                  <Button variant="default" className="rounded-full px-6 font-bold" onClick={() => haptic.trigger("light")}>
+                  <Button variant="default" className="rounded-md px-6 font-bold" onClick={() => haptic.trigger("light")}>
                     Set a Goal
                   </Button>
                 </AddGoalModal>

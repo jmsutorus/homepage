@@ -422,9 +422,9 @@ export function CommandPalette({ className }: CommandPaletteProps) {
       {/* Navigation Groups when no search */}
       {!isSearchMode && (
         <section>
-          <h3 className="text-[10px] font-bold text-media-secondary uppercase tracking-[0.2em] mb-6 px-1">Navigation</h3>
+          <h3 className="text-[10px] font-bold text-media-secondary uppercase tracking-[0.2em] mb-6 px-1">Quick Add</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {[...navigationCommands.commands, ...quickAddCommands.commands].map((cmd) => (
+            {[...quickAddCommands.commands].map((cmd) => (
               <button
                 key={cmd.id}
                 onClick={cmd.action}

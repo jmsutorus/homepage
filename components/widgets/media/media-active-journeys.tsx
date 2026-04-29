@@ -13,7 +13,7 @@ export function MediaActiveJourneys({ items }: MediaActiveJourneysProps) {
   return (
     <section className="px-4 sm:px-8 mb-12 font-lexend">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-black tracking-tight text-media-primary dark:text-media-surface">Active Journeys</h2>
+        <h2 className="text-2xl font-black tracking-tight text-media-primary">Active Journeys</h2>
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">

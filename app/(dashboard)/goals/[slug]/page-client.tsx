@@ -766,16 +766,7 @@ export function GoalDetailClient({ goal: initialGoal, links }: GoalDetailClientP
             )}
           </div>
           
-          <div className="aspect-square rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-700 cursor-pointer shadow-xl relative group">
-            <img 
-              alt="Goal Context" 
-              className="w-full h-full object-cover" 
-              src={goal.slug?.includes("piano") ? "https://lh3.googleusercontent.com/aida-public/AB6AXuB214UbpUWFuWmys_wFDBXh0T6m0uH2V3hMsMxE29F8l_EajPbUeHez0GMIbP2douBSC33u0v6cNGXiDGTYaY5ENnvP_RaFxpvIXlndHyJ0l6GgVWypON_QDnRLik3A5mqzLUK6S-0PgsSRVjO2A95vUhHFq2rcuohqf-3o7HKX7gIvy8qLRDobi9Lj0u3sK68LG-59tJ9aP3WyE-K1su1klYZxHBD_b_ZcLYCwSz6VG-yJMApaWWdxq_wRJc86pVOzKGWEeMV_8BA" : "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop"}
-            />
-            <div className="absolute inset-0 bg-media-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <span className="text-white text-xs font-bold uppercase tracking-widest">Detail View</span>
-            </div>
-          </div>
+
         </div>
 
         {/* Personal Reflections & Linked Items */}

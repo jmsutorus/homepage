@@ -5,7 +5,7 @@ import Link from "next/link";
 import { MobileNav } from "./mobile-nav";
 import { useAuth } from "@/hooks/useAuth";
 
-import { Settings, Shield, Calendar } from "lucide-react";
+import { Settings, Shield, Calendar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import {
@@ -36,10 +36,8 @@ export function Header() {
           <div className="md:hidden flex items-center gap-2">
             <MobileNav />
             <Link href="/home" className="flex items-center gap-2">
-               <div className="w-8 h-8 rounded bg-[#061b0e] flex items-center justify-center text-[#ffffff]">
-                  <span className="material-symbols-outlined text-sm">temp_preferences_custom</span>
-               </div>
-               <span className="font-bold tracking-tighter">Homepage</span>
+               <img src="/favicon-96x96.png" alt="Homepage" className="w-8 h-8 rounded object-contain" />
+               <span className="font-bold tracking-tighter hidden sm:inline">Homepage</span>
             </Link>
           </div>
           
@@ -88,6 +86,23 @@ export function Header() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="sm:hidden text-[#434843] dark:text-[#e3e2e0]"
+              onClick={() => {
+                const event = new KeyboardEvent("keydown", {
+                  key: "k",
+                  metaKey: true,
+                  ctrlKey: true,
+                  bubbles: true,
+                });
+                document.dispatchEvent(event);
+              }}
+            >
+              <Search className="h-[1.2rem] w-[1.2rem]" />
+              <span className="sr-only">Search</span>
+            </Button>
             <Button variant="ghost" size="icon" asChild className="lg:hidden text-[#434843] dark:text-[#e3e2e0]">
               <Link href="/calendar">
                 <Calendar className="h-[1.2rem] w-[1.2rem]" />

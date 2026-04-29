@@ -618,7 +618,7 @@ export function ParkEditorialEditor({
                   }
                   setIsContentExpanded(!isContentExpanded);
                 }}
-                className="w-full py-4 bg-media-surface-container-low rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-media-primary hover:bg-media-surface-container-high transition-colors shadow-sm border border-media-outline-variant/10 mb-6"
+                className="cursor-pointer w-full py-4 bg-media-surface-container-low rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-media-primary hover:bg-media-surface-container-high transition-colors shadow-sm border border-media-outline-variant/10 mb-6"
               >
                 <span className="material-symbols-outlined">
                   {isContentExpanded ? 'expand_less' : 'expand_more'}

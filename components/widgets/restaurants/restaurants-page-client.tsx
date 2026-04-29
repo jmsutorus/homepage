@@ -8,6 +8,7 @@ import { Star, ArrowRight, Heart } from 'lucide-react';
 import type { Restaurant } from '@/lib/db/restaurants';
 import { cn } from '@/lib/utils';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
+import { useHaptic } from "@/hooks/use-haptic";
 
 interface RestaurantsPageClientProps {
   restaurants: (Restaurant & { visitCount: number; lastVisitDate: string | null })[];
@@ -15,6 +16,7 @@ interface RestaurantsPageClientProps {
 
 export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProps) {
   const router = useRouter();
+  const haptic = useHaptic();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -80,6 +82,29 @@ export function RestaurantsPageClient({ restaurants }: RestaurantsPageClientProp
   };
 
   const archiveItems = showAllArchive ? filteredRestaurants : filteredRestaurants.slice(0, 5);
+
+  if (restaurants.length === 0) {
+    return (
+      <div className="flex min-h-screen font-lexend -mx-4 -my-8 md:-mx-8 items-center justify-center w-full">
+        <div className="flex flex-col items-center text-center px-4 max-w-md">
+          <div className="w-24 h-24 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary mb-6 shadow-inner">
+            <span className="material-symbols-outlined text-5xl">restaurant</span>
+          </div>
+          <h2 className="text-3xl font-black text-media-primary mb-3 tracking-tight">Your Culinary Map is Empty</h2>
+          <p className="text-media-on-surface-variant font-medium mb-8">
+            Start documenting your favorite dining spots and hidden gems. Create a curated record of your gastronomic journeys.
+          </p>
+          <button 
+            onClick={() => { haptic.trigger("light"); router.push("/restaurants/new"); }}
+            className="cursor-pointer bg-media-secondary text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-media-secondary/20 border-none"
+          >
+            <span className="material-symbols-outlined text-xl">add</span>
+            <span>Add Your First Entry</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen font-lexend selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed -mx-4 md:-mx-8 -mt-8">

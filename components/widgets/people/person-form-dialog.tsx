@@ -566,7 +566,7 @@ export function PersonForm({ editingPerson, onSaved, onCancel, isDesktop = true,
 
       {/* Footer Actions */}
       <div className={cn(
-        "p-6 bg-media-surface-container-low border-t border-media-outline-variant/30 flex shrink-0",
+        "p-6 bg-media-surface-container-low dark:bg-media-surface border-t border-media-outline-variant/30 flex shrink-0",
         isDesktop ? "justify-end gap-3" : "flex-col-reverse gap-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
       )}>
         <button 
@@ -661,10 +661,10 @@ export function PersonFormDialog({ open, onOpenChange, editingPerson, onSuccess 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="p-0 border-none max-w-xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden bg-media-surface font-lexend show-close-button-false">
+        <DialogContent showCloseButton={false} className="p-0 border-none max-w-xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden bg-media-surface font-lexend">
           {/* Modal Header */}
           {!showSuccess && (
-            <div className="px-8 py-6 border-b border-media-outline-variant/30 flex justify-between items-center bg-media-surface-container-low shrink-0">
+            <div className="px-8 py-6 border-b border-media-outline-variant/30 flex justify-between items-center bg-media-surface-container-low dark:bg-media-surface shrink-0">
               <div>
                 <DialogTitle asChild>
                   <h2 className="text-2xl font-bold text-media-primary tracking-tight">

@@ -43,6 +43,17 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
     return hasParseableContent(rawInput);
   }, [rawInput]);
 
+  const uniqueCategories = useMemo(() => {
+    const seen = new Set<string>();
+    return categories.filter((cat) => {
+      if (!cat.name) return false;
+      const lower = cat.name.toLowerCase().trim();
+      if (seen.has(lower)) return false;
+      seen.add(lower);
+      return true;
+    });
+  }, [categories]);
+
   const showNLPHint = parsedContent && (parsedContent.hasDate || parsedContent.hasPriority);
 
   // Fetch categories and statuses on mount
@@ -330,7 +341,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No Category</SelectItem>
-                {categories.map((cat) => (
+                {uniqueCategories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.name}>
                     {cat.name}
                   </SelectItem>

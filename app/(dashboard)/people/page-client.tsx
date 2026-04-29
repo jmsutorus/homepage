@@ -14,6 +14,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Link from "next/link";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
+import { useHaptic } from "@/hooks/use-haptic";
 
 interface PeoplePageClientProps {
   initialPeople: Person[];
@@ -52,6 +53,7 @@ type SortOption = "name" | "birthday" | "upcoming";
 
 export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
   const [people, setPeople] = useState<Person[]>(initialPeople);
+  const haptic = useHaptic();
   const [filteredPeople, setFilteredPeople] = useState<Person[]>(initialPeople);
   const [selectedFilter, setSelectedFilter] = useState<RelationshipCategory | "all">("all");
   const [sortBy, setSortBy] = useState<SortOption>("name");
@@ -211,7 +213,28 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-lexend text-media-on-surface">
-      {/* Hero & Editorial Title */}
+      {people.length === 0 ? (
+        <div className="flex min-h-[60vh] items-center justify-center w-full py-12">
+          <div className="flex flex-col items-center text-center px-4 max-w-md">
+            <div className="w-24 h-24 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary mb-6 shadow-inner">
+              <span className="material-symbols-outlined text-5xl">group</span>
+            </div>
+            <h2 className="text-3xl font-black text-media-primary mb-3 tracking-tight">Your Inner Circle is Empty</h2>
+            <p className="text-media-on-surface-variant font-medium mb-8">
+              Start adding friends, family, and colleagues. Keep track of important milestones, birthdays, and relationship logs.
+            </p>
+            <button 
+              onClick={() => { haptic.trigger("light"); openAddDialog(); }}
+              className="cursor-pointer bg-brand text-brand-foreground px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg border-none"
+            >
+              <span className="material-symbols-outlined text-xl">person_add</span>
+              <span>Add Your First Entry</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Hero & Editorial Title */}
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-media-primary leading-none mb-4">The People Directory</h1>
@@ -219,7 +242,7 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
         </div>
         <button 
           onClick={openAddDialog}
-          className="cursor-pointer bg-media-primary text-white px-8 py-4 rounded-lg hidden md:flex items-center gap-3 self-start md:self-auto hover:scale-105 transition-transform"
+          className="cursor-pointer bg-brand text-brand-foreground px-8 py-4 rounded-lg hidden md:flex items-center gap-3 self-start md:self-auto hover:scale-105 hover:bg-brand/90 transition-all shadow-md"
         >
           <span className="material-symbols-outlined">person_add</span>
           <span className="font-bold tracking-tight">Add Person</span>
@@ -243,7 +266,8 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
         </div>
 
         <TabsContent value="people" className="space-y-12">
-          {/* Summary Widget */}
+
+              {/* Summary Widget */}
           <div className="bg-media-surface-container-low rounded-xl p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex flex-col gap-1 border-r border-media-outline-variant/20 pr-4">
               <span className="text-xs uppercase tracking-widest text-media-secondary font-bold">Volume</span>
@@ -474,7 +498,8 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
               </div>
             </div>
           </div>
-        </TabsContent>
+
+    </TabsContent>
 
         <TabsContent value="manage" className="mt-8">
           <div className="bg-media-surface-container-low rounded-xl p-8 border border-media-outline-variant/10 shadow-sm">
@@ -486,6 +511,8 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
           </div>
         </TabsContent>
       </Tabs>
+        </>
+      )}
 
       {/* Add/Edit Dialog */}
       <PersonFormDialog
@@ -505,7 +532,8 @@ export function PeoplePageClient({ initialPeople }: PeoplePageClientProps) {
       <FloatingActionButton 
         onClick={openAddDialog}
         tooltipText="Add Person"
-        icon={<UserPlus className="h-8 w-8 text-media-on-secondary" />}
+        icon={<UserPlus className="h-8 w-8 text-brand-foreground" />}
+        className="bg-brand hover:bg-brand/90 text-brand-foreground shadow-brand/30"
       />
     </div>
   );

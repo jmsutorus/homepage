@@ -106,7 +106,7 @@ export function CalendarEditorial({
                 setTargetDate(new Date().toISOString().split('T')[0]);
                 setIsEventModalOpen(true);
               }}
-              className="cursor-pointer flex items-center gap-2 px-6 py-4 rounded-full bg-media-primary text-white font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all shadow-sm"
+              className="cursor-pointer flex items-center gap-2 px-6 py-4 rounded-md bg-brand text-brand-foreground font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all shadow-sm"
             >
               <MaterialSymbol icon="add" size={18} />
               New Entry
@@ -129,12 +129,14 @@ export function CalendarEditorial({
         </div>
 
         {/* Featured Content */}
-        <ComingUpSection 
-          events={editorialData.upcomingEvents}
-          peopleEvents={editorialData.peopleEvents}
-          vacations={editorialData.vacations}
-          milestones={editorialData.milestones}
-        />
+        {editorialData.milestones && editorialData.milestones.length > 0 && (
+          <ComingUpSection 
+            events={editorialData.upcomingEvents}
+            peopleEvents={editorialData.peopleEvents}
+            vacations={editorialData.vacations}
+            milestones={editorialData.milestones}
+          />
+        )}
 
         {/* Calendar Grid */}
         <CalendarGridEditorial 

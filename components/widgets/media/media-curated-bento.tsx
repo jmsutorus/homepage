@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Loader2 } from "lucide-react";
+import { useHaptic } from "@/hooks/use-haptic";
 
 interface CurationItem {
   title: string;
@@ -34,22 +38,53 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
   const [localCurations, setLocalCurations] = useState<CurationItem[]>(curations);
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
+  const haptic = useHaptic();
+  const router = useRouter();
   const isAdmin = user?.role === "admin";
+
+  const handleSuggestionClick = (title: string, reason: string) => {
+    haptic.trigger("light");
+    router.push(`/media/new?title=${encodeURIComponent(title)}&description=${encodeURIComponent(reason)}`);
+  };
   const getConsumedTitle = (item: any) => {
     if (typeof item === 'string') return item;
     return item?.title || 'Unknown Media';
   };
 
+  const getValidIcon = (icon: string | undefined, fallback: string = 'movie') => {
+    if (!icon) return fallback;
+    
+    const validIcons = [
+      'movie', 'tv', 'book', 'game', 'album', 'swords', 'rocket_launch', 
+      'psychology', 'star', 'flare', 'history_edu', 'gavel', 'theater_comedy', 
+      'menu_book', 'videogame_asset', 'music_note', 'palette', 'auto_awesome', 
+      'auto_stories', 'sports_esports', 'skull', 'science', 'castle', 'theater'
+    ];
+    
+    return validIcons.includes(icon.toLowerCase().trim()) ? icon : fallback;
+  };
+
   const parseSuggestion = (sug: string) => {
-    const parts = sug.split(':');
-    const title = parts[0]?.trim();
-    const reason = parts.slice(1).join(':')?.trim();
+    let title = sug;
+    let reason = "";
+
+    const separators = [':', ' - ', ' – ', ' — '];
+    for (const sep of separators) {
+      if (sug.includes(sep)) {
+        const parts = sug.split(sep);
+        title = parts[0]?.trim();
+        reason = parts.slice(1).join(sep)?.trim();
+        break;
+      }
+    }
+
     return { title, reason };
   };
 
   const isOlderThanTwoWeeks = updatedAt ? (Date.now() - updatedAt > 14 * 24 * 60 * 60 * 1000) : false;
 
   const handleGenerate = async () => {
+    haptic.trigger("heavy");
     try {
       setIsGenerating(true);
       const finalUserId = userId;
@@ -70,11 +105,13 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
       const data = await response.json();
       
       toast.success("Collections generated successfully!");
+      haptic.trigger("success");
       
       if (data.curations) {
         setLocalCurations(data.curations);
       }
     } catch (error: any) {
+      haptic.trigger("error");
       console.error("Failed to generate collections", error);
       toast.error(error.message || "An error occurred during generation");
     } finally {
@@ -118,7 +155,7 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
   if (!localCurations || localCurations.length === 0) {
     return (
       <section className="px-4 sm:px-8 mb-24 font-lexend">
-        <h2 className="text-2xl font-black tracking-tight mb-8 ml-2">Curated Collections</h2>
+        <h2 className="text-2xl font-black tracking-tight text-media-primary mb-8 ml-2">Curated Collections</h2>
         <div className="py-24 flex flex-col items-center text-center bg-media-surface-container-low rounded-3xl border border-dashed border-media-outline-variant/30 shadow-sm">
           <div className="w-20 h-20 bg-media-secondary/10 rounded-full flex items-center justify-center mb-6">
             <span className={`material-symbols-outlined text-media-secondary text-4xl ${isGenerating ? 'animate-spin' : 'animate-pulse'}`}>
@@ -129,16 +166,18 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
           <p className="text-media-on-surface-variant/70 max-w-sm font-light mb-8 text-sm leading-relaxed">
             Connect your consumed media to generate personalized aesthetic collections and insights.
           </p>
-          <button 
+          <Button 
             onClick={handleGenerate}
             disabled={isGenerating}
-            className={`flex items-center gap-3 px-6 py-3 bg-media-primary text-white hover:bg-media-primary/90 transition-all rounded-full font-bold text-xs uppercase tracking-widest shadow-xl shadow-media-primary/20 cursor-pointer group border-none ${isGenerating ? "opacity-75 cursor-not-allowed" : ""}`}
+            className="rounded-xl bg-gradient-to-r from-emerald-600 to-lime-500 hover:from-emerald-700 hover:to-lime-600 text-white font-black tracking-tight px-6 h-12 shadow-md transition-all hover:scale-105 border-none disabled:opacity-70 disabled:hover:scale-100"
           >
-            <span className={`material-symbols-outlined text-sm ${isGenerating ? "animate-spin" : "transition-transform group-hover:rotate-45"}`}>
-              {isGenerating ? "cached" : "auto_awesome"}
-            </span>
+            {isGenerating ? (
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            ) : (
+              <Sparkles className="w-5 h-5 mr-2" />
+            )}
             {isGenerating ? "Analyzing Media..." : "Generate AI Suggestions"}
-          </button>
+          </Button>
         </div>
       </section>
     );
@@ -147,16 +186,20 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
   return (
     <section className="px-4 sm:px-8 mb-24 font-lexend">
       <div className="flex items-center justify-between mb-8 ml-2 flex-wrap gap-4">
-        <h2 className="text-2xl font-black tracking-tight">Curated Collections</h2>
+        <h2 className="text-2xl font-black tracking-tight text-media-primary">Curated Collections</h2>
         {(isOlderThanTwoWeeks || isAdmin) && (
-          <button 
+          <Button 
             onClick={handleGenerate}
             disabled={isGenerating}
-            className={`flex items-center gap-2 px-4 py-2 bg-media-primary text-white hover:bg-media-primary/90 transition-all rounded-full font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-media-primary/20 cursor-pointer border-none ${isGenerating ? "opacity-75 cursor-not-allowed" : ""}`}
+            className="rounded-xl bg-gradient-to-r from-emerald-600 to-lime-500 hover:from-emerald-700 hover:to-lime-600 text-white font-black tracking-tight px-5 h-10 shadow-md transition-all hover:scale-105 border-none disabled:opacity-70 disabled:hover:scale-100"
           >
-            <span className={`material-symbols-outlined text-sm ${isGenerating ? "animate-spin" : ""}`}>cached</span>
-            <span>{isGenerating ? "Regenerating..." : "Regenerate Results"}</span>
-          </button>
+            {isGenerating ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Sparkles className="w-4 h-4 mr-2" />
+            )}
+            {isGenerating ? "Regenerating..." : "Regenerate Results"}
+          </Button>
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[minmax(300px,auto)]">
@@ -218,7 +261,7 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
                         className="material-symbols-outlined text-media-secondary"
                         style={{ color: accentColor && accentColor.startsWith('#') ? accentColor : undefined }}
                       >
-                        {icon || 'swords'}
+                        {getValidIcon(icon, 'swords')}
                       </span>
                       <h3 className="text-media-primary text-2xl font-bold tracking-tight">{title}</h3>
                     </div>
@@ -239,34 +282,23 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
                       )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 pt-6 border-t border-media-surface-container">
-                    <div>
-                      <p 
-                        className="text-[10px] uppercase tracking-wider font-bold text-media-secondary mb-2"
-                        style={{ color: accentColor && accentColor.startsWith('#') ? accentColor : undefined }}
-                      >
-                        Recently Read
-                      </p>
-                      <ul className="text-xs font-bold text-media-primary space-y-1">
-                        {consumedMedia.slice(0, 3).map((item, i) => (
-                          <li key={i} className="line-clamp-1">{getConsumedTitle(item)}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wider font-bold text-media-on-surface-variant mb-2">Top Suggestions</p>
-                      <ul className="text-xs text-media-on-surface-variant space-y-2">
-                        {suggestions.slice(0, 2).map((sug, i) => {
-                          const parsed = parseSuggestion(sug);
-                          return (
-                            <li key={i} className="flex flex-col">
-                              <span className="font-bold text-media-primary line-clamp-1">{parsed.title}</span>
-                              {parsed.reason && <span className="text-[10px] opacity-75 line-clamp-1 mt-0.5">{parsed.reason}</span>}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
+                  <div className="pt-6 border-t border-media-surface-container">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-media-on-surface-variant mb-2">Top Suggestions</p>
+                    <ul className="text-xs text-media-on-surface-variant space-y-2">
+                      {suggestions.slice(0, 3).map((sug, i) => {
+                        const parsed = parseSuggestion(sug);
+                        return (
+                          <li 
+                            key={i} 
+                            className="flex flex-col cursor-pointer hover:opacity-80 transition-opacity group/sug"
+                            onClick={() => handleSuggestionClick(parsed.title, parsed.reason)}
+                          >
+                            <span className="font-bold text-media-primary group-hover/sug:text-media-secondary transition-colors">{parsed.title}</span>
+                            {parsed.reason && <span className="text-[10px] opacity-75 mt-0.5">{parsed.reason}</span>}
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
                 </div>
                 <div 
@@ -285,11 +317,13 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
                   borderColor: accentColor && accentColor.startsWith('#') ? accentColor : undefined 
                 }}
               >
-                <div className="absolute top-0 right-0 p-8 opacity-20">
-                  <span className="material-symbols-outlined text-8xl">{icon || 'rocket_launch'}</span>
-                </div>
                 <div className="relative z-10 flex flex-col h-full">
-                  <h3 className="text-2xl font-bold mb-4 tracking-tight">{title}</h3>
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="material-symbols-outlined text-2xl">
+                      {getValidIcon(icon, 'rocket_launch')}
+                    </span>
+                    <h3 className="text-2xl font-bold tracking-tight">{title}</h3>
+                  </div>
                   <p className="text-sm opacity-80 leading-relaxed mb-6">{description}</p>
                   
                   {renderConnectionButton()}
@@ -307,8 +341,12 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
                     {suggestions.slice(0, 2).map((sug, i) => {
                       const parsed = parseSuggestion(sug);
                       return (
-                        <div key={i} className={`flex flex-col gap-1 ${i > 0 ? 'border-t border-white/10 pt-3' : ''}`}>
-                          <span className="text-xs font-bold line-clamp-1">{parsed.title}</span>
+                        <div 
+                          key={i} 
+                          className={`flex flex-col gap-1 ${i > 0 ? 'border-t border-white/10 pt-3' : ''} cursor-pointer hover:opacity-80 transition-opacity group/sug`}
+                          onClick={() => handleSuggestionClick(parsed.title, parsed.reason)}
+                        >
+                          <span className="text-xs font-bold line-clamp-1 group-hover/sug:text-white/90 transition-colors">{parsed.title}</span>
                           {parsed.reason && <span className="text-[10px] opacity-70 line-clamp-1 mt-0.5">{parsed.reason}</span>}
                         </div>
                       );
@@ -338,7 +376,7 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
                         className="material-symbols-outlined text-media-primary text-xl"
                         style={{ color: accentColor && accentColor.startsWith('#') ? accentColor : undefined }}
                       >
-                        {icon}
+                        {getValidIcon(icon, 'movie')}
                       </span>
                     )}
                     <h3 className="text-media-primary text-xl font-bold tracking-tight">{title}</h3>
@@ -355,20 +393,21 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
                     </div>
                   )}
 
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center text-xs border-b border-media-surface-container pb-2">
-                      <span className="text-media-on-surface-variant">Consumed</span>
-                      <span className="font-bold text-media-primary line-clamp-1 max-w-[150px] text-right">{consumedMedia.slice(0, 2).map(m => getConsumedTitle(m)).join(', ')}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-media-on-surface-variant">Next up</span>
-                      <span 
-                        className="text-media-secondary font-bold line-clamp-1 max-w-[150px] text-right"
-                        style={{ color: accentColor && accentColor.startsWith('#') ? accentColor : undefined }}
-                      >
-                        {suggestions.length > 0 ? parseSuggestion(suggestions[0]).title : "The Last Kingdom"}
-                      </span>
-                    </div>
+                  <div className="space-y-3 mt-4">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-media-on-surface-variant mb-2">Next up</p>
+                    {suggestions.slice(0, 3).map((sug, i) => {
+                      const parsed = parseSuggestion(sug);
+                      return (
+                        <div 
+                          key={i} 
+                          className="flex flex-col border-b last:border-0 border-media-surface-container pb-2 last:pb-0 cursor-pointer hover:opacity-80 transition-opacity group/sug"
+                          onClick={() => handleSuggestionClick(parsed.title, parsed.reason)}
+                        >
+                          <span className="text-sm font-bold text-media-primary group-hover/sug:text-media-secondary transition-colors">{parsed.title}</span>
+                          {parsed.reason && <span className="text-xs text-media-on-surface-variant mt-0.5">{parsed.reason}</span>}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -378,42 +417,49 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
             return (
               <div 
                 key={index} 
-                className="md:col-span-5 bento-card bg-media-secondary text-media-on-secondary rounded-3xl p-8 flex flex-col justify-between shadow-md border border-media-outline-variant/10 overflow-hidden relative"
+                className="md:col-span-5 bento-card bg-media-secondary text-media-on-secondary rounded-3xl p-8 flex flex-col gap-6 shadow-md border border-media-outline-variant/10 overflow-hidden relative"
                 style={{ 
                   backgroundColor: accentColor && accentColor.startsWith('#') ? accentColor : undefined 
                 }}
               >
                 <div className="absolute -bottom-10 -right-10 opacity-10">
                   <span className="material-symbols-outlined text-[200px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                    {icon || 'movie'}
+                    {getValidIcon(icon, 'movie')}
                   </span>
                 </div>
                 <div className="relative z-10">
-                  <div className="bg-white/20 w-fit p-2 rounded-xl mb-6">
-                    <span className="material-symbols-outlined text-white">
-                      {icon || 'psychology'}
-                    </span>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-white/20 p-2 rounded-xl flex items-center justify-center">
+                      <span className="material-symbols-outlined text-white text-base">
+                        {getValidIcon(icon, 'psychology')}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-bold tracking-tight">{title}</h3>
                   </div>
-                  <h3 className="text-2xl font-bold mb-4 tracking-tight">{title}</h3>
                   <p className="text-sm opacity-90 leading-relaxed mb-6">{description}</p>
                   
                   {renderConnectionButton(true)}
 
                   {tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-8">
+                    <div className="flex flex-wrap gap-1">
                       {tags.map((tag, i) => (
                         <span key={i} className="px-2 py-0.5 rounded bg-white/10 text-white text-[9px] font-bold uppercase tracking-wider">{tag}</span>
                       ))}
                     </div>
                   )}
                 </div>
-                <div className="relative z-10 flex gap-4 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="relative z-10 flex flex-col gap-3">
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-white/60">Suggestions</p>
                   {suggestions.slice(0, 3).map((sug, i) => {
                     const parsed = parseSuggestion(sug);
                     return (
-                      <div key={i} className="flex-shrink-0 w-32 bg-white/10 rounded-xl p-3 border border-white/5">
-                        <p className="text-[8px] uppercase font-black mb-1 opacity-60 tracking-tighter">Suggestion</p>
-                        <p className="text-xs font-bold leading-tight line-clamp-2">{parsed.title}</p>
+                      <div 
+                        key={i} 
+                        className="bg-white/10 rounded-xl p-4 border border-white/5 flex flex-col cursor-pointer hover:bg-white/20 transition-all group/sug"
+                        onClick={() => handleSuggestionClick(parsed.title, parsed.reason)}
+                      >
+                        <span className="text-sm font-bold text-white group-hover/sug:text-white/90 transition-colors">{parsed.title}</span>
+                        {parsed.reason && <span className="text-xs text-white/70 mt-1">{parsed.reason}</span>}
                       </div>
                     );
                   })}
@@ -438,7 +484,7 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <span className="material-symbols-outlined text-media-secondary">
-                        {icon || 'star'}
+                        {getValidIcon(icon, 'star')}
                       </span>
                       <h3 className="text-media-primary text-2xl font-bold tracking-tight">{title}</h3>
                     </div>
@@ -459,29 +505,23 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
                       )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 pt-6 border-t border-media-surface-container">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wider font-bold text-media-secondary mb-2">Consumed</p>
-                      <ul className="text-xs font-bold text-media-primary space-y-1">
-                        {consumedMedia.slice(0, 3).map((item, i) => (
-                          <li key={i} className="line-clamp-1">{getConsumedTitle(item)}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wider font-bold text-media-on-surface-variant mb-2">Recommendations</p>
-                      <ul className="text-xs text-media-on-surface-variant space-y-2">
-                        {suggestions.slice(0, 2).map((sug, i) => {
-                          const parsed = parseSuggestion(sug);
-                          return (
-                            <li key={i} className="flex flex-col">
-                              <span className="font-bold text-media-primary line-clamp-1">{parsed.title}</span>
-                              {parsed.reason && <span className="text-[10px] opacity-75 line-clamp-1 mt-0.5">{parsed.reason}</span>}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
+                  <div className="pt-6 border-t border-media-surface-container">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-media-on-surface-variant mb-2">Recommendations</p>
+                    <ul className="text-xs text-media-on-surface-variant space-y-2">
+                      {suggestions.slice(0, 3).map((sug, i) => {
+                        const parsed = parseSuggestion(sug);
+                        return (
+                          <li 
+                            key={i} 
+                            className="flex flex-col cursor-pointer hover:opacity-80 transition-opacity group/sug"
+                            onClick={() => handleSuggestionClick(parsed.title, parsed.reason)}
+                          >
+                            <span className="font-bold text-media-primary group-hover/sug:text-media-secondary transition-colors">{parsed.title}</span>
+                            {parsed.reason && <span className="text-[10px] opacity-75 mt-0.5">{parsed.reason}</span>}
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
                 </div>
               </div>
@@ -507,30 +547,27 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
                   {renderConnectionButton()}
 
                   <div className="grid grid-cols-2 gap-4 my-6">
-                    {suggestions.slice(0, 2).map((sug, i) => {
+                    {suggestions.slice(0, 4).map((sug, i) => {
                       const parsed = parseSuggestion(sug);
                       return (
-                        <div key={i} className="bg-media-surface-container-lowest rounded-xl p-4 flex flex-col justify-between border border-media-outline-variant/5">
-                          <div className="size-8 bg-media-secondary/10 rounded-lg flex items-center justify-center mb-4">
+                        <div 
+                          key={i} 
+                          className="bg-media-surface-container-lowest rounded-xl p-4 flex flex-col justify-between border border-media-outline-variant/5 cursor-pointer hover:border-media-secondary/30 transition-all group/sug"
+                          onClick={() => handleSuggestionClick(parsed.title, parsed.reason)}
+                        >
+                          <div className="size-8 bg-media-secondary/10 rounded-lg flex items-center justify-center mb-4 group-hover/sug:bg-media-secondary/20 transition-colors">
                             <span className="material-symbols-outlined text-media-secondary text-sm">
-                              {i === 0 ? 'movie' : 'flare'}
+                              {i % 2 === 0 ? 'movie' : 'flare'}
                             </span>
                           </div>
                           <div>
-                            <p className="font-bold text-media-primary text-sm mb-1 line-clamp-1">{parsed.title}</p>
+                            <p className="font-bold text-media-primary text-sm mb-1 line-clamp-1 group-hover/sug:text-media-secondary transition-colors">{parsed.title}</p>
                             {parsed.reason && <p className="text-[10px] text-media-on-surface-variant line-clamp-1 mt-0.5">{parsed.reason}</p>}
                           </div>
                         </div>
                       );
                     })}
                   </div>
-                </div>
-                <div className="mt-auto flex items-center gap-3 pt-4 border-t border-media-outline-variant/10">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Consumed</span>
-                  <div className="h-px flex-1 bg-media-outline-variant/30"></div>
-                  <p className="text-xs font-bold text-media-primary line-clamp-1 max-w-[150px]">
-                    {consumedMedia.slice(0, 2).map(m => getConsumedTitle(m)).join(', ')}
-                  </p>
                 </div>
               </div>
             );
@@ -551,28 +588,27 @@ export function MediaCuratedBento({ curations = [], updatedAt = null, userId }: 
                     
                     {renderConnectionButton(true)}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-                      <div>
-                        <h4 className="text-[10px] uppercase tracking-widest font-bold text-media-secondary mb-3">On the Radar</h4>
-                        <div className="space-y-4">
-                          {suggestions.slice(0, 2).map((sug, i) => (
-                            <div key={i} className="flex items-center gap-3">
-                              <span className="material-symbols-outlined text-white/40 text-sm">
-                                {i === 0 ? 'history_edu' : 'gavel'}
+                    <div className="mt-6">
+                      <h4 className="text-[10px] uppercase tracking-widest font-bold text-media-secondary mb-3">On the Radar</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {suggestions.slice(0, 4).map((sug, i) => {
+                          const parsed = parseSuggestion(sug);
+                          return (
+                            <div 
+                              key={i} 
+                              className="flex items-start gap-3 bg-white/5 rounded-xl p-3 backdrop-blur-md border border-white/10 cursor-pointer hover:bg-white/10 transition-all group/sug"
+                              onClick={() => handleSuggestionClick(parsed.title, parsed.reason)}
+                            >
+                              <span className="material-symbols-outlined text-white/40 text-sm mt-0.5">
+                                {i % 2 === 0 ? 'history_edu' : 'gavel'}
                               </span>
-                              <p className="text-sm font-medium text-white line-clamp-1">{parseSuggestion(sug).title}</p>
+                              <div className="flex flex-col">
+                                <p className="text-sm font-bold text-white group-hover/sug:text-white/90 transition-colors">{parsed.title}</p>
+                                {parsed.reason && <p className="text-[10px] text-white/60 mt-0.5">{parsed.reason}</p>}
+                              </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="bg-white/5 rounded-xl p-4 backdrop-blur-md border border-white/10">
-                        <p className="text-[10px] uppercase tracking-widest font-bold text-white/40 mb-2">History File</p>
-                        {consumedMedia.slice(0, 2).map((item, i) => (
-                          <div key={i} className="flex items-center justify-between mt-2">
-                            <span className="text-white font-bold text-xs line-clamp-1">{getConsumedTitle(item)}</span>
-                            <span className="material-symbols-outlined text-green-400 text-sm">check_circle</span>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

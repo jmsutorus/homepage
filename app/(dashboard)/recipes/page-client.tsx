@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
+import { useHaptic } from "@/hooks/use-haptic";
 import { MealForm } from "@/components/widgets/meals/meal-form";
 import { MobileRecipeSheet } from "@/components/widgets/meals/mobile-recipe-sheet";
 import { GroceryList } from "@/components/widgets/meals/grocery-list";
@@ -57,6 +58,7 @@ export function MealsPageClient({
   initialGroceryList,
 }: MealsPageClientProps) {
   const router = useRouter();
+  const haptic = useHaptic();
   const [activeTab, setActiveTab] = useState("recipes");
   const [meals, setMeals] = useState(initialMeals);
   const [groceryList, setGroceryList] = useState(initialGroceryList);
@@ -274,200 +276,223 @@ export function MealsPageClient({
     <main className="min-h-screen text-media-on-background selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed font-lexend pb-24 lg:pb-0">
       <div className="px-6 md:px-8 py-12 max-w-6xl mx-auto space-y-24">
         
-        {/* Seasonal Discovery Hero */}
-        <section className="flex flex-col items-center text-center space-y-12">
-          <div className="space-y-6 max-w-2xl">
-            <motion.h3 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-sm font-black text-media-secondary uppercase tracking-[0.3em]"
-            >
-              Seasonal Discovery
-            </motion.h3>
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-bold text-media-primary tracking-tighter leading-tight"
-            >
-              Earthbound Flavors for {new Date().toLocaleDateString('en-US', { month: 'long' })}.
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-media-on-surface-variant text-lg leading-relaxed mx-auto"
-            >
-              Explore our curated selection of recipes that celebrate the deep, woody notes of wild fungi and the golden warmth of harvest grains.
-            </motion.p>
-            <div className="flex flex-wrap justify-center gap-4 pt-4">
-              <Button 
-                onClick={() => featuredRecipe && router.push(`/recipes/${featuredRecipe.id}`)}
-                className="bg-media-secondary text-media-on-secondary px-8 py-6 rounded-lg font-bold tracking-wide flex items-center gap-2 hover:bg-media-secondary/90 transition-all text-base"
+        {meals.length === 0 ? (
+          <div className="flex min-h-[60vh] items-center justify-center w-full py-12">
+            <div className="flex flex-col items-center text-center px-4 max-w-md">
+              <div className="w-24 h-24 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary mb-6 shadow-inner">
+                <span className="material-symbols-outlined text-5xl">restaurant</span>
+              </div>
+              <h2 className="text-3xl font-black text-media-primary mb-3 tracking-tight">Your Recipe Box is Empty</h2>
+              <p className="text-media-on-surface-variant font-medium mb-8">
+                Start documenting your favorite dishes and seasonal flavors. Create a curated record of your culinary experiments.
+              </p>
+              <button 
+                onClick={() => { haptic.trigger("light"); setMobileFormOpen(true); }}
+                className="cursor-pointer bg-media-secondary text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-media-secondary/20 border-none"
               >
-                Start Cooking <ArrowForward className="h-5 w-5" />
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => setMobileFormOpen(true)}
-                className="border-media-outline-variant text-media-primary px-8 py-6 rounded-lg font-bold tracking-wide hover:bg-media-surface-container-low transition-colors text-base"
-              >
-                Add Your Own
-              </Button>
+                <span className="material-symbols-outlined text-xl">add</span>
+                <span>Add Your First Recipe</span>
+              </button>
             </div>
           </div>
-
-          {featuredRecipe && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-              className="w-full relative group cursor-pointer"
-              onClick={() => router.push(`/recipes/${featuredRecipe.id}`)}
-            >
-              <div className="aspect-[16/9] bg-media-surface-container overflow-hidden rounded-xl editorial-shadow">
-                <img 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" 
-                  src={featuredRecipe.image_url || "https://images.unsplash.com/photo-1547592166-23ac45744acd?q=80&w=2071&auto=format&fit=crop"} 
-                  alt={featuredRecipe.name}
-                />
-              </div>
-              <div className="absolute -bottom-6 right-8 bg-media-primary p-8 rounded-lg shadow-2xl hidden md:block max-w-md text-left transition-transform group-hover:-translate-y-2">
-                <span className="text-media-secondary text-[10px] font-black uppercase tracking-[0.2em] block mb-2">Recipe of the Week</span>
-                <h2 className="text-media-on-primary text-2xl font-bold leading-tight mb-4">{featuredRecipe.name}</h2>
-                <div className="flex items-center gap-6 text-media-on-primary/60 text-xs font-bold uppercase tracking-widest">
-                  <span className="flex items-center gap-2"><Timer className="h-4 w-4" /> {formatTime(getTotalTime(featuredRecipe))}</span>
-                  <span className="flex items-center gap-2"><SignalHigh className="h-4 w-4" /> {getDifficulty(featuredRecipe)}</span>
+        ) : (
+          <>
+            {/* Seasonal Discovery Hero */}
+            <section className="flex flex-col items-center text-center space-y-12">
+              <div className="space-y-6 max-w-2xl">
+                <motion.h3 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm font-black text-media-secondary uppercase tracking-[0.3em]"
+                >
+                  Seasonal Discovery
+                </motion.h3>
+                <motion.h1 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-5xl md:text-7xl font-bold text-media-primary tracking-tighter leading-tight"
+                >
+                  Earthbound Flavors for {new Date().toLocaleDateString('en-US', { month: 'long' })}.
+                </motion.h1>
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-media-on-surface-variant text-lg leading-relaxed mx-auto"
+                >
+                  Explore our curated selection of recipes that celebrate the deep, woody notes of wild fungi and the golden warmth of harvest grains.
+                </motion.p>
+                <div className="flex flex-wrap justify-center gap-4 pt-4">
+                  <Button 
+                    onClick={() => featuredRecipe && router.push(`/recipes/${featuredRecipe.id}`)}
+                    className="bg-media-secondary text-media-on-secondary px-8 py-6 rounded-lg font-bold tracking-wide flex items-center gap-2 hover:bg-media-secondary/90 transition-all text-base"
+                  >
+                    Start Cooking <ArrowForward className="h-5 w-5" />
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setMobileFormOpen(true)}
+                    className="border-media-outline-variant text-media-primary px-8 py-6 rounded-lg font-bold tracking-wide hover:bg-media-surface-container-low transition-colors text-base"
+                  >
+                    Add Your Own
+                  </Button>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </section>
 
-        {/* Recipe Gallery & Tabs */}
-        <section className="space-y-12">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex flex-col items-center text-center gap-8 border-b border-media-outline-variant/10 pb-12">
-              <div>
-                <h2 className="text-4xl font-bold text-media-primary tracking-tight">The Recipe Gallery</h2>
-                <p className="text-media-on-surface-variant mt-3 text-lg">Browse our editorial collection of {meals.length} dishes.</p>
+              {featuredRecipe && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="w-full relative group cursor-pointer"
+                  onClick={() => router.push(`/recipes/${featuredRecipe.id}`)}
+                >
+                  <div className="aspect-[16/9] bg-media-surface-container overflow-hidden rounded-xl editorial-shadow">
+                    <img 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" 
+                      src={featuredRecipe.image_url || "https://images.unsplash.com/photo-1547592166-23ac45744acd?q=80&w=2071&auto=format&fit=crop"} 
+                      alt={featuredRecipe.name}
+                    />
+                  </div>
+                  <div className="absolute -bottom-6 right-8 bg-media-primary p-8 rounded-lg shadow-2xl hidden md:block max-w-md text-left transition-transform group-hover:-translate-y-2">
+                    <span className="text-media-secondary text-[10px] font-black uppercase tracking-[0.2em] block mb-2">Recipe of the Week</span>
+                    <h2 className="text-media-on-primary text-2xl font-bold leading-tight mb-4">{featuredRecipe.name}</h2>
+                    <div className="flex items-center gap-6 text-media-on-primary/60 text-xs font-bold uppercase tracking-widest">
+                      <span className="flex items-center gap-2"><Timer className="h-4 w-4" /> {formatTime(getTotalTime(featuredRecipe))}</span>
+                      <span className="flex items-center gap-2"><SignalHigh className="h-4 w-4" /> {getDifficulty(featuredRecipe)}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </section>
+
+            {/* Recipe Gallery & Tabs */}
+            <section className="space-y-12">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <div className="flex flex-col items-center text-center gap-8 border-b border-media-outline-variant/10 pb-12">
+                  <div>
+                    <h2 className="text-4xl font-bold text-media-primary tracking-tight">The Recipe Gallery</h2>
+                    <p className="text-media-on-surface-variant mt-3 text-lg">Browse our editorial collection of {meals.length} dishes.</p>
+                  </div>
+                  
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <button 
+                      onClick={() => {setActiveTab("recipes"); setSelectedTag(null);}}
+                      className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+                        activeTab === "recipes" && !selectedTag ? "bg-media-primary text-media-on-primary" : "bg-media-surface-container-high text-media-on-surface-variant hover:bg-media-surface-container-highest"
+                      }`}
+                    >
+                      All Recipes
+                    </button>
+                    {allTags.map(tag => (
+                      <button 
+                        key={tag}
+                        onClick={() => {setActiveTab("recipes"); setSelectedTag(tag);}}
+                        className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+                          selectedTag === tag ? "bg-media-primary text-media-on-primary" : "bg-media-tertiary-fixed text-media-on-tertiary-fixed hover:bg-media-tertiary-fixed-dim"
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                    <button 
+                      onClick={() => setActiveTab("grocery")}
+                      className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+                        activeTab === "grocery" ? "bg-media-secondary text-media-on-secondary" : "bg-media-surface-container-high text-media-on-surface-variant hover:bg-media-surface-container-highest"
+                      }`}
+                    >
+                      <ShoppingCart className="h-4 w-4" /> Grocery List
+                    </button>
+                  </div>
+                </div>
+
+                <TabsContent value="recipes" className="mt-12">
+                  <div className="staggered-gap">
+                    {filteredMeals.map((meal, idx) => (
+                      <motion.div
+                        key={meal.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: (idx % 4) * 0.1 }}
+                      >
+                        <RecipeEditorialCard 
+                          meal={meal}
+                          aspectRatio={idx % 4 === 0 ? "aspect-[4/5]" : idx % 4 === 1 ? "aspect-square" : idx % 4 === 2 ? "aspect-video" : "aspect-[3/4]"}
+                          isFeatured={idx === 0}
+                          onClick={(m) => router.push(`/recipes/${m.id}`)}
+                          onEdit={handleEditMeal}
+                          onDelete={(m) => { setMealToDelete(m); setDeleteDialogOpen(true); }}
+                          onAddToGrocery={handleAddToGrocery}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                  {filteredMeals.length === 0 && (
+                    <div className="py-24 text-center text-media-on-surface-variant/40 italic">
+                      No matches found for your selection.
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="grocery" className="mt-12 max-w-4xl mx-auto">
+                  <div className="bg-media-surface-container-low p-8 rounded-xl editorial-shadow">
+                    <div className="flex justify-between items-center mb-8">
+                      <h2 className="text-2xl font-bold text-media-primary">Grocery List</h2>
+                      <ImportIngredientsDialog meals={meals} onImport={handleImportFromMeal} />
+                    </div>
+                    <GroceryList
+                      groceryList={groceryList}
+                      onToggleItem={handleToggleItem}
+                      onDeleteItem={handleDeleteGroceryItem}
+                      onAddItem={handleAddGroceryItem}
+                      onClearChecked={handleClearChecked}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </section>
+
+            {/* Philosophy & Pantry Section */}
+            <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 pt-8">
+              <div className="lg:col-span-8 flex flex-col md:flex-row bg-media-primary rounded-xl overflow-hidden shadow-2xl">
+                <div className="md:w-1/2 p-10 md:p-14 flex flex-col justify-center space-y-6">
+                  <span className="text-media-secondary text-[10px] font-black uppercase tracking-[0.3em]">The Maker&apos;s Philosophy</span>
+                  <h2 className="text-3xl md:text-4xl font-bold text-media-on-primary tracking-tight">&quot;Cooking is the soul&apos;s primary language.&quot;</h2>
+                  <p className="text-media-on-primary/60 italic leading-relaxed text-lg">
+                    Join our community of tactile chefs. We believe in the slow movement, the heavy cast iron, and the patience of a proper proofing.
+                  </p>
+                  <div className="pt-4">
+                    <Button className="bg-media-on-primary text-media-primary px-8 py-6 rounded-lg font-bold text-sm hover:bg-media-on-primary/90 transition-all">
+                      Read the Manifesto
+                    </Button>
+                  </div>
+                </div>
+                <div className="md:w-1/2 h-80 md:h-auto relative">
+                  <img 
+                    className="w-full h-full object-cover grayscale opacity-80 mix-blend-luminosity" 
+                    src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=2070&auto=format&fit=crop" 
+                    alt="Maker"
+                  />
+                </div>
               </div>
               
-              <div className="flex flex-wrap justify-center gap-3">
-                <button 
-                  onClick={() => {setActiveTab("recipes"); setSelectedTag(null);}}
-                  className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
-                    activeTab === "recipes" && !selectedTag ? "bg-media-primary text-media-on-primary" : "bg-media-surface-container-high text-media-on-surface-variant hover:bg-media-surface-container-highest"
-                  }`}
-                >
-                  All Recipes
-                </button>
-                {allTags.map(tag => (
-                  <button 
-                    key={tag}
-                    onClick={() => {setActiveTab("recipes"); setSelectedTag(tag);}}
-                    className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
-                      selectedTag === tag ? "bg-media-primary text-media-on-primary" : "bg-media-tertiary-fixed text-media-on-tertiary-fixed hover:bg-media-tertiary-fixed-dim"
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                ))}
-                <button 
-                  onClick={() => setActiveTab("grocery")}
-                  className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
-                    activeTab === "grocery" ? "bg-media-secondary text-media-on-secondary" : "bg-media-surface-container-high text-media-on-surface-variant hover:bg-media-surface-container-highest"
-                  }`}
-                >
-                  <ShoppingCart className="h-4 w-4" /> Grocery List
-                </button>
-              </div>
-            </div>
-
-            <TabsContent value="recipes" className="mt-12">
-              <div className="staggered-gap">
-                {filteredMeals.map((meal, idx) => (
-                  <motion.div
-                    key={meal.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: (idx % 4) * 0.1 }}
-                  >
-                    <RecipeEditorialCard 
-                      meal={meal}
-                      aspectRatio={idx % 4 === 0 ? "aspect-[4/5]" : idx % 4 === 1 ? "aspect-square" : idx % 4 === 2 ? "aspect-video" : "aspect-[3/4]"}
-                      isFeatured={idx === 0}
-                      onClick={(m) => router.push(`/recipes/${m.id}`)}
-                      onEdit={handleEditMeal}
-                      onDelete={(m) => { setMealToDelete(m); setDeleteDialogOpen(true); }}
-                      onAddToGrocery={handleAddToGrocery}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-              {filteredMeals.length === 0 && (
-                <div className="py-24 text-center text-media-on-surface-variant/40 italic">
-                  No matches found for your selection.
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="grocery" className="mt-12 max-w-4xl mx-auto">
-              <div className="bg-media-surface-container-low p-8 rounded-xl editorial-shadow">
-                <div className="flex justify-between items-center mb-8">
-                  <h2 className="text-2xl font-bold text-media-primary">Grocery List</h2>
-                  <ImportIngredientsDialog meals={meals} onImport={handleImportFromMeal} />
-                </div>
-                <GroceryList
-                  groceryList={groceryList}
-                  onToggleItem={handleToggleItem}
-                  onDeleteItem={handleDeleteGroceryItem}
-                  onAddItem={handleAddGroceryItem}
-                  onClearChecked={handleClearChecked}
+              <div className="lg:col-span-4">
+                <PantryWidget 
+                  groceryList={groceryList} 
+                  onViewAll={() => {
+                    setActiveTab("grocery");
+                    const rect = document.querySelector('[role="tablist"]')?.getBoundingClientRect();
+                    if (rect) {
+                      window.scrollTo({ top: rect.top + window.scrollY - 100, behavior: 'smooth' });
+                    }
+                  }} 
                 />
               </div>
-            </TabsContent>
-          </Tabs>
-        </section>
-
-        {/* Philosophy & Pantry Section */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 pt-8">
-          <div className="lg:col-span-8 flex flex-col md:flex-row bg-media-primary rounded-xl overflow-hidden shadow-2xl">
-            <div className="md:w-1/2 p-10 md:p-14 flex flex-col justify-center space-y-6">
-              <span className="text-media-secondary text-[10px] font-black uppercase tracking-[0.3em]">The Maker&apos;s Philosophy</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-media-on-primary tracking-tight">&quot;Cooking is the soul&apos;s primary language.&quot;</h2>
-              <p className="text-media-on-primary/60 italic leading-relaxed text-lg">
-                Join our community of tactile chefs. We believe in the slow movement, the heavy cast iron, and the patience of a proper proofing.
-              </p>
-              <div className="pt-4">
-                <Button className="bg-media-on-primary text-media-primary px-8 py-6 rounded-lg font-bold text-sm hover:bg-media-on-primary/90 transition-all">
-                  Read the Manifesto
-                </Button>
-              </div>
-            </div>
-            <div className="md:w-1/2 h-80 md:h-auto relative">
-              <img 
-                className="w-full h-full object-cover grayscale opacity-80 mix-blend-luminosity" 
-                src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=2070&auto=format&fit=crop" 
-                alt="Maker"
-              />
-            </div>
-          </div>
-          
-          <div className="lg:col-span-4">
-            <PantryWidget 
-              groceryList={groceryList} 
-              onViewAll={() => {
-                setActiveTab("grocery");
-                const rect = document.querySelector('[role="tablist"]')?.getBoundingClientRect();
-                if (rect) {
-                  window.scrollTo({ top: rect.top + window.scrollY - 100, behavior: 'smooth' });
-                }
-              }} 
-            />
-          </div>
-        </section>
+            </section>
+          </>
+        )}
       </div>
 
       {/* Mobile Bottom Navigation */}

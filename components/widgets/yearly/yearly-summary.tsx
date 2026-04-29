@@ -32,6 +32,7 @@ import {
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useHaptic } from "@/hooks/use-haptic";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { staggerContainer, cardEntrance } from "@/lib/animation-variants";
@@ -45,6 +46,7 @@ interface YearlySummaryProps {
 export function YearlySummary({ stats, year }: YearlySummaryProps) {
   const [showStoryMode, setShowStoryMode] = useState(false);
   const router = useRouter();
+  const haptic = useHaptic();
 
   const handleYearChange = (newYear: string) => {
     router.push(`/year/${newYear}`);
@@ -66,6 +68,47 @@ export function YearlySummary({ stats, year }: YearlySummaryProps) {
       return rarityOrder[b.rarity] - rarityOrder[a.rarity];
     })
     .slice(0, 8);
+
+  const hasNoData = 
+    (stats.mood?.totalEntries || 0) === 0 &&
+    (stats.exercises?.total || 0) === 0 &&
+    (stats.media?.total || 0) === 0 &&
+    (stats.games?.total || 0) === 0 &&
+    (stats.parks?.total || 0) === 0 &&
+    (stats.events?.total || 0) === 0 &&
+    (stats.journals?.total || 0) === 0 &&
+    (stats.tasks?.total || 0) === 0 &&
+    (stats.goals?.total || 0) === 0 &&
+    (stats.habits?.total || 0) === 0 &&
+    (stats.duolingo?.totalDays || 0) === 0 &&
+    (stats.relationship?.totalDates || 0) === 0 &&
+    (stats.meals?.total || 0) === 0 &&
+    (stats.restaurants?.totalVisits || 0) === 0 &&
+    (stats.drinks?.total || 0) === 0 &&
+    (stats.vacations?.total || 0) === 0;
+
+  if (hasNoData) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center w-full py-12 font-lexend">
+        <div className="flex flex-col items-center text-center px-4 max-w-md">
+          <div className="w-24 h-24 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary mb-6 shadow-inner">
+            <span className="material-symbols-outlined text-5xl">history</span>
+          </div>
+          <h2 className="text-3xl font-black text-media-primary mb-3 tracking-tight">The Canvas is Blank</h2>
+          <p className="text-media-on-surface-variant font-medium mb-8">
+            Your {year} Year in Review is waiting to be written. Come back after you&apos;ve started tracking your workouts, media, habits, or meals!
+          </p>
+          <button 
+            onClick={() => { haptic.trigger("light"); router.push("/home"); }}
+            className="cursor-pointer bg-brand text-brand-foreground px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg border-none"
+          >
+            <span className="material-symbols-outlined text-xl">home</span>
+            <span>Return Home</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Get fun facts and highlights
   const funFacts = insights.filter(i => i.type === "fun_fact" || i.type === "highlight").slice(0, 4);

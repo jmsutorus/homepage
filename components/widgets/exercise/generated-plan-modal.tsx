@@ -183,7 +183,7 @@ export function GeneratedPlanModal({ plan, children, onAdded }: { plan: any; chi
               </div>
               <button 
                 onClick={() => handleOpen(false)}
-                className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                className="cursor-pointer text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
               >
                 <X className="w-6 h-6" />
               </button>

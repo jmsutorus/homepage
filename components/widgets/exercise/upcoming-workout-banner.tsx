@@ -108,7 +108,7 @@ export function UpcomingWorkoutBanner({ workouts }: UpcomingWorkoutBannerProps) 
       // Sort by time ascending
       filtered.sort((a, b) => a.time.localeCompare(b.time));
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setUpcomingWorkouts(filtered);
     };
 

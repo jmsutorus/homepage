@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { Task, TaskCategory, TaskStatusRecord, TaskVelocityData } from "@/lib/db/tasks";
 import { TaskForm } from "@/components/widgets/tasks/task-form";
 import { TaskList } from "@/components/widgets/tasks/task-list";
-import { Settings } from "lucide-react";
+import { Settings, Table } from "lucide-react";
 import { MobileTaskSheet } from "@/components/widgets/tasks/mobile-task-sheet";
 import Link from "next/link";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
@@ -72,7 +72,7 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
   const featuredTask = activeTasks.find(t => t.priority === 'high') || activeTasks[0];
 
   return (
-    <main className="max-w-3xl mx-auto px-6 py-16 space-y-24 font-lexend">
+    <main className="max-w-3xl mx-auto px-6 pt-16 space-y-24 font-lexend">
       {/* Hero Section: Draft Your Next Action */}
       <section className="text-center">
         <div className="mb-10">
@@ -80,6 +80,24 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
           <p className="text-media-on-surface-variant text-lg leading-relaxed max-w-xl mx-auto">
             Every great project begins with a single, clearly defined entry in the journal. Define the scope, set the priority, and begin the flow.
           </p>
+        </div>
+
+        {/* Quick Navigation Action Bar */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
+          <Link 
+            href="/tasks/table"
+            className="flex items-center gap-2 px-6 py-3 rounded-md bg-media-surface-container border border-media-outline-variant/10 text-xs font-bold uppercase tracking-widest text-media-primary hover:text-media-secondary hover:bg-media-surface-container-high transition-all shadow-md hover:scale-[1.02]"
+          >
+            <Table className="w-4 h-4" />
+            Database View
+          </Link>
+          <Link 
+            href="/tasks/manage"
+            className="flex items-center gap-2 px-6 py-3 rounded-md bg-media-surface-container border border-media-outline-variant/10 text-xs font-bold uppercase tracking-widest text-media-primary hover:text-media-secondary hover:bg-media-surface-container-high transition-all shadow-md hover:scale-[1.02]"
+          >
+            <Settings className="w-4 h-4" />
+            System Governance
+          </Link>
         </div>
         
         <div className="hidden md:block">
@@ -122,25 +140,10 @@ export function TasksPageClient({ initialTasks, initialVelocityData }: TasksPage
           variant="archived"
         />
 
-        {completedTasks.length > 5 && (
-          <div className="mt-16 text-center">
-            <button className="cursor-pointer text-[10px] font-lexend uppercase tracking-[0.3em] text-media-on-surface-variant/40 hover:text-media-primary transition-all font-bold border border-media-outline-variant/20 px-8 py-4 rounded-full hover:bg-media-surface-container-low">
-              View Entire Archive Library ({completedTasks.length})
-            </button>
-          </div>
-        )}
+
       </section>
 
-      {/* Management Registry Link */}
-      <section className="pt-12 border-t border-media-outline-variant/10 text-center">
-        <Link 
-          href="/tasks/manage"
-          className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-media-on-surface-variant/60 hover:text-media-secondary transition-colors group"
-        >
-          <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
-          System Governance & Flow Registry
-        </Link>
-      </section>
+
 
       {/* Floating Action Button: New Task */}
       <FloatingActionButton 

@@ -47,10 +47,10 @@ export default async function AchievementsPage() {
               <span className="absolute text-[10px] font-bold font-label text-media-primary">{Math.round(progressPercent * 100)}%</span>
             </div>
           </div>
-          <div className="bg-media-primary text-white p-6 rounded-xl flex items-center gap-8 flex-1 justify-center">
+          <div className="bg-media-primary-container text-media-on-primary-container p-6 rounded-xl flex items-center gap-8 flex-1 justify-center">
             <div className="text-left">
               <div className="text-3xl font-bold font-headline">{totalPoints}</div>
-              <div className="text-sm font-label uppercase tracking-widest text-white/70 mt-1">Curator Points</div>
+              <div className="text-sm font-label uppercase tracking-widest text-media-on-primary-container/70 mt-1">Curator Points</div>
             </div>
             <Trophy className="w-10 h-10 text-media-secondary" strokeWidth={1.5} />
           </div>

@@ -43,10 +43,9 @@ export function AddPrModal({ onSuccess, showButton = true, enableRunning = true,
   
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Update type if settings change while modal is open (rare but good practice)
   useEffect(() => {
-    if (!enableRunning && type === "running") setType("weights");
-    if (!enableWeights && type === "weights") setType("running");
+    if (!enableRunning && type === "running" && enableWeights) setType("weights");
+    if (!enableWeights && type === "weights" && enableRunning) setType("running");
   }, [enableRunning, enableWeights, type]);
 
   const handleSubmit = async (e: React.FormEvent) => {

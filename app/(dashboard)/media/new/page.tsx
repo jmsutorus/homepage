@@ -5,23 +5,24 @@ export const dynamic = "force-dynamic";
 export default async function NewMediaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string }>;
+  searchParams: Promise<{ type?: string; title?: string; description?: string }>;
 }) {
   const params = await searchParams;
   const initialType = params.type as 'movie' | 'tv' | 'book' | 'game' | 'album' | undefined;
+  const title = params.title || '';
+  const description = params.description || '';
 
-  const initialFrontmatter = initialType
-    ? {
-        title: '',
-        type: initialType,
-        status: 'planned' as const,
-        genres: [],
-        tags: [],
-        creator: [],
-        featured: false,
-        published: true,
-      }
-    : undefined;
+  const initialFrontmatter = {
+    title,
+    description,
+    type: initialType || 'movie',
+    status: 'planned' as const,
+    genres: [],
+    tags: [],
+    creator: [],
+    featured: false,
+    published: true,
+  };
 
   return (
     <MediaEditorialEditor

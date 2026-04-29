@@ -372,7 +372,13 @@ export async function getTaskStatistics(userId: string): Promise<{
 /**
  * Get all task categories for the current user
  */
-export async function getAllTaskCategories(): Promise<TaskCategory[]> {
+export async function getAllTaskCategories(userId?: string): Promise<TaskCategory[]> {
+  if (userId) {
+    return await query<TaskCategory>(
+      "SELECT * FROM task_categories WHERE userId = ? ORDER BY name ASC",
+      [userId]
+    );
+  }
   return await query<TaskCategory>(
     "SELECT * FROM task_categories ORDER BY name ASC"
   );

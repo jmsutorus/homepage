@@ -9,6 +9,7 @@ import { NationalParksMap } from './national-parks-map';
 import { ParkCardEditorial } from './editorial/park-card-editorial';
 import { ParkContent } from '@/lib/db/parks';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
+import { useHaptic } from "@/hooks/use-haptic";
 
 interface ParksPageClientProps {
   parks: ParkContent[];
@@ -18,6 +19,7 @@ interface ParksPageClientProps {
 export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps) {
   const fullCollectionRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const haptic = useHaptic();
 
   // Calculate stats
   const totalVisits = parks.length;
@@ -34,6 +36,29 @@ export function ParksPageClient({ parks, parksByCategory }: ParksPageClientProps
       })
       .slice(0, 3);
   }, [parks]);
+
+  if (parks.length === 0) {
+    return (
+      <div className="flex min-h-screen font-lexend -mx-4 -my-8 md:-mx-8 items-center justify-center w-full">
+        <div className="flex flex-col items-center text-center px-4 max-w-md">
+          <div className="w-24 h-24 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary mb-6 shadow-inner">
+            <span className="material-symbols-outlined text-5xl">forest</span>
+          </div>
+          <h2 className="text-3xl font-black text-media-primary mb-3 tracking-tight">Your Atlas is Empty</h2>
+          <p className="text-media-on-surface-variant font-medium mb-8">
+            Start documenting your wilderness immersion and protected landscapes. Create a curated record of your outdoor explorations.
+          </p>
+          <button 
+            onClick={() => { haptic.trigger("light"); router.push("/parks/new"); }}
+            className="cursor-pointer bg-media-secondary text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-media-secondary/20 border-none"
+          >
+            <span className="material-symbols-outlined text-xl">add</span>
+            <span>Add Your First Entry</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen font-lexend -mt-8 -mx-4 md:-mx-8">
