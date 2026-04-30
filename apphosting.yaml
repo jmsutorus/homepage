@@ -175,6 +175,25 @@ env:
   - variable: CACHE_TTL_WEATHER
     value: "1800"
 
+  # ============================================================================
+  # SERVICE URLS
+  # ============================================================================
+
+  - variable: EARTHBOUND_API_URL
+    secret: homepage-prod-earthbound-api-url
+
+  - variable: FIREBASE_CURATION_FUNCTION_URL
+    secret: homepage-prod-curation-url
+
+  - variable: FIREBASE_IMAGE_PROCESSING_URL
+    secret: homepage-prod-image-processing-url
+
+  - variable: FIREBASE_SEND_ACCESS_EMAIL
+    secret: homepage-prod-send-access-email-url
+
+  - variable: FIREBASE_WORKOUT_CURATION_URL
+    secret: homepage-prod-workout-curation-url
+
 # ============================================================================
 # SECRETS MANAGEMENT
 # ============================================================================

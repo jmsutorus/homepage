@@ -24,6 +24,11 @@ const SECRET_MAPPINGS: Record<string, string> = {
   HOMEASSISTANT_TOKEN: 'homepage-prod-homeassistant-token',
   TAUTULLI_API_KEY: 'homepage-prod-tautulli-api-key',
   STRAVA_CLIENT_SECRET: 'homepage-prod-strava-client-secret',
+  EARTHBOUND_API_URL: 'homepage-prod-earthbound-api-url',
+  FIREBASE_CURATION_FUNCTION_URL: 'homepage-prod-curation-url',
+  FIREBASE_IMAGE_PROCESSING_URL: 'homepage-prod-image-processing-url',
+  FIREBASE_SEND_ACCESS_EMAIL: 'homepage-prod-send-access-email-url',
+  FIREBASE_WORKOUT_CURATION_URL: 'homepage-prod-workout-curation-url',
 };
 
 /**
