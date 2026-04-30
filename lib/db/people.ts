@@ -21,47 +21,21 @@ export {
 // Interfaces
 // ============================================================================
 
-export interface Person {
-  id: number;
-  userId: string;
-  name: string;
-  birthday: string; // YYYY-MM-DD or 0000-MM-DD (when year unknown)
-  relationship: 'family' | 'friends' | 'work' | 'other';
-  photo: string | null;
-  email: string | null;
-  phone: string | null;
-  notes: string | null;
-  gift_ideas: string | null;
-  anniversary: string | null; // YYYY-MM-DD or 0000-MM-DD
-  relationship_type_id: number | null;
-  relationshipTypeName?: string | null; // Joined from relationship_types table
-  is_partner: boolean;
-  slug: string;
-  address: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import {
+  type Person,
+  type PersonWithAge,
+  type PersonWithAnniversary,
+  type RelationshipCategory,
+  type RelationshipType,
+} from "@jmsutorus/earthbound-shared";
 
-export interface PersonWithAge extends Person {
-  age: number | null; // null if year unknown
-  nextBirthday: string; // YYYY-MM-DD of next occurrence
-  daysUntilBirthday: number;
-}
-
-export interface PersonWithAnniversary extends Person {
-  yearsTogether: number | null; // null if year unknown
-  nextAnniversary: string; // YYYY-MM-DD of next occurrence
-  daysUntilAnniversary: number;
-}
-
-export type RelationshipCategory = 'family' | 'friends' | 'work' | 'other';
-
-export interface RelationshipType {
-  id: number;
-  userId: string;
-  name: string;
-  created_at: string;
-}
+export type {
+  Person,
+  PersonWithAge,
+  PersonWithAnniversary,
+  RelationshipCategory,
+  RelationshipType,
+};
 
 // ============================================================================
 // Utility Functions

@@ -1,7 +1,6 @@
 import { execute, queryOne } from "./index";
 
 export interface ScratchPad {
-  id: number;
   userId: string;
   content: string;
   created_at: string;

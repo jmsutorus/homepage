@@ -25,6 +25,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       name: "Firebase",
       credentials: {
         idToken: { label: "ID Token", type: "text" },
+        refreshToken: { label: "Refresh Token", type: "text" },
       },
       async authorize(credentials) {
         try {
@@ -97,6 +98,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: firebaseUser.displayName || null,
             image: firebaseUser.photoURL || null,
             emailVerified: firebaseUser.emailVerified ? new Date() : null,
+            idToken: credentials.idToken as string,
+            refreshToken: credentials.refreshToken as string,
           };
         } catch (error) {
           console.error("Firebase auth error:", error);

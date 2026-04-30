@@ -1,6 +1,26 @@
 import { execute, query, queryOne } from "./index";
 
-// Re-export types from shared types file
+import {
+  type VacationStatus,
+  type VacationType,
+  type BookingType,
+  type BookingStatus,
+  type Vacation,
+  type VacationInput,
+  type ItineraryDay,
+  type ItineraryDayInput,
+  type Booking,
+  type BookingInput,
+  type VacationPhoto,
+  type VacationPhotoInput,
+  type VacationPerson,
+  type VacationWithDetails,
+  VACATION_STATUSES,
+  VACATION_TYPES,
+  BOOKING_TYPES,
+  BOOKING_STATUSES,
+} from "@jmsutorus/earthbound-shared";
+
 export type {
   VacationStatus,
   VacationType,
@@ -14,37 +34,58 @@ export type {
   BookingInput,
   VacationPhoto,
   VacationPhotoInput,
+  VacationPerson,
   VacationWithDetails,
-} from "@/lib/types/vacations";
+};
 
 export {
   VACATION_STATUSES,
-  VACATION_STATUS_NAMES,
   VACATION_TYPES,
-  VACATION_TYPE_NAMES,
   BOOKING_TYPES,
-  BOOKING_TYPE_NAMES,
   BOOKING_STATUSES,
-  BOOKING_STATUS_NAMES,
-  calculateDurationDays,
-  calculateDayNumber,
-  formatDateYMD,
-  getYearFromDate,
-  calculateTotalBudget,
-} from "@/lib/types/vacations";
+};
 
-import type {
-  Vacation,
-  VacationInput,
-  ItineraryDay,
-  ItineraryDayInput,
-  Booking,
-  BookingInput,
-  VacationPhoto,
-  VacationPhotoInput,
-  VacationPerson,
-  VacationWithDetails
-} from "@/lib/types/vacations";
+export const VACATION_STATUS_NAMES: Record<string, string> = {
+  planning: "Planning",
+  booked: "Booked",
+  "in-progress": "In Progress",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
+export const VACATION_TYPE_NAMES: Record<string, string> = {
+  beach: "Beach",
+  ski: "Ski",
+  cruise: "Cruise",
+  "road-trip": "Road Trip",
+  city: "City",
+  camping: "Camping",
+  adventure: "Adventure",
+  cultural: "Cultural",
+  "theme-park": "Theme Park",
+  festival: "Festival",
+  business: "Business",
+  staycation: "Staycation",
+  other: "Other",
+};
+
+export const BOOKING_TYPE_NAMES: Record<string, string> = {
+  flight: "Flight",
+  hotel: "Hotel",
+  activity: "Activity",
+  car: "Car",
+  train: "Train",
+  other: "Other",
+};
+
+export const BOOKING_STATUS_NAMES: Record<string, string> = {
+  pending: "Pending",
+  confirmed: "Confirmed",
+  cancelled: "Cancelled",
+};
+
+
+
 
 // ==================== Helper Functions ====================
 

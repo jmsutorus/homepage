@@ -1,17 +1,13 @@
 import { query, queryOne, execute } from "@/lib/db";
-import type { TaskPriority } from "@/lib/db/tasks";
+import {
+  type TaskPriority,
+  type TaskTemplate,
+} from "@jmsutorus/earthbound-shared";
 
-export interface TaskTemplate {
-  id: number;
-  userId: string;
-  name: string;
-  title: string;
-  priority: TaskPriority;
-  category: string | null;
-  dueDate: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+export type {
+  TaskPriority,
+  TaskTemplate,
+};
 
 export interface CreateTaskTemplateInput {
   name: string;

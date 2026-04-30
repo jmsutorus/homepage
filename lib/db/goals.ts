@@ -4,66 +4,27 @@ import { query, queryOne, execute } from "@/lib/db";
 // Type Definitions
 // ============================================================================
 
-export type GoalStatus = 'not_started' | 'in_progress' | 'on_hold' | 'completed' | 'archived' | 'abandoned';
-export type GoalPriority = 'low' | 'medium' | 'high';
+import {
+  type GoalStatus,
+  type GoalPriority,
+  type Goal,
+  type GoalMilestone,
+  type GoalChecklistItem,
+  type GoalWithDetails,
+  type GoalMilestoneWithChecklist,
+  type GoalWithProgress,
+} from "@jmsutorus/earthbound-shared";
 
-export interface Goal {
-  id: number;
-  userId: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  content: string | null;
-  status: GoalStatus;
-  target_date: string | null;
-  completed_date: string | null;
-  tags: string[];
-  priority: GoalPriority;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface GoalMilestone {
-  id: number;
-  goalId: number;
-  title: string;
-  description: string | null;
-  target_date: string | null;
-  completed: boolean;
-  completed_date: string | null;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface GoalChecklistItem {
-  id: number;
-  goalId: number | null;
-  milestoneId: number | null;
-  text: string;
-  completed: boolean;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-}
-
-// Extended type with all related data
-export interface GoalWithDetails extends Goal {
-  milestones: GoalMilestoneWithChecklist[];
-  checklist: GoalChecklistItem[];
-  progress: number;
-}
-
-export interface GoalMilestoneWithChecklist extends GoalMilestone {
-  checklist: GoalChecklistItem[];
-}
-
-export interface GoalWithProgress extends Goal {
-  progress: number;
-  category?: string;
-  milestoneCount: number;
-  milestonesCompleted: number;
-}
+export type {
+  GoalStatus,
+  GoalPriority,
+  Goal,
+  GoalMilestone,
+  GoalChecklistItem,
+  GoalWithDetails,
+  GoalMilestoneWithChecklist,
+  GoalWithProgress,
+};
 
 // Raw database row types (before parsing)
 interface GoalRow {

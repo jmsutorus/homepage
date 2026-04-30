@@ -1,11 +1,8 @@
 import { query, queryOne, execute } from "@/lib/db";
 
-export interface DuolingoCompletion {
-  id: number;
-  userId: string;
-  date: string;
-  completed_at: string;
-}
+import {
+  type DuolingoCompletion,
+} from "@jmsutorus/earthbound-shared";
 
 /**
  * Check if user has completed their Duolingo lesson for a specific date

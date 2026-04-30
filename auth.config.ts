@@ -54,6 +54,20 @@ export default {
         token.picture = user.image;
         token.role = (user as any).role || 'user';
         token.haptic = (user as any).haptic !== undefined ? (user as any).haptic : true;
+        token.idToken = (user as any).idToken;
+        token.refreshToken = (user as any).refreshToken;
+
+        // Extract expiration from idToken
+        if (token.idToken) {
+          try {
+            const base64Url = (token.idToken as string).split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(atob(base64));
+            token.expiresAt = payload.exp * 1000; // Firebase exp is in seconds
+          } catch (e) {
+            console.error("Error parsing idToken:", e);
+          }
+        }
       }
 
       if (account) {
@@ -67,6 +81,45 @@ export default {
         if (session?.image !== undefined) token.picture = session.image;
       }
 
+      // Check if token is expired and refresh if necessary
+      // We check if it expires in the next 5 minutes to be safe
+      const shouldRefresh = token.refreshToken && 
+        token.expiresAt && 
+        (Date.now() + 5 * 60 * 1000) > (token.expiresAt as number);
+
+      if (shouldRefresh) {
+        try {
+          console.log("Refreshing Firebase ID token...");
+          const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+          const url = `https://securetoken.googleapis.com/v1/token?key=${apiKey}`;
+          
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              grant_type: "refresh_token",
+              refresh_token: token.refreshToken as string,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw data;
+          }
+
+          token.idToken = data.id_token;
+          token.refreshToken = data.refresh_token;
+          // Refreshing gives a new expiration
+          token.expiresAt = Date.now() + (parseInt(data.expires_in) * 1000);
+          console.log("Token refreshed successfully");
+        } catch (error) {
+          console.error("Error refreshing Firebase token:", error);
+          // If refresh fails, we could potentially force a logout by clearing the token
+          // but for now we'll just return the stale one and let the API fail
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -78,6 +131,7 @@ export default {
         session.user.image = token.picture as string | null;
         session.user.role = (token.role as string) || 'user';
         session.user.haptic = token.haptic !== undefined ? (token.haptic as boolean) : true;
+        (session.user as any).idToken = token.idToken as string | undefined;
         (session.user as any).provider = token.provider as string | undefined;
       }
       return session;

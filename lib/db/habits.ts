@@ -6,29 +6,19 @@ import {
 } from "date-fns";
 import { checkAchievement } from "../achievements";
 
-export interface Habit {
-  id: number;
-  userId: string;
-  title: string;
-  description: string | null;
-  frequency: string;
-  target: number;
-  is_infinite: boolean;
-  active: boolean;
-  completed: boolean;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-}
+import {
+  type Habit,
+  type HabitCompletion,
+  type HabitStats,
+  type HabitCompletionChartData,
+} from "@jmsutorus/earthbound-shared";
 
-export interface HabitCompletion {
-  id: number;
-  habit_id: number;
-  userId: string;
-  date: string;
-  completed_at: string;
-  value: number;
-}
+export type {
+  Habit,
+  HabitCompletion,
+  HabitStats,
+  HabitCompletionChartData,
+};
 
 /**
  * Get all active habits for a user
@@ -268,12 +258,7 @@ export async function toggleHabitCompletion(habitId: number, userId: string, dat
   }
 }
 
-export interface HabitStats {
-  daysExisted: number;
-  currentStreak: number;
-  longestStreak: number;
-  totalCompletions: number;
-}
+
 
 /**
  * Calculate habit statistics
@@ -416,18 +401,7 @@ export async function getHabitStats(habit: Habit, userId: string): Promise<Habit
   }
 }
 
-export interface HabitCompletionChartData {
-  habitId: number;
-  habitTitle: string;
-  weeklyData: {
-    week: string;
-    weekLabel: string;
-    completions: number;
-    target: number;
-    rate: number;
-  }[];
-  stats: HabitStats;
-}
+
 
 /**
  * Get habit completion data for charts (last 12 weeks)

@@ -1,15 +1,13 @@
 import { execute, query, queryOne } from "./index";
 import { checkAchievement } from "../achievements";
 
-export interface MoodEntry {
-  id: number;
-  userId: string;
-  date: string; // YYYY-MM-DD format
-  rating: number; // 1-5
-  note: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import {
+  type MoodEntry,
+} from "@jmsutorus/earthbound-shared";
+
+export type {
+  MoodEntry,
+};
 
 /**
  * Create a new mood entry

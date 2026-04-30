@@ -1,46 +1,19 @@
 import { getDatabase } from "./index";
 
 // Types
-export interface Exercise {
-  description: string; // e.g., "Run 10 minutes at 6 minute mile pace" or "Barbell curls"
-  reps?: number; // Number of reps (for strength exercises)
-  sets?: number; // Number of sets (for strength exercises)
-  duration?: number; // Duration in minutes (for cardio)
-  pace?: string; // Pace description (for cardio)
-  weight?: number; // Weight in lbs (for strength exercises)
-}
+import {
+  type Exercise,
+  type WorkoutActivity,
+  type CreateWorkoutActivity,
+  type WorkoutActivityStats,
+} from "@jmsutorus/earthbound-shared";
 
-export interface WorkoutActivity {
-  id: number;
-  userId: string;
-  date: string; // YYYY-MM-DD
-  time: string; // HH:MM
-  length: number; // Total duration in minutes
-  distance?: number; // Distance in miles
-  difficulty: "easy" | "moderate" | "hard" | "very hard";
-  type: "run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other" | "swim" | "yoga" | "pilates";
-  exercises: string; // JSON string of Exercise[]
-  notes?: string | null;
-  completed: boolean;
-  completed_at?: string | null;
-  completion_notes?: string | null; // Post-activity notes
-  created_at: string;
-  updated_at: string;
-  pace?: number;
-}
-
-export interface CreateWorkoutActivity {
-  date: string;
-  time: string;
-  length: number;
-  distance?: number;
-  difficulty: "easy" | "moderate" | "hard" | "very hard";
-  type: "run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other";
-  exercises: Exercise[];
-  notes?: string;
-  completed?: boolean;
-  completed_at?: string | null;
-}
+export type {
+  Exercise,
+  WorkoutActivity,
+  CreateWorkoutActivity,
+  WorkoutActivityStats,
+};
 
 // CRUD Operations
 
@@ -257,24 +230,6 @@ export async function deleteWorkoutActivity(id: number, userId: string): Promise
 }
 
 // Analytics and Statistics
-
-export interface WorkoutActivityStats {
-  total_activities: number;
-  completed_activities: number;
-  completion_rate: number;
-  total_duration: number;
-  total_distance: number;
-  avg_duration: number;
-  by_type: {
-    type: string;
-    count: number;
-    total_duration: number;
-  }[];
-  by_difficulty: {
-    difficulty: string;
-    count: number;
-  }[];
-}
 
 export async function getWorkoutActivityStats(userId: string, startDate?: string, endDate?: string): Promise<WorkoutActivityStats> {
   const db = getDatabase();

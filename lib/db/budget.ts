@@ -2,34 +2,21 @@ import { execute, query, queryOne } from "./index";
 
 // ==================== Types ====================
 
-export type FixedCostCategory =
-  | 'housing' | 'utilities' | 'groceries' | 'transportation'
-  | 'insurance' | 'healthcare' | 'childcare' | 'phone'
-  | 'internet' | 'other';
+import {
+  type FixedCostCategory,
+  type BudgetIncome,
+  type BudgetFixedCost,
+  type UpdateFixedCostInput,
+  type UpdateIncomeInput
+} from "@jmsutorus/earthbound-shared";
 
-export interface BudgetIncome {
-  id: number;
-  userId: string;
-  amount: number;
-  currency: string;
-  label: string;
-  effective_date: string;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface BudgetFixedCost {
-  id: number;
-  userId: string;
-  name: string;
-  category: FixedCostCategory;
-  amount: number;
-  currency: string;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type {
+  FixedCostCategory,
+  BudgetIncome,
+  BudgetFixedCost,
+  UpdateFixedCostInput,
+  UpdateIncomeInput
+};
 
 export interface CreateIncomeInput {
   amount: number;
@@ -39,26 +26,10 @@ export interface CreateIncomeInput {
   notes?: string;
 }
 
-export interface UpdateIncomeInput {
-  amount?: number;
-  currency?: string;
-  label?: string;
-  effective_date?: string;
-  notes?: string;
-}
-
 export interface CreateFixedCostInput {
   name: string;
   category?: FixedCostCategory;
   amount: number;
-  currency?: string;
-  notes?: string;
-}
-
-export interface UpdateFixedCostInput {
-  name?: string;
-  category?: FixedCostCategory;
-  amount?: number;
   currency?: string;
   notes?: string;
 }

@@ -1,22 +1,21 @@
 import { execute, query, queryOne } from "./index";
 
-// Re-export types from shared types file
-export type { 
-  GroceryItem, 
-  GroceryItemInput, 
-  GroceryListByCategory 
-} from "@/lib/types/meals";
+import {
+  type IngredientCategory,
+  type GroceryItem,
+  type GroceryItemInput,
+  type GroceryListByCategory,
+  INGREDIENT_CATEGORIES,
+  CATEGORY_DISPLAY_NAMES,
+} from "@jmsutorus/earthbound-shared";
 
-export { CATEGORY_DISPLAY_NAMES } from "@/lib/types/meals";
+export type {
+  GroceryItem,
+  GroceryItemInput,
+  GroceryListByCategory,
+};
 
-import type { 
-  IngredientCategory, 
-  GroceryItem, 
-  GroceryItemInput, 
-  GroceryListByCategory 
-} from "@/lib/types/meals";
-
-import { INGREDIENT_CATEGORIES } from "@/lib/types/meals";
+export { CATEGORY_DISPLAY_NAMES };
 
 // ==================== Grocery List CRUD ====================
 

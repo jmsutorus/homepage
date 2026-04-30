@@ -1,12 +1,12 @@
 import { execute, queryOne } from "./index";
 
-export interface CacheEntry {
-  key: string;
-  userId: string;
-  value: string;
-  expires_at: string;
-  created_at: string;
-}
+import {
+  type CacheEntry,
+} from "@jmsutorus/earthbound-shared";
+
+export type {
+  CacheEntry,
+};
 
 /**
  * Get cached value if not expired for a specific user

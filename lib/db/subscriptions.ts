@@ -8,30 +8,23 @@ export type { SubscriptionCycle };
 
 // ==================== Types ====================
 
-export interface Subscription {
-  id: number;
-  userId: string;
-  name: string;
-  website: string | null;
-  icon_url: string | null;
-  price: number;
-  cycle: SubscriptionCycle;
-  currency: string;
-  active: boolean;
-  category: string | null;
-  billing_day: number | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import {
+  type Subscription,
+  type SubscriptionTotals,
+} from "@jmsutorus/earthbound-shared";
+
+export type {
+  Subscription,
+  SubscriptionTotals,
+};
 
 export interface CreateSubscriptionInput {
   name: string;
   website?: string;
   icon_url?: string;
   price: number;
-  cycle?: SubscriptionCycle;
-  currency?: string;
+  cycle: string;
+  currency: string;
   active?: boolean;
   category?: string;
   billing_day?: number;
@@ -49,13 +42,6 @@ export interface UpdateSubscriptionInput {
   category?: string;
   billing_day?: number;
   notes?: string;
-}
-
-export interface SubscriptionTotals {
-  currency: string;
-  monthly: number;
-  yearly: number;
-  count: number;
 }
 
 // ==================== DB Row Type ====================

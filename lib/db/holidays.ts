@@ -2,28 +2,26 @@ import { execute, query, queryOne } from "./index";
 
 // ==================== Types ====================
 
-export interface Holiday {
-  id: number;
-  name: string;
-  month: number;
-  day: number;
-  year: number | null;
-  created_at: string;
-  updated_at: string;
-}
+import {
+  type Holiday,
+} from "@jmsutorus/earthbound-shared";
+
+export type {
+  Holiday,
+};
 
 export interface CreateHolidayInput {
   name: string;
   month: number;
   day: number;
-  year?: number | null;
+  year?: number;
 }
 
 export interface UpdateHolidayInput {
-  name?: string;
+  name?: string;  
   month?: number;
   day?: number;
-  year?: number | null;
+  year?: number;
 }
 
 // ==================== Variable Holiday Date Computation ====================

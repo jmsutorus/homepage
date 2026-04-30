@@ -1,10 +1,9 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
-import { signIn as nextAuthSignIn } from "next-auth/react";
 import { auth } from "@/lib/firebase/client";
 import Link from "next/link";
 
@@ -19,6 +18,7 @@ function SignUpContent() {
   const [verificationSent, setVerificationSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const router = useRouter();
   const searchParams = useSearchParams();
 
 
@@ -75,11 +75,27 @@ function SignUpContent() {
     setLoading(true);
 
     try {
-      // Use Auth.js native Google OAuth
-      await nextAuthSignIn("google", { callbackUrl });
+      const provider = new GoogleAuthProvider();
+      const credential = await signInWithPopup(auth, provider);
+      const idToken = await credential.user.getIdToken();
+
+      // Exchange Firebase token for Auth.js session
+      const response = await fetch("/api/auth/firebase-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create session");
+      }
+
+      router.push(callbackUrl);
+      router.refresh();
     } catch (err: any) {
       console.error("Google sign up error:", err);
       setError(err.message || "Failed to sign up with Google");
+    } finally {
       setLoading(false);
     }
   };

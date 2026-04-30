@@ -1,60 +1,34 @@
 import { execute, query, queryOne } from "./index";
 import { checkAchievement } from "../achievements";
 
-// Predefined task statuses
-export const PREDEFINED_TASK_STATUSES = [
-  'active',
-  'in_progress',
-  'blocked',
-  'on_hold',
-  'cancelled',
-  'completed'
-] as const;
+import {
+  type Task,
+  type TaskPriority,
+  type TaskStatus,
+  type TaskCategory,
+  type TaskStatusRecord,
+  type TaskFilter,
+  type VelocityPeriod,
+  type TaskVelocityDataPoint,
+  type TaskVelocityStats,
+  type TaskVelocityData,
+  type PredefinedTaskStatus,
+  PREDEFINED_TASK_STATUSES,
+} from "@jmsutorus/earthbound-shared";
 
-export type PredefinedTaskStatus = typeof PREDEFINED_TASK_STATUSES[number];
-export type TaskStatus = PredefinedTaskStatus | string; // Allow custom statuses
-
-export type TaskPriority = "low" | "medium" | "high";
-
-export interface Task {
-  id: number;
-  title: string;
-  description: string | null;
-  completed: boolean; // Kept for backward compatibility, synced with status
-  completed_date: string | null; // YYYY-MM-DD format
-  due_date: string | null; // ISO 8601 format
-  priority: TaskPriority;
-  category: string | null;
-  status: TaskStatus;
-  userId: string | null;
-  notification_setting: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface TaskFilter {
-  completed?: boolean;
-  status?: TaskStatus | TaskStatus[];
-  priority?: TaskPriority;
-  category?: string;
-  search?: string;
-}
-
-export interface TaskCategory {
-  id: number;
-  userId: string;
-  name: string;
-  created_at: string;
-}
-
-export interface TaskStatusRecord {
-  id: number;
-  userId: string;
-  name: string;
-  color: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type {
+  Task,
+  TaskPriority,
+  TaskStatus,
+  TaskCategory,
+  TaskStatusRecord,
+  TaskFilter,
+  VelocityPeriod,
+  TaskVelocityDataPoint,
+  TaskVelocityStats,
+  TaskVelocityData,
+  PredefinedTaskStatus,
+};
 
 /**
  * Check if a task status represents a completed state
@@ -495,32 +469,7 @@ export async function ensureDefaultCategories(userId: string): Promise<void> {
 
 // ==================== Task Velocity ====================
 
-export type VelocityPeriod = "day" | "week" | "month";
-
-export interface TaskVelocityDataPoint {
-  label: string;
-  startDate: string;
-  endDate: string;
-  planned: number;
-  completed: number;
-  completionRate: number;
-}
-
-export interface TaskVelocityStats {
-  avgCompleted: number;
-  avgPlanned: number;
-  totalCompleted: number;
-  totalPlanned: number;
-  trend: number; // percentage change comparing recent vs earlier period
-  bestPeriod: string;
-  bestPeriodCount: number;
-}
-
-export interface TaskVelocityData {
-  dataPoints: TaskVelocityDataPoint[];
-  stats: TaskVelocityStats;
-  period: VelocityPeriod;
-}
+// VelocityPeriod is exported at the top
 
 /**
  * Get task velocity data for charting for a specific user

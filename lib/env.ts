@@ -10,6 +10,9 @@ export const env = createEnv({
     DATABASE_URL: z.string().optional(),
     DATABASE_AUTH_TOKEN: z.string().optional(),
 
+    // API
+    EARTHBOUND_API_URL: z.string().url().optional(),
+
     // Node Environment
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
@@ -132,6 +135,9 @@ export const env = createEnv({
     // Database
     DATABASE_URL: process.env.DATABASE_URL,
     DATABASE_AUTH_TOKEN: process.env.DATABASE_AUTH_TOKEN,
+
+    // API
+    EARTHBOUND_API_URL: process.env.EARTHBOUND_API_URL,
 
     // Node
     NODE_ENV: process.env.NODE_ENV,

@@ -1,24 +1,26 @@
 import { execute, query, queryOne } from "./index";
 
-// Re-export types from shared types file
+import {
+  type Meal,
+  type MealIngredient,
+  type MealInput,
+  type IngredientInput,
+  type MealWithIngredients,
+  INGREDIENT_CATEGORIES,
+} from "@jmsutorus/earthbound-shared";
+
 export type {
-  IngredientCategory,
   Meal,
   MealIngredient,
   MealInput,
   IngredientInput,
   MealWithIngredients,
-} from "@/lib/types/meals";
+};
 
-export {
-  INGREDIENT_CATEGORIES,
-  parseSteps,
-  parseTags,
-  getTotalTime,
-  formatTime,
-} from "@/lib/types/meals";
+export { INGREDIENT_CATEGORIES };
 
-import type { Meal, MealIngredient, MealInput, IngredientInput, MealWithIngredients } from "@/lib/types/meals";
+
+
 
 // ==================== Meal CRUD ====================
 

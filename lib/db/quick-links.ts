@@ -1,29 +1,16 @@
 import { execute, query, queryOne } from "./index";
 
-export interface QuickLinkCategory {
-  id: number;
-  userId: string;
-  name: string;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-}
+import {
+  type QuickLinkCategory,
+  type QuickLink,
+  type QuickLinkCategoryWithLinks,
+} from "@jmsutorus/earthbound-shared";
 
-export interface QuickLink {
-  id: number;
-  userId: string;
-  category_id: number;
-  title: string;
-  url: string;
-  icon: string;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface QuickLinkCategoryWithLinks extends QuickLinkCategory {
-  links: QuickLink[];
-}
+export type {
+  QuickLinkCategory,
+  QuickLink,
+  QuickLinkCategoryWithLinks,
+};
 
 /**
  * Get all categories with their links for a user

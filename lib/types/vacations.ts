@@ -1,4 +1,87 @@
-// Type definitions for vacation planning feature
+import {
+  type VacationStatus,
+  type VacationType,
+  type BookingType,
+  type BookingStatus,
+  type Vacation,
+  type VacationInput,
+  type ItineraryDay,
+  type ItineraryDayInput,
+  type Booking,
+  type BookingInput,
+  type VacationPhoto,
+  type VacationPhotoInput,
+  type VacationPerson,
+  type VacationWithDetails,
+  VACATION_STATUSES,
+  VACATION_TYPES,
+  BOOKING_TYPES,
+  BOOKING_STATUSES,
+} from "@jmsutorus/earthbound-shared";
+
+// Re-export core types for convenience
+export type {
+  VacationStatus,
+  VacationType,
+  BookingType,
+  BookingStatus,
+  Vacation,
+  VacationInput,
+  ItineraryDay,
+  ItineraryDayInput,
+  Booking,
+  BookingInput,
+  VacationPhoto,
+  VacationPhotoInput,
+  VacationPerson,
+  VacationWithDetails,
+};
+
+export {
+  VACATION_STATUSES,
+  VACATION_TYPES,
+  BOOKING_TYPES,
+  BOOKING_STATUSES,
+};
+
+export const VACATION_STATUS_NAMES: Record<string, string> = {
+  planning: "Planning",
+  booked: "Booked",
+  "in-progress": "In Progress",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
+export const VACATION_TYPE_NAMES: Record<string, string> = {
+  beach: "Beach",
+  ski: "Ski",
+  cruise: "Cruise",
+  "road-trip": "Road Trip",
+  city: "City",
+  camping: "Camping",
+  adventure: "Adventure",
+  cultural: "Cultural",
+  "theme-park": "Theme Park",
+  festival: "Festival",
+  business: "Business",
+  staycation: "Staycation",
+  other: "Other",
+};
+
+export const BOOKING_TYPE_NAMES: Record<string, string> = {
+  flight: "Flight",
+  hotel: "Hotel",
+  activity: "Activity",
+  car: "Car",
+  train: "Train",
+  other: "Other",
+};
+
+export const BOOKING_STATUS_NAMES: Record<string, string> = {
+  pending: "Pending",
+  confirmed: "Confirmed",
+  cancelled: "Cancelled",
+};
 
 /**
  * Parse a date string in YYYY-MM-DD format as a local date
@@ -7,236 +90,6 @@
 export function parseLocalDate(dateString: string): Date {
   const [year, month, day] = dateString.split('-').map(Number);
   return new Date(year, month - 1, day);
-}
-
-export type VacationStatus = 'planning' | 'booked' | 'in-progress' | 'completed' | 'cancelled';
-export type VacationType = 'beach' | 'ski' | 'cruise' | 'road-trip' | 'city' | 'camping' | 'adventure' | 'cultural' | 'theme-park' | 'festival' | 'business' | 'staycation' | 'other';
-export type BookingType = 'flight' | 'hotel' | 'activity' | 'car' | 'train' | 'other';
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled';
-
-// Constants for dropdowns
-export const VACATION_STATUSES: VacationStatus[] = ['planning', 'booked', 'in-progress', 'completed', 'cancelled'];
-export const VACATION_STATUS_NAMES: Record<VacationStatus, string> = {
-  planning: 'Planning',
-  booked: 'Booked',
-  'in-progress': 'In Progress',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-};
-
-export const VACATION_TYPES: VacationType[] = ['beach', 'ski', 'cruise', 'road-trip', 'city', 'camping', 'adventure', 'cultural', 'theme-park', 'festival', 'business', 'staycation', 'other'];
-export const VACATION_TYPE_NAMES: Record<VacationType, string> = {
-  beach: 'Beach',
-  ski: 'Ski',
-  cruise: 'Cruise',
-  'road-trip': 'Road Trip',
-  city: 'City',
-  camping: 'Camping',
-  adventure: 'Adventure',
-  cultural: 'Cultural',
-  'theme-park': 'Theme Park',
-  festival: 'Festival/Event',
-  business: 'Business',
-  staycation: 'Staycation',
-  other: 'Other',
-};
-
-export const BOOKING_TYPES: BookingType[] = ['flight', 'hotel', 'activity', 'car', 'train', 'other'];
-export const BOOKING_TYPE_NAMES: Record<BookingType, string> = {
-  flight: 'Flight',
-  hotel: 'Hotel',
-  activity: 'Activity',
-  car: 'Car Rental',
-  train: 'Train',
-  other: 'Other',
-};
-
-export const BOOKING_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'cancelled'];
-export const BOOKING_STATUS_NAMES: Record<BookingStatus, string> = {
-  pending: 'Pending',
-  confirmed: 'Confirmed',
-  cancelled: 'Cancelled',
-};
-
-/**
- * Vacation entity - main vacation metadata
- */
-export interface Vacation {
-  id: number;
-  userId: string;
-  slug: string;
-  title: string;
-  destination: string;
-  type: VacationType;
-  start_date: string; // YYYY-MM-DD
-  end_date: string;   // YYYY-MM-DD
-  description: string | null;
-  poster: string | null;
-  status: VacationStatus;
-  budget_planned: number | null;
-  budget_actual: number | null;
-  budget_currency: string;
-  tags: string[]; // Parsed from JSON
-  rating: number | null;
-  featured: boolean; // Parsed from 0/1
-  published: boolean; // Parsed from 0/1
-  content: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-/**
- * Input type for creating/updating vacations
- */
-export interface VacationInput {
-  slug: string;
-  title: string;
-  destination: string;
-  type?: VacationType;
-  start_date: string;
-  end_date: string;
-  description?: string;
-  poster?: string;
-  status?: VacationStatus;
-  budget_planned?: number;
-  budget_actual?: number;
-  budget_currency?: string;
-  tags?: string[];
-  rating?: number;
-  featured?: boolean;
-  published?: boolean;
-  content?: string;
-}
-
-/**
- * Itinerary day entity - day-by-day planning
- */
-export interface ItineraryDay {
-  id: number;
-  vacationId: number;
-  date: string; // YYYY-MM-DD
-  day_number: number;
-  title: string | null;
-  location: string | null;
-  activities: string[]; // Parsed from JSON
-  notes: string | null;
-  photo: string | null;
-  budget_planned: number | null;
-  budget_actual: number | null;
-  notification_setting: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-/**
- * Input type for creating/updating itinerary days
- */
-export interface ItineraryDayInput {
-  date: string;
-  day_number: number;
-  title?: string;
-  location?: string;
-  activities?: string[];
-  notes?: string;
-  photo?: string;
-  budget_planned?: number;
-  budget_actual?: number;
-  notification_setting?: string;
-}
-
-/**
- * Booking entity - flights, hotels, activities, etc.
- */
-export interface Booking {
-  id: number;
-  vacationId: number;
-  type: BookingType;
-  title: string;
-  date: string | null;
-  start_time: string | null;
-  end_time: string | null;
-  confirmation_number: string | null;
-  provider: string | null;
-  location: string | null;
-  cost: number | null;
-  status: BookingStatus;
-  notes: string | null;
-  url: string | null;
-  notification_setting: string | null;
-  origin: string | null;
-  destination: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-/**
- * Input type for creating/updating bookings
- */
-export interface BookingInput {
-  type: BookingType;
-  title: string;
-  date?: string;
-  start_time?: string;
-  end_time?: string;
-  confirmation_number?: string;
-  provider?: string;
-  location?: string;
-  cost?: number;
-  status?: BookingStatus;
-  notes?: string;
-  url?: string;
-  notification_setting?: string;
-  origin?: string;
-  destination?: string;
-}
-
-/**
- * Photo entity - external image URLs for photo gallery
- */
-export interface VacationPhoto {
-  id: number;
-  vacationId: number;
-  url: string;
-  caption: string | null;
-  date_taken: string | null; // YYYY-MM-DD
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-}
-
-/**
- * Input type for creating/updating photos
- */
-export interface VacationPhotoInput {
-  url: string;
-  caption?: string;
-  date_taken?: string;
-  order_index?: number;
-}
-
-/**
- * Person associated with a vacation (from vacation_people junction)
- */
-export interface VacationPerson {
-  id: number;           // vacation_people.id
-  vacationId: number;
-  personId: number;
-  name: string;         // Joined from people table
-  photo: string | null; // Joined from people table
-  relationship: 'family' | 'friends' | 'work' | 'other';
-  relationshipTypeName?: string | null;
-  created_at: string;
-}
-
-/**
- * Composite type with vacation and all related data
- */
-export interface VacationWithDetails {
-  vacation: Vacation;
-  itinerary: ItineraryDay[];
-  bookings: Booking[];
-  photos: VacationPhoto[];
-  people: VacationPerson[];
 }
 
 /**

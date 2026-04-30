@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDrinkWithLogs, updateDrink, deleteDrink, drinkSlugExists, UpdateDrinkInput, getDrinkBySlug } from "@/lib/db/drinks";
+import { getDrinkWithLogs, updateDrink, deleteDrink, drinkSlugExists, getDrinkBySlug } from "@/lib/db/drinks";
 import { getUserId } from "@/lib/auth/server";
 import { slugify } from "@/lib/utils";
 import { getAdminStorage } from "@/lib/firebase/admin";
+import { UpdateDrinkInput } from "@jmsutorus/earthbound-shared";
 
 export async function GET(
   req: NextRequest,

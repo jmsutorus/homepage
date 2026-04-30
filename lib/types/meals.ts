@@ -1,123 +1,16 @@
-// Shared types for meals and grocery features
-// This file contains only types and constants that can be used in both client and server components
+import {
+  type Meal,
+  type Difficulty,
+} from "@jmsutorus/earthbound-shared";
 
-export type IngredientCategory =
-  | "produce"
-  | "dairy"
-  | "meat"
-  | "pantry"
-  | "frozen"
-  | "bakery"
-  | "beverages"
-  | "other";
-
-export const INGREDIENT_CATEGORIES: IngredientCategory[] = [
-  "produce",
-  "dairy",
-  "meat",
-  "pantry",
-  "frozen",
-  "bakery",
-  "beverages",
-  "other",
-];
-
-export const CATEGORY_DISPLAY_NAMES: Record<IngredientCategory, string> = {
-  produce: "Produce",
-  dairy: "Dairy",
-  meat: "Meat & Seafood",
-  pantry: "Pantry",
-  frozen: "Frozen",
-  bakery: "Bakery",
-  beverages: "Beverages",
-  other: "Other",
-};
-
-export interface Meal {
-  id: number;
-  userId: string;
-  name: string;
-  description: string | null;
-  steps: string | null;
-  servings: number;
-  prep_time: number | null;
-  cook_time: number | null;
-  image_url: string | null;
-  tags: string | null;
-  rating: number | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface MealIngredient {
-  id: number;
-  mealId: number;
-  name: string;
-  quantity: number | null;
-  unit: string | null;
-  category: IngredientCategory;
-  notes: string | null;
-  order_index: number;
-}
-
-export interface MealInput {
-  name: string;
-  description?: string;
-  steps?: string[];
-  servings?: number;
-  prep_time?: number;
-  cook_time?: number;
-  image_url?: string;
-  tags?: string[];
-  rating?: number;
-}
-
-export interface IngredientInput {
-  name: string;
-  quantity?: number;
-  unit?: string;
-  category?: IngredientCategory;
-  notes?: string;
-  order_index?: number;
-}
-
-export interface MealWithIngredients extends Meal {
-  ingredients: MealIngredient[];
-}
-
-export interface GroceryItem {
-  id: number;
-  userId: string;
-  name: string;
-  quantity: number | null;
-  unit: string | null;
-  category: IngredientCategory;
-  checked: boolean;
-  mealId: number | null;
-  created_at: string;
-}
-
-export interface GroceryItemInput {
-  name: string;
-  quantity?: number;
-  unit?: string;
-  category?: IngredientCategory;
-  mealId?: number;
-}
-
-export interface GroceryListByCategory {
-  category: IngredientCategory;
-  items: GroceryItem[];
-}
-
-// Helper functions that don't require server-side modules
+// Parsing helpers
 export function parseSteps(stepsJson: string | null): string[] {
   if (!stepsJson) return [];
   try {
     const parsed = JSON.parse(stepsJson);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return [];
+    return stepsJson.split("\n").filter(Boolean);
   }
 }
 
@@ -127,10 +20,36 @@ export function parseTags(tagsJson: string | null): string[] {
     const parsed = JSON.parse(tagsJson);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return [];
+    return tagsJson.split(",").map((t) => t.trim()).filter(Boolean);
   }
 }
 
+// Re-export core types for convenience
+export type {
+  IngredientCategory,
+  Meal,
+  MealIngredient,
+  MealInput,
+  IngredientInput,
+  MealWithIngredients,
+  GroceryItem,
+  GroceryItemInput,
+  GroceryListByCategory,
+  MealType,
+  DailyMeal,
+  DailyMealWithRecipe,
+  DailyMealInput,
+  Difficulty,
+} from "@jmsutorus/earthbound-shared";
+
+export {
+  INGREDIENT_CATEGORIES,
+  CATEGORY_DISPLAY_NAMES,
+  MEAL_TYPES,
+  MEAL_TYPE_DISPLAY_NAMES,
+} from "@jmsutorus/earthbound-shared";
+
+// Helper functions for UI calculations
 export function getTotalTime(meal: Meal): number | null {
   if (meal.prep_time === null && meal.cook_time === null) return null;
   return (meal.prep_time || 0) + (meal.cook_time || 0);
@@ -143,8 +62,6 @@ export function formatTime(minutes: number | null): string {
   const mins = minutes % 60;
   return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
 }
-
-export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 
 export function getDifficulty(meal: Meal & { ingredient_count?: number }): Difficulty {
   const totalTime = getTotalTime(meal) || 0;
@@ -166,35 +83,4 @@ export function getDifficulty(meal: Meal & { ingredient_count?: number }): Diffi
   }
   
   return "Intermediate";
-}
-
-// Daily Meals Types
-export type MealType = "breakfast" | "lunch" | "dinner";
-
-export const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner"];
-
-export const MEAL_TYPE_DISPLAY_NAMES: Record<MealType, string> = {
-  breakfast: "Breakfast",
-  lunch: "Lunch",
-  dinner: "Dinner",
-};
-
-export interface DailyMeal {
-  id: number;
-  userId: string;
-  date: string; // YYYY-MM-DD format
-  meal_type: MealType;
-  mealId: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface DailyMealWithRecipe extends DailyMeal {
-  meal: Meal;
-}
-
-export interface DailyMealInput {
-  date: string;
-  meal_type: MealType;
-  mealId: number;
 }

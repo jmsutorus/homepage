@@ -5,11 +5,11 @@ export interface WorkoutPlan {
   id: number;
   user_id: string;
   name: string;
-  description?: string | null;
-  exercises?: string | null; // JSON string
+  description: string | null;
+  exercises: string | null;
   duration: number;
-  intensity: "low" | "medium" | "high";
-  type: "cardio" | "strength" | "flexibility" | "sports" | "other";
+  intensity: string;
+  type: string;
   created_at: string;
   updated_at: string;
 }
@@ -17,17 +17,31 @@ export interface WorkoutPlan {
 export interface ScheduledWorkout {
   id: number;
   user_id: string;
-  workout_plan_id?: number | null;
-  calendar_event_id?: string | null;
-  scheduled_date: string; // YYYY-MM-DD
-  scheduled_time: string; // HH:MM
+  workout_plan_id: number | null;
+  calendar_event_id: string | null;
+  scheduled_date: string;
+  scheduled_time: string;
   duration: number;
   reminder_minutes: number;
+  notes: string | null;
   completed: boolean;
-  completed_at?: string | null;
-  notes?: string | null;
+  completed_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface WorkoutStats {
+  total_workouts: number;
+  completed_workouts: number;
+  completion_rate: number;
+  total_duration: number;
+  avg_duration: number;
+}
+
+export interface WorkoutByType {
+  type: string;
+  count: number;
+  total_duration: number;
 }
 
 // Workout Plan CRUD Operations
@@ -280,13 +294,6 @@ export async function deleteScheduledWorkout(id: number, userId: string): Promis
 
 // Analytics and Statistics
 
-export interface WorkoutStats {
-  total_workouts: number;
-  completed_workouts: number;
-  completion_rate: number;
-  total_duration: number;
-  avg_duration: number;
-}
 
 export async function getWorkoutStats(userId: string, startDate?: string, endDate?: string): Promise<WorkoutStats> {
 
@@ -325,11 +332,6 @@ export async function getWorkoutStats(userId: string, startDate?: string, endDat
   };
 }
 
-export interface WorkoutByType {
-  type: string;
-  count: number;
-  total_duration: number;
-}
 
 export async function getWorkoutsByType(userId: string): Promise<WorkoutByType[]> {
   const db = getDatabase();

@@ -1,53 +1,28 @@
-import { execute, query, queryOne } from "./index";
+import { execute } from "./index";
 import { checkAchievement } from "../achievements";
+import { earthboundFetch } from "../api/earthbound";
 
-export interface MediaContent {
-  id: number;
-  userId: string;
-  slug: string;
-  title: string;
-  type: "movie" | "tv" | "book" | "game" | "album";
-  status: "in-progress" | "completed" | "planned";
-  rating: number | null;
-  started: string | null; // YYYY-MM-DD format
-  completed: string | null; // YYYY-MM-DD format
-  released: string | null; // YYYY-MM-DD format
-  genres: string | null; // JSON array of genre strings
-  poster: string | null; // Image URL
-  tags: string | null; // JSON array of tag strings
-  description: string | null; // Short description or plot summary
-  length: string | null; // Runtime/page count as string
-  creator: string | null; // JSON array of creator strings (directors/authors)
-  featured: number; // SQLite boolean (0 or 1)
-  published: number; // SQLite boolean (0 or 1)
-  time_spent: number; // Time spent in minutes
-  content?: string; // Markdown content (optional when not selected for performance)
-  progress: number; // Completion percentage (0-100)
-  created_at: string;
-  updated_at: string;
-}
+import {
+  type MediaContent,
+  type MediaContentInput,
+  type PaginatedMediaResult,
+  type TimelinePeriod,
+  type MediaTimelineItem,
+  type MediaTimelineDataPoint,
+  type MediaTimelineStats,
+  type MediaTimelineData,
+} from "@jmsutorus/earthbound-shared";
 
-export interface MediaContentInput {
-  slug: string;
-  title: string;
-  type: "movie" | "tv" | "book" | "game" | "album";
-  status: "in-progress" | "completed" | "planned";
-  rating?: number;
-  started?: string;
-  completed?: string;
-  released?: string;
-  genres?: string[]; // Will be converted to JSON
-  poster?: string;
-  tags?: string[]; // Will be converted to JSON
-  description?: string;
-  length?: string;
-  creator?: string[]; // Will be converted to JSON
-  featured?: boolean;
-  published?: boolean;
-  timeSpent?: number; // Time spent in minutes
-  content: string;
-  progress?: number;
-}
+export type {
+  MediaContent,
+  MediaContentInput,
+  PaginatedMediaResult,
+  TimelinePeriod,
+  MediaTimelineItem,
+  MediaTimelineDataPoint,
+  MediaTimelineStats,
+  MediaTimelineData,
+};
 
 /**
  * Create a new media content entry
@@ -98,20 +73,24 @@ export async function createMedia(data: MediaContentInput, userId: string): Prom
  * Get media entry by ID
  */
 export async function getMediaById(id: number): Promise<MediaContent | undefined> {
-  return await queryOne<MediaContent>(
-    "SELECT * FROM media_content WHERE id = ?",
-    [id]
-  );
+  const response = await earthboundFetch(`/api/media/id/${id}`);
+  if (!response.ok) {
+    if (response.status === 404) return undefined;
+    throw new Error(`Failed to fetch media by id: ${response.statusText}`);
+  }
+  return response.json() as Promise<MediaContent>;
 }
 
 /**
  * Get media entry by slug for a specific user
  */
 export async function getMediaBySlug(slug: string, userId: string): Promise<MediaContent | undefined> {
-  return await queryOne<MediaContent>(
-    "SELECT * FROM media_content WHERE slug = ? AND userId = ?",
-    [slug, userId]
-  );
+  const response = await earthboundFetch(`/api/media/s/${slug}?userId=${userId}`);
+  if (!response.ok) {
+    if (response.status === 404) return undefined;
+    throw new Error(`Failed to fetch media by slug: ${response.statusText}`);
+  }
+  return response.json() as Promise<MediaContent>;
 }
 
 /**
@@ -120,23 +99,12 @@ export async function getMediaBySlug(slug: string, userId: string): Promise<Medi
  * @param includeContent - Whether to include the content field (default: false for performance)
  */
 export async function getAllMedia(userId: string, includeContent: boolean = false): Promise<MediaContent[]> {
-  const fields = includeContent
-    ? "*"
-    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, time_spent, progress, created_at, updated_at";
-
-  return await query<MediaContent>(
-    `SELECT ${fields} FROM media_content WHERE userId = ? ORDER BY created_at DESC`,
-    [userId]
-  );
+  const response = await earthboundFetch(`/api/media?userId=${userId}&includeContent=${includeContent}`);
+  if (!response.ok) throw new Error(`Failed to fetch all media: ${response.statusText}`);
+  return response.json() as Promise<MediaContent[]>;
 }
 
-export interface PaginatedMediaResult {
-  items: MediaContent[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-}
+
 
 type SortOption =
   | "title-asc"
@@ -171,107 +139,32 @@ export async function getPaginatedMedia(
   },
   includeContent: boolean = false
 ): Promise<PaginatedMediaResult> {
-  const offset = (page - 1) * pageSize;
+  const params = new URLSearchParams({
+    userId,
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    includeContent: includeContent.toString(),
+  });
 
-  // Build WHERE clause
-  const whereClauses: string[] = ["userId = ?"];
-  const params: unknown[] = [userId];
+  if (filters?.type) params.append("type", filters.type);
+  if (filters?.status) params.append("status", filters.status);
+  if (filters?.search) params.append("search", filters.search);
+  if (filters?.sortBy) params.append("sortBy", filters.sortBy);
 
-  if (filters?.type) {
-    whereClauses.push("type = ?");
-    params.push(filters.type);
-  }
-
-  if (filters?.status) {
-    whereClauses.push("status = ?");
-    params.push(filters.status);
-  }
-
-  if (filters?.search) {
-    whereClauses.push("title LIKE ?");
-    params.push(`%${filters.search}%`);
-  }
-
-  // Note: Genre and tag filtering requires JSON operations
-  // For simplicity, we'll filter these client-side for now
-  // A more advanced implementation could use JSON functions in SQLite
-
-  const whereClause = whereClauses.join(" AND ");
-
-  // Determine ORDER BY clause
-  // SQLite doesn't support NULLS LAST, so we use CASE to handle nulls
-  let orderBy = "created_at DESC";
-  switch (filters?.sortBy) {
-    case "title-asc":
-      orderBy = "title ASC";
-      break;
-    case "title-desc":
-      orderBy = "title DESC";
-      break;
-    case "rating-desc":
-      orderBy = "CASE WHEN rating IS NULL THEN 0 ELSE 1 END DESC, rating DESC";
-      break;
-    case "rating-asc":
-      orderBy = "CASE WHEN rating IS NULL THEN 0 ELSE 1 END DESC, rating ASC";
-      break;
-    case "completed-desc":
-      orderBy = "CASE WHEN completed IS NULL THEN 0 ELSE 1 END DESC, completed DESC";
-      break;
-    case "completed-asc":
-      orderBy = "CASE WHEN completed IS NULL THEN 0 ELSE 1 END DESC, completed ASC";
-      break;
-    case "started-desc":
-      orderBy = "CASE WHEN started IS NULL THEN 0 ELSE 1 END DESC, started DESC";
-      break;
-    case "started-asc":
-      orderBy = "CASE WHEN started IS NULL THEN 0 ELSE 1 END DESC, started ASC";
-      break;
-    case "created-desc":
-    default:
-      orderBy = "created_at DESC";
-  }
-
-  // Select only necessary fields for performance
-  const fields = includeContent
-    ? "*"
-    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, time_spent, progress, created_at, updated_at";
-
-  // Get all matching items for counting and genre/tag filtering
-  let allItems = await query<MediaContent>(
-    `SELECT ${fields} FROM media_content WHERE ${whereClause} ORDER BY ${orderBy}`,
-    params
-  );
-
-  // Apply genre filter if specified
   if (filters?.genres && filters.genres.length > 0) {
-    allItems = allItems.filter((item) => {
-      if (!item.genres) return false;
-      const itemGenres = JSON.parse(item.genres);
-      return itemGenres.some((g: string) => filters.genres!.includes(g));
-    });
+    params.append("genres", filters.genres.join(","));
   }
-
-  // Apply tag filter if specified
   if (filters?.tags && filters.tags.length > 0) {
-    allItems = allItems.filter((item) => {
-      if (!item.tags) return false;
-      const itemTags = JSON.parse(item.tags);
-      return itemTags.some((t: string) => filters.tags!.includes(t));
-    });
+    params.append("tags", filters.tags.join(","));
   }
 
-  const total = allItems.length;
+  const response = await earthboundFetch(`/api/media/paginated?${params.toString()}`);
 
-  // Apply pagination
-  const items = allItems.slice(offset, offset + pageSize);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch paginated media: ${response.statusText}`);
+  }
 
-  return {
-    items,
-    total,
-    page,
-    pageSize,
-    hasMore: offset + items.length < total,
-  };
+  return response.json() as Promise<PaginatedMediaResult>;
 }
 
 /**
@@ -285,14 +178,9 @@ export async function getMediaByType(
   userId: string,
   includeContent: boolean = false
 ): Promise<MediaContent[]> {
-  const fields = includeContent
-    ? "*"
-    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, time_spent, progress, created_at, updated_at";
-
-  return await query<MediaContent>(
-    `SELECT ${fields} FROM media_content WHERE type = ? AND userId = ? ORDER BY created_at DESC`,
-    [type, userId]
-  );
+  const response = await earthboundFetch(`/api/media?userId=${userId}&type=${type}&includeContent=${includeContent}`);
+  if (!response.ok) throw new Error(`Failed to fetch media by type: ${response.statusText}`);
+  return response.json() as Promise<MediaContent[]>;
 }
 
 /**
@@ -306,14 +194,9 @@ export async function getMediaByStatus(
   userId: string,
   includeContent: boolean = false
 ): Promise<MediaContent[]> {
-  const fields = includeContent
-    ? "*"
-    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, time_spent, progress, created_at, updated_at";
-
-  return await query<MediaContent>(
-    `SELECT ${fields} FROM media_content WHERE status = ? AND userId = ? ORDER BY created_at DESC`,
-    [status, userId]
-  );
+  const response = await earthboundFetch(`/api/media?userId=${userId}&status=${status}&includeContent=${includeContent}`);
+  if (!response.ok) throw new Error(`Failed to fetch media by status: ${response.statusText}`);
+  return response.json() as Promise<MediaContent[]>;
 }
 
 /**
@@ -329,16 +212,11 @@ export async function getMediaByTypeAndStatus(
   userId: string,
   includeContent: boolean = false
 ): Promise<MediaContent[]> {
-  const fields = includeContent
-    ? "*"
-    : "id, userId, slug, title, type, status, rating, started, completed, released, genres, poster, tags, description, length, creator, featured, published, time_spent, created_at, updated_at";
-
-  return await query<MediaContent>(
-    `SELECT ${fields} FROM media_content
-     WHERE type = ? AND status = ? AND userId = ?
-     ORDER BY created_at DESC`,
-    [type, status, userId]
+  const response = await earthboundFetch(
+    `/api/media?userId=${userId}&type=${type}&status=${status}&includeContent=${includeContent}`
   );
+  if (!response.ok) throw new Error(`Failed to fetch media by type and status: ${response.statusText}`);
+  return response.json() as Promise<MediaContent[]>;
 }
 
 /**
@@ -676,45 +554,7 @@ export async function deleteTag(name: string, userId: string): Promise<number> {
 // Media Timeline Data Types and Functions
 // ============================================
 
-export type TimelinePeriod = "week" | "month" | "year";
 
-export interface MediaTimelineItem {
-  id: number;
-  title: string;
-  type: "movie" | "tv" | "book" | "game" | "album";
-  rating: number | null;
-  completed: string;
-  poster: string | null;
-}
-
-export interface MediaTimelineDataPoint {
-  label: string;
-  startDate: string;
-  endDate: string;
-  count: number;
-  movies: number;
-  tv: number;
-  books: number;
-  games: number;
-  items: MediaTimelineItem[];
-  avgRating: number | null;
-}
-
-export interface MediaTimelineStats {
-  totalCompleted: number;
-  avgPerPeriod: number;
-  mostActiveMonth: string;
-  mostActiveMonthCount: number;
-  avgRating: number;
-  topType: string;
-  trend: number; // percentage change comparing recent vs earlier periods
-}
-
-export interface MediaTimelineData {
-  dataPoints: MediaTimelineDataPoint[];
-  stats: MediaTimelineStats;
-  period: TimelinePeriod;
-}
 
 /**
  * Get media timeline data for charting for a specific user

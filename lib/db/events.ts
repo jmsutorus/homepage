@@ -1,53 +1,28 @@
 import { execute, query, queryOne } from "./index";
 
-export interface EventNotification {
-  type: string; // e.g., 'email', 'push', 'sms'
-  time: number;
-  timeObject: string; // e.g., 'minutes', 'hours', 'days', 'weeks'
-}
+import {
+  type EventNotification,
+  type EventCategory,
+  type Event,
+  type CreateEventInput,
+  type EventPhoto,
+  type EventPerson,
+  type EventWithDetails,
+  type EventWithCoverPhoto,
+  type TimelineEvent,
+} from "@jmsutorus/earthbound-shared";
 
-export interface EventCategory {
-  id: number;
-  userId: string;
-  name: string;
-  created_at: string;
-}
-
-export interface Event {
-  id: number;
-  userId: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  location: string | null;
-  date: string; // YYYY-MM-DD format - start date
-  start_time: string | null; // HH:MM format
-  end_time: string | null; // HH:MM format
-  all_day: boolean;
-  end_date: string | null; // YYYY-MM-DD format - for multi-day events
-  category: string | null;
-  notifications: EventNotification[];
-  notification_setting: string | null;
-  content: string | null; // Markdown content
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CreateEventInput {
-  slug: string;
-  title: string;
-  description?: string;
-  location?: string;
-  date: string;
-  start_time?: string;
-  end_time?: string;
-  all_day?: boolean;
-  end_date?: string;
-  category?: string;
-  notifications?: EventNotification[];
-  notification_setting?: string;
-  content?: string;
-}
+export type {
+  EventNotification,
+  EventCategory,
+  Event,
+  CreateEventInput,
+  EventPhoto,
+  EventPerson,
+  EventWithDetails,
+  EventWithCoverPhoto,
+  TimelineEvent,
+};
 
 export interface UpdateEventInput {
   slug?: string;
@@ -61,20 +36,8 @@ export interface UpdateEventInput {
   end_date?: string;
   category?: string;
   notifications?: EventNotification[];
-  notification_setting?: string | null;
+  notification_setting?: string;
   content?: string;
-}
-
-// Event Photo types
-export interface EventPhoto {
-  id: number;
-  eventId: number;
-  url: string;
-  caption: string | null;
-  date_taken: string | null; // YYYY-MM-DD
-  order_index: number;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface EventPhotoInput {
@@ -82,36 +45,6 @@ export interface EventPhotoInput {
   caption?: string;
   date_taken?: string;
   order_index?: number;
-}
-
-/**
- * Person associated with an event (from event_people junction)
- */
-export interface EventPerson {
-  id: number;           // event_people.id
-  eventId: number;
-  personId: number;
-  name: string;         // Joined from people table
-  photo: string | null; // Joined from people table
-  relationship: 'family' | 'friends' | 'work' | 'other';
-  relationshipTypeName?: string | null;
-  created_at: string;
-}
-
-// Composite type with event and photos
-export interface EventWithDetails {
-  event: Event;
-  photos: EventPhoto[];
-  people: EventPerson[];
-}
-
-export interface EventWithCoverPhoto extends Event {
-  cover_photo: string | null;
-}
-
-// Full event details for the chronological timeline
-export interface TimelineEvent extends EventWithCoverPhoto {
-  people: EventPerson[];
 }
 
 // Helper to serialize notifications to JSON string

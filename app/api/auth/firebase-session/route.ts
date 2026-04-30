@@ -7,7 +7,7 @@ import { signIn } from "@/auth";
  */
 export async function POST(req: NextRequest) {
   try {
-    const { idToken } = await req.json();
+    const { idToken, refreshToken } = await req.json();
 
     if (!idToken) {
       return NextResponse.json(
@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
     // Sign in using the Credentials provider with Firebase token
     await signIn("credentials", {
       idToken,
+      refreshToken,
       redirect: false,
     });
 

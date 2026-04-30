@@ -60,8 +60,8 @@ export async function POST(
     // 4. Update the database
     const photo = await createParkPhoto(park.id, {
       url: downloadURL,
-      caption: caption || null,
-      date_taken: dateTaken || null,
+      caption: caption || undefined,
+      date_taken: dateTaken || undefined,
       order_index: orderIndex
     });
 

@@ -2,8 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { signIn as nextAuthSignIn } from "next-auth/react";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import Link from "next/link";
 
@@ -32,7 +31,10 @@ function SignInContent() {
       const response = await fetch("/api/auth/firebase-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ 
+          idToken, 
+          refreshToken: credential.user.refreshToken 
+        }),
       });
 
       if (!response.ok) {
@@ -55,11 +57,31 @@ function SignInContent() {
     setLoading(true);
 
     try {
-      // Use Auth.js native Google OAuth
-      await nextAuthSignIn("google", { callbackUrl });
+      const provider = new GoogleAuthProvider();
+      const credential = await signInWithPopup(auth, provider);
+      const idToken = await credential.user.getIdToken();
+
+      // Exchange Firebase token for Auth.js session
+      const response = await fetch("/api/auth/firebase-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          idToken, 
+          refreshToken: credential.user.refreshToken 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create session");
+      }
+
+      // Redirect to callbackUrl
+      router.push(callbackUrl);
+      router.refresh();
     } catch (err: any) {
       console.error("Google sign in error:", err);
       setError(err.message || "Failed to sign in with Google");
+    } finally {
       setLoading(false);
     }
   };

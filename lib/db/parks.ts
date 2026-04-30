@@ -1,45 +1,42 @@
 import { getDatabase } from "./index";
-import { ParkCategoryValue } from "./enums/park-enums";
+// ParkCategoryValue is imported from @jmsutorus/earthbound-shared
 import { checkAchievement } from "../achievements";
 
-export interface DBPark {
-  id: number;
-  userId: string;
-  slug: string;
-  title: string;
-  category: ParkCategoryValue;
-  state: string | null;
-  poster: string | null;
-  description: string | null;
-  visited: string | null; // YYYY-MM-DD
-  tags: string | null; // JSON string
-  rating: number | null;
-  featured: number; // SQLite boolean (0 or 1)
-  published: number; // SQLite boolean (0 or 1)
-  content: string;
-  quote: string | null;
-  created_at: string;
-  updated_at: string;
+import {
+  type DBPark,
+  type ParkContent,
+  type ParkPerson,
+  type ParkPhoto,
+  type ParkTrail,
+  type ParkCategoryValue,
+} from "@jmsutorus/earthbound-shared";
+
+export type {
+  DBPark,
+  ParkContent,
+  ParkPerson,
+  ParkPhoto,
+  ParkTrail,
+  ParkCategoryValue,
+};
+
+export interface ParkPhotoInput {
+  url: string;
+  caption?: string;
+  date_taken?: string;
+  order_index?: number;
 }
 
-export interface ParkContent {
-  id: number;
-  userId: string;
-  slug: string;
-  title: string;
-  category: ParkCategoryValue;
-  state: string | null;
-  poster: string | null;
-  description: string | null;
-  visited: string | null;
-  tags: string[];
-  rating: number | null;
-  featured: boolean;
-  published: boolean;
-  content: string;
-  quote: string | null;
-  created_at: string;
-  updated_at: string;
+export interface ParkTrailInput {
+  name: string;
+  distance?: number;
+  elevation_gain?: number;
+  difficulty?: string;
+  rating?: number;
+  date_hiked?: string;
+  notes?: string;
+  alltrails_url?: string;
+  photo_url?: string;
 }
 
 /**
@@ -403,16 +400,7 @@ export async function parkSlugExists(slug: string): Promise<boolean> {
 /**
  * Person associated with a park (from park_people junction)
  */
-export interface ParkPerson {
-  id: number;           // park_people.id
-  parkId: number;
-  personId: number;
-  name: string;         // Joined from people table
-  photo: string | null; // Joined from people table
-  relationship: 'family' | 'friends' | 'work' | 'other';
-  relationshipTypeName?: string | null;
-  created_at: string;
-}
+
 
 /**
  * Add a person to a park
@@ -601,23 +589,7 @@ export async function isPersonOnPark(
 
 // ==================== Photo CRUD ====================
 
-export interface ParkPhoto {
-  id: number;
-  parkId: number;
-  url: string;
-  caption: string | null;
-  date_taken: string | null;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-}
 
-export interface ParkPhotoInput {
-  url: string;
-  caption?: string | null;
-  date_taken?: string | null;
-  order_index?: number;
-}
 
 /**
  * Create a new park photo
@@ -765,33 +737,7 @@ export async function deleteParkPhoto(
 
 // ==================== Trail CRUD ====================
 
-export interface ParkTrail {
-  id: number;
-  parkId: number;
-  name: string;
-  distance: number | null;
-  elevation_gain: number | null;
-  difficulty: string | null;
-  rating: number | null;
-  date_hiked: string | null;
-  notes: string | null;
-  alltrails_url: string | null;
-  photo_url: string | null;
-  created_at: string;
-  updated_at: string;
-}
 
-export interface ParkTrailInput {
-  name: string;
-  distance?: number | null;
-  elevation_gain?: number | null;
-  difficulty?: string | null;
-  rating?: number | null;
-  date_hiked?: string | null;
-  notes?: string | null;
-  alltrails_url?: string | null;
-  photo_url?: string | null;
-}
 
 /**
  * Create a new park trail

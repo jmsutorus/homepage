@@ -1,13 +1,12 @@
 import { getDatabase } from "./index";
 
-export interface WorkoutGoal {
-  id: number;
-  userId: string;
-  goal: string;
-  met: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import {
+  type WorkoutGoal,
+} from "@jmsutorus/earthbound-shared";
+
+export type {
+  WorkoutGoal,
+};
 
 /**
  * Create a new workout goal

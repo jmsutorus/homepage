@@ -1,20 +1,10 @@
 import { query, execute } from "./index";
 import { CalendarColors } from "@/lib/constants/calendar";
 
-export interface CalendarColor {
-  id?: number;
-  userId: string;
-  category: string;
-  bg_color: string;
-  text_color: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface CalendarColorUpdate {
-  bg_color: string;
-  text_color: string;
-}
+import {
+  type CalendarColor,
+  type CalendarColorUpdate,
+} from "@jmsutorus/earthbound-shared";
 
 /**
  * Helper to flatten the nested CalendarColors constant into an array of CalendarColor objects
