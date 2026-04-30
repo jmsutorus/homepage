@@ -395,12 +395,12 @@ export function ExerciseDetailClient({ activity: initialActivity }: ExerciseDeta
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           {/* Main Content: Splits / Exercises text-evergreen-dark*/}
           <section className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
                 <TrendingUp className="h-6 w-6 text-burnt-terracotta" />
                 {isRun ? "Workout Splits" : "Workout Session"}
               </h2>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                  <span className="text-xs font-bold bg-evergreen/10 px-3 py-1 rounded-full uppercase">
                   {items.length} {isRun ? "Laps Total" : "Exercises"}
                 </span>

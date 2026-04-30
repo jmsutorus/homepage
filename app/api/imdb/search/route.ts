@@ -10,7 +10,7 @@ import { env } from '@/lib/env';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { query } = body;
+    const { query, top } = body;
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json(
@@ -28,12 +28,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Determine if query is an IMDB ID or title
-    const isImdbId = query.trim().toLowerCase().startsWith('tt');
+    let targetQuery = query.trim();
+    const isImdbId = targetQuery.toLowerCase().startsWith('tt');
 
-    if (isImdbId) {
+    // If it's not an ID and we want the top result, search for the ID first
+    if (!isImdbId && top) {
+      const searchUrl = `https://www.omdbapi.com/?s=${encodeURIComponent(targetQuery)}&apikey=${apiKey}`;
+      const searchResponse = await fetch(searchUrl);
+      
+      if (!searchResponse.ok) {
+        throw new Error('Failed to fetch from OMDb API');
+      }
+
+      const searchData = await searchResponse.json();
+
+      if (searchData.Response === 'True' && searchData.Search && searchData.Search.length > 0) {
+        // Use the ID of the first result
+        targetQuery = searchData.Search[0].imdbID;
+      } else {
+        return NextResponse.json(
+          { error: searchData.Error || 'Movie/TV show not found' },
+          { status: 404 }
+        );
+      }
+    }
+
+    // Determine if we are now looking for a specific ID (either originally or from top search)
+    const finalizedIsImdbId = targetQuery.toLowerCase().startsWith('tt');
+
+    if (finalizedIsImdbId) {
       // Build API URL for full details
-      const apiUrl = `https://www.omdbapi.com/?i=${encodeURIComponent(query.trim())}&apikey=${apiKey}&plot=full`;
+      const apiUrl = `https://www.omdbapi.com/?i=${encodeURIComponent(targetQuery)}&apikey=${apiKey}&plot=full`;
 
       // Fetch from OMDb API
       const response = await fetch(apiUrl);
@@ -152,7 +177,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(formattedData, { status: 200 });
     } else {
       // Build API URL for search list
-      const apiUrl = `https://www.omdbapi.com/?s=${encodeURIComponent(query.trim())}&apikey=${apiKey}`;
+      const apiUrl = `https://www.omdbapi.com/?s=${encodeURIComponent(targetQuery)}&apikey=${apiKey}`;
 
       // Fetch from OMDb API
       const response = await fetch(apiUrl);

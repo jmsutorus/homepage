@@ -1,18 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect, useRef } from "react";
+import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { EditorialInput, EditorialTextarea } from "@/components/ui/editorial-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, ImageIcon, Upload, Link as LinkIcon, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useRef } from "react";
-import type { RelationshipDate } from "@/lib/db/relationship";
-import { showCreationSuccess } from "@/lib/success-toasts";
+import { Button } from "@/components/ui/button";
+import { Star, ImageIcon, Upload, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
+import type { RelationshipDate } from "@/lib/db/relationship";
 
 interface EditDateDialogProps {
   open: boolean;
@@ -65,7 +61,7 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
 
   const handleSave = async () => {
     if (!date || !type) {
-      alert("Please fill in the required fields (date and type)");
+      toast.error("Please fill in the required fields (date and type)");
       return;
     }
 
@@ -112,7 +108,7 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
         throw new Error("Failed to update date");
       }
 
-      showCreationSuccess("date");
+      toast.success("Date updated successfully");
       onOpenChange(false);
       onDateUpdated();
     } catch (error) {
@@ -131,45 +127,49 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
      selectedFile.name.toLowerCase().endsWith(".dng"));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Date Night</DialogTitle>
-          <DialogDescription>Update the details of this date</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          {/* Date and Time */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="date">Date *</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                max={today}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
-              <Input
-                id="time"
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-              />
-            </div>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Refine Date"
+      description="Update the narrative and details of your shared experience."
+      onSubmit={handleSave}
+      submitText="Update Date"
+      isLoading={isSaving}
+      maxWidth="sm:max-w-4xl"
+    >
+      <div className="space-y-12">
+        {/* Section 1: The Essence */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 01</span>
+            <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">The Essence</h3>
           </div>
 
-          {/* Type */}
-          <div className="space-y-2">
-            <Label htmlFor="type">Type *</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <EditorialInput
+              label="Date *"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              max={today}
+              sizeVariant="lg"
+            />
+            <EditorialInput
+              label="Time"
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              sizeVariant="lg"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Type *</label>
             <Select value={type} onValueChange={setType}>
-              <SelectTrigger id="type">
+              <SelectTrigger className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary text-media-primary font-bold text-lg font-lexend">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-media-surface-container border-media-outline-variant">
                 <SelectItem value="dinner">Dinner</SelectItem>
                 <SelectItem value="movie">Movie</SelectItem>
                 <SelectItem value="activity">Activity</SelectItem>
@@ -180,56 +180,61 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
               </SelectContent>
             </Select>
           </div>
+        </div>
 
-          {/* Venue and Location */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="venue">Venue</Label>
-              <Input
-                id="venue"
-                placeholder="Restaurant, theater, etc."
-                value={venue}
-                onChange={(e) => setVenue(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                placeholder="City or neighborhood"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </div>
+        {/* Section 2: Venue & Experience */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 02</span>
+            <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Venue & Experience</h3>
           </div>
 
-          {/* Rating */}
-          <div className="space-y-2">
-            <Label>Rating</Label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setRating(value)}
-                  className="cursor-pointer"
-                >
-                  <Star
-                    className={`h-8 w-8 transition-colors ${
-                      rating && value <= rating
-                        ? "fill-yellow-500 text-yellow-500"
-                        : "text-gray-300"
-                    }`}
-                  />
-                </button>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <EditorialInput
+              label="Venue"
+              placeholder="Restaurant, theater, etc."
+              value={venue}
+              onChange={(e) => setVenue(e.target.value)}
+              sizeVariant="lg"
+            />
+            <EditorialInput
+              label="Location"
+              placeholder="City or neighborhood"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              sizeVariant="lg"
+            />
+          </div>
+
+          <div className="space-y-4">
+            <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Rating</label>
+            <div className="flex gap-4 items-center">
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setRating(value)}
+                    className="cursor-pointer group"
+                  >
+                    <Star
+                      className={`h-10 w-10 transition-all ${
+                        rating && value <= rating
+                          ? "fill-amber-500 text-amber-500 scale-110"
+                          : "text-media-on-surface-variant/20 group-hover:text-media-on-surface-variant/40"
+                      }`}
+                      fill={rating && value <= rating ? "currentColor" : "none"}
+                    />
+                  </button>
+                ))}
+              </div>
               {rating && (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => setRating(null)}
-                  className="cursor-pointer ml-2"
+                  className="cursor-pointer text-xs font-bold uppercase tracking-widest text-media-on-surface-variant hover:text-media-primary"
                 >
                   Clear
                 </Button>
@@ -237,99 +242,81 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
             </div>
           </div>
 
-          {/* Cost */}
-          <div className="space-y-2">
-            <Label htmlFor="cost">Cost</Label>
-            <Input
-              id="cost"
-              type="number"
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              value={cost}
-              onChange={(e) => setCost(e.target.value)}
-            />
+          <EditorialInput
+            label="Cost"
+            type="number"
+            placeholder="0.00"
+            step="0.01"
+            min="0"
+            value={cost}
+            onChange={(e) => setCost(e.target.value)}
+            sizeVariant="lg"
+          />
+        </div>
+
+        {/* Section 3: Narrative & Media */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 03</span>
+            <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Narrative & Media</h3>
           </div>
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              placeholder="What made this date special? Any highlights or memories..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-              className="resize-none"
-            />
-          </div>
+          <EditorialTextarea
+            label="Notes"
+            placeholder="What made this date special? Any highlights or memories..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={4}
+            sizeVariant="lg"
+          />
 
-          {/* Photos */}
-          <div className="space-y-3">
-            <Label>Date Photo</Label>
+          <div className="space-y-6">
+            <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Date Photo</label>
             <Tabs defaultValue={initialDate.photos?.includes('firebase') ? "upload" : "url"} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-11">
-                <TabsTrigger value="upload" className="data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all h-9">
+              <TabsList className="flex gap-2 bg-transparent p-0 h-auto">
+                <TabsTrigger value="upload" className="px-6 py-3 rounded-xl border-2 border-transparent data-[state=active]:border-media-secondary data-[state=active]:bg-media-surface-container-high transition-all text-xs font-bold uppercase tracking-widest">
                   <Upload className="w-4 h-4 mr-2" />
                   Upload
                 </TabsTrigger>
-                <TabsTrigger value="url" className="data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all h-9">
+                <TabsTrigger value="url" className="px-6 py-3 rounded-xl border-2 border-transparent data-[state=active]:border-media-secondary data-[state=active]:bg-media-surface-container-high transition-all text-xs font-bold uppercase tracking-widest">
                   <LinkIcon className="w-4 h-4 mr-2" />
                   URL
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="upload" className="mt-4 space-y-4">
+              <TabsContent value="upload" className="mt-6 space-y-4">
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-muted-foreground/20 rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-muted/30 transition-all group relative overflow-hidden"
+                  className="border-2 border-dashed border-media-outline-variant/30 rounded-3xl p-12 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-media-surface-container-low transition-all group relative overflow-hidden"
                 >
                   {previewUrl || (initialDate.photos && initialDate.photos.includes('firebase')) ? (
                     isNoPreviewFormat ? (
-                      <div className="relative w-full aspect-video rounded-xl bg-muted/30 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-muted-foreground/50 text-foreground p-4 group">
-                        <ImageIcon className="w-12 h-12 text-muted-foreground/80 group-hover:scale-110 transition-transform" />
-                        <p className="text-sm font-bold text-center">Preview not available for {selectedFile?.name.split('.').pop()?.toUpperCase()}</p>
-                        <p className="text-xs text-muted-foreground truncate max-w-xs">{selectedFile?.name}</p>
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
-                          <p className="text-white text-sm font-medium">Change Photo</p>
+                      <div className="relative w-full aspect-video rounded-2xl bg-media-surface-container flex flex-col items-center justify-center gap-3 border-2 border-dashed border-media-outline-variant/50 text-media-primary p-6">
+                        <ImageIcon className="w-16 h-16 text-media-on-surface-variant/40 group-hover:scale-110 transition-transform" />
+                        <div className="text-center">
+                          <p className="text-sm font-bold uppercase tracking-wider">Preview not available</p>
+                          <p className="text-xs text-media-on-surface-variant/70 mt-1 truncate max-w-xs">{selectedFile?.name}</p>
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedFile(null);
-                            setPreviewUrl(null);
-                          }}
-                          className="cursor-pointer absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <p className="text-white text-sm font-bold uppercase tracking-widest">Change Photo</p>
+                        </div>
                       </div>
                     ) : (
-                      <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-md">
+                      <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl border border-media-outline-variant/10">
                         <img src={previewUrl || initialDate.photos || undefined} alt="Preview" className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <p className="text-white text-sm font-medium">Change Photo</p>
+                          <p className="text-white text-sm font-bold uppercase tracking-widest">Change Photo</p>
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedFile(null);
-                            setPreviewUrl(null);
-                          }}
-                          className="cursor-pointer absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
                       </div>
                     )
                   ) : (
                     <>
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                        <ImageIcon className="w-6 h-6" />
+                      <div className="w-20 h-20 rounded-full bg-media-secondary/10 flex items-center justify-center text-media-secondary group-hover:scale-110 transition-transform duration-500">
+                        <ImageIcon className="w-10 h-10" />
                       </div>
-                      <div className="text-center">
-                        <p className="text-sm font-semibold text-foreground">Click to upload photo</p>
-                        <p className="text-xs text-muted-foreground mt-1">Update memory (PNG, JPG, WebP, HEIC, DNG)</p>
+                      <div className="text-center space-y-1">
+                        <p className="text-sm font-bold uppercase tracking-widest text-media-primary">Click to capture moment</p>
+                        <p className="text-[10px] text-media-on-surface-variant font-medium">PNG, JPG, WebP, HEIC, DNG</p>
                       </div>
                     </>
                   )}
@@ -343,23 +330,20 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
                 </div>
               </TabsContent>
 
-              <TabsContent value="url" className="mt-4 space-y-4">
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="photoUrl"
-                    placeholder="https://example.com/image.jpg"
-                    value={photoUrl}
-                    onChange={(e) => {
-                      setPhotoUrl(e.target.value);
-                      setSelectedFile(null);
-                      setPreviewUrl(null);
-                    }}
-                    className="pl-9 h-11 rounded-xl"
-                  />
-                </div>
+              <TabsContent value="url" className="mt-6 space-y-6">
+                <EditorialInput
+                  placeholder="https://example.com/image.jpg"
+                  value={photoUrl}
+                  onChange={(e) => {
+                    setPhotoUrl(e.target.value);
+                    setSelectedFile(null);
+                    setPreviewUrl(null);
+                  }}
+                  leftIcon={<LinkIcon className="w-5 h-5" />}
+                  sizeVariant="lg"
+                />
                 {photoUrl && (
-                  <div className="rounded-xl overflow-hidden border border-muted shadow-sm aspect-video">
+                  <div className="rounded-3xl overflow-hidden border-2 border-media-outline-variant/10 shadow-2xl aspect-video">
                     <img 
                       src={photoUrl} 
                       alt="URL Preview" 
@@ -374,21 +358,7 @@ export function EditDateDialog({ open, onOpenChange, date: initialDate, onDateUp
             </Tabs>
           </div>
         </div>
-
-        <DialogFooter>
-          <Button
-            className="cursor-pointer"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isSaving}
-          >
-            Cancel
-          </Button>
-          <Button className="cursor-pointer" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Update Date"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </ResponsiveDialog>
   );
 }

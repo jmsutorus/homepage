@@ -53,8 +53,10 @@ The application integrates with the following services:
 ### Conventions
 
 - **Path Aliases**: The project uses path aliases defined in `components.json` and `tsconfig.json`. Always use aliases like `@/components` and `@/lib` for imports.
-- **Styling**: Use Tailwind CSS utility classes for styling. Adhere to the `shadcn/ui` component style.
+- **Styling**: Use Tailwind CSS utility classes for styling.
 - **Components**: Follow the existing structure in `components/`. Reusable, low-level UI elements go in `components/ui`, while larger, more complex components go in `components/widgets`.
+- **Modals/Dialogs**: When adding a modal or dialog, use the `@/components/ui/responsive-dialog` component as the template. It provides a premium, responsive experience (Modal on desktop, Bottom Sheet on mobile) with drag-to-dismiss support.
+- **Inputs**: When adding inputs, use the `@/components/ui/editorial-input` component as the template.
 - **Database**: Database interactions should be defined in the `lib/db/` directory. Use the existing files as a template for new queries.
 - **API Routes**: Server-side API logic is located in `app/api/`.
 

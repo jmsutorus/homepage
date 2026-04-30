@@ -1,6 +1,4 @@
 import { createClient, Client } from "@libsql/client";
-import { readFileSync } from "fs";
-import { join } from "path";
 import { env } from "@/lib/env";
 
 // Database instance (singleton)
@@ -40,27 +38,7 @@ export function getDatabase(): Client {
   return db;
 }
 
-/**
- * Initialize database with schema
- */
- 
-async function initializeDatabase(database: Client) {
-  // Read schema SQL file
-  const schemaPath = join(process.cwd(), "lib", "db", "schema.sql");
-  const schema = readFileSync(schemaPath, "utf-8");
 
-  // Execute schema (split by semicolons for individual statements)
-  const statements = schema
-    .split(";")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-
-  for (const statement of statements) {
-    await database.execute(statement);
-  }
-
-  console.log("✅ Database initialized successfully");
-}
 
 /**
  * Close database connection

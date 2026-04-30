@@ -2,22 +2,14 @@
 
 import { useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ShoppingCart } from "lucide-react";
 import { Meal } from "@/lib/types/meals";
+import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 
 interface ImportIngredientsDialogProps {
   meals: Meal[];
@@ -47,26 +39,29 @@ export function ImportIngredientsDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="outline">
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            Import from Recipe
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Import Ingredients from Recipe</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 pt-4">
-          <div className="space-y-2">
+    <>
+      {trigger && (
+        <div onClick={() => setOpen(true)} className="contents">
+          {trigger}
+        </div>
+      )}
+      <ResponsiveDialog 
+        open={open} 
+        onOpenChange={setOpen}
+        title="Import Ingredients from Recipe"
+        description="Choose a recipe to pull its ingredient list into your current session."
+        onSubmit={handleImport}
+        submitText="Import Ingredients"
+        isLoading={loading}
+      >
+        <div className="space-y-8 py-4">
+          <div className="space-y-3">
+            <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Select Recipe</label>
             <Select value={selectedMealId} onValueChange={setSelectedMealId}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full px-8 py-8 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary text-media-primary font-bold text-lg font-lexend">
                 <SelectValue placeholder="Select a recipe..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-media-surface-container border-media-outline-variant">
                 {meals.length === 0 ? (
                   <SelectItem value="" disabled>
                     No recipes available
@@ -81,19 +76,8 @@ export function ImportIngredientsDialog({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleImport}
-              disabled={!selectedMealId || loading}
-            >
-              {loading ? "Importing..." : "Import Ingredients"}
-            </Button>
-          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialog>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export function useServiceWorkerUpdate() {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(
@@ -8,6 +8,12 @@ export function useServiceWorkerUpdate() {
   );
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const isUpdatingRef = useRef(isUpdating);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    isUpdatingRef.current = isUpdating;
+  }, [isUpdating]);
 
   useEffect(() => {
     // Check if service workers are supported
@@ -34,7 +40,7 @@ export function useServiceWorkerUpdate() {
       
       // If we are already in the process of updating, let the updateServiceWorker 
       // function handle the reload to ensure cache busting query params are added
-      if (isUpdating) {
+      if (isUpdatingRef.current) {
         console.log("⏳ Update in progress, reload will be handled with cache bust");
         return;
       }

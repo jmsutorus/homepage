@@ -28,7 +28,7 @@ export function HomepageFooter({
     )}>
       <div className="flex items-center gap-6">
         <div className={cn(
-          "w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-lg transition-colors",
+          "w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-lg transition-colors shrink-0",
           "bg-burnt-terracotta shadow-burnt-terracotta/20",
           "dark:bg-white/10 dark:shadow-none dark:text-white"
         )}>

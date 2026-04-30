@@ -1,18 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { EditorialInput, EditorialTextarea } from "@/components/ui/editorial-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Lock } from "lucide-react";
-import type { IntimacyEntry, RelationshipPosition } from "@/lib/db/relationship";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
 import { toast } from "sonner";
+import type { IntimacyEntry, RelationshipPosition } from "@/lib/db/relationship";
 
 interface EditIntimacyDialogProps {
   open: boolean;
@@ -25,7 +22,7 @@ export function EditIntimacyDialog({ open, onOpenChange, entry: initialEntry, on
   const [date, setDate] = useState(initialEntry.date);
   const [time, setTime] = useState(initialEntry.time || "");
   const [duration, setDuration] = useState(initialEntry.duration?.toString() || "");
-  const [satisfactionRating, setSatisfactionRating] = useState([initialEntry.satisfaction_rating || 3]);
+  const [satisfactionRating, setSatisfactionRating] = useState<number | null>(initialEntry.satisfaction_rating || 3);
   const [initiation, setInitiation] = useState(initialEntry.initiation || "mutual");
   const [type, setType] = useState(initialEntry.type || "");
   const [location, setLocation] = useState(initialEntry.location || "home");
@@ -62,7 +59,7 @@ export function EditIntimacyDialog({ open, onOpenChange, entry: initialEntry, on
     setDate(initialEntry.date);
     setTime(initialEntry.time || "");
     setDuration(initialEntry.duration?.toString() || "");
-    setSatisfactionRating([initialEntry.satisfaction_rating || 3]);
+    setSatisfactionRating(initialEntry.satisfaction_rating || 3);
     setInitiation(initialEntry.initiation || "mutual");
     setType(initialEntry.type || "");
     setLocation(initialEntry.location || "home");
@@ -82,7 +79,7 @@ export function EditIntimacyDialog({ open, onOpenChange, entry: initialEntry, on
 
   const handleSave = async () => {
     if (!date) {
-      alert("Please select a date");
+      toast.error("Please select a date");
       return;
     }
 
@@ -95,7 +92,7 @@ export function EditIntimacyDialog({ open, onOpenChange, entry: initialEntry, on
           date,
           time: time || undefined,
           duration: duration ? parseInt(duration) : undefined,
-          satisfaction_rating: satisfactionRating[0],
+          satisfaction_rating: satisfactionRating,
           initiation,
           type: type || undefined,
           location,
@@ -124,158 +121,150 @@ export function EditIntimacyDialog({ open, onOpenChange, entry: initialEntry, on
   const today = new Date().toISOString().split("T")[0];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5 text-pink-500" />
-            Edit Intimacy Entry
-          </DialogTitle>
-          <DialogDescription>Update your private entry</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          {/* Date and Time */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="date">Date *</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                max={today}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
-              <Input
-                id="time"
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-              />
-            </div>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Secure Moment"
+      description="Private tracking - encrypted and visible only to you."
+      onSubmit={handleSave}
+      submitText="Update Moment"
+      isLoading={isSaving}
+      maxWidth="sm:max-w-4xl"
+    >
+      <div className="space-y-12">
+        {/* Section 1: Logistics */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 01</span>
+            <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Logistics</h3>
           </div>
 
-          {/* Duration */}
-          <div className="space-y-2">
-            <Label htmlFor="duration">Duration (minutes)</Label>
-            <Input
-              id="duration"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <EditorialInput
+              label="Date *"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              max={today}
+              sizeVariant="lg"
+            />
+            <EditorialInput
+              label="Time"
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              sizeVariant="lg"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <EditorialInput
+              label="Duration (minutes)"
               type="number"
               placeholder="e.g., 30"
               min="0"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
+              sizeVariant="lg"
             />
+            <div className="space-y-3">
+              <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Location</label>
+              <Select value={location} onValueChange={setLocation}>
+                <SelectTrigger className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary text-media-primary font-bold text-lg font-lexend">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-media-surface-container border-media-outline-variant">
+                  <SelectItem value="home">Home</SelectItem>
+                  <SelectItem value="away">Away</SelectItem>
+                  <SelectItem value="shower">Shower</SelectItem>
+                  <SelectItem value="bed">Bed</SelectItem>
+                  <SelectItem value="car">Car</SelectItem>
+                  <SelectItem value="outdoor">Outdoor</SelectItem>
+                  <SelectItem value="bath">Bath</SelectItem>
+                  <SelectItem value="pool">Pool</SelectItem>
+                  <SelectItem value="kitchen">Kitchen</SelectItem>
+                  <SelectItem value="vacation">Vacation</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 2: Experience */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 02</span>
+            <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Experience</h3>
           </div>
 
-          {/* Satisfaction Rating */}
-          <div className="space-y-2">
-            <Label>Satisfaction Rating: {satisfactionRating[0]}/5</Label>
-            <Slider
-              value={satisfactionRating}
-              onValueChange={setSatisfactionRating}
-              min={1}
-              max={5}
-              step={1}
-              className="py-4"
-            />
+          <div className="space-y-4">
+            <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Satisfaction Rating</label>
+            <div className="flex gap-4 items-center">
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setSatisfactionRating(value)}
+                    className="cursor-pointer group"
+                  >
+                    <Star
+                      className={`h-10 w-10 transition-all ${
+                        satisfactionRating && value <= satisfactionRating
+                          ? "fill-pink-500 text-pink-500 scale-110"
+                          : "text-media-on-surface-variant/20 group-hover:text-media-on-surface-variant/40"
+                      }`}
+                      fill={satisfactionRating && value <= satisfactionRating ? "currentColor" : "none"}
+                    />
+                  </button>
+                ))}
+              </div>
+              {satisfactionRating && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSatisfactionRating(null)}
+                  className="cursor-pointer text-xs font-bold uppercase tracking-widest text-media-on-surface-variant hover:text-media-primary"
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
           </div>
 
-          {/* Initiation */}
-          <div className="space-y-2">
-            <Label htmlFor="initiation">Who Initiated?</Label>
-            <Select value={initiation} onValueChange={setInitiation}>
-              <SelectTrigger id="initiation">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="me">You</SelectItem>
-                <SelectItem value="partner">Partner</SelectItem>
-                <SelectItem value="mutual">Mutual</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Type */}
-          <div className="space-y-2">
-            <Label htmlFor="type">Type (optional)</Label>
-            <Input
-              id="type"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="space-y-3">
+              <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Who Initiated?</label>
+              <Select value={initiation} onValueChange={setInitiation}>
+                <SelectTrigger className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary text-media-primary font-bold text-lg font-lexend">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-media-surface-container border-media-outline-variant">
+                  <SelectItem value="me">You</SelectItem>
+                  <SelectItem value="partner">Partner</SelectItem>
+                  <SelectItem value="mutual">Mutual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <EditorialInput
+              label="Type (optional)"
               placeholder="e.g., spontaneous, planned, etc."
               value={type}
               onChange={(e) => setType(e.target.value)}
+              sizeVariant="lg"
             />
           </div>
 
-          {/* Location */}
-          <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
-            <Select value={location} onValueChange={setLocation}>
-              <SelectTrigger id="location">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="home">Home</SelectItem>
-                <SelectItem value="away">Away</SelectItem>
-                <SelectItem value="shower">Shower</SelectItem>
-                <SelectItem value="bed">Bed</SelectItem>
-                <SelectItem value="car">Car</SelectItem>
-                <SelectItem value="outdoor">Outdoor</SelectItem>
-                <SelectItem value="bath">Bath</SelectItem>
-                <SelectItem value="pool">Pool</SelectItem>
-                <SelectItem value="kitchen">Kitchen</SelectItem>
-                <SelectItem value="vacation">Vacation</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Positions */}
-          <div className="space-y-2">
-            <Label>Positions (optional)</Label>
-            <div className="border rounded-md p-3">
-              <ScrollArea className="h-[150px] pr-3">
-                <div className="space-y-2">
-                  {availablePositions.map((position) => (
-                    <div key={position.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`position-${position.id}`}
-                        checked={positions.includes(position.name)}
-                        onCheckedChange={() => handlePositionToggle(position.name)}
-                      />
-                      <label
-                        htmlFor={`position-${position.id}`}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                      >
-                        {position.name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-              {positions.length > 0 && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  {positions.length} selected
-                </p>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Manage your position list in the Manage tab
-            </p>
-          </div>
-
-          {/* Mood Before/After */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="moodBefore">Mood Before</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="space-y-3">
+              <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Mood Before</label>
               <Select value={moodBefore} onValueChange={setMoodBefore}>
-                <SelectTrigger id="moodBefore">
+                <SelectTrigger className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary text-media-primary font-bold text-lg font-lexend">
                   <SelectValue placeholder="Select mood" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-media-surface-container border-media-outline-variant">
                   <SelectItem value="excited">Excited</SelectItem>
                   <SelectItem value="neutral">Neutral</SelectItem>
                   <SelectItem value="tired">Tired</SelectItem>
@@ -285,13 +274,13 @@ export function EditIntimacyDialog({ open, onOpenChange, entry: initialEntry, on
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="moodAfter">Mood After</Label>
+            <div className="space-y-3">
+              <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Mood After</label>
               <Select value={moodAfter} onValueChange={setMoodAfter}>
-                <SelectTrigger id="moodAfter">
+                <SelectTrigger className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary text-media-primary font-bold text-lg font-lexend">
                   <SelectValue placeholder="Select mood" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-media-surface-container border-media-outline-variant">
                   <SelectItem value="satisfied">Satisfied</SelectItem>
                   <SelectItem value="neutral">Neutral</SelectItem>
                   <SelectItem value="energized">Energized</SelectItem>
@@ -302,35 +291,59 @@ export function EditIntimacyDialog({ open, onOpenChange, entry: initialEntry, on
               </Select>
             </div>
           </div>
-
-          {/* Private Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Private Notes</Label>
-            <Textarea
-              id="notes"
-              placeholder="Your private thoughts and reflections..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-              className="resize-none"
-            />
-          </div>
         </div>
 
-        <DialogFooter>
-          <Button
-            className="cursor-pointer"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isSaving}
-          >
-            Cancel
-          </Button>
-          <Button className="cursor-pointer" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Update Entry"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {/* Section 3: Technical Details */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 03</span>
+            <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Technical Details</h3>
+          </div>
+
+          <div className="space-y-4">
+            <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Positions (optional)</label>
+            <div className="bg-media-surface-container-low border border-media-outline-variant/10 rounded-2xl p-6">
+              <ScrollArea className="h-[200px] pr-4 custom-scrollbar">
+                <div className="grid grid-cols-2 gap-4">
+                  {availablePositions.map((position) => (
+                    <div key={position.id} className="flex items-center space-x-3 p-3 rounded-xl hover:bg-media-surface-container-high transition-colors group cursor-pointer" onClick={() => handlePositionToggle(position.name)}>
+                      <Checkbox
+                        id={`position-${position.id}`}
+                        checked={positions.includes(position.name)}
+                        onCheckedChange={() => handlePositionToggle(position.name)}
+                        className="border-2 border-media-outline-variant/30 data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary"
+                      />
+                      <label
+                        htmlFor={`position-${position.id}`}
+                        className="text-sm font-bold text-media-primary group-hover:text-media-secondary transition-colors cursor-pointer"
+                      >
+                        {position.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+              {positions.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-media-outline-variant/10 flex justify-between items-center">
+                  <p className="text-[10px] uppercase tracking-widest font-black text-media-secondary">
+                    {positions.length} selected
+                  </p>
+                  <Button variant="ghost" size="sm" onClick={() => setPositions([])} className="text-[10px] uppercase tracking-widest font-bold">Clear All</Button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <EditorialTextarea
+            label="Private Notes"
+            placeholder="Your private thoughts and reflections..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={4}
+            sizeVariant="lg"
+          />
+        </div>
+      </div>
+    </ResponsiveDialog>
   );
 }

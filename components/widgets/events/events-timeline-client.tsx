@@ -218,6 +218,9 @@ export function EventsTimelineClient({ events }: EventsTimelineClientProps) {
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-media-secondary)]">Upcoming</span>
             </div>
             <div className="w-3 h-3 rounded-full bg-[var(--color-media-secondary)] border-4 border-[var(--color-media-background)] shrink-0 hidden sm:block"></div>
+            <div className="sm:hidden px-4 py-2 bg-[var(--color-media-secondary)]/10 rounded-xl border border-[var(--color-media-secondary)]/20 shadow-sm">
+               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-media-secondary)]">Upcoming Schedule</span>
+            </div>
             <div className="flex-1 h-[1px] bg-[var(--color-media-surface-variant)]/50"></div>
           </div>
 
@@ -341,11 +344,14 @@ export function EventsTimelineClient({ events }: EventsTimelineClientProps) {
           })}
 
           {/* Past Section Marker */}
-          <div className="flex items-center gap-4 mb-12 relative z-10">
+          <div className="flex items-center gap-4 mb-12 relative z-10 mt-12 sm:mt-0">
             <div className="w-[70px] md:w-[140px] flex justify-end shrink-0 hidden sm:flex">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-media-on-surface-variant)] opacity-40">Past Memories</span>
             </div>
             <div className="w-3 h-3 rounded-full bg-[var(--color-media-on-surface-variant)]/30 border-4 border-[var(--color-media-background)] shrink-0 hidden sm:block"></div>
+            <div className="sm:hidden px-4 py-2 bg-[var(--color-media-surface-variant)]/20 rounded-xl border border-[var(--color-media-outline-variant)]/20 shadow-sm">
+               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-media-on-surface-variant)] opacity-60">Past Memories Archive</span>
+            </div>
             <div className="flex-1 h-[1px] bg-[var(--color-media-surface-variant)]/50"></div>
           </div>
 

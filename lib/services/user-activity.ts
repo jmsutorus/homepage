@@ -56,7 +56,7 @@ export async function recordLoginState(userId: string, payload: UserActivityUpda
           } else {
             currentStreak = 1;
           }
-        } catch (e) {
+        } catch {
           const lastLoginStrUTC = lastLoginDate.toISOString().split("T")[0];
           const nowStrUTC = now.toISOString().split("T")[0];
           const yesterdayUTC = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];

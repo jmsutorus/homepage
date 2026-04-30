@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
+import { EditorialInput, EditorialTextarea } from "@/components/ui/editorial-input";
+
 interface CreateHabitFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -137,31 +139,22 @@ export function CreateHabitForm({ open, onOpenChange }: CreateHabitFormProps) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
-                  <div className="md:col-span-12 space-y-3">
-                    <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Habit Identity</label>
-                    <div className="relative">
-                      <input 
-                        autoFocus
-                        required
-                        type="text"
-                        name="title"
-                        className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-2xl font-lexend placeholder:text-media-on-surface-variant/20"
-                        placeholder="e.g. Daily Meditation"
-                      />
-                    </div>
-                  </div>
+                  <EditorialInput 
+                    autoFocus
+                    required
+                    name="title"
+                    label="Habit Identity"
+                    placeholder="e.g. Daily Meditation"
+                    containerClassName="md:col-span-12"
+                  />
 
-                  <div className="md:col-span-12 space-y-3">
-                    <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Narrative Context (Optional)</label>
-                    <div className="relative">
-                      <textarea 
-                        name="description"
-                        rows={2}
-                        className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg resize-none placeholder:text-media-on-surface-variant/20 font-lexend"
-                        placeholder="Define the intention behind this rhythm..."
-                      />
-                    </div>
-                  </div>
+                  <EditorialTextarea 
+                    name="description"
+                    label="Narrative Context (Optional)"
+                    placeholder="Define the intention behind this rhythm..."
+                    containerClassName="md:col-span-12"
+                    rows={2}
+                  />
                 </div>
               </div>
 

@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Heart, Lock, Clock, Trash2, Edit, ShieldAlert, MapPin, Calendar } from "lucide-react";
 import { CreateIntimacyDialog } from "./create-intimacy-dialog";
-import { MobileIntimacySheet } from "./mobile-intimacy-sheet";
 import { EditIntimacyDialog } from "./edit-intimacy-dialog";
 import { CowgirlIcon } from "./positions/cowgirl-icon";
 import { DoggyIcon } from "./positions/doggy-icon";
@@ -73,15 +72,6 @@ export function IntimacyTab({
 }: IntimacyTabProps) {
   const [entries, setEntries] = useState(initialData);
   const [editingEntry, setEditingEntry] = useState<IntimacyEntry | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const handleEntryAdded = () => {
     onRefresh();
@@ -154,7 +144,7 @@ export function IntimacyTab({
             </div>
             <Button
               onClick={() => setIsCreateDialogOpen(true)}
-              className="hidden md:flex bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm items-center gap-2 hover:opacity-90 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+              className="flex bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm items-center gap-2 hover:opacity-90 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
             >
               <Plus className="h-5 w-5" />
               Add Entry
@@ -312,20 +302,11 @@ export function IntimacyTab({
         </aside>
       </div>
 
-      {/* Create Dialog/Sheet - Mobile uses Sheet, Desktop uses Dialog */}
-      {isMobile ? (
-        <MobileIntimacySheet
-          open={isCreateDialogOpen}
-          onOpenChange={setIsCreateDialogOpen}
-          onEntryAdded={handleEntryAdded}
-        />
-      ) : (
-        <CreateIntimacyDialog
-          open={isCreateDialogOpen}
-          onOpenChange={setIsCreateDialogOpen}
-          onEntryAdded={handleEntryAdded}
-        />
-      )}
+      <CreateIntimacyDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onEntryAdded={handleEntryAdded}
+      />
 
       {/* Edit Dialog */}
       {editingEntry && (

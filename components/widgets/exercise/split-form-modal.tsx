@@ -1,14 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import { motion, PanInfo } from "framer-motion";
+import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { EditorialInput } from "@/components/ui/editorial-input";
 
 export interface Split {
   distance: number;
@@ -24,13 +18,11 @@ interface SplitFormModalProps {
 }
 
 export function SplitFormModal({ editSplit, isOpen, onOpenChange, onSave }: SplitFormModalProps) {
-  const isDesktop = useMediaQuery("(min-width: 768px)");
   const [split, setSplit] = useState<Split>({
     distance: 1.0,
     time: "08:00",
     elevation: 0,
   });
-  const [isAtTop, setIsAtTop] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,110 +50,60 @@ export function SplitFormModal({ editSplit, isOpen, onOpenChange, onSave }: Spli
   };
 
   const formContent = (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div className="space-y-2">
-            <Label htmlFor="distance">Distance (miles)</Label>
-            <Input
-            id="distance"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="1.0"
-            value={split.distance || ""}
-            onChange={(e) => updateField("distance", parseFloat(e.target.value))}
-            autoFocus
+    <div className="space-y-6">
+      <div className="space-y-8">
+        <EditorialInput
+          id="distance"
+          label="Distance (miles)"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="1.0"
+          value={split.distance || ""}
+          onChange={(e) => updateField("distance", parseFloat(e.target.value))}
+          autoFocus
+          required
+          sizeVariant="lg"
+        />
+
+        <div className="grid grid-cols-2 gap-8">
+          <EditorialInput
+            id="time"
+            label="Time (MM:SS)"
+            type="text"
+            placeholder="08:30"
+            value={split.time}
+            onChange={(e) => updateField("time", e.target.value)}
             required
-            />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="time">Time (MM:SS)</Label>
-            <Input
-              id="time"
-              type="text"
-              placeholder="08:30"
-              value={split.time}
-              onChange={(e) => updateField("time", e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="elevation">Elevation Gain (ft)</Label>
-            <Input
-              id="elevation"
-              type="number"
-              placeholder="0"
-              value={split.elevation}
-              onChange={(e) => updateField("elevation", parseInt(e.target.value) || 0)}
-            />
-          </div>
+            sizeVariant="lg"
+          />
+          <EditorialInput
+            id="elevation"
+            label="Elevation Gain (ft)"
+            type="number"
+            placeholder="0"
+            value={split.elevation}
+            onChange={(e) => updateField("elevation", parseInt(e.target.value) || 0)}
+            sizeVariant="lg"
+          />
         </div>
       </div>
-
-      <div className={cn(isDesktop ? "flex justify-end gap-2" : "grid gap-2")}>
-        {isDesktop && (
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-            </Button>
-        )}
-        <Button type="submit">
-          {editSplit ? "Update Split" : "Add Split"}
-        </Button>
-      </div>
-    </form>
+      <button type="submit" className="cursor-pointer hidden" id="submit-split-button" />
+    </div>
   );
 
-  if (isDesktop) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{editSplit ? "Edit Split" : "Add Split"}</DialogTitle>
-             <DialogDescription>
-                {editSplit ? "Update details for this split." : "Record a new split."}
-            </DialogDescription>
-          </DialogHeader>
-          {formContent}
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
-    <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-3xl p-0 border-t-0 bg-media-surface-container-lowest overflow-hidden">
-        <motion.div 
-          className="flex flex-col h-full bg-media-surface-container-lowest"
-          drag={isAtTop ? "y" : false}
-          dragConstraints={{ top: 0 }}
-          dragElastic={0.2}
-          onDragEnd={(_, info: PanInfo) => {
-            if (info.offset.y > 150 || info.velocity.y > 500) {
-              onOpenChange(false);
-            }
-          }}
-        >
-          {/* Drag Handle */}
-          <div className="flex-none flex justify-center pt-3 pb-1">
-            <div className="w-12 h-1.5 bg-media-outline-variant/30 rounded-full" />
-          </div>
-
-          <div 
-            className="flex flex-col h-full p-6 pt-2 overflow-y-auto"
-            onScroll={(e) => setIsAtTop(e.currentTarget.scrollTop <= 0)}
-          >
-        <SheetHeader className="mb-4 text-left">
-          <SheetTitle>{editSplit ? "Edit Split" : "Add Split"}</SheetTitle>
-           <SheetDescription>
-                {editSplit ? "Update details" : "Add new split"}
-            </SheetDescription>
-        </SheetHeader>
+    <ResponsiveDialog
+      open={isOpen}
+      onOpenChange={onOpenChange}
+      title={editSplit ? "Edit Split" : "Add Split"}
+      description={editSplit ? "Update details for this split." : "Record a new split."}
+      onSubmit={() => document.getElementById("submit-split-button")?.click()}
+      submitText={editSplit ? "Update Split" : "Add Split"}
+    >
+      <form onSubmit={handleSubmit}>
         {formContent}
-          </div>
-        </motion.div>
-      </SheetContent>
-    </Sheet>
+      </form>
+    </ResponsiveDialog>
   );
 }

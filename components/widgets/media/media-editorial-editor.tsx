@@ -118,7 +118,7 @@ export function MediaEditorialEditor({
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ query: searchTitle }),
+            body: JSON.stringify({ query: searchTitle, top: true }),
           });
 
           if (response.ok) {

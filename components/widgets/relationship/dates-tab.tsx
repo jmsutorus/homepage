@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Calendar, MapPin, Star, Trash2, Edit } from "lucide-react";
 import { CreateDateDialog } from "./create-date-dialog";
-import { MobileDateSheet } from "./mobile-date-sheet";
 import { EditDateDialog } from "./edit-date-dialog";
 import { DateTypeIcon } from "./date-type-icon";
 import type { RelationshipDate } from "@/lib/db/relationship";
@@ -26,15 +25,6 @@ export function DatesTab({
 }: DatesTabProps) {
   const [dates, setDates] = useState(initialData);
   const [editingDate, setEditingDate] = useState<RelationshipDate | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const handleDateAdded = () => {
     onRefresh();
@@ -127,7 +117,7 @@ export function DatesTab({
         <div className="md:col-span-5 flex justify-end">
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
-            className="hidden md:flex bg-primary text-primary-foreground px-8 py-6 rounded-xl items-center space-x-3 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/10 cursor-pointer"
+            className="flex bg-primary text-primary-foreground px-8 py-6 rounded-xl items-center space-x-3 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/10 cursor-pointer"
           >
             <Plus className="h-5 w-5" />
             <span className="font-semibold tracking-wide">Add Date</span>
@@ -288,20 +278,12 @@ export function DatesTab({
         )}
       </section>
 
-      {/* Create Dialog/Sheet - Mobile uses Sheet, Desktop uses Dialog */}
-      {isMobile ? (
-        <MobileDateSheet
-          open={isCreateDialogOpen}
-          onOpenChange={setIsCreateDialogOpen}
-          onDateAdded={handleDateAdded}
-        />
-      ) : (
-        <CreateDateDialog
-          open={isCreateDialogOpen}
-          onOpenChange={setIsCreateDialogOpen}
-          onDateAdded={handleDateAdded}
-        />
-      )}
+      {/* Create Dialog */}
+      <CreateDateDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onDateAdded={handleDateAdded}
+      />
 
       {/* Edit Dialog */}
       {editingDate && (

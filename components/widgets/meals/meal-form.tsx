@@ -1,11 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Plus, Trash2, GripVertical, X, Star } from "lucide-react";
 import { MealInput, IngredientInput, IngredientCategory, INGREDIENT_CATEGORIES } from "@/lib/types/meals";
 import {
@@ -15,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { EditorialInput, EditorialTextarea } from "@/components/ui/editorial-input";
 
 interface MealFormProps {
   initialData?: {
@@ -49,7 +46,13 @@ export function MealForm({
 
   // Use controlled or internal state
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
-  const setOpen = onOpenChange || setInternalOpen;
+  const setOpen = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    } else {
+      setInternalOpen(newOpen);
+    }
+  };
 
   // Form state
   const [name, setName] = useState(initialData?.name || "");
@@ -114,7 +117,7 @@ export function MealForm({
     setIngredients(ingredients.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
@@ -157,35 +160,27 @@ export function MealForm({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent 
-        showCloseButton={false} 
-        className="p-0 border-none sm:max-w-4xl bg-media-surface-container-lowest overflow-hidden shadow-[0_32px_64px_-12px_rgba(6,27,14,0.12)] rounded-3xl max-h-[90vh] flex flex-col"
-      >
-        {/* Premium Header */}
-        <div className="bg-media-primary-container px-10 py-12 flex flex-col gap-2 relative shrink-0">
-          <div className="flex justify-between items-start z-10 relative">
-            <h2 className="text-3xl font-bold tracking-tight text-media-on-primary-container font-lexend">
-              {initialData ? 'Refine Blueprint' : 'Define New Recipe'}
-            </h2>
-            <button 
-              type="button"
-              onClick={() => setOpen(false)}
-              className="cursor-pointer text-media-on-primary-container/60 hover:text-media-on-primary-container transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-          <p className="text-media-on-primary-container/80 text-sm max-w-md z-10 relative font-medium leading-relaxed">
-            Configure the essence, ingredients, and procedural steps for your next culinary creation.
-          </p>
-          {/* Decorative element */}
-          <div className="absolute bottom-0 right-0 w-64 h-64 bg-media-secondary opacity-10 blur-[80px] rounded-full translate-x-16 translate-y-16"></div>
-        </div>
+  const inputClasses = "w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-lg font-lexend placeholder:text-media-on-surface-variant/20 appearance-none";
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-10 space-y-12">
+  return (
+    <>
+      {trigger && (
+        <div onClick={() => setOpen(true)} className="contents">
+          {trigger}
+        </div>
+      )}
+      
+      <ResponsiveDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={initialData ? 'Refine Blueprint' : 'Define New Recipe'}
+        description="Configure the essence, ingredients, and procedural steps for your next culinary creation."
+        onSubmit={() => document.getElementById("submit-meal-button")?.click()}
+        submitText={initialData ? "Refine Protocol" : "Establish Protocol"}
+        isLoading={loading}
+        maxWidth="sm:max-w-4xl"
+      >
+        <form onSubmit={handleFormSubmit} className="space-y-12">
           {/* Section 1: The Essence */}
           <div className="space-y-8">
             <div className="flex items-center gap-4">
@@ -194,87 +189,66 @@ export function MealForm({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
-              <div className="md:col-span-12 space-y-3">
-                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Recipe Identity</label>
-                <div className="relative">
-                  <input 
-                    autoFocus
-                    required
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-2xl font-lexend placeholder:text-media-on-surface-variant/20"
-                    placeholder="e.g. Oak-Smoked Forest Risotto"
-                  />
-                </div>
-              </div>
+              <EditorialInput 
+                autoFocus
+                required
+                label="Recipe Identity"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Oak-Smoked Forest Risotto"
+                containerClassName="md:col-span-12"
+              />
 
-              <div className="md:col-span-12 space-y-3">
-                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Narrative Context (Description)</label>
-                <div className="relative">
-                  <textarea 
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={2}
-                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-lg resize-none placeholder:text-media-on-surface-variant/20 font-lexend"
-                    placeholder="Describe the soul of this dish..."
-                  />
-                </div>
-              </div>
+              <EditorialTextarea 
+                label="Narrative Context (Description)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                placeholder="Describe the soul of this dish..."
+                containerClassName="md:col-span-12"
+                sizeVariant="lg"
+              />
 
-              <div className="md:col-span-4 space-y-3">
-                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Intended Servings</label>
-                <div className="relative">
-                  <input 
-                    type="number"
-                    min="1"
-                    value={servings}
-                    onChange={(e) => setServings(parseInt(e.target.value) || 1)}
-                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-xl font-lexend"
-                  />
-                </div>
-              </div>
+              <EditorialInput 
+                label="Intended Servings"
+                type="number"
+                min="1"
+                value={servings}
+                onChange={(e) => setServings(parseInt(e.target.value) || 1)}
+                containerClassName="md:col-span-4"
+                sizeVariant="lg"
+              />
 
-              <div className="md:col-span-4 space-y-3">
-                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Prep Phase (Min)</label>
-                <div className="relative">
-                  <input 
-                    type="number"
-                    min="0"
-                    value={prepTime}
-                    onChange={(e) => setPrepTime(parseInt(e.target.value) || 0)}
-                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-xl font-lexend"
-                  />
-                </div>
-              </div>
+              <EditorialInput 
+                label="Prep Phase (Min)"
+                type="number"
+                min="0"
+                value={prepTime}
+                onChange={(e) => setPrepTime(parseInt(e.target.value) || 0)}
+                containerClassName="md:col-span-4"
+                sizeVariant="lg"
+              />
 
-              <div className="md:col-span-4 space-y-3">
-                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Active Fire (Min)</label>
-                <div className="relative">
-                  <input 
-                    type="number"
-                    min="0"
-                    value={cookTime}
-                    onChange={(e) => setCookTime(parseInt(e.target.value) || 0)}
-                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-bold text-xl font-lexend"
-                  />
-                </div>
-              </div>
+              <EditorialInput 
+                label="Active Fire (Min)"
+                type="number"
+                min="0"
+                value={cookTime}
+                onChange={(e) => setCookTime(parseInt(e.target.value) || 0)}
+                containerClassName="md:col-span-4"
+                sizeVariant="lg"
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-3">
-                <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Visual Asset (Image URL)</label>
-                <div className="relative">
-                  <input 
-                    type="text"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    className="w-full px-8 py-5 bg-media-surface-container-low border-2 border-transparent rounded-2xl focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-base font-lexend placeholder:text-media-on-surface-variant/20"
-                    placeholder="https://images.unsplash.com/..."
-                  />
-                </div>
-              </div>
+              <EditorialInput 
+                label="Visual Asset (Image URL)"
+                type="text"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://images.unsplash.com/..."
+                sizeVariant="lg"
+              />
 
               <div className="space-y-3">
                 <label className="block text-[10px] uppercase tracking-widest font-bold text-media-on-surface-variant">Culinary Rating</label>
@@ -449,58 +423,29 @@ export function MealForm({
                     {index < steps.length - 1 && <div className="w-px h-full bg-media-outline-variant/30"></div>}
                   </div>
                   <div className="flex-1 space-y-2 pb-6">
-                    <div className="relative">
-                      <textarea
-                        value={step}
-                        onChange={(e) => handleStepChange(index, e.target.value)}
-                        placeholder={`Execute step ${(index + 1)}...`}
-                        rows={2}
-                        className="w-full bg-media-surface-container-low px-6 py-5 rounded-2xl border-2 border-transparent focus:ring-0 focus:border-media-secondary focus:bg-media-surface-container-high transition-all text-media-primary font-medium text-base resize-none placeholder:text-media-on-surface-variant/20 font-lexend"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeStep(index)}
-                        disabled={steps.length === 1}
-                        className="cursor-pointer absolute -right-2 top-0 p-2 text-media-on-surface-variant/0 group-hover:text-media-on-surface-variant/40 hover:!text-media-error disabled:!hidden transition-all translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
+                    <EditorialTextarea 
+                      value={step}
+                      onChange={(e) => handleStepChange(index, e.target.value)}
+                      placeholder={`Execute step ${(index + 1)}...`}
+                      rows={2}
+                      sizeVariant="lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeStep(index)}
+                      disabled={steps.length === 1}
+                      className="cursor-pointer absolute -right-2 top-0 p-2 text-media-on-surface-variant/0 group-hover:text-media-on-surface-variant/40 hover:!text-media-error disabled:!hidden transition-all translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Action Footer */}
-          <div className="flex items-center justify-end gap-10 pt-10 border-t border-media-outline-variant/10 shrink-0">
-            <button 
-              type="button"
-              onClick={() => setOpen(false)}
-              className="cursor-pointer text-[10px] font-black uppercase tracking-[0.2em] text-media-on-surface-variant hover:text-media-primary transition-colors font-lexend"
-            >
-              Terminate
-            </button>
-            <button 
-              type="submit"
-              disabled={loading || !name.trim()}
-              className="cursor-pointer w-full md:w-auto px-10 h-16 bg-media-secondary text-media-on-secondary rounded-2xl font-black text-lg tracking-widest uppercase shadow-2xl shadow-media-secondary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-3 font-lexend"
-            >
-              {loading ? (
-                <>
-                  <span className="w-5 h-5 rounded-full border-2 border-media-on-secondary/30 border-t-media-on-secondary animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined">{initialData ? 'save' : 'auto_awesome'}</span>
-                  {initialData ? 'Refine Protocol' : 'Establish Protocol'}
-                </div>
-              )}
-            </button>
-          </div>
+          <button type="submit" className="cursor-pointer hidden" id="submit-meal-button" />
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialog>
+    </>
   );
 }

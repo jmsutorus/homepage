@@ -2,21 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
+import { EditorialInput, EditorialTextarea } from '@/components/ui/editorial-input';
 import { toast } from 'sonner';
 import { DrinkLog } from '@/lib/db/drinks';
-import { Loader2 } from 'lucide-react';
+import { TreeSuccess } from "@/components/ui/animations/tree-success";
+import { useSuccessDialog } from "@/hooks/use-success-dialog";
 
 interface DrinkLogDialogProps {
   drinkSlug: string;
@@ -28,6 +19,14 @@ interface DrinkLogDialogProps {
 
 export function DrinkLogDialog({ drinkSlug, open, onOpenChange, onSuccess, initialData }: DrinkLogDialogProps) {
   const [loading, setLoading] = useState(false);
+
+  const { showSuccess, triggerSuccess } = useSuccessDialog({
+    duration: 2000,
+    onClose: () => {
+      onOpenChange(false);
+      onSuccess();
+    },
+  });
 
   // Form state
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -49,8 +48,8 @@ export function DrinkLogDialog({ drinkSlug, open, onOpenChange, onSuccess, initi
     }
   }, [initialData, open]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setLoading(true);
 
     try {
@@ -77,8 +76,13 @@ export function DrinkLogDialog({ drinkSlug, open, onOpenChange, onSuccess, initi
         throw new Error('Failed to save log');
       }
 
-      toast.success(initialData ? 'Log updated' : 'Log added');
-      onSuccess();
+      if (initialData) {
+        toast.success('Log updated');
+        onOpenChange(false);
+        onSuccess();
+      } else {
+        triggerSuccess();
+      }
     } catch (error) {
       toast.error('Something went wrong');
       console.error(error);
@@ -88,69 +92,71 @@ export function DrinkLogDialog({ drinkSlug, open, onOpenChange, onSuccess, initi
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{initialData ? 'Edit Consumption' : 'Log Consumption'}</DialogTitle>
-          <DialogDescription>
-            {initialData ? 'Update the details of this tasting.' : 'Record a new tasting for this drink.'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input 
-              id="date"
-              type="date" 
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={initialData ? 'Edit Consumption' : 'Log Consumption'}
+      description={initialData ? 'Update the details of this tasting.' : 'Record a new tasting for this drink.'}
+      submitText={initialData ? 'Save Changes' : 'Add Log'}
+      isLoading={loading}
+      loadingText={initialData ? 'Saving...' : 'Adding...'}
+      onSubmit={handleSubmit}
+    >
+      {showSuccess ? (
+        <div className="flex flex-col items-center justify-center py-20 space-y-8">
+          <div className="relative">
+            <TreeSuccess size={160} showText={false} />
+            <div className="absolute inset-0 bg-media-secondary/10 blur-3xl rounded-full -z-10 scale-150 animate-pulse" />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="location">Location (Optional)</Label>
-            <Input 
-              id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Home, Restaurant, etc." 
-            />
+          <div className="text-center space-y-3">
+            <h3 className="text-3xl font-bold text-media-primary font-lexend tracking-tight uppercase">Tasting recorded</h3>
+            <p className="text-media-on-surface-variant font-medium max-w-[280px] mx-auto">
+              Your tasting notes have been synced to the archive.
+            </p>
           </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <EditorialInput 
+            label="Date"
+            type="date" 
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+            sizeVariant="lg"
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="rating">Rating (1-10)</Label>
-            <Input 
-              id="rating"
-              type="number" 
-              min="1" 
-              max="10" 
-              value={rating}
-              onChange={(e) => setRating(e.target.value)}
-              placeholder="10" 
-            />
-          </div>
+          <EditorialInput 
+            label="Location (Optional)"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Home, Restaurant, etc." 
+            sizeVariant="lg"
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">Tasting Notes</Label>
-            <Textarea 
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Thoughts on this specific tasting..." 
-              className="min-h-[100px]"
-            />
-          </div>
+          <EditorialInput 
+            label="Rating (1-10)"
+            type="number" 
+            min="1" 
+            max="10" 
+            value={rating}
+            onChange={(e) => setRating(e.target.value)}
+            placeholder="10" 
+            sizeVariant="lg"
+          />
 
-          <DialogFooter>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {initialData ? 'Save Changes' : 'Add Log'}
-            </Button>
-          </DialogFooter>
+          <EditorialTextarea 
+            label="Tasting Notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Thoughts on this specific tasting..." 
+            className="min-h-[120px]"
+            sizeVariant="lg"
+          />
         </form>
-      </DialogContent>
-    </Dialog>
+      )}
+    </ResponsiveDialog>
   );
 }
+
+

@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Star, Trash2, Edit, Calendar } from "lucide-react";
 import { CreateMilestoneDialog } from "./create-milestone-dialog";
-import { MobileMilestoneSheet } from "./mobile-milestone-sheet";
 import { EditMilestoneDialog } from "./edit-milestone-dialog";
 import { MilestoneTypeIcon } from "./milestone-type-icon";
 import type { RelationshipMilestone } from "@/lib/db/relationship";
@@ -26,15 +25,6 @@ export function MilestonesTab({
 }: MilestonesTabProps) {
   const [milestones, setMilestones] = useState(initialData);
   const [editingMilestone, setEditingMilestone] = useState<RelationshipMilestone | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const handleMilestoneAdded = () => {
     onRefresh();
@@ -141,7 +131,7 @@ export function MilestonesTab({
                   <Button
                     onClick={() => setIsCreateDialogOpen(true)}
                     variant="outline"
-                    className="hidden md:flex bg-primary/20 backdrop-blur-md text-white border border-white/20 font-bold px-8 py-6 rounded-2xl hover:bg-primary/40 transition-all items-center gap-2 cursor-pointer"
+                    className="flex bg-primary/20 backdrop-blur-md text-white border border-white/20 font-bold px-8 py-6 rounded-2xl hover:bg-primary/40 transition-all items-center gap-2 cursor-pointer"
                   >
                     <Plus className="h-5 w-5" /> New Chapter
                   </Button>
@@ -157,7 +147,7 @@ export function MilestonesTab({
             <h4 className="text-3xl font-playfair font-bold text-foreground italic">The Chapters of Our Story</h4>
             <Button
               onClick={() => setIsCreateDialogOpen(true)}
-              className="hidden md:flex bg-primary text-primary-foreground rounded-full px-6 py-2 items-center gap-2 shadow-lg hover:scale-105 transition-transform cursor-pointer"
+              className="flex bg-primary text-primary-foreground rounded-full px-6 py-2 items-center gap-2 shadow-lg hover:scale-105 transition-transform cursor-pointer"
             >
               <Plus className="h-4 w-4" /> Add Milestone
             </Button>
@@ -224,20 +214,11 @@ export function MilestonesTab({
         </section>
       </div>
 
-      {/* Create Dialog/Sheet - Mobile uses Sheet, Desktop uses Dialog */}
-      {isMobile ? (
-        <MobileMilestoneSheet
-          open={isCreateDialogOpen}
-          onOpenChange={setIsCreateDialogOpen}
-          onMilestoneAdded={handleMilestoneAdded}
-        />
-      ) : (
-        <CreateMilestoneDialog
-          open={isCreateDialogOpen}
-          onOpenChange={setIsCreateDialogOpen}
-          onMilestoneAdded={handleMilestoneAdded}
-        />
-      )}
+      <CreateMilestoneDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onMilestoneAdded={handleMilestoneAdded}
+      />
 
       {/* Edit Dialog */}
       {editingMilestone && (
