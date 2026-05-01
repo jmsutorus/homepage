@@ -14,26 +14,46 @@ export async function POST(_request: NextRequest) {
     const userId = session.user.id;
     // ... existing auth checks ...
 
-    const targetAudience = env.FIREBASE_CURATION_FUNCTION_URL || '';
+    const targetAudience = env.FIREBASE_CURATION_FUNCTION_URL;
     
-    // 1. Initialize Google Auth (it automatically finds the service account)
-    const auth = new GoogleAuth();
-    
-    // 2. Get a client specifically for this target URL (handles Audience/ID Token)
-    const client = await auth.getIdTokenClient(targetAudience);
-    
-    console.log(`Executing authenticated request targeting: ${targetAudience}`);
+    if (targetAudience) {
+      // 1. Initialize Google Auth (it automatically finds the service account)
+      const auth = new GoogleAuth();
+      
+      const isProd = process.env.NODE_ENV === "production";
+      const isCloudRun = !!process.env.K_SERVICE;
 
-    // 3. Use the authorized client to make the request
-    // This automatically adds the "Authorization: Bearer <id_token>" header
-    const response = await client.request({
-      url: `${targetAudience}?userId=${userId}`,
-      method: "GET",
-    });
+      if (isProd || isCloudRun) {
+        try {
+          // 2. Get a client specifically for this target URL (handles Audience/ID Token)
+          const client = await auth.getIdTokenClient(targetAudience);
+          
+          console.log(`Executing authenticated request targeting: ${targetAudience}`);
 
-    if (response.status !== 200) {
-      return NextResponse.json({ error: response.statusText }, { status: response.status });
-       // ... handle error ...
+          const headers: Record<string, string> = {};
+          const firebaseToken = (session.user as any).idToken;
+          if (firebaseToken) {
+            headers["x-firebase-id-token"] = firebaseToken;
+          }
+
+          // 3. Use the authorized client to make the request
+          // This automatically adds the "Authorization: Bearer <id_token>" header
+          const response = await client.request({
+            url: `${targetAudience}?userId=${userId}`,
+            method: "GET",
+            headers,
+          });
+
+          if (response.status !== 200) {
+            console.error(`Curation service returned error: ${response.status} ${response.statusText}`);
+          }
+        } catch (err) {
+          console.warn("Failed to execute authenticated curation request:", err);
+        }
+      } else {
+        // In development, we might just skip the external call or hit a local endpoint
+        console.log("Skipping authenticated curation request in development environment");
+      }
     }
     
     const curationDoc = await getAdminFirestore()

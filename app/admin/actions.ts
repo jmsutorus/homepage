@@ -115,21 +115,28 @@ export async function approveAccessRequest(id: number, email: string) {
   await execute("DELETE FROM beta_access_requests WHERE id = ?", [id]);
   
   // 3. Invoke Firebase function
-  try {
-    const targetAudience = process.env.FIREBASE_SEND_ACCESS_EMAIL || "https://sendaccessemail-xe2v24bjoq-uc.a.run.app";
-    const auth = new GoogleAuth();
-    const client = await auth.getIdTokenClient(targetAudience);
-    
-    const response = await client.request({
-      url: `${targetAudience}?email=${encodeURIComponent(email)}`,
-      method: "GET",
-    });
-    
-    if (response.status !== 200) {
-      console.error(`Failed to invoke Firebase function for ${email}: Status ${response.status}`);
+  const targetAudience = process.env.FIREBASE_SEND_ACCESS_EMAIL || "https://sendaccessemail-xe2v24bjoq-uc.a.run.app";
+  const isProd = process.env.NODE_ENV === "production";
+  const isCloudRun = !!process.env.K_SERVICE;
+
+  if (isProd || isCloudRun) {
+    try {
+      const auth = new GoogleAuth();
+      const client = await auth.getIdTokenClient(targetAudience);
+      
+      const response = await client.request({
+        url: `${targetAudience}?email=${encodeURIComponent(email)}`,
+        method: "GET",
+      });
+      
+      if (response.status !== 200) {
+        console.error(`Failed to invoke Firebase function for ${email}: Status ${response.status}`);
+      }
+    } catch (error) {
+      console.error(`Error invoking Firebase function for ${email}:`, error);
     }
-  } catch (error) {
-    console.error(`Error invoking Firebase function for ${email}:`, error);
+  } else {
+    console.log(`Skipping Firebase function invocation for ${email} in development environment`);
   }
   
   revalidatePath("/admin");

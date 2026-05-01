@@ -21,7 +21,7 @@
     "@auth/core": "^0.41.0",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@google-cloud/secret-manager": "^6.1.1",
-    "@jmsutorus/earthbound-shared": "npm:@jsr/jmsutorus__earthbound-shared@^0.0.6",
+    "@jmsutorus/earthbound-shared": "npm:@jsr/jmsutorus__earthbound-shared@^0.0.7",
     "@libsql/client": "^0.17.0",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
