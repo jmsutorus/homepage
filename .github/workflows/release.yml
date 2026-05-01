@@ -85,14 +85,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Sync Changelog
+      - name: Sync Changelog to Hub
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'changelog_sync.yml',
-              ref: 'main'
-            })
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git clone https://x-access-token:${{ secrets.HUB_TOKEN }}@github.com/jmsutorus/earthbound_changelog.git hub
+          cp CHANGELOG.md hub/content/repos/earthbound_api/CHANGELOG.md
+          cd hub
+          git add .
+          git commit -m "Update changelog for Earthbound API (v${{ steps.semantic.outputs.new_release_version }})"
+          git push
+        env:
+          HUB_TOKEN: ${{ secrets.HUB_TOKEN }}
