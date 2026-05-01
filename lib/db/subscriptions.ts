@@ -1,4 +1,4 @@
-import { execute, query, queryOne } from "./index";
+import { earthboundFetch } from "../api/earthbound";
 import { toMonthly, toYearly } from "@/lib/utils/finances";
 import type { SubscriptionCycle } from "@/lib/utils/finances";
 
@@ -44,100 +44,41 @@ export interface UpdateSubscriptionInput {
   notes?: string;
 }
 
-// ==================== DB Row Type ====================
-
-interface DBSubscription {
-  id: number;
-  userId: string;
-  name: string;
-  website: string | null;
-  icon_url: string | null;
-  price: number;
-  cycle: string;
-  currency: string;
-  active: number;
-  category: string | null;
-  billing_day: number | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-// ==================== Transform ====================
-
-function transformSubscription(row: DBSubscription): Subscription {
-  return {
-    ...row,
-    active: Boolean(row.active),
-    cycle: row.cycle as SubscriptionCycle,
-  };
-}
-
-
 // ==================== CRUD ====================
 
 /**
  * Get all subscriptions for a user
  */
 export async function getAllSubscriptions(userId: string): Promise<Subscription[]> {
-  const rows = await query<DBSubscription>(
-    `SELECT * FROM subscriptions WHERE userId = ? ORDER BY name ASC`,
-    [userId]
-  );
-  return rows.map(transformSubscription);
+  const res = await earthboundFetch(`/api/subscriptions?userId=${userId}`);
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 /**
  * Get a single subscription by ID
  */
 export async function getSubscription(id: number, userId: string): Promise<Subscription | undefined> {
-  const row = await queryOne<DBSubscription>(
-    `SELECT * FROM subscriptions WHERE id = ? AND userId = ?`,
-    [id, userId]
-  );
-  return row ? transformSubscription(row) : undefined;
+  const res = await earthboundFetch(`/api/subscriptions/id/${id}?userId=${userId}`);
+  if (!res.ok) return undefined;
+  return await res.json();
 }
 
 /**
  * Create a new subscription
  */
 export async function createSubscription(input: CreateSubscriptionInput, userId: string): Promise<Subscription> {
-  // If website is provided, generate favicon URL
-  let iconUrl = input.icon_url || null;
-  if (input.website && !iconUrl) {
-    try {
-      const url = new URL(input.website);
-      iconUrl = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=64`;
-    } catch {
-      // Invalid URL, skip favicon
-    }
+  const res = await earthboundFetch(`/api/subscriptions?userId=${userId}`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || 'Failed to create subscription');
   }
 
-  const result = await execute(
-    `INSERT INTO subscriptions (userId, name, website, icon_url, price, cycle, currency, active, category, billing_day, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      userId,
-      input.name,
-      input.website || null,
-      iconUrl,
-      input.price,
-      input.cycle || 'monthly',
-      input.currency || 'USD',
-      input.active !== false ? 1 : 0,
-      input.category || null,
-      input.billing_day || null,
-      input.notes || null,
-    ]
-  );
-
-  const sub = await queryOne<DBSubscription>(
-    `SELECT * FROM subscriptions WHERE id = ?`,
-    [result.lastInsertRowid]
-  );
-
-  if (!sub) throw new Error('Failed to create subscription');
-  return transformSubscription(sub);
+  return await res.json();
 }
 
 /**
@@ -148,107 +89,33 @@ export async function updateSubscription(
   userId: string,
   updates: UpdateSubscriptionInput
 ): Promise<Subscription | undefined> {
-  const existing = await getSubscription(id, userId);
-  if (!existing) return undefined;
+  const res = await earthboundFetch(`/api/subscriptions/id/${id}?userId=${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
 
-  const fields: string[] = [];
-  const params: unknown[] = [];
-
-  if (updates.name !== undefined) {
-    fields.push('name = ?');
-    params.push(updates.name);
-  }
-  if (updates.website !== undefined) {
-    fields.push('website = ?');
-    params.push(updates.website || null);
-    // Update icon if website changes
-    let iconUrl: string | null = null;
-    if (updates.website) {
-      try {
-        const url = new URL(updates.website);
-        iconUrl = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=64`;
-      } catch { /* skip */ }
-    }
-    fields.push('icon_url = ?');
-    params.push(updates.icon_url ?? iconUrl);
-  } else if (updates.icon_url !== undefined) {
-    fields.push('icon_url = ?');
-    params.push(updates.icon_url || null);
-  }
-  if (updates.price !== undefined) {
-    fields.push('price = ?');
-    params.push(updates.price);
-  }
-  if (updates.cycle !== undefined) {
-    fields.push('cycle = ?');
-    params.push(updates.cycle);
-  }
-  if (updates.currency !== undefined) {
-    fields.push('currency = ?');
-    params.push(updates.currency);
-  }
-  if (updates.active !== undefined) {
-    fields.push('active = ?');
-    params.push(updates.active ? 1 : 0);
-  }
-  if (updates.category !== undefined) {
-    fields.push('category = ?');
-    params.push(updates.category || null);
-  }
-  if (updates.billing_day !== undefined) {
-    fields.push('billing_day = ?');
-    params.push(updates.billing_day || null);
-  }
-  if (updates.notes !== undefined) {
-    fields.push('notes = ?');
-    params.push(updates.notes || null);
-  }
-
-  if (fields.length === 0) return existing;
-
-  params.push(id, userId);
-  await execute(
-    `UPDATE subscriptions SET ${fields.join(', ')} WHERE id = ? AND userId = ?`,
-    params
-  );
-
-  return getSubscription(id, userId);
+  if (!res.ok) return undefined;
+  return await res.json();
 }
 
 /**
  * Delete a subscription
  */
 export async function deleteSubscription(id: number, userId: string): Promise<boolean> {
-  const result = await execute(
-    `DELETE FROM subscriptions WHERE id = ? AND userId = ?`,
-    [id, userId]
-  );
-  return result.changes > 0;
+  const res = await earthboundFetch(`/api/subscriptions/id/${id}?userId=${userId}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.success;
 }
 
 /**
  * Get subscription cost totals grouped by currency
  */
 export async function getSubscriptionTotals(userId: string): Promise<SubscriptionTotals[]> {
-  const subs = await getAllSubscriptions(userId);
-  const activeSubs = subs.filter(s => s.active);
-
-  // Group by currency
-  const byCurrency = new Map<string, { monthly: number; yearly: number; count: number }>();
-
-  for (const sub of activeSubs) {
-    const currency = sub.currency;
-    const current = byCurrency.get(currency) || { monthly: 0, yearly: 0, count: 0 };
-    current.monthly += toMonthly(sub.price, sub.cycle);
-    current.yearly += toYearly(sub.price, sub.cycle);
-    current.count += 1;
-    byCurrency.set(currency, current);
-  }
-
-  return Array.from(byCurrency.entries()).map(([currency, data]) => ({
-    currency,
-    monthly: Math.round(data.monthly * 100) / 100,
-    yearly: Math.round(data.yearly * 100) / 100,
-    count: data.count,
-  }));
+  const res = await earthboundFetch(`/api/subscriptions/totals?userId=${userId}`);
+  if (!res.ok) return [];
+  return await res.json();
 }

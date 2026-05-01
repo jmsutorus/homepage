@@ -1,5 +1,4 @@
-import { query, queryOne, execute } from "@/lib/db";
-
+import { earthboundFetch } from "../api/earthbound";
 import {
   type DuolingoCompletion,
 } from "@jmsutorus/earthbound-shared";
@@ -11,16 +10,9 @@ export async function getDuolingoCompletion(
   userId: string,
   date: string
 ): Promise<DuolingoCompletion | null> {
-  try {
-    const completion = await queryOne<DuolingoCompletion>(
-      "SELECT * FROM duolingo_completions WHERE userId = ? AND date = ?",
-      [userId, date]
-    );
-    return completion ?? null;
-  } catch (error) {
-    console.error("Error getting Duolingo completion:", error);
-    return null;
-  }
+  const res = await earthboundFetch(`/api/duolingo/date/${date}?userId=${userId}`);
+  if (!res.ok) return null;
+  return await res.json();
 }
 
 /**
@@ -31,15 +23,9 @@ export async function getDuolingoCompletionsForRange(
   startDate: string,
   endDate: string
 ): Promise<DuolingoCompletion[]> {
-  try {
-    return await query<DuolingoCompletion>(
-      "SELECT * FROM duolingo_completions WHERE userId = ? AND date >= ? AND date <= ? ORDER BY date DESC",
-      [userId, startDate, endDate]
-    );
-  } catch (error) {
-    console.error("Error getting Duolingo completions range:", error);
-    return [];
-  }
+  const res = await earthboundFetch(`/api/duolingo/range?userId=${userId}&start=${startDate}&end=${endDate}`);
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 /**
@@ -50,29 +36,11 @@ export async function toggleDuolingoCompletion(
   userId: string,
   date: string
 ): Promise<boolean> {
-  try {
-    // Check if already completed
-    const existing = await queryOne<DuolingoCompletion>(
-      "SELECT * FROM duolingo_completions WHERE userId = ? AND date = ?",
-      [userId, date]
-    );
+  const res = await earthboundFetch(`/api/duolingo/toggle?userId=${userId}&date=${date}`, {
+    method: 'POST',
+  });
 
-    if (existing) {
-      // Remove completion
-      await execute("DELETE FROM duolingo_completions WHERE id = ?", [
-        existing.id,
-      ]);
-      return false; // No longer completed
-    } else {
-      // Add completion
-      await execute(
-        "INSERT INTO duolingo_completions (userId, date) VALUES (?, ?)",
-        [userId, date]
-      );
-      return true; // Now completed
-    }
-  } catch (error) {
-    console.error("Error toggling Duolingo completion:", error);
-    throw error;
-  }
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.completed;
 }
