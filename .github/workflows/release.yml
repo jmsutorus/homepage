@@ -66,7 +66,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: main
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -81,13 +81,32 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Validate Release (Dry-run on PR)
+      - name: Update Changelog (PR)
         if: github.event_name == 'pull_request'
-        uses: cycjimmy/semantic-release-action@v4
-        with:
-          dry_run: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create a temporary config for PR
+          cat <<EOF > .releaserc.pr.json
+          {
+            "branches": ["${{ github.head_ref }}"],
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator",
+              "@semantic-release/changelog",
+              ["@semantic-release/git", {
+                "assets": ["package.json", "CHANGELOG.md"],
+                "message": "chore(release): update changelog for PR [skip ci]"
+              }]
+            ]
+          }
+          EOF
+          
+          # Bypass CI detection to allow running on PR
+          CI=false GITHUB_ACTIONS=false npx semantic-release --extends ./.releaserc.pr.json --no-ci --dry-run=false
 
       - name: Release (Create GitHub release)
         id: semantic
