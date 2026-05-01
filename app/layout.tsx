@@ -99,6 +99,7 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="preload" href="/tree-ring-loader.svg" as="image" type="image/svg+xml" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
       </head>
       <body

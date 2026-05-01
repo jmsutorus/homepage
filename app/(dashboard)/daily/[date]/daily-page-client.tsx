@@ -228,20 +228,27 @@ export default function DailyPageClient({
                 <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-media-on-surface-variant/60">The Vitals</h3>
                 <MoodSelector date={date} currentMood={mood || null} />
                 
-                {hasDuolingo && (
-                  <div className="bg-media-surface-container-lowest editorial-shadow p-6 rounded-2xl flex items-center justify-between group kinetic-hover">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-[#58cc02] flex items-center justify-center">
-                        <MaterialSymbol icon="language" className="text-white" fill />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold">Duolingo</p>
-                        <p className="text-xs text-media-on-surface-variant">Stay on the streak</p>
-                      </div>
+                <div className="bg-media-surface-container-lowest editorial-shadow p-6 rounded-2xl flex items-center justify-between group kinetic-hover">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
+                      hasDuolingo ? "bg-[#58cc02]" : "bg-media-secondary/20"
+                    )}>
+                      <MaterialSymbol 
+                        icon="language" 
+                        className={hasDuolingo ? "text-white" : "text-media-secondary"} 
+                        fill 
+                      />
                     </div>
-                    <DuolingoCompletionToggle date={date} isCompleted={duolingoCompleted} />
+                    <div>
+                      <p className="text-sm font-bold">{hasDuolingo ? "Duolingo" : "Language Practice"}</p>
+                      <p className="text-xs text-media-on-surface-variant">
+                        {hasDuolingo ? "Stay on the streak" : "Daily linguistic growth"}
+                      </p>
+                    </div>
                   </div>
-                )}
+                  <DuolingoCompletionToggle date={date} isCompleted={duolingoCompleted} />
+                </div>
               </div>
 
               {/* Habitual Rhythm */}

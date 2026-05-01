@@ -28,19 +28,26 @@ export async function earthboundFetch(path: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers);
 
   // 1. Add Google OIDC Token for Cloud Run IAM protection
-  try {
-    // Only attempt OIDC auth if we're not in development or if explicitly required
-    // In many cases, baseUrl is the audience
-    const client = await googleAuth.getIdTokenClient(baseUrl);
-    const authHeaders = await client.getRequestHeaders(url);
-    const authValue = (authHeaders as Record<string, any>)['Authorization'];
-    if (authValue) {
-      headers.set("Authorization", authValue);
-    }
-  } catch (err) {
-    // Fallback or log error in non-GCP environments
-    if (process.env.NODE_ENV === "production") {
-      console.error("Failed to get Google OIDC token:", err);
+  // Only attempt OIDC auth if we're in a Cloud Run environment or production
+  const isCloudRun = !!process.env.K_SERVICE;
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (isCloudRun || isProduction) {
+    try {
+      // In many cases, baseUrl is the audience
+      const client = await googleAuth.getIdTokenClient(baseUrl);
+      const authHeaders = await client.getRequestHeaders(url);
+      const authValue = (authHeaders as Record<string, any>)['Authorization'];
+      if (authValue) {
+        headers.set("Authorization", authValue);
+      }
+    } catch (err) {
+      // Suppress metadata lookup warnings/errors in non-GCP environments
+      // and prevent AggregateError from bubbling up
+      if (isProduction) {
+        console.warn("Failed to get Google OIDC token (this may be expected if not on GCP):", 
+          err instanceof Error ? err.message : String(err));
+      }
     }
   }
 

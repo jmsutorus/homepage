@@ -1,43 +1,29 @@
-import { Skeleton } from "@/components/ui/skeleton";
+"use client";
+
+import { TreeRingLoader } from "@/components/ui/tree-ring-loader";
 
 export default function Loading() {
   return (
-    <div className="container mx-auto py-6 sm:py-8 px-4 max-w-4xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-        <div>
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-5 w-64" />
-        </div>
-        <Skeleton className="h-10 w-32" />
+    <div className="min-h-[70vh] w-full flex flex-col items-center justify-center gap-8 p-6">
+      <TreeRingLoader size={120} />
+      
+      <div className="flex flex-col items-center text-center gap-3 max-w-xs">
+        <h2 className="text-2xl font-bold font-lexend text-media-primary tracking-tight">
+          Charting the course
+        </h2>
+        <p className="text-media-on-surface-variant text-base leading-relaxed opacity-70">
+          Mapping out your progress and intentions...
+        </p>
       </div>
 
-      <div className="space-y-6 sm:space-y-8">
-        {/* Tabs Skeleton */}
-        <div className="w-full border-b">
-          <div className="flex gap-4">
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-24" />
-          </div>
-        </div>
-
-        {/* Habits List Skeleton */}
-        <div className="space-y-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-6 w-6 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-5 w-48" />
-                  <Skeleton className="h-4 w-32" />
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-8 w-16" />
-                <Skeleton className="h-8 w-8" />
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="flex items-center gap-1.5 pt-4">
+        {[0, 1, 2].map((i) => (
+          <div 
+            key={i} 
+            className="size-1.5 rounded-full bg-media-secondary/40 animate-pulse"
+            style={{ animationDelay: `${i * 0.2}s` }}
+          />
+        ))}
       </div>
     </div>
   );

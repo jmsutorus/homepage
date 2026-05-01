@@ -52,7 +52,7 @@ export default function Error({
               <span className="material-symbols-outlined text-[20px]">
                 refresh
               </span>
-              Try the Path Again
+              Try Again
             </button>
             
             <Link

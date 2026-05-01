@@ -1,34 +1,28 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+"use client";
 
-export default function RestaurantsLoading() {
+import { TreeRingLoader } from "@/components/ui/tree-ring-loader";
+
+export default function Loading() {
   return (
-    <div className="container mx-auto py-6 sm:py-8 px-4 max-w-6xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-        <div>
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-64" />
-        </div>
-        <Skeleton className="h-10 w-32" />
+    <div className="min-h-[70vh] w-full flex flex-col items-center justify-center gap-8 p-6">
+      <TreeRingLoader size={120} />
+      
+      <div className="flex flex-col items-center text-center gap-3 max-w-xs">
+        <h2 className="text-2xl font-bold font-lexend text-media-primary tracking-tight">
+          Consulting the menu
+        </h2>
+        <p className="text-media-on-surface-variant text-base leading-relaxed opacity-70">
+          Gathering local flavors and recipes...
+        </p>
       </div>
 
-      <div className="flex gap-4 mb-6">
-        <Skeleton className="h-10 flex-1" />
-        <Skeleton className="h-10 w-40" />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
-            <Skeleton className="h-32 w-full" />
-            <CardHeader className="pb-2">
-              <Skeleton className="h-5 w-3/4" />
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-2/3" />
-            </CardContent>
-          </Card>
+      <div className="flex items-center gap-1.5 pt-4">
+        {[0, 1, 2].map((i) => (
+          <div 
+            key={i} 
+            className="size-1.5 rounded-full bg-media-secondary/40 animate-pulse"
+            style={{ animationDelay: `${i * 0.2}s` }}
+          />
         ))}
       </div>
     </div>

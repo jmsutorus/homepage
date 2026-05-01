@@ -6,6 +6,7 @@ import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, s
 
 import { auth } from "@/lib/firebase/client";
 import Link from "next/link";
+import { TreeRingLoader } from "@/components/ui/tree-ring-loader";
 
 function SignUpContent() {
   const [name, setName] = useState("");
@@ -310,7 +311,7 @@ function SignUpContent() {
 
 export default function SignUpPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-media-surface flex items-center justify-center font-lexend text-media-primary">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-media-surface flex items-center justify-center"><TreeRingLoader size={80} /></div>}>
       <SignUpContent />
     </Suspense>
   );

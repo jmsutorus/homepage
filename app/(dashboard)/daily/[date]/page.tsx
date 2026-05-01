@@ -102,12 +102,22 @@ export default async function DailyPage({ params }: DailyPageProps) {
         [userId]
       );
 
-      let duolingoCompletion = null;
-      if (duolingoAccount) {
-        duolingoCompletion = await getDuolingoCompletion(userId, date);
-      }
+      const duolingoCompletion = await getDuolingoCompletion(userId, date);
 
-      return { journal, mood, allRelevantTasks, upcomingGoals, upcomingMilestones, completedGoals, completedMilestones, colors, hasDuolingo: !!duolingoAccount, duolingoCompleted: !!duolingoCompletion, dailyMeals, availableRecipes };
+      return { 
+        journal, 
+        mood, 
+        allRelevantTasks, 
+        upcomingGoals, 
+        upcomingMilestones, 
+        completedGoals, 
+        completedMilestones, 
+        colors, 
+        hasDuolingo: !!duolingoAccount, 
+        duolingoCompleted: !!duolingoCompletion, 
+        dailyMeals, 
+        availableRecipes 
+      };
     })(),
     allHabitsPromise,
     completionsPromise,
