@@ -125,15 +125,15 @@ function SignInContent() {
 
       {/* Right Side: Clean Login Form */}
       <section className="flex-1 flex flex-col items-center justify-center p-8 md:p-16 lg:p-24 bg-media-surface min-h-screen relative">
-        {/* Back Button Navigation */}
-        <div className="absolute top-8 left-8 lg:left-12">
-          <Link href={callbackUrl} className="flex items-center gap-2 text-media-on-surface-variant hover:text-media-primary transition-colors group">
-            <span className="material-symbols-outlined text-lg">arrow_back</span>
-            <span className="text-sm font-medium uppercase tracking-widest">Back</span>
-          </Link>
-        </div>
+        <div className="w-full max-w-md relative">
+          {/* Back Button Navigation */}
+          <div className="md:absolute md:-top-16 md:-left-16 lg:-left-24 mb-12 md:mb-0">
+            <Link href={callbackUrl} className="flex items-center gap-2 text-media-on-surface-variant hover:text-media-primary transition-colors group">
+              <span className="material-symbols-outlined text-lg">arrow_back</span>
+              <span className="text-sm font-medium uppercase tracking-widest">Back</span>
+            </Link>
+          </div>
 
-        <div className="w-full max-w-md">
           {/* Brand Anchor */}
           <div className="mb-16 flex justify-between items-center">
             <Link href="/" className="text-2xl font-bold tracking-tighter text-media-primary">

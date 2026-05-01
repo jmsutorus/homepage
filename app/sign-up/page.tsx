@@ -131,15 +131,15 @@ function SignUpContent() {
 
       {/* Split-Screen Form Section */}
       <section className="flex flex-1 flex-col items-center justify-center px-6 pb-12 pt-16 lg:px-24 bg-media-surface relative min-h-screen">
-        {/* Back Button Navigation */}
-        <div className="absolute top-8 left-8 lg:left-12">
-          <Link href={callbackUrl} className="flex items-center gap-2 text-media-on-surface-variant hover:text-media-primary transition-colors group">
-            <span className="material-symbols-outlined text-lg">arrow_back</span>
-            <span className="text-sm font-medium uppercase tracking-widest">Back</span>
-          </Link>
-        </div>
+        <div className="w-full max-w-[440px] relative">
+          {/* Back Button Navigation */}
+          <div className="md:absolute md:-top-16 md:-left-12 lg:-left-20 mb-8 md:mb-0">
+            <Link href={callbackUrl} className="flex items-center gap-2 text-media-on-surface-variant hover:text-media-primary transition-colors group">
+              <span className="material-symbols-outlined text-lg">arrow_back</span>
+              <span className="text-sm font-medium uppercase tracking-widest">Back</span>
+            </Link>
+          </div>
 
-        <div className="w-full max-w-[440px]">
           {/* Header */}
           <header className="mb-10">
             <h1 className="text-media-primary text-4xl font-bold leading-tight tracking-tighter mb-3">

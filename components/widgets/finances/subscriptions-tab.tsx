@@ -70,7 +70,7 @@ export function SubscriptionsTab({ subscriptions: subs }: SubscriptionsTabProps)
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start mt-8 pb-20">
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start mt-8">
       <section className="md:col-span-9 space-y-16">
         {/* Header Hero */}
         <div className="bg-media-surface-container-lowest p-12 rounded-[2.5rem] relative overflow-hidden flex flex-col md:flex-row justify-between items-center md:items-end gap-8 editorial-shadow">

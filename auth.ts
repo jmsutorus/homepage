@@ -50,15 +50,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const { queryOne, execute } = await import("@/lib/db");
           const { populateUserColorsFromDefaults } = await import("@/lib/db/calendar-colors");
 
-          const existingUser = await queryOne<{ id: string }>(
-            "SELECT id FROM user WHERE email = ?",
+          const existingUser = await queryOne<{ id: string; role: string }>(
+            `SELECT u.id, ur.role 
+             FROM user u 
+             LEFT JOIN user_roles ur ON u.id = ur.userId 
+             WHERE u.email = ?`,
             [firebaseUser.email]
           );
 
           let userId = firebaseUser.uid;
+          let role = "user";
 
           if (existingUser) {
             userId = existingUser.id;
+            role = existingUser.role || "user";
           } else {
             // Create user in database
             const now = Date.now();
@@ -98,6 +103,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: firebaseUser.displayName || null,
             image: firebaseUser.photoURL || null,
             emailVerified: firebaseUser.emailVerified ? new Date() : null,
+            role,
             idToken: credentials.idToken as string,
             refreshToken: credentials.refreshToken as string,
           };

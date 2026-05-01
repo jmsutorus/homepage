@@ -91,10 +91,10 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
           git clone https://x-access-token:${{ secrets.HUB_TOKEN }}@github.com/jmsutorus/earthbound_changelog.git hub
-          cp CHANGELOG.md hub/content/repos/earthbound_api/CHANGELOG.md
+          cp CHANGELOG.md hub/content/repos/homepage/CHANGELOG.md
           cd hub
           git add .
-          git commit -m "Update changelog for Earthbound API (v${{ steps.semantic.outputs.new_release_version }})"
+          git commit -m "Update changelog for Homepage (v${{ steps.semantic.outputs.new_release_version }})"
           git push
         env:
           HUB_TOKEN: ${{ secrets.HUB_TOKEN }}
