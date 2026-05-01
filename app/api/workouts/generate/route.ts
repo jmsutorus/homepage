@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuthApi } from "@/lib/auth/server";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import { env } from "@/lib/env";
+import { GoogleAuth } from 'google-auth-library';
+
+const googleAuth = new GoogleAuth();
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,11 +30,36 @@ export async function POST(request: NextRequest) {
     
     console.log(`Executing request targeting: ${targetUrl} with answers:`, answers);
 
+    const headers = new Headers({
+      "Content-Type": "application/json",
+    });
+
+    // 1. Add Google OIDC Token for Cloud Run IAM protection
+    // Only attempt OIDC auth if we're in a Cloud Run environment or production
+    const isCloudRun = !!process.env.K_SERVICE;
+    if (isProd || isCloudRun) {
+      try {
+        // baseUrl is the audience
+        const client = await googleAuth.getIdTokenClient(baseUrl);
+        const authHeaders = await client.getRequestHeaders(targetUrl);
+        const authValue = (authHeaders as Record<string, any>)['Authorization'];
+        if (authValue) {
+          headers.set("Authorization", authValue);
+        }
+      } catch (err) {
+        console.warn("Failed to get Google OIDC token for workout generation:", err);
+      }
+    }
+
+    // 2. Add Firebase ID Token for app-level authentication
+    const firebaseToken = (session.user as any).idToken;
+    if (firebaseToken) {
+      headers.set("x-firebase-id-token", firebaseToken);
+    }
+
     const response = await fetch(targetUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({ answers }),
     });
 

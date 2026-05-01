@@ -15,7 +15,7 @@ export function WorkoutEditorialCard({
   type = "other"
 }: { 
   title: string; 
-  distance?: number;
+  distance?: number | null;
   duration: number;
   type?: string;
 }) {

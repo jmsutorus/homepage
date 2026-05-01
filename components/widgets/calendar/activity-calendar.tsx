@@ -21,8 +21,9 @@ import { CompleteActivityModal } from "../exercise/complete-activity-modal";
 import type { WorkoutActivity } from "@/lib/db/workout-activities";
 
 interface Exercise {
-  description: string;
-  reps?: number;
+  name?: string;
+  description?: string;
+  reps?: number | string;
   sets?: number;
 }
 
@@ -91,9 +92,10 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated, initialActiviti
     }
   };
 
-  const parseExercises = (exercisesJson: string): Exercise[] => {
+  const parseExercises = (exercises: string | Exercise[]): Exercise[] => {
+    if (Array.isArray(exercises)) return exercises;
     try {
-      return JSON.parse(exercisesJson);
+      return JSON.parse(exercises);
     } catch {
       return [];
     }
@@ -339,7 +341,7 @@ export function ActivityCalendar({ onRefresh, onActivityUpdated, initialActiviti
                       <div className="space-y-1">
                         {exercises.map((exercise, idx) => (
                           <div key={idx} className="text-sm">
-                            • {exercise.description}
+                            • {exercise.name || exercise.description}
                             {exercise.sets && exercise.reps && (
                               <span className="text-muted-foreground ml-2">
                                 ({exercise.sets}x{exercise.reps})

@@ -62,8 +62,9 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
             : activity.exercises;
           
           exercises.forEach(ex => {
-            if (ex.weight && ex.weight > maxWeight) {
-              maxWeight = ex.weight;
+            const numericWeight = typeof ex.weight === 'string' ? parseFloat(ex.weight) : (ex.weight as any as number);
+            if (numericWeight && !isNaN(numericWeight) && numericWeight > maxWeight) {
+              maxWeight = numericWeight;
               isPR = true;
             }
           });
@@ -149,8 +150,12 @@ export function HistoryPageClient({ initialActivities }: HistoryPageClientProps)
           : activity.exercises;
         
         return exercises.reduce((acc, ex) => {
-          if (ex.weight && ex.sets && ex.reps) {
-            return acc + (ex.weight * ex.sets * ex.reps);
+          const w = typeof ex.weight === 'string' ? parseFloat(ex.weight) : (ex.weight as any as number);
+          const r = typeof ex.reps === 'string' ? parseFloat(ex.reps) : (ex.reps as any as number);
+          const s = ex.sets || 0;
+          
+          if (!isNaN(w) && !isNaN(r) && s > 0) {
+            return acc + (w * s * r);
           }
           return acc;
         }, 0);
