@@ -119,7 +119,7 @@ export function Header() {
               </Link>
             </Button>
             {isAuthenticated && user && (
-              <div className="flex items-center gap-3 bg-[#f4f3f1] dark:bg-[#1b3022]/40 px-3 py-1 rounded-full border border-outline-variant/30">
+              <div className="hidden md:flex items-center gap-3 bg-[#f4f3f1] dark:bg-[#1b3022]/40 px-3 py-1 rounded-full border border-outline-variant/30">
                  <div className="w-6 h-6 rounded-full border border-[#b4cdb8] bg-[#061b0e] flex items-center justify-center text-[#ffffff] overflow-hidden">
                     {user.image ? (
                       <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
@@ -133,7 +133,7 @@ export function Header() {
                   {(user as any).role === 'admin' ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors lg:hidden">
+                        <button className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors">
                           <span className="material-symbols-outlined text-sm block">settings</span>
                         </button>
                       </DropdownMenuTrigger>
@@ -153,7 +153,7 @@ export function Header() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   ) : (
-                    <Link href="/settings" className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors lg:hidden">
+                    <Link href="/settings" className="cursor-pointer p-0.5 hover:bg-[#efeeeb] dark:hover:bg-[#4d6453]/20 rounded-full transition-colors">
                       <span className="material-symbols-outlined text-sm block">settings</span>
                     </Link>
                   )}

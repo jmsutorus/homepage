@@ -16,7 +16,7 @@ export function MediaHero({ item }: MediaHeroProps) {
   const href = `/media/${directory}/${slug}`;
 
   return (
-    <section className="px-4 sm:px-8 mb-16 font-lexend">
+    <section className="hidden md:block px-4 sm:px-8 mb-16 font-lexend">
       <div className="relative w-full aspect-[21/9] rounded-3xl overflow-hidden group shadow-2xl border border-media-outline-variant/10">
         {/* Hero Background Image */}
         <img 

@@ -61,8 +61,20 @@ export async function earthboundFetch(path: string, options: RequestInit = {}) {
     headers.set("Content-Type", "application/json");
   }
 
-  return fetch(url, {
-    ...options,
-    headers,
-  });
+  try {
+    return await fetch(url, {
+      ...options,
+      headers,
+    });
+  } catch (err) {
+    console.error(`Earthbound fetch failed for ${url}:`, err);
+    // Return a synthetic response that mimics a failed fetch
+    return {
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error (Fetch Failed)",
+      json: async () => ({ error: "Fetch failed" }),
+      text: async () => "Fetch failed",
+    } as Response;
+  }
 }

@@ -214,7 +214,7 @@ export function MediaPageClient({
           {/* Hero Section */}
           {featuredItem && <MediaHero item={featuredItem} />}
 
-          <div className="px-4 sm:px-8 mt-12 pb-24">
+          <div className="px-4 sm:px-8 mt-4 md:mt-12 pb-24">
             {/* Active Journeys (In Progress) */}
             <MediaActiveJourneys items={inProgressMedia} />
 
