@@ -1,3 +1,48 @@
+# [1.22.0](https://github.com/jmsutorus/homepage/compare/v1.21.3...v1.22.0) (2026-05-01)
+
+
+### Bug Fixes
+
+* add env variables ([f3e1182](https://github.com/jmsutorus/homepage/commit/f3e1182f435978502101e1bbc0bad05355f9d138))
+* api migrated ([eb88488](https://github.com/jmsutorus/homepage/commit/eb88488a7346975844344a9ab3d1eed3a34f8b31))
+* bug fixes ([6b04e43](https://github.com/jmsutorus/homepage/commit/6b04e43189350d2896d79b0abcbb3b1c5b0b8009))
+* bug fixes ([e1f3bdc](https://github.com/jmsutorus/homepage/commit/e1f3bdc7a97dd4db20b773fe0f58a4645dce0e8d))
+* code cleanup ([1ae5108](https://github.com/jmsutorus/homepage/commit/1ae510865217356a3ab80f3cd0c6da0a5a3adda5))
+* env variables ([3abae1e](https://github.com/jmsutorus/homepage/commit/3abae1e43c8e120f1914212d4618e87023abe28a))
+* error catching ([b338015](https://github.com/jmsutorus/homepage/commit/b338015b0fcc58eb046503002debbad88abd3457))
+* function auth ([205a4a6](https://github.com/jmsutorus/homepage/commit/205a4a666dec4c8ba14e82ab7bf0fbd14c763251))
+* functions ([4773b94](https://github.com/jmsutorus/homepage/commit/4773b947ae0eeeadd902f41becd1eeb06bdd8cbc))
+* haptic feedback ([94e40c0](https://github.com/jmsutorus/homepage/commit/94e40c009c853f13c560a6bb13d050db6e4c0c01))
+* image upload bug ([2e1172b](https://github.com/jmsutorus/homepage/commit/2e1172ba97cc3d67cda27bd6a7c52c2ec3f69acc))
+* ios notif ([6869281](https://github.com/jmsutorus/homepage/commit/686928194521a4c716f51e784e9898962f7a8150))
+* media content ([390eb86](https://github.com/jmsutorus/homepage/commit/390eb866cb54a5dd2d7e62e3ec8cf543f43b574a))
+* mobile cleanup ([572fb03](https://github.com/jmsutorus/homepage/commit/572fb038b776f8fcaa453c04c0c1af743c0eb98a))
+* mobile modals ([62b7bfc](https://github.com/jmsutorus/homepage/commit/62b7bfc3d72a41bc01aa12a206d9172d54ca8d4d))
+* notif service ([d065fa0](https://github.com/jmsutorus/homepage/commit/d065fa008a10951f7643649e7dd6c87b26338e37))
+
+
+### Features
+
+* activity tracking ([bb46540](https://github.com/jmsutorus/homepage/commit/bb465408728e3a6c070832955f64e1571af2e976))
+* common dialog ([3e3f2dc](https://github.com/jmsutorus/homepage/commit/3e3f2dc5f39fd8a49fa887189a31e04b21b3ecaa))
+* curated bento ([764ceb5](https://github.com/jmsutorus/homepage/commit/764ceb514c84c1b8fd0431b876f87d5041438d8c))
+* email signup ([07bdb14](https://github.com/jmsutorus/homepage/commit/07bdb149261df8531fc55ba52d67b302d7f08c45))
+* empty states added ([3831584](https://github.com/jmsutorus/homepage/commit/3831584571e0fabb585a15507c15beba51b39d1b))
+* goal notifs added ([aedfe8e](https://github.com/jmsutorus/homepage/commit/aedfe8e5bbddc957848cbe261d6b7bebc05380cc))
+* heic photo uploads ([807a814](https://github.com/jmsutorus/homepage/commit/807a8149d5983fd8ff6c56dab5ec5dab058a92d5))
+* mobile support added ([6695223](https://github.com/jmsutorus/homepage/commit/6695223e5c21f301708b7b57c528efa39acc5097))
+* notification enhancement ([4c66752](https://github.com/jmsutorus/homepage/commit/4c667521e4f002b2f5d5c40cdc4c4d11ea67ea25))
+* notifications ([902cf18](https://github.com/jmsutorus/homepage/commit/902cf180cad329cc229725a6df7dc11a346da3a2))
+* Parks map added ([#95](https://github.com/jmsutorus/homepage/issues/95)) ([01150f7](https://github.com/jmsutorus/homepage/commit/01150f70afee508d069f17a60e05f15cf12187b5))
+* photos ([c279986](https://github.com/jmsutorus/homepage/commit/c27998671a7a2b8c74e59ea9e9bb08e45847d8c9))
+* redesign ([#97](https://github.com/jmsutorus/homepage/issues/97)) ([45e0390](https://github.com/jmsutorus/homepage/commit/45e03901b9ae966e8400e4c68c7f5669f97ec16c))
+* search modal enhancements ([74b7b38](https://github.com/jmsutorus/homepage/commit/74b7b3885e3f988dcb37344a4c807287b7629f68))
+* testing api server ([dd9852d](https://github.com/jmsutorus/homepage/commit/dd9852d1e47f231676b900ed5929bd2331326e44))
+* themes updated ([93e08e3](https://github.com/jmsutorus/homepage/commit/93e08e314d8cfefa8d71b2fa4acfbc0905450322))
+* User requests added ([#98](https://github.com/jmsutorus/homepage/issues/98)) ([4f80698](https://github.com/jmsutorus/homepage/commit/4f80698ed572d6269dda204da7c1fdd06613900a))
+* workout generation ([1578860](https://github.com/jmsutorus/homepage/commit/15788608ded0dfb3e51a3dfa15feee1cb672362d))
+* workout rework ([beb50dc](https://github.com/jmsutorus/homepage/commit/beb50dc169597d796c77035a5e21feb79624576a))
+
 # [1.22.0](https://github.com/jmsutorus/homepage/compare/v1.21.3...v1.22.0) (2026-04-30)
 
 
