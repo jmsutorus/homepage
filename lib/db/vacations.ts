@@ -492,13 +492,14 @@ export async function deleteVacationPhoto(
 /**
  * Add a person to a vacation
  */
-export async function createVacationPerson(
+export async function addPersonToVacation(
   vacationId: number,
-  data: { name: string; role?: string; userId?: string }
+  personId: number,
+  userId: string
 ): Promise<VacationPerson> {
-  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/people`, {
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/people?userId=${userId}`, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({ personId }),
   });
 
   if (!res.ok) {
@@ -506,6 +507,19 @@ export async function createVacationPerson(
   }
 
   return await res.json();
+}
+
+/**
+ * Check if a person is already on a vacation
+ */
+export async function isPersonOnVacation(
+  vacationId: number,
+  personId: number
+): Promise<boolean> {
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/people/${personId}/check`);
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.exists;
 }
 
 /**
@@ -520,11 +534,12 @@ export async function getVacationPeople(vacationId: number): Promise<VacationPer
 /**
  * Remove a person from a vacation
  */
-export async function deleteVacationPerson(
+export async function removePersonFromVacation(
   id: number,
-  vacationId: number
+  vacationId: number,
+  userId: string
 ): Promise<boolean> {
-  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/people/${id}`, {
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/people/${id}?userId=${userId}`, {
     method: 'DELETE',
   });
 
