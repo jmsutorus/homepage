@@ -1,72 +1,29 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+"use client";
 
-export default function MealDetailLoading() {
+import { TreeRingLoader } from "@/components/ui/tree-ring-loader";
+
+export default function Loading() {
   return (
-    <div className="min-h-screen">
-      {/* Hero Banner Skeleton */}
-      <div className="relative h-48 sm:h-64 md:h-80 bg-muted" />
+    <div className="min-h-[70vh] w-full flex flex-col items-center justify-center gap-8 p-6">
+      <TreeRingLoader size={120} />
+      
+      <div className="flex flex-col items-center text-center gap-3 max-w-xs">
+        <h2 className="text-2xl font-bold font-lexend text-media-primary tracking-tight">
+          Consulting the menu
+        </h2>
+        <p className="text-media-on-surface-variant text-base leading-relaxed opacity-70">
+          Gathering local flavors and recipes...
+        </p>
+      </div>
 
-      {/* Content */}
-      <div className="container mx-auto px-4 -mt-16 relative z-10 pb-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Title Card Skeleton */}
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-4 w-full max-w-md" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-5 w-16" />
-                  <Skeleton className="h-5 w-16" />
-                </div>
-              </div>
-              <div className="flex gap-4 mt-6 pt-4 border-t">
-                <Skeleton className="h-5 w-24" />
-                <Skeleton className="h-5 w-24" />
-                <Skeleton className="h-5 w-24" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Two Column Skeleton */}
-          <div className="grid md:grid-cols-5 gap-6">
-            <div className="md:col-span-2">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-24" />
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-5/6" />
-                  <Skeleton className="h-4 w-2/3" />
-                </CardContent>
-              </Card>
-            </div>
-            <div className="md:col-span-3">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-28" />
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex gap-4">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <Skeleton className="h-16 flex-1" />
-                  </div>
-                  <div className="flex gap-4">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <Skeleton className="h-16 flex-1" />
-                  </div>
-                  <div className="flex gap-4">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <Skeleton className="h-16 flex-1" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
+      <div className="flex items-center gap-1.5 pt-4">
+        {[0, 1, 2].map((i) => (
+          <div 
+            key={i} 
+            className="size-1.5 rounded-full bg-media-secondary/40 animate-pulse"
+            style={{ animationDelay: `${i * 0.2}s` }}
+          />
+        ))}
       </div>
     </div>
   );

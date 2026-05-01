@@ -1,56 +1,29 @@
-import { Skeleton } from "@/components/ui/skeleton";
+"use client";
+
+import { TreeRingLoader } from "@/components/ui/tree-ring-loader";
 
 export default function Loading() {
   return (
-    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-4xl">
-      {/* Header Skeleton */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-        <div>
-          <Skeleton className="h-8 w-32 mb-2" />
-          <Skeleton className="h-5 w-64" />
-        </div>
-        <Skeleton className="h-10 w-32" />
+    <div className="min-h-[70vh] w-full flex flex-col items-center justify-center gap-8 p-6">
+      <TreeRingLoader size={120} />
+      
+      <div className="flex flex-col items-center text-center gap-3 max-w-xs">
+        <h2 className="text-2xl font-bold font-lexend text-media-primary tracking-tight">
+          Charting the course
+        </h2>
+        <p className="text-media-on-surface-variant text-base leading-relaxed opacity-70">
+          Mapping out your progress and intentions...
+        </p>
       </div>
 
-      <div className="space-y-4 sm:space-y-6">
-        {/* Filters Skeleton */}
-        <div className="flex gap-2">
-          <Skeleton className="h-10 w-32" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-
-        {/* Goals List Skeleton */}
-        <div className="space-y-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="rounded-lg border bg-card p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="space-y-2 w-full">
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-5 w-16 rounded-full" />
-                  </div>
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
-                <Skeleton className="h-8 w-8" />
-              </div>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <Skeleton className="h-4 w-12" />
-                    <Skeleton className="h-4 w-8" />
-                  </div>
-                  <Skeleton className="h-2 w-full rounded-full" />
-                </div>
-                
-                <div className="flex gap-4">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="flex items-center gap-1.5 pt-4">
+        {[0, 1, 2].map((i) => (
+          <div 
+            key={i} 
+            className="size-1.5 rounded-full bg-media-secondary/40 animate-pulse"
+            style={{ animationDelay: `${i * 0.2}s` }}
+          />
+        ))}
       </div>
     </div>
   );

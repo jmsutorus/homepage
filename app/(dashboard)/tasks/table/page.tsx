@@ -2,6 +2,7 @@ import { TasksTableClient } from "./table-client";
 import { getAllTasks, getAllTaskCategories, getCustomTaskStatuses } from "@/lib/db/tasks";
 import { getUserId } from "@/lib/auth/server";
 import { Suspense } from "react";
+import { TreeRingLoader } from "@/components/ui/tree-ring-loader";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +17,9 @@ export default async function TasksTablePage() {
 
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center py-20 font-lexend text-media-on-surface-variant">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-media-primary mr-3"></div>
-        Loading database...
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <TreeRingLoader size={80} />
+        <p className="text-media-on-surface-variant font-lexend text-sm animate-pulse">Accessing the task ledger...</p>
       </div>
     }>
       <TasksTableClient 

@@ -1,51 +1,29 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+"use client";
 
-export default function VacationDetailLoading() {
+import { TreeRingLoader } from "@/components/ui/tree-ring-loader";
+
+export default function Loading() {
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <Skeleton className="h-10 w-40" />
-
-      {/* Header */}
-      <div className="flex justify-between items-start gap-4">
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-10 w-96" />
-          <Skeleton className="h-6 w-64" />
-        </div>
-        <Skeleton className="h-10 w-24" />
+    <div className="min-h-[70vh] w-full flex flex-col items-center justify-center gap-8 p-6">
+      <TreeRingLoader size={120} />
+      
+      <div className="flex flex-col items-center text-center gap-3 max-w-xs">
+        <h2 className="text-2xl font-bold font-lexend text-media-primary tracking-tight">
+          Planning the escape
+        </h2>
+        <p className="text-media-on-surface-variant text-base leading-relaxed opacity-70">
+          Preparing your itinerary and maps...
+        </p>
       </div>
 
-      {/* Poster */}
-      <Skeleton className="h-96 w-full rounded-lg" />
-
-      {/* Tabs */}
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-full" />
-
-        {/* Content */}
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-4 w-20" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-16 mb-2" />
-                <Skeleton className="h-3 w-24" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-32 w-full" />
-          </CardContent>
-        </Card>
+      <div className="flex items-center gap-1.5 pt-4">
+        {[0, 1, 2].map((i) => (
+          <div 
+            key={i} 
+            className="size-1.5 rounded-full bg-media-secondary/40 animate-pulse"
+            style={{ animationDelay: `${i * 0.2}s` }}
+          />
+        ))}
       </div>
     </div>
   );

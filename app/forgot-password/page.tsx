@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import Link from "next/link";
+import { TreeRingLoader } from "@/components/ui/tree-ring-loader";
 
 function ForgotPasswordContent() {
   const [email, setEmail] = useState("");
@@ -163,7 +164,7 @@ function ForgotPasswordContent() {
 
 export default function ForgotPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-media-surface flex items-center justify-center font-lexend text-media-primary">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-media-surface flex items-center justify-center"><TreeRingLoader size={80} /></div>}>
       <ForgotPasswordContent />
     </Suspense>
   );

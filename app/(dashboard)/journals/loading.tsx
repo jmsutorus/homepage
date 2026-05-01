@@ -1,44 +1,28 @@
-import { Skeleton } from "@/components/ui/skeleton";
+"use client";
+
+import { TreeRingLoader } from "@/components/ui/tree-ring-loader";
 
 export default function Loading() {
   return (
-    <div className="container mx-auto py-4 sm:py-8 px-4 max-w-7xl">
-      {/* Header Skeleton */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-        <div>
-          <Skeleton className="h-8 w-32 mb-2" />
-          <Skeleton className="h-5 w-64" />
-        </div>
-        <Skeleton className="h-10 w-32" />
+    <div className="min-h-[70vh] w-full flex flex-col items-center justify-center gap-8 p-6">
+      <TreeRingLoader size={120} />
+      
+      <div className="flex flex-col items-center text-center gap-3 max-w-xs">
+        <h2 className="text-2xl font-bold font-lexend text-media-primary tracking-tight">
+          Opening the journal
+        </h2>
+        <p className="text-media-on-surface-variant text-base leading-relaxed opacity-70">
+          Recalling your personal narratives...
+        </p>
       </div>
 
-      {/* Stats Skeleton */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4 mb-6 sm:mb-8">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="p-3 sm:p-4 rounded-lg border bg-card">
-            <Skeleton className="h-4 w-24 mb-2" />
-            <Skeleton className="h-8 w-12" />
-          </div>
-        ))}
-      </div>
-
-      {/* Journals Grid Skeleton */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-lg border bg-card p-6 space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between items-start">
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-5 w-5 rounded-full" />
-              </div>
-              <Skeleton className="h-4 w-1/3" />
-            </div>
-            <Skeleton className="h-20 w-full" />
-            <div className="flex gap-2">
-              <Skeleton className="h-5 w-16 rounded-full" />
-              <Skeleton className="h-5 w-16 rounded-full" />
-            </div>
-          </div>
+      <div className="flex items-center gap-1.5 pt-4">
+        {[0, 1, 2].map((i) => (
+          <div 
+            key={i} 
+            className="size-1.5 rounded-full bg-media-secondary/40 animate-pulse"
+            style={{ animationDelay: `${i * 0.2}s` }}
+          />
         ))}
       </div>
     </div>
