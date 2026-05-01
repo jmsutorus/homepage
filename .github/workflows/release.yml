@@ -1,5 +1,8 @@
 name: Release
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -16,7 +19,7 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     environment: prod
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,6 +36,18 @@ jobs:
         run: |
           echo "Triggering Firebase App Hosting deployment..."
           firebase apphosting:rollouts:create homepage --project homepage-7cfc8 --git-branch main --force
+
+      - name: Sync Changelog
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'changelog_sync.yml',
+              ref: 'main'
+            })
 
   release:
     name: Release
@@ -74,24 +89,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Release (Create release commits on main)
+      - name: Release (Create GitHub release)
         id: semantic
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Sync Changelog
-        if: steps.semantic.outputs.new_release_published == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'changelog_sync.yml',
-              ref: 'main'
-            })
 
       # - name: Create and Push Release Branch
       #   if: github.event_name == 'workflow_dispatch'
