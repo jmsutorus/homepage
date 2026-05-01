@@ -1,4 +1,4 @@
-import { execute, query, queryOne } from "./index";
+import { earthboundFetch } from "../api/earthbound";
 
 import {
   type QuickLinkCategory,
@@ -16,26 +16,9 @@ export type {
  * Get all categories with their links for a user
  */
 export async function getUserQuickLinks(userId: string): Promise<QuickLinkCategoryWithLinks[]> {
-  const categories = await query<QuickLinkCategory>(
-    `SELECT * FROM quick_link_categories
-     WHERE userId = ?
-     ORDER by order_index ASC`,
-    [userId]
-  );
-
-  return Promise.all(categories.map(async (category) => {
-    const links = await query<QuickLink>(
-      `SELECT * FROM quick_links
-       WHERE category_id = ? AND userId = ?
-       ORDER BY order_index ASC`,
-      [category.id, userId]
-    );
-
-    return {
-      ...category,
-      links,
-    };
-  }));
+  const res = await earthboundFetch(`/api/quick-links?userId=${userId}`);
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 /**
@@ -46,36 +29,25 @@ export async function createCategory(
   name: string,
   orderIndex?: number
 ): Promise<QuickLinkCategory> {
-  // If no order specified, add to end
-  if (orderIndex === undefined) {
-    const maxOrder = await queryOne<{ max_order: number }>(
-      "SELECT COALESCE(MAX(order_index), -1) as max_order FROM quick_link_categories WHERE userId = ?",
-      [userId]
-    );
-    orderIndex = (maxOrder?.max_order ?? -1) + 1;
-  }
+  const res = await earthboundFetch(`/api/quick-links/category?userId=${userId}`, {
+    method: 'POST',
+    body: JSON.stringify({ name, order_index: orderIndex }),
+  });
 
-  const result = await execute(
-    "INSERT INTO quick_link_categories (userId, name, order_index) VALUES (?, ?, ?)",
-    [userId, name, orderIndex]
-  );
-
-  const category = await getCategoryById(Number(result.lastInsertRowid), userId);
-  if (!category) {
+  if (!res.ok) {
     throw new Error("Failed to create category");
   }
 
-  return category;
+  return await res.json();
 }
 
 /**
  * Get category by ID
  */
 export async function getCategoryById(id: number, userId: string): Promise<QuickLinkCategory | undefined> {
-  return await queryOne<QuickLinkCategory>(
-    "SELECT * FROM quick_link_categories WHERE id = ? AND userId = ?",
-    [id, userId]
-  );
+  const res = await earthboundFetch(`/api/quick-links/category/${id}?userId=${userId}`);
+  if (!res.ok) return undefined;
+  return await res.json();
 }
 
 /**
@@ -86,51 +58,40 @@ export async function updateCategory(
   userId: string,
   updates: Partial<Pick<QuickLinkCategory, "name" | "order_index">>
 ): Promise<boolean> {
-  const fields: string[] = [];
-  const params: unknown[] = [];
+  const res = await earthboundFetch(`/api/quick-links/category/${id}?userId=${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
 
-  if (updates.name !== undefined) {
-    fields.push("name = ?");
-    params.push(updates.name);
-  }
-
-  if (updates.order_index !== undefined) {
-    fields.push("order_index = ?");
-    params.push(updates.order_index);
-  }
-
-  if (fields.length === 0) {
-    return false;
-  }
-
-  params.push(id, userId);
-  const sql = `UPDATE quick_link_categories SET ${fields.join(", ")} WHERE id = ? AND userId = ?`;
-  const result = await execute(sql, params);
-
-  return result.changes > 0;
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.success;
 }
 
 /**
  * Delete category and all its links
  */
 export async function deleteCategory(id: number, userId: string): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM quick_link_categories WHERE id = ? AND userId = ?",
-    [id, userId]
-  );
-  return result.changes > 0;
+  const res = await earthboundFetch(`/api/quick-links/category/${id}?userId=${userId}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.success;
 }
 
 /**
  * Reorder categories
  */
 export async function reorderCategories(userId: string, categoryIds: number[]): Promise<void> {
-  // Execute updates sequentially
-  for (let index = 0; index < categoryIds.length; index++) {
-    await execute(
-      "UPDATE quick_link_categories SET order_index = ? WHERE id = ? AND userId = ?",
-      [index, categoryIds[index], userId]
-    );
+  const res = await earthboundFetch(`/api/quick-links/category/reorder?userId=${userId}`, {
+    method: 'POST',
+    body: JSON.stringify({ categoryIds }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to reorder categories");
   }
 }
 
@@ -145,36 +106,25 @@ export async function createLink(
   icon: string = "link",
   orderIndex?: number
 ): Promise<QuickLink> {
-  // If no order specified, add to end of category
-  if (orderIndex === undefined) {
-    const maxOrder = await queryOne<{ max_order: number }>(
-      "SELECT COALESCE(MAX(order_index), -1) as max_order FROM quick_links WHERE category_id = ? AND userId = ?",
-      [categoryId, userId]
-    );
-    orderIndex = (maxOrder?.max_order ?? -1) + 1;
-  }
+  const res = await earthboundFetch(`/api/quick-links/link?userId=${userId}`, {
+    method: 'POST',
+    body: JSON.stringify({ category_id: categoryId, title, url, icon, order_index: orderIndex }),
+  });
 
-  const result = await execute(
-    "INSERT INTO quick_links (userId, category_id, title, url, icon, order_index) VALUES (?, ?, ?, ?, ?, ?)",
-    [userId, categoryId, title, url, icon, orderIndex]
-  );
-
-  const link = await getLinkById(Number(result.lastInsertRowid), userId);
-  if (!link) {
+  if (!res.ok) {
     throw new Error("Failed to create link");
   }
 
-  return link;
+  return await res.json();
 }
 
 /**
  * Get link by ID
  */
 export async function getLinkById(id: number, userId: string): Promise<QuickLink | undefined> {
-  return await queryOne<QuickLink>(
-    "SELECT * FROM quick_links WHERE id = ? AND userId = ?",
-    [id, userId]
-  );
+  const res = await earthboundFetch(`/api/quick-links/link/${id}?userId=${userId}`);
+  if (!res.ok) return undefined;
+  return await res.json();
 }
 
 /**
@@ -185,66 +135,40 @@ export async function updateLink(
   userId: string,
   updates: Partial<Pick<QuickLink, "title" | "url" | "icon" | "order_index" | "category_id">>
 ): Promise<boolean> {
-  const fields: string[] = [];
-  const params: unknown[] = [];
+  const res = await earthboundFetch(`/api/quick-links/link/${id}?userId=${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
 
-  if (updates.title !== undefined) {
-    fields.push("title = ?");
-    params.push(updates.title);
-  }
-
-  if (updates.url !== undefined) {
-    fields.push("url = ?");
-    params.push(updates.url);
-  }
-
-  if (updates.icon !== undefined) {
-    fields.push("icon = ?");
-    params.push(updates.icon);
-  }
-
-  if (updates.order_index !== undefined) {
-    fields.push("order_index = ?");
-    params.push(updates.order_index);
-  }
-
-  if (updates.category_id !== undefined) {
-    fields.push("category_id = ?");
-    params.push(updates.category_id);
-  }
-
-  if (fields.length === 0) {
-    return false;
-  }
-
-  params.push(id, userId);
-  const sql = `UPDATE quick_links SET ${fields.join(", ")} WHERE id = ? AND userId = ?`;
-  const result = await execute(sql, params);
-
-  return result.changes > 0;
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.success;
 }
 
 /**
  * Delete link
  */
 export async function deleteLink(id: number, userId: string): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM quick_links WHERE id = ? AND userId = ?",
-    [id, userId]
-  );
-  return result.changes > 0;
+  const res = await earthboundFetch(`/api/quick-links/link/${id}?userId=${userId}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.success;
 }
 
 /**
  * Reorder links within a category
  */
 export async function reorderLinks(userId: string, categoryId: number, linkIds: number[]): Promise<void> {
-  // Execute updates sequentially
-  for (let index = 0; index < linkIds.length; index++) {
-    await execute(
-      "UPDATE quick_links SET order_index = ? WHERE id = ? AND userId = ? AND category_id = ?",
-      [index, linkIds[index], userId, categoryId]
-    );
+  const res = await earthboundFetch(`/api/quick-links/link/reorder?userId=${userId}`, {
+    method: 'POST',
+    body: JSON.stringify({ categoryId, linkIds }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to reorder links");
   }
 }
 
@@ -252,29 +176,11 @@ export async function reorderLinks(userId: string, categoryId: number, linkIds: 
  * Initialize default quick links for a new user
  */
 export async function initializeDefaultQuickLinks(userId: string): Promise<void> {
-  // Create Development category
-  const devCat = await createCategory(userId, "Development", 0);
-  await createLink(userId, devCat.id, "GitHub", "https://github.com", "github", 0);
-  await createLink(userId, devCat.id, "Stack Overflow", "https://stackoverflow.com", "layers", 1);
-  await createLink(userId, devCat.id, "MDN Web Docs", "https://developer.mozilla.org", "book-open", 2);
-  await createLink(userId, devCat.id, "npm", "https://www.npmjs.com", "package", 3);
+  const res = await earthboundFetch(`/api/quick-links/initialize?userId=${userId}`, {
+    method: 'POST',
+  });
 
-  // Create Social category
-  const socialCat = await createCategory(userId, "Social", 1);
-  await createLink(userId, socialCat.id, "Twitter/X", "https://twitter.com", "twitter", 0);
-  await createLink(userId, socialCat.id, "Reddit", "https://reddit.com", "message-circle", 1);
-  await createLink(userId, socialCat.id, "LinkedIn", "https://linkedin.com", "linkedin", 2);
-
-  // Create Tools category
-  const toolsCat = await createCategory(userId, "Tools", 2);
-  await createLink(userId, toolsCat.id, "ChatGPT", "https://chat.openai.com", "bot", 0);
-  await createLink(userId, toolsCat.id, "Claude", "https://claude.ai", "sparkles", 1);
-  await createLink(userId, toolsCat.id, "Figma", "https://figma.com", "figma", 2);
-  await createLink(userId, toolsCat.id, "Vercel", "https://vercel.com", "triangle", 3);
-
-  // Create Entertainment category
-  const entertainmentCat = await createCategory(userId, "Entertainment", 3);
-  await createLink(userId, entertainmentCat.id, "YouTube", "https://youtube.com", "youtube", 0);
-  await createLink(userId, entertainmentCat.id, "Netflix", "https://netflix.com", "tv", 1);
-  await createLink(userId, entertainmentCat.id, "Spotify", "https://spotify.com", "music", 2);
+  if (!res.ok) {
+    throw new Error("Failed to initialize default quick links");
+  }
 }

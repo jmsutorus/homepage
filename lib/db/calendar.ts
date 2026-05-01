@@ -18,6 +18,7 @@ import { getDailyMealsForRange } from "./daily-meals";
 import type { Vacation, ItineraryDay, Booking } from "@/lib/types/vacations";
 import { parseLocalDate } from "@/lib/types/vacations";
 import { getHolidaysForMonthComputed } from "./holidays";
+import { getDrinkLogsInRange } from "./drinks";
 import type { RestaurantVisit } from "./restaurants";
 import type { DrinkLog } from "./drinks";
 
@@ -560,25 +561,6 @@ export async function getRestaurantVisitsInRange(
   return rows;
 }
 
-/**
- * Get drink logs in a date range
- */
-export async function getDrinkLogsInRange(
-  startDate: string,
-  endDate: string,
-  userId: string
-): Promise<CalendarDrinkLog[]> {
-  const rows = await query<CalendarDrinkLog>(
-    `SELECT dl.*, d.name as drinkName, d.slug as drinkSlug, d.type as drinkType, d.producer as drinkProducer
-    FROM drink_logs dl
-    JOIN drinks d ON d.id = dl.drinkId
-    WHERE dl.date BETWEEN ? AND ?
-    AND dl.userId = ?
-    ORDER BY dl.date ASC`,
-    [startDate, endDate, userId]
-  );
-  return rows;
-}
 
 
 /**

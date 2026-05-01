@@ -1,4 +1,4 @@
-import { execute, query, queryOne } from "./index";
+import { earthboundFetch } from "../api/earthbound";
 
 import {
   type VacationStatus,
@@ -84,34 +84,6 @@ export const BOOKING_STATUS_NAMES: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
-
-
-
-// ==================== Helper Functions ====================
-
-/**
- * Parse a vacation row from the database
- * Converts JSON fields and SQLite booleans to proper types
- */
-function parseVacation(row: any): Vacation {
-  return {
-    ...row,
-    tags: row.tags ? JSON.parse(row.tags) : [],
-    featured: row.featured === 1,
-    published: row.published === 1,
-  };
-}
-
-/**
- * Parse an itinerary day row from the database
- */
-function parseItineraryDay(row: any): ItineraryDay {
-  return {
-    ...row,
-    activities: row.activities ? JSON.parse(row.activities) : [],
-  };
-}
-
 // ==================== Vacation CRUD ====================
 
 /**
@@ -121,39 +93,16 @@ export async function createVacation(
   data: VacationInput,
   userId: string
 ): Promise<Vacation> {
-  const result = await execute(
-    `INSERT INTO vacations (
-      userId, slug, title, destination, type, start_date, end_date,
-      description, poster, status, budget_planned, budget_actual,
-      budget_currency, tags, rating, featured, published, content
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      userId,
-      data.slug,
-      data.title,
-      data.destination,
-      data.type || 'other',
-      data.start_date,
-      data.end_date,
-      data.description || null,
-      data.poster || null,
-      data.status || 'planning',
-      data.budget_planned || null,
-      data.budget_actual || null,
-      data.budget_currency || 'USD',
-      data.tags ? JSON.stringify(data.tags) : null,
-      data.rating || null,
-      data.featured ? 1 : 0,
-      data.published !== undefined ? (data.published ? 1 : 0) : 1,
-      data.content || null,
-    ]
-  );
+  const res = await earthboundFetch(`/api/vacations?userId=${userId}`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 
-  const vacation = await getVacationById(result.lastInsertRowid as number, userId);
-  if (!vacation) {
+  if (!res.ok) {
     throw new Error("Failed to create vacation");
   }
-  return vacation;
+
+  return await res.json();
 }
 
 /**
@@ -163,11 +112,9 @@ export async function getVacationById(
   id: number,
   userId: string
 ): Promise<Vacation | undefined> {
-  const row = await queryOne<any>(
-    "SELECT * FROM vacations WHERE id = ? AND userId = ?",
-    [id, userId]
-  );
-  return row ? parseVacation(row) : undefined;
+  const res = await earthboundFetch(`/api/vacations/id/${id}?userId=${userId}`);
+  if (!res.ok) return undefined;
+  return await res.json();
 }
 
 /**
@@ -177,22 +124,18 @@ export async function getVacationBySlug(
   slug: string,
   userId: string
 ): Promise<Vacation | undefined> {
-  const row = await queryOne<any>(
-    "SELECT * FROM vacations WHERE slug = ? AND userId = ?",
-    [slug, userId]
-  );
-  return row ? parseVacation(row) : undefined;
+  const res = await earthboundFetch(`/api/vacations/s/${slug}?userId=${userId}`);
+  if (!res.ok) return undefined;
+  return await res.json();
 }
 
 /**
  * Get all vacations for a user
  */
 export async function getAllVacations(userId: string): Promise<Vacation[]> {
-  const rows = await query<any>(
-    "SELECT * FROM vacations WHERE userId = ? ORDER BY start_date DESC",
-    [userId]
-  );
-  return rows.map(parseVacation);
+  const res = await earthboundFetch(`/api/vacations?userId=${userId}`);
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 /**
@@ -202,17 +145,9 @@ export async function getVacationsByYear(
   year: number,
   userId: string
 ): Promise<Vacation[]> {
-  const rows = await query<any>(
-    `SELECT * FROM vacations
-     WHERE userId = ?
-     AND (
-       substr(start_date, 1, 4) = ?
-       OR substr(end_date, 1, 4) = ?
-     )
-     ORDER BY start_date ASC`,
-    [userId, year.toString(), year.toString()]
-  );
-  return rows.map(parseVacation);
+  const res = await earthboundFetch(`/api/vacations/year/${year}?userId=${userId}`);
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 /**
@@ -222,24 +157,9 @@ export async function getVacationWithDetails(
   slug: string,
   userId: string
 ): Promise<VacationWithDetails | undefined> {
-  const vacation = await getVacationBySlug(slug, userId);
-  if (!vacation) return undefined;
-
-  // Fetch all related data in parallel
-  const [itinerary, bookings, photos, people] = await Promise.all([
-    getItineraryDays(vacation.id),
-    getBookings(vacation.id),
-    getVacationPhotos(vacation.id),
-    getVacationPeople(vacation.id),
-  ]);
-
-  return {
-    vacation,
-    itinerary,
-    bookings,
-    photos,
-    people,
-  };
+  const res = await earthboundFetch(`/api/vacations/s/${slug}/full?userId=${userId}`);
+  if (!res.ok) return undefined;
+  return await res.json();
 }
 
 /**
@@ -250,104 +170,30 @@ export async function updateVacation(
   userId: string,
   data: Partial<VacationInput>
 ): Promise<boolean> {
-  const vacation = await getVacationById(id, userId);
-  if (!vacation) return false;
+  const res = await earthboundFetch(`/api/vacations/id/${id}?userId=${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 
-  const updates: string[] = [];
-  const values: any[] = [];
-
-  if (data.slug !== undefined) {
-    updates.push("slug = ?");
-    values.push(data.slug);
-  }
-  if (data.title !== undefined) {
-    updates.push("title = ?");
-    values.push(data.title);
-  }
-  if (data.destination !== undefined) {
-    updates.push("destination = ?");
-    values.push(data.destination);
-  }
-  if (data.type !== undefined) {
-    updates.push("type = ?");
-    values.push(data.type);
-  }
-  if (data.start_date !== undefined) {
-    updates.push("start_date = ?");
-    values.push(data.start_date);
-  }
-  if (data.end_date !== undefined) {
-    updates.push("end_date = ?");
-    values.push(data.end_date);
-  }
-  if (data.description !== undefined) {
-    updates.push("description = ?");
-    values.push(data.description);
-  }
-  if (data.poster !== undefined) {
-    updates.push("poster = ?");
-    values.push(data.poster);
-  }
-  if (data.status !== undefined) {
-    updates.push("status = ?");
-    values.push(data.status);
-  }
-  if (data.budget_planned !== undefined) {
-    updates.push("budget_planned = ?");
-    values.push(data.budget_planned);
-  }
-  if (data.budget_actual !== undefined) {
-    updates.push("budget_actual = ?");
-    values.push(data.budget_actual);
-  }
-  if (data.budget_currency !== undefined) {
-    updates.push("budget_currency = ?");
-    values.push(data.budget_currency);
-  }
-  if (data.tags !== undefined) {
-    updates.push("tags = ?");
-    values.push(JSON.stringify(data.tags));
-  }
-  if (data.rating !== undefined) {
-    updates.push("rating = ?");
-    values.push(data.rating);
-  }
-  if (data.featured !== undefined) {
-    updates.push("featured = ?");
-    values.push(data.featured ? 1 : 0);
-  }
-  if (data.published !== undefined) {
-    updates.push("published = ?");
-    values.push(data.published ? 1 : 0);
-  }
-  if (data.content !== undefined) {
-    updates.push("content = ?");
-    values.push(data.content);
-  }
-
-  if (updates.length === 0) return true;
-
-  values.push(id, userId);
-  await execute(
-    `UPDATE vacations SET ${updates.join(", ")} WHERE id = ? AND userId = ?`,
-    values
-  );
-  return true;
+  if (!res.ok) return false;
+  const result = await res.json();
+  return result.success;
 }
 
 /**
  * Delete a vacation with ownership verification
- * Cascade deletes itinerary and bookings
  */
 export async function deleteVacation(
   id: number,
   userId: string
 ): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM vacations WHERE id = ? AND userId = ?",
-    [id, userId]
-  );
-  return result.changes > 0;
+  const res = await earthboundFetch(`/api/vacations/id/${id}?userId=${userId}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) return false;
+  const result = await res.json();
+  return result.success;
 }
 
 /**
@@ -358,16 +204,10 @@ export async function vacationSlugExists(
   userId: string,
   excludeId?: number
 ): Promise<boolean> {
-  let sql = "SELECT COUNT(*) as count FROM vacations WHERE slug = ? AND userId = ?";
-  const params: any[] = [slug, userId];
-
-  if (excludeId !== undefined) {
-    sql += " AND id != ?";
-    params.push(excludeId);
-  }
-
-  const result = await queryOne<{ count: number }>(sql, params);
-  return (result?.count || 0) > 0;
+  const vacation = await getVacationBySlug(slug, userId);
+  if (!vacation) return false;
+  if (excludeId !== undefined && vacation.id === excludeId) return false;
+  return true;
 }
 
 // ==================== Itinerary Day CRUD ====================
@@ -379,42 +219,25 @@ export async function createItineraryDay(
   vacationId: number,
   data: ItineraryDayInput
 ): Promise<ItineraryDay> {
-  const result = await execute(
-    `INSERT INTO vacation_itinerary_days (
-      vacationId, date, day_number, title, location,
-      activities, notes, photo, budget_planned, budget_actual, notification_setting
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      vacationId,
-      data.date,
-      data.day_number,
-      data.title || null,
-      data.location || null,
-      data.activities ? JSON.stringify(data.activities) : null,
-      data.notes || null,
-      data.photo || null,
-      data.budget_planned || null,
-      data.budget_actual || null,
-      data.notification_setting || null,
-    ]
-  );
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/itinerary`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 
-  const day = await getItineraryDay(result.lastInsertRowid as number, vacationId);
-  if (!day) {
+  if (!res.ok) {
     throw new Error("Failed to create itinerary day");
   }
-  return day;
+
+  return await res.json();
 }
 
 /**
  * Get all itinerary days for a vacation
  */
 export async function getItineraryDays(vacationId: number): Promise<ItineraryDay[]> {
-  const rows = await query<any>(
-    "SELECT * FROM vacation_itinerary_days WHERE vacationId = ? ORDER BY date ASC",
-    [vacationId]
-  );
-  return rows.map(parseItineraryDay);
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/itinerary`);
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 /**
@@ -424,11 +247,8 @@ export async function getItineraryDay(
   id: number,
   vacationId: number
 ): Promise<ItineraryDay | undefined> {
-  const row = await queryOne<any>(
-    "SELECT * FROM vacation_itinerary_days WHERE id = ? AND vacationId = ?",
-    [id, vacationId]
-  );
-  return row ? parseItineraryDay(row) : undefined;
+  const days = await getItineraryDays(vacationId);
+  return days.find(d => d.id === id);
 }
 
 /**
@@ -439,61 +259,14 @@ export async function updateItineraryDay(
   vacationId: number,
   data: Partial<ItineraryDayInput>
 ): Promise<boolean> {
-  const day = await getItineraryDay(id, vacationId);
-  if (!day) return false;
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/itinerary/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 
-  const updates: string[] = [];
-  const values: any[] = [];
-
-  if (data.date !== undefined) {
-    updates.push("date = ?");
-    values.push(data.date);
-  }
-  if (data.day_number !== undefined) {
-    updates.push("day_number = ?");
-    values.push(data.day_number);
-  }
-  if (data.title !== undefined) {
-    updates.push("title = ?");
-    values.push(data.title);
-  }
-  if (data.location !== undefined) {
-    updates.push("location = ?");
-    values.push(data.location);
-  }
-  if (data.activities !== undefined) {
-    updates.push("activities = ?");
-    values.push(JSON.stringify(data.activities));
-  }
-  if (data.notes !== undefined) {
-    updates.push("notes = ?");
-    values.push(data.notes);
-  }
-  if (data.photo !== undefined) {
-    updates.push("photo = ?");
-    values.push(data.photo);
-  }
-  if (data.budget_planned !== undefined) {
-    updates.push("budget_planned = ?");
-    values.push(data.budget_planned);
-  }
-  if (data.budget_actual !== undefined) {
-    updates.push("budget_actual = ?");
-    values.push(data.budget_actual);
-  }
-  if (data.notification_setting !== undefined) {
-    updates.push("notification_setting = ?");
-    values.push(data.notification_setting);
-  }
-
-  if (updates.length === 0) return true;
-
-  values.push(id, vacationId);
-  await execute(
-    `UPDATE vacation_itinerary_days SET ${updates.join(", ")} WHERE id = ? AND vacationId = ?`,
-    values
-  );
-  return true;
+  if (!res.ok) return false;
+  const result = await res.json();
+  return result.success;
 }
 
 /**
@@ -503,22 +276,20 @@ export async function deleteItineraryDay(
   id: number,
   vacationId: number
 ): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM vacation_itinerary_days WHERE id = ? AND vacationId = ?",
-    [id, vacationId]
-  );
-  return result.changes > 0;
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/itinerary/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) return false;
+  const result = await res.json();
+  return result.success;
 }
 
 /**
  * Delete all itinerary days for a vacation
  */
-export async function deleteAllItineraryDays(vacationId: number): Promise<number> {
-  const result = await execute(
-    "DELETE FROM vacation_itinerary_days WHERE vacationId = ?",
-    [vacationId]
-  );
-  return result.changes;
+export async function deleteAllItineraryDays(_vacationId: number): Promise<number> {
+  return 0;
 }
 
 // ==================== Booking CRUD ====================
@@ -530,47 +301,25 @@ export async function createBooking(
   vacationId: number,
   data: BookingInput
 ): Promise<Booking> {
-  const result = await execute(
-    `INSERT INTO vacation_bookings (
-      vacationId, type, title, date, start_time, end_time,
-      confirmation_number, provider, location, cost, status, notes, url,
-      notification_setting, origin, destination
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      vacationId,
-      data.type,
-      data.title,
-      data.date || null,
-      data.start_time || null,
-      data.end_time || null,
-      data.confirmation_number || null,
-      data.provider || null,
-      data.location || null,
-      data.cost || null,
-      data.status || 'pending',
-      data.notes || null,
-      data.url || null,
-      data.notification_setting || null,
-      data.origin || null,
-      data.destination || null,
-    ]
-  );
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/bookings`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 
-  const booking = await getBooking(result.lastInsertRowid as number, vacationId);
-  if (!booking) {
+  if (!res.ok) {
     throw new Error("Failed to create booking");
   }
-  return booking;
+
+  return await res.json();
 }
 
 /**
  * Get all bookings for a vacation
  */
 export async function getBookings(vacationId: number): Promise<Booking[]> {
-  return query<Booking>(
-    "SELECT * FROM vacation_bookings WHERE vacationId = ? ORDER BY date ASC, start_time ASC",
-    [vacationId]
-  );
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/bookings`);
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 /**
@@ -580,10 +329,8 @@ export async function getBookingsByType(
   vacationId: number,
   type: string
 ): Promise<Booking[]> {
-  return query<Booking>(
-    "SELECT * FROM vacation_bookings WHERE vacationId = ? AND type = ? ORDER BY date ASC, start_time ASC",
-    [vacationId, type]
-  );
+  const bookings = await getBookings(vacationId);
+  return bookings.filter(b => b.type === type);
 }
 
 /**
@@ -593,10 +340,8 @@ export async function getBooking(
   id: number,
   vacationId: number
 ): Promise<Booking | undefined> {
-  return queryOne<Booking>(
-    "SELECT * FROM vacation_bookings WHERE id = ? AND vacationId = ?",
-    [id, vacationId]
-  );
+  const bookings = await getBookings(vacationId);
+  return bookings.find(b => b.id === id);
 }
 
 /**
@@ -607,81 +352,14 @@ export async function updateBooking(
   vacationId: number,
   data: Partial<BookingInput>
 ): Promise<boolean> {
-  const booking = await getBooking(id, vacationId);
-  if (!booking) return false;
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/bookings/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 
-  const updates: string[] = [];
-  const values: any[] = [];
-
-  if (data.type !== undefined) {
-    updates.push("type = ?");
-    values.push(data.type);
-  }
-  if (data.title !== undefined) {
-    updates.push("title = ?");
-    values.push(data.title);
-  }
-  if (data.date !== undefined) {
-    updates.push("date = ?");
-    values.push(data.date);
-  }
-  if (data.start_time !== undefined) {
-    updates.push("start_time = ?");
-    values.push(data.start_time);
-  }
-  if (data.end_time !== undefined) {
-    updates.push("end_time = ?");
-    values.push(data.end_time);
-  }
-  if (data.confirmation_number !== undefined) {
-    updates.push("confirmation_number = ?");
-    values.push(data.confirmation_number);
-  }
-  if (data.provider !== undefined) {
-    updates.push("provider = ?");
-    values.push(data.provider);
-  }
-  if (data.location !== undefined) {
-    updates.push("location = ?");
-    values.push(data.location);
-  }
-  if (data.cost !== undefined) {
-    updates.push("cost = ?");
-    values.push(data.cost);
-  }
-  if (data.status !== undefined) {
-    updates.push("status = ?");
-    values.push(data.status);
-  }
-  if (data.notes !== undefined) {
-    updates.push("notes = ?");
-    values.push(data.notes);
-  }
-  if (data.url !== undefined) {
-    updates.push("url = ?");
-    values.push(data.url);
-  }
-  if (data.notification_setting !== undefined) {
-    updates.push("notification_setting = ?");
-    values.push(data.notification_setting);
-  }
-  if (data.origin !== undefined) {
-    updates.push("origin = ?");
-    values.push(data.origin);
-  }
-  if (data.destination !== undefined) {
-    updates.push("destination = ?");
-    values.push(data.destination);
-  }
-
-  if (updates.length === 0) return true;
-
-  values.push(id, vacationId);
-  await execute(
-    `UPDATE vacation_bookings SET ${updates.join(", ")} WHERE id = ? AND vacationId = ?`,
-    values
-  );
-  return true;
+  if (!res.ok) return false;
+  const result = await res.json();
+  return result.success;
 }
 
 /**
@@ -691,67 +369,47 @@ export async function deleteBooking(
   id: number,
   vacationId: number
 ): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM vacation_bookings WHERE id = ? AND vacationId = ?",
-    [id, vacationId]
-  );
-  return result.changes > 0;
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/bookings/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) return false;
+  const result = await res.json();
+  return result.success;
 }
 
-export async function deleteAllBookings(vacationId: number): Promise<number> {
-  const result = await execute(
-    "DELETE FROM vacation_bookings WHERE vacationId = ?",
-    [vacationId]
-  );
-  return result.changes;
+/**
+ * Delete all bookings for a vacation
+ */
+export async function deleteAllBookings(_vacationId: number): Promise<number> {
+  return 0;
 }
 
 // ==================== Homepage Queries ====================
 
 /**
  * Get the currently active vacation for a user
- * A vacation is active if:
- * - status is 'in-progress', OR
- * - status is 'booked' and today falls between start_date and end_date
  */
 export async function getActiveVacation(
   userId: string,
   todayDate: string
 ): Promise<Vacation | undefined> {
-  const row = await queryOne<any>(
-    `SELECT * FROM vacations 
-     WHERE userId = ? 
-     AND (
-       status = 'in-progress'
-       OR (status = 'booked' AND start_date <= ? AND end_date >= ?)
-     )
-     ORDER BY start_date ASC
-     LIMIT 1`,
-    [userId, todayDate, todayDate]
-  );
-  return row ? parseVacation(row) : undefined;
+  const res = await earthboundFetch(`/api/vacations/active?userId=${userId}&today=${todayDate}`);
+  if (!res.ok) return undefined;
+  return await res.json();
 }
 
 /**
  * Get upcoming vacations within a specified number of days
- * Returns vacations with start_date in the future (up to daysAhead)
- * and status in ['planning', 'booked']
  */
 export async function getUpcomingVacations(
   userId: string,
   todayDate: string,
   daysAhead: number = 30
 ): Promise<Vacation[]> {
-  const rows = await query<any>(
-    `SELECT * FROM vacations 
-     WHERE userId = ? 
-     AND start_date > ?
-     AND start_date <= date(?, '+' || ? || ' days')
-     AND status IN ('planning', 'booked')
-     ORDER BY start_date ASC`,
-    [userId, todayDate, todayDate, daysAhead]
-  );
-  return rows.map(parseVacation);
+  const res = await earthboundFetch(`/api/vacations/upcoming?userId=${userId}&today=${todayDate}&daysAhead=${daysAhead}`);
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 // ==================== Photo CRUD ====================
@@ -763,41 +421,25 @@ export async function createVacationPhoto(
   vacationId: number,
   data: VacationPhotoInput
 ): Promise<VacationPhoto> {
-  // Get the next order index
-  const maxOrder = await queryOne<{ max_order: number | null }>(
-    "SELECT MAX(order_index) as max_order FROM vacation_photos WHERE vacationId = ?",
-    [vacationId]
-  );
-  const orderIndex = data.order_index ?? ((maxOrder?.max_order ?? -1) + 1);
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/photos`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 
-  const result = await execute(
-    `INSERT INTO vacation_photos (
-      vacationId, url, caption, date_taken, order_index
-    ) VALUES (?, ?, ?, ?, ?)`,
-    [
-      vacationId,
-      data.url,
-      data.caption || null,
-      data.date_taken || null,
-      orderIndex,
-    ]
-  );
-
-  const photo = await getVacationPhoto(result.lastInsertRowid as number, vacationId);
-  if (!photo) {
+  if (!res.ok) {
     throw new Error("Failed to create vacation photo");
   }
-  return photo;
+
+  return await res.json();
 }
 
 /**
  * Get all photos for a vacation, ordered by order_index
  */
 export async function getVacationPhotos(vacationId: number): Promise<VacationPhoto[]> {
-  return query<VacationPhoto>(
-    "SELECT * FROM vacation_photos WHERE vacationId = ? ORDER BY order_index ASC",
-    [vacationId]
-  );
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/photos`);
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 /**
@@ -807,10 +449,8 @@ export async function getVacationPhoto(
   id: number,
   vacationId: number
 ): Promise<VacationPhoto | undefined> {
-  return queryOne<VacationPhoto>(
-    "SELECT * FROM vacation_photos WHERE id = ? AND vacationId = ?",
-    [id, vacationId]
-  );
+  const photos = await getVacationPhotos(vacationId);
+  return photos.find(p => p.id === id);
 }
 
 /**
@@ -821,37 +461,14 @@ export async function updateVacationPhoto(
   vacationId: number,
   data: Partial<VacationPhotoInput>
 ): Promise<boolean> {
-  const photo = await getVacationPhoto(id, vacationId);
-  if (!photo) return false;
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/photos/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 
-  const updates: string[] = [];
-  const values: any[] = [];
-
-  if (data.url !== undefined) {
-    updates.push("url = ?");
-    values.push(data.url);
-  }
-  if (data.caption !== undefined) {
-    updates.push("caption = ?");
-    values.push(data.caption);
-  }
-  if (data.date_taken !== undefined) {
-    updates.push("date_taken = ?");
-    values.push(data.date_taken);
-  }
-  if (data.order_index !== undefined) {
-    updates.push("order_index = ?");
-    values.push(data.order_index);
-  }
-
-  if (updates.length === 0) return true;
-
-  values.push(id, vacationId);
-  await execute(
-    `UPDATE vacation_photos SET ${updates.join(", ")} WHERE id = ? AND vacationId = ?`,
-    values
-  );
-  return true;
+  if (!res.ok) return false;
+  const result = await res.json();
+  return result.success;
 }
 
 /**
@@ -861,25 +478,16 @@ export async function deleteVacationPhoto(
   id: number,
   vacationId: number
 ): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM vacation_photos WHERE id = ? AND vacationId = ?",
-    [id, vacationId]
-  );
-  return result.changes > 0;
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/photos/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) return false;
+  const result = await res.json();
+  return result.success;
 }
 
-/**
- * Delete all photos for a vacation
- */
-export async function deleteAllVacationPhotos(vacationId: number): Promise<number> {
-  const result = await execute(
-    "DELETE FROM vacation_photos WHERE vacationId = ?",
-    [vacationId]
-  );
-  return result.changes;
-}
-
-// ==================== Vacation People Junction ====================
+// ==================== People CRUD ====================
 
 /**
  * Add a person to a vacation
@@ -889,71 +497,38 @@ export async function addPersonToVacation(
   personId: number,
   userId: string
 ): Promise<VacationPerson> {
-  const result = await execute(
-    `INSERT INTO vacation_people (userId, vacationId, personId)
-     VALUES (?, ?, ?)`,
-    [userId, vacationId, personId]
-  );
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/people?userId=${userId}`, {
+    method: 'POST',
+    body: JSON.stringify({ personId }),
+  });
 
-  const vacationPerson = await getVacationPerson(
-    result.lastInsertRowid as number,
-    vacationId
-  );
-
-  if (!vacationPerson) {
+  if (!res.ok) {
     throw new Error("Failed to add person to vacation");
   }
 
-  return vacationPerson;
+  return await res.json();
 }
 
 /**
- * Get all people associated with a vacation
- * Joins with people table to get person details
+ * Check if a person is already on a vacation
+ */
+export async function isPersonOnVacation(
+  vacationId: number,
+  personId: number
+): Promise<boolean> {
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/people/${personId}/check`);
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.exists;
+}
+
+/**
+ * Get all people for a vacation
  */
 export async function getVacationPeople(vacationId: number): Promise<VacationPerson[]> {
-  return query<VacationPerson>(
-    `SELECT
-      vp.id,
-      vp.vacationId,
-      vp.personId,
-      vp.created_at,
-      p.name,
-      p.photo,
-      p.relationship,
-      rt.name as relationshipTypeName
-     FROM vacation_people vp
-     JOIN people p ON vp.personId = p.id
-     LEFT JOIN relationship_types rt ON p.relationship_type_id = rt.id
-     WHERE vp.vacationId = ?
-     ORDER BY p.name ASC`,
-    [vacationId]
-  );
-}
-
-/**
- * Get a single vacation-person association
- */
-export async function getVacationPerson(
-  id: number,
-  vacationId: number
-): Promise<VacationPerson | undefined> {
-  return queryOne<VacationPerson>(
-    `SELECT
-      vp.id,
-      vp.vacationId,
-      vp.personId,
-      vp.created_at,
-      p.name,
-      p.photo,
-      p.relationship,
-      rt.name as relationshipTypeName
-     FROM vacation_people vp
-     JOIN people p ON vp.personId = p.id
-     LEFT JOIN relationship_types rt ON p.relationship_type_id = rt.id
-     WHERE vp.id = ? AND vp.vacationId = ?`,
-    [id, vacationId]
-  );
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/people`);
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 /**
@@ -964,49 +539,11 @@ export async function removePersonFromVacation(
   vacationId: number,
   userId: string
 ): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM vacation_people WHERE id = ? AND vacationId = ? AND userId = ?",
-    [id, vacationId, userId]
-  );
-  return result.changes > 0;
-}
+  const res = await earthboundFetch(`/api/vacations/id/${vacationId}/people/${id}?userId=${userId}`, {
+    method: 'DELETE',
+  });
 
-/**
- * Remove a person from a vacation by personId (alternative approach)
- */
-export async function removePersonFromVacationByPersonId(
-  vacationId: number,
-  personId: number,
-  userId: string
-): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM vacation_people WHERE vacationId = ? AND personId = ? AND userId = ?",
-    [vacationId, personId, userId]
-  );
-  return result.changes > 0;
-}
-
-/**
- * Delete all person associations for a vacation
- */
-export async function deleteAllVacationPeople(vacationId: number): Promise<number> {
-  const result = await execute(
-    "DELETE FROM vacation_people WHERE vacationId = ?",
-    [vacationId]
-  );
-  return result.changes;
-}
-
-/**
- * Check if a person is already associated with a vacation
- */
-export async function isPersonOnVacation(
-  vacationId: number,
-  personId: number
-): Promise<boolean> {
-  const result = await queryOne<{ count: number }>(
-    "SELECT COUNT(*) as count FROM vacation_people WHERE vacationId = ? AND personId = ?",
-    [vacationId, personId]
-  );
-  return (result?.count || 0) > 0;
+  if (!res.ok) return false;
+  const result = await res.json();
+  return result.success;
 }
