@@ -6,7 +6,7 @@ import { env } from "@/lib/env";
  * injects the current user's Firebase ID token.
  */
 export async function earthboundFetch(path: string, options: RequestInit = {}) {
-  const baseUrl = env.EARTHBOUND_API_URL;
+  const baseUrl = env.EARTHBOUND_API_URL || 'https://earthbound-api-705251858590.us-central1.run.app:8000';
   if (!baseUrl) {
     throw new Error("EARTHBOUND_API_URL is not defined");
   }
