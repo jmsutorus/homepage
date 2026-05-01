@@ -207,9 +207,10 @@ export function ExercisePageClient({
             : (activity.exercises as any);
           
           for (const ex of exercises) {
-            if (ex.weight && ex.weight > maxWeight) {
-              maxWeight = ex.weight;
-              maxWeightExercise = ex.description;
+            const numericWeight = typeof ex.weight === 'string' ? parseFloat(ex.weight) : (ex.weight as any as number);
+            if (numericWeight && !isNaN(numericWeight) && numericWeight > maxWeight) {
+              maxWeight = numericWeight;
+              maxWeightExercise = ex.name || (ex as any).description;
             }
           }
         } catch (e) {

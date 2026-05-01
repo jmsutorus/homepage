@@ -33,7 +33,7 @@ export function DailyWorkouts({ upcoming, completed, onComplete }: DailyWorkouts
             Planned ({upcoming.length})
           </h4>
           {upcoming.map((workout) => {
-            const exercises = JSON.parse(workout.exercises);
+            const exercises = workout.exercises;
             const difficultyColors = {
               "easy": "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
               "moderate": "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
@@ -59,7 +59,7 @@ export function DailyWorkouts({ upcoming, completed, onComplete }: DailyWorkouts
                   <div className="mt-1 space-y-0.5">
                     {exercises.slice(0, 2).map((exercise: any, idx: number) => (
                       <p key={idx} className="text-xs text-muted-foreground pl-2">
-                        • {exercise.description}
+                        • {exercise.name || exercise.description}
                         {exercise.sets && exercise.reps && ` - ${exercise.sets}x${exercise.reps}`}
                         {exercise.weight && ` @ ${exercise.weight}lbs`}
                         {exercise.duration && ` - ${exercise.duration} min`}
@@ -100,7 +100,7 @@ export function DailyWorkouts({ upcoming, completed, onComplete }: DailyWorkouts
             Completed ({completed.length})
           </h4>
           {completed.map((workout) => {
-            const exercises = JSON.parse(workout.exercises);
+            const exercises = workout.exercises;
             const difficultyColors = {
               "easy": "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
               "moderate": "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
@@ -151,7 +151,7 @@ export function DailyWorkouts({ upcoming, completed, onComplete }: DailyWorkouts
                   <div className="mt-1 space-y-0.5">
                     {exercises.slice(0, 2).map((exercise: any, idx: number) => (
                       <p key={idx} className="text-xs text-muted-foreground pl-2">
-                        • {exercise.description}
+                        • {exercise.name || exercise.description}
                         {exercise.sets && exercise.reps && ` - ${exercise.sets}x${exercise.reps}`}
                         {exercise.weight && ` @ ${exercise.weight}lbs`}
                         {exercise.duration && ` - ${exercise.duration} min`}
