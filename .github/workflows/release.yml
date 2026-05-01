@@ -45,6 +45,7 @@ jobs:
       issues: write # to be able to comment on released issues
       pull-requests: write # to be able to comment on released pull requests
       id-token: write # to enable use of OIDC for npm provenance
+      actions: write # to be able to trigger the changelog sync workflow
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -67,18 +68,30 @@ jobs:
 
       - name: Validate Release (Dry-run on PR)
         if: github.event_name == 'pull_request'
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          dry_run: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --dry-run
 
       - name: Release (Create release commits on main)
+        id: semantic
         if: github.event_name == 'workflow_dispatch'
+        uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx semantic-release
-          echo "Checking if release commits were created..."
-          git log --oneline -5
+
+      - name: Sync Changelog
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'changelog_sync.yml',
+              ref: 'main'
+            })
 
       # - name: Create and Push Release Branch
       #   if: github.event_name == 'workflow_dispatch'
