@@ -1,5 +1,3 @@
-import { execute } from "./index";
-import { checkAchievement } from "../achievements";
 import { earthboundFetch } from "../api/earthbound";
 
 import {
@@ -28,45 +26,16 @@ export type {
  * Create a new media content entry
  */
 export async function createMedia(data: MediaContentInput, userId: string): Promise<MediaContent> {
-  const genresJson = data.genres ? JSON.stringify(data.genres) : null;
-  const tagsJson = data.tags ? JSON.stringify(data.tags) : null;
-  const creatorJson = data.creator ? JSON.stringify(data.creator) : null;
+  const response = await earthboundFetch(`/api/media?userId=${userId}`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
-  const result = await execute(
-    `INSERT INTO media_content (
-      slug, title, type, status, rating, started, completed, released,
-      genres, poster, tags, description, length, creator, featured, published, time_spent, content, progress, userId
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      data.slug,
-      data.title,
-      data.type,
-      data.status,
-      data.rating || null,
-      data.started || null,
-      data.completed || null,
-      data.released || null,
-      genresJson,
-      data.poster || null,
-      tagsJson,
-      data.description || null,
-      data.length || null,
-      creatorJson,
-      data.featured ? 1 : 0,
-      data.published !== false ? 1 : 0, // Default to true/1
-      data.timeSpent || 0,
-      data.content,
-      data.progress || 0,
-      userId,
-    ]
-  );
-
-  const entry = await getMediaById(Number(result.lastInsertRowid));
-  if (!entry) {
-    throw new Error("Failed to create media entry");
+  if (!response.ok) {
+    throw new Error(`Failed to create media entry: ${response.statusText}`);
   }
 
-  return entry;
+  return response.json() as Promise<MediaContent>;
 }
 
 /**
@@ -227,126 +196,35 @@ export async function updateMedia(
   userId: string,
   data: Partial<MediaContentInput>
 ): Promise<boolean> {
-  // Verify ownership
-  const existing = await getMediaBySlug(slug, userId);
-  if (!existing) {
-    return false;
+  const response = await earthboundFetch(`/api/media/s/${slug}?userId=${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) return false;
+    throw new Error(`Failed to update media entry: ${response.statusText}`);
   }
 
-  // Build dynamic update await query based on provided fields
-  const updates: string[] = [];
-  const params: unknown[] = [];
-
-  if (data.title !== undefined) {
-    updates.push("title = ?");
-    params.push(data.title);
-  }
-  if (data.type !== undefined) {
-    updates.push("type = ?");
-    params.push(data.type);
-  }
-  if (data.status !== undefined) {
-    updates.push("status = ?");
-    params.push(data.status);
-  }
-  if (data.rating !== undefined) {
-    updates.push("rating = ?");
-    params.push(data.rating);
-  }
-  if (data.started !== undefined) {
-    updates.push("started = ?");
-    params.push(data.started);
-  }
-  if (data.completed !== undefined) {
-    updates.push("completed = ?");
-    params.push(data.completed);
-  }
-  if (data.released !== undefined) {
-    updates.push("released = ?");
-    params.push(data.released);
-  }
-  if (data.genres !== undefined) {
-    updates.push("genres = ?");
-    params.push(data.genres ? JSON.stringify(data.genres) : null);
-  }
-  if (data.poster !== undefined) {
-    updates.push("poster = ?");
-    params.push(data.poster);
-  }
-  if (data.tags !== undefined) {
-    updates.push("tags = ?");
-    params.push(data.tags ? JSON.stringify(data.tags) : null);
-  }
-  if (data.description !== undefined) {
-    updates.push("description = ?");
-    params.push(data.description);
-  }
-  if (data.length !== undefined) {
-    updates.push("length = ?");
-    params.push(data.length);
-  }
-  if (data.creator !== undefined) {
-    updates.push("creator = ?");
-    params.push(data.creator ? JSON.stringify(data.creator) : null);
-  }
-  if (data.featured !== undefined) {
-    updates.push("featured = ?");
-    params.push(data.featured ? 1 : 0);
-  }
-  if (data.published !== undefined) {
-    updates.push("published = ?");
-    params.push(data.published ? 1 : 0);
-  }
-  if (data.content !== undefined) {
-    updates.push("content = ?");
-    params.push(data.content);
-  }
-  if (data.slug !== undefined) {
-    updates.push("slug = ?");
-    params.push(data.slug);
-  }
-  if (data.timeSpent !== undefined) {
-    updates.push("time_spent = ?");
-    params.push(data.timeSpent);
-  }
-  if (data.progress !== undefined) {
-    updates.push("progress = ?");
-    params.push(data.progress);
-  }
-
-  if (updates.length === 0) {
-    return false;
-  }
-
-  params.push(slug, userId);
-
-  const result = await execute(
-    `UPDATE media_content SET ${updates.join(", ")} WHERE slug = ? AND userId = ?`,
-    params
-  );
-
-  if (result.changes > 0) {
-    // Check for achievements if status changed to completed
-    if (data.status === 'completed') {
-      checkAchievement(userId, 'media').catch(console.error);
-    }
-  }
-
-  return result.changes > 0;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
  * Delete media entry with ownership verification
  */
 export async function deleteMedia(slug: string, userId: string): Promise<boolean> {
-  // Verify ownership
-  const existing = await getMediaBySlug(slug, userId);
-  if (!existing) {
-    return false;
+  const response = await earthboundFetch(`/api/media/s/${slug}?userId=${userId}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) return false;
+    throw new Error(`Failed to delete media entry: ${response.statusText}`);
   }
 
-  const result = await execute("DELETE FROM media_content WHERE slug = ? AND userId = ?", [slug, userId]);
-  return result.changes > 0;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
@@ -358,32 +236,14 @@ export async function getMediaStatistics(userId: string): Promise<{
   byStatus: Record<string, number>;
   averageRating: number;
 }> {
-  const entries = await getAllMedia(userId);
-  const total = entries.length;
-
-  const byType: Record<string, number> = { movie: 0, tv: 0, book: 0, game: 0, album: 0 };
-  const byStatus: Record<string, number> = {
-    "in-progress": 0,
-    completed: 0,
-    planned: 0,
-  };
-
-  let ratingSum = 0;
-  let ratingCount = 0;
-
-  entries.forEach((entry) => {
-    byType[entry.type] = (byType[entry.type] || 0) + 1;
-    byStatus[entry.status] = (byStatus[entry.status] || 0) + 1;
-
-    if (entry.rating) {
-      ratingSum += entry.rating;
-      ratingCount++;
-    }
-  });
-
-  const averageRating = ratingCount > 0 ? ratingSum / ratingCount : 0;
-
-  return { total, byType, byStatus, averageRating };
+  const response = await earthboundFetch(`/api/media/stats?userId=${userId}`);
+  if (!response.ok) throw new Error(`Failed to fetch media statistics: ${response.statusText}`);
+  return response.json() as Promise<{
+    total: number;
+    byType: Record<string, number>;
+    byStatus: Record<string, number>;
+    averageRating: number;
+  }>;
 }
 
 /**
@@ -442,30 +302,18 @@ export function getMediaWithGenres(media: MediaContent): MediaContent & { genres
  * Get all unique genres across all media for a specific user
  */
 export async function getAllUniqueGenres(userId: string): Promise<string[]> {
-  const allMedia = await getAllMedia(userId);
-  const genreSet = new Set<string>();
-
-  allMedia.forEach((media) => {
-    const genres = parseGenres(media.genres);
-    genres.forEach((genre) => genreSet.add(genre));
-  });
-
-  return Array.from(genreSet).sort();
+  const response = await earthboundFetch(`/api/media/genres?userId=${userId}`);
+  if (!response.ok) throw new Error(`Failed to fetch unique genres: ${response.statusText}`);
+  return response.json() as Promise<string[]>;
 }
 
 /**
  * Get all unique tags across all media for a specific user
  */
 export async function getAllUniqueTags(userId: string): Promise<string[]> {
-  const allMedia = await getAllMedia(userId);
-  const tagSet = new Set<string>();
-
-  allMedia.forEach((media) => {
-    const tags = parseTags(media.tags);
-    tags.forEach((tag) => tagSet.add(tag));
-  });
-
-  return Array.from(tagSet).sort();
+  const response = await earthboundFetch(`/api/media/tags?userId=${userId}`);
+  if (!response.ok) throw new Error(`Failed to fetch unique tags: ${response.statusText}`);
+  return response.json() as Promise<string[]>;
 }
 
 /**
@@ -565,129 +413,11 @@ export async function getMediaTimelineData(
   period: TimelinePeriod = "month",
   numPeriods: number = 12
 ): Promise<MediaTimelineData> {
-  const now = new Date();
-  const dataPoints: MediaTimelineDataPoint[] = [];
-
-  // Get all completed media with valid completion dates
-  const allMedia = await getAllMedia(userId);
-  const completedMedia = allMedia.filter(
-    (m) => m.status === "completed" && m.completed
+  const response = await earthboundFetch(
+    `/api/media/timeline?userId=${userId}&period=${period}&numPeriods=${numPeriods}`
   );
-
-  // Calculate date ranges for each period
-  for (let i = numPeriods - 1; i >= 0; i--) {
-    const { startDate, endDate, label } = getTimelinePeriodRange(now, period, i);
-
-    // Filter media completed in this period
-    const periodMedia = completedMedia.filter((m) => {
-      const completedDate = m.completed!;
-      return completedDate >= startDate && completedDate <= endDate;
-    });
-
-    // Count by type
-    const movies = periodMedia.filter((m) => m.type === "movie").length;
-    const tv = periodMedia.filter((m) => m.type === "tv").length;
-    const books = periodMedia.filter((m) => m.type === "book").length;
-    const games = periodMedia.filter((m) => m.type === "game").length;
-
-    // Calculate average rating for the period
-    const ratedMedia = periodMedia.filter((m) => m.rating !== null);
-    const avgRating =
-      ratedMedia.length > 0
-        ? Math.round(
-            (ratedMedia.reduce((sum, m) => sum + (m.rating || 0), 0) /
-              ratedMedia.length) *
-              10
-          ) / 10
-        : null;
-
-    // Create timeline items for hover details
-    const items: MediaTimelineItem[] = periodMedia
-      .sort((a, b) => (b.completed || "").localeCompare(a.completed || ""))
-      .slice(0, 10) // Limit to 10 most recent for tooltip
-      .map((m) => ({
-        id: m.id,
-        title: m.title,
-        type: m.type,
-        rating: m.rating,
-        completed: m.completed!,
-        poster: m.poster,
-      }));
-
-    dataPoints.push({
-      label,
-      startDate,
-      endDate,
-      count: periodMedia.length,
-      movies,
-      tv,
-      books,
-      games,
-      items,
-      avgRating,
-    });
-  }
-
-  // Calculate stats
-  const totalCompleted = dataPoints.reduce((sum, d) => sum + d.count, 0);
-  const avgPerPeriod = Math.round((totalCompleted / numPeriods) * 10) / 10;
-
-  // Find most active period
-  const mostActivePeriod = dataPoints.reduce(
-    (best, current) => (current.count > best.count ? current : best),
-    dataPoints[0]
-  );
-
-  // Calculate overall average rating
-  const allRatedMedia = completedMedia.filter((m) => m.rating !== null);
-  const overallAvgRating =
-    allRatedMedia.length > 0
-      ? Math.round(
-          (allRatedMedia.reduce((sum, m) => sum + (m.rating || 0), 0) /
-            allRatedMedia.length) *
-            10
-        ) / 10
-      : 0;
-
-  // Find top type
-  const typeCounts = {
-    movie: completedMedia.filter((m) => m.type === "movie").length,
-    tv: completedMedia.filter((m) => m.type === "tv").length,
-    book: completedMedia.filter((m) => m.type === "book").length,
-    game: completedMedia.filter((m) => m.type === "game").length,
-  };
-  const topType = Object.entries(typeCounts).reduce((a, b) =>
-    b[1] > a[1] ? b : a
-  )[0];
-
-  // Calculate trend (compare second half to first half)
-  const midpoint = Math.floor(numPeriods / 2);
-  const firstHalf = dataPoints.slice(0, midpoint);
-  const secondHalf = dataPoints.slice(midpoint);
-  const firstHalfAvg =
-    firstHalf.reduce((sum, d) => sum + d.count, 0) / firstHalf.length || 0;
-  const secondHalfAvg =
-    secondHalf.reduce((sum, d) => sum + d.count, 0) / secondHalf.length || 0;
-  const trend =
-    firstHalfAvg > 0
-      ? Math.round(((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100)
-      : secondHalfAvg > 0
-        ? 100
-        : 0;
-
-  return {
-    dataPoints,
-    stats: {
-      totalCompleted,
-      avgPerPeriod,
-      mostActiveMonth: mostActivePeriod?.label || "",
-      mostActiveMonthCount: mostActivePeriod?.count || 0,
-      avgRating: overallAvgRating,
-      topType: topType as string,
-      trend,
-    },
-    period,
-  };
+  if (!response.ok) throw new Error(`Failed to fetch media timeline data: ${response.statusText}`);
+  return response.json() as Promise<MediaTimelineData>;
 }
 
 /**

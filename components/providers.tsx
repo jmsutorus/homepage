@@ -12,8 +12,15 @@ import { IOSPwaPushPrompt } from "@/components/pwa/ios-pwa-push-prompt";
 
 import { useFCMToken } from "@/hooks/use-fcm-token";
 import { UserActivityTracker } from "@/components/user-activity-tracker";
+import { Session } from "next-auth";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ 
+  children,
+  session 
+}: { 
+  children: React.ReactNode;
+  session?: Session | null;
+}) {
   useFCMToken();
 
   React.useEffect(() => {
@@ -28,8 +35,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-
-    <SessionProvider>
+    <SessionProvider session={session}>
       <ThemeProvider
         attribute="class"
         defaultTheme="system"

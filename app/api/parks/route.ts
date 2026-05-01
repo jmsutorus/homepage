@@ -102,6 +102,7 @@ export async function POST(request: NextRequest) {
       rating: frontmatter.rating,
       featured: frontmatter.featured,
       published: frontmatter.published,
+      quote: frontmatter.quote || "",
       content: content || "",
       userId,
     };

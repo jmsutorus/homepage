@@ -1,4 +1,4 @@
-import { getDatabase } from "./index";
+import { earthboundFetch } from "../api/earthbound";
 
 // Types
 import {
@@ -17,143 +17,59 @@ export type {
 
 // CRUD Operations
 
+/**
+ * Create a new workout activity
+ */
 export async function createWorkoutActivity(activity: CreateWorkoutActivity, userId: string): Promise<number> {
-  const db = getDatabase();
-  const completed = activity.completed ? 1 : 0;
-  const completedAt = activity.completed ? (activity.completed_at || new Date().toISOString()) : null;
-
-  const result = await db.execute({
-    sql: `INSERT INTO workout_activities (userId, date, time, length, distance, difficulty, type, exercises, notes, completed, completed_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    args: [
-      userId,
-      activity.date,
-      activity.time,
-      activity.length,
-      activity.distance || 0,
-      activity.difficulty,
-      activity.type,
-      JSON.stringify(activity.exercises),
-      activity.notes || null,
-      completed,
-      completedAt
-    ]
+  const response = await earthboundFetch("/api/workout-activities", {
+    method: "POST",
+    body: JSON.stringify(activity),
   });
-
-  return Number(result.lastInsertRowid);
+  if (!response.ok) throw new Error("Failed to create workout activity");
+  const result = await response.json() as { id: number };
+  return result.id;
 }
 
 export async function getWorkoutActivity(id: number, userId: string): Promise<WorkoutActivity | undefined> {
-  const db = getDatabase();
-  const result = await db.execute({
-    sql: "SELECT *, length as duration_minutes FROM workout_activities WHERE id = ? AND userId = ?",
-    args: [id, userId]
-  });
-  
-  if (!result.rows[0]) return undefined;
-
-  const row = result.rows[0] as any;
-  return {
-    ...row,
-    length: row.duration_minutes || row.length,
-    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
-  } as WorkoutActivity;
+  const response = await earthboundFetch(`/api/workout-activities/id/${id}?userId=${userId}`);
+  if (!response.ok) return undefined;
+  return response.json() as Promise<WorkoutActivity>;
 }
 
 export async function getAllWorkoutActivities(userId: string): Promise<WorkoutActivity[]> {
-  const db = getDatabase();
-  const result = await db.execute({
-    sql: "SELECT *, length as duration_minutes FROM workout_activities WHERE userId = ? ORDER BY date DESC, time DESC",
-    args: [userId]
-  });
-  return result.rows.map((row: any) => ({
-    ...row,
-    length: row.duration_minutes || row.length,
-    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
-  })) as WorkoutActivity[];
+  const response = await earthboundFetch(`/api/workout-activities?userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<WorkoutActivity[]>;
 }
 
 export async function getWorkoutActivitiesByDateRange(startDate: string, endDate: string, userId: string): Promise<WorkoutActivity[]> {
-  const db = getDatabase();
-  const result = await db.execute({
-    sql: `SELECT *, length as duration_minutes FROM workout_activities
-          WHERE userId = ? AND date >= ? AND date <= ?
-          ORDER BY date ASC, time ASC`,
-    args: [userId, startDate, endDate]
-  });
-  return result.rows.map((row: any) => ({
-    ...row,
-    length: row.duration_minutes || row.length,
-    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
-  })) as WorkoutActivity[];
+  const response = await earthboundFetch(`/api/workout-activities/range?userId=${userId}&start=${startDate}&end=${endDate}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<WorkoutActivity[]>;
 }
 
 export async function getWorkoutActivitiesByType(type: string, userId: string): Promise<WorkoutActivity[]> {
-  const db = getDatabase();
-  const result = await db.execute({
-    sql: `SELECT *, length as duration_minutes FROM workout_activities
-          WHERE userId = ? AND type = ?
-          ORDER BY date DESC, time DESC`,
-    args: [userId, type]
-  });
-  return result.rows.map((row: any) => ({
-    ...row,
-    length: row.duration_minutes || row.length,
-    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
-  })) as WorkoutActivity[];
+  const response = await earthboundFetch(`/api/workout-activities/type/${type}?userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<WorkoutActivity[]>;
 }
 
 export async function getUpcomingWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
-  const db = getDatabase();
-  const today = new Date().toISOString().split("T")[0];
-
-  const result = await db.execute({
-    sql: `SELECT *, length as duration_minutes FROM workout_activities
-          WHERE userId = ? AND date >= ? AND completed = 0
-          ORDER BY date ASC, time ASC
-          LIMIT ?`,
-    args: [userId, today, limit]
-  });
-  return result.rows.map((row: any) => ({
-    ...row,
-    length: row.duration_minutes || row.length,
-    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
-  })) as WorkoutActivity[];
+  const response = await earthboundFetch(`/api/workout-activities/upcoming?userId=${userId}&limit=${limit}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<WorkoutActivity[]>;
 }
 
 export async function getRecentWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
-  const db = getDatabase();
-  const today = new Date().toISOString().split("T")[0];
-
-  const result = await db.execute({
-    sql: `SELECT *, length as duration_minutes FROM workout_activities
-          WHERE userId = ? AND date < ? AND completed = 0
-          ORDER BY date DESC, time DESC
-          LIMIT ?`,
-    args: [userId, today, limit]
-  });
-  return result.rows.map((row: any) => ({
-    ...row,
-    length: row.duration_minutes || row.length,
-    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
-  })) as WorkoutActivity[];
+  const response = await earthboundFetch(`/api/workout-activities/recent?userId=${userId}&limit=${limit}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<WorkoutActivity[]>;
 }
 
 export async function getCompletedWorkoutActivities(userId: string, limit: number = 10): Promise<WorkoutActivity[]> {
-  const db = getDatabase();
-
-  const result = await db.execute({
-    sql: `SELECT *, length as duration_minutes FROM workout_activities
-          WHERE userId = ? AND completed = 1
-          ORDER BY date DESC, time DESC
-          LIMIT ?`,
-    args: [userId, limit]
-  });
-  return result.rows.map((row: any) => ({
-    ...row,
-    length: row.duration_minutes || row.length,
-    exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
-  })) as WorkoutActivity[];
+  const response = await earthboundFetch(`/api/workout-activities/completed?userId=${userId}&limit=${limit}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<WorkoutActivity[]>;
 }
 
 export async function updateWorkoutActivity(
@@ -161,31 +77,13 @@ export async function updateWorkoutActivity(
   userId: string,
   updates: Partial<Omit<WorkoutActivity, "id" | "userId" | "created_at" | "updated_at">>
 ): Promise<boolean> {
-  const db = getDatabase();
-
-  // Verify ownership
-  const existing = await getWorkoutActivity(id, userId);
-  if (!existing) {
-    return false;
-  }
-
-  // If exercises is an array, convert to JSON string
-  if (updates.exercises && typeof updates.exercises !== 'string') {
-    updates.exercises = JSON.stringify(updates.exercises);
-  }
-
-  const fields = Object.keys(updates)
-    .map((key) => `${key} = ?`)
-    .join(", ");
-
-  if (fields) {
-    await db.execute({
-      sql: `UPDATE workout_activities SET ${fields} WHERE id = ? AND userId = ?`,
-      args: [...Object.values(updates), id, userId]
-    });
-  }
-
-  return true;
+  const response = await earthboundFetch(`/api/workout-activities/id/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(updates),
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 export async function markWorkoutActivityCompleted(
@@ -193,118 +91,34 @@ export async function markWorkoutActivityCompleted(
   userId: string,
   completionNotes?: string | null
 ): Promise<boolean> {
-  const db = getDatabase();
-
-  // Verify ownership
-  const existing = await getWorkoutActivity(id, userId);
-  if (!existing) {
-    return false;
-  }
-
-  const now = new Date().toISOString();
-
-  await db.execute({
-    sql: `UPDATE workout_activities
-          SET completed = 1, completed_at = ?, completion_notes = ?
-          WHERE id = ? AND userId = ?`,
-    args: [now, completionNotes || null, id, userId]
+  const response = await earthboundFetch(`/api/workout-activities/id/${id}/complete`, {
+    method: "POST",
+    body: JSON.stringify({ notes: completionNotes }),
   });
-
-  return true;
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 export async function deleteWorkoutActivity(id: number, userId: string): Promise<boolean> {
-  const db = getDatabase();
-
-  // Verify ownership
-  const existing = await getWorkoutActivity(id, userId);
-  if (!existing) {
-    return false;
-  }
-
-  const result = await db.execute({
-    sql: "DELETE FROM workout_activities WHERE id = ? AND userId = ?",
-    args: [id, userId]
+  const response = await earthboundFetch(`/api/workout-activities/id/${id}`, {
+    method: "DELETE",
   });
-  return (result.rowsAffected ?? 0) > 0;
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 // Analytics and Statistics
 
 export async function getWorkoutActivityStats(userId: string, startDate?: string, endDate?: string): Promise<WorkoutActivityStats> {
-  const db = getDatabase();
-
-  let whereClause = " WHERE userId = ?";
-  const params: (string | number)[] = [userId];
-
-  if (startDate && endDate) {
-    whereClause += " AND date >= ? AND date <= ?";
-    params.push(startDate, endDate);
-  }
-
-  // Overall stats
-  const overallResult = await db.execute({
-    sql: `SELECT
-            COUNT(*) as total_activities,
-            SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed_activities,
-            SUM(length) as total_duration,
-            SUM(distance) as total_distance,
-            AVG(length) as avg_duration
-          FROM workout_activities${whereClause}`,
-    args: params
-  });
-  const overall = overallResult.rows[0] as unknown as {
-    total_activities: number;
-    completed_activities: number;
-    total_duration: number;
-    total_distance: number;
-    avg_duration: number;
-  };
-
-  // By type
-  const byTypeResult = await db.execute({
-    sql: `SELECT
-            type,
-            COUNT(*) as count,
-            SUM(length) as total_duration
-          FROM workout_activities${whereClause}
-          GROUP BY type
-          ORDER BY count DESC`,
-    args: params
-  });
-  const byType = byTypeResult.rows as unknown as { type: string; count: number; total_duration: number }[];
-
-  // By difficulty
-  const byDifficultyResult = await db.execute({
-    sql: `SELECT
-            difficulty,
-            COUNT(*) as count
-          FROM workout_activities${whereClause}
-          GROUP BY difficulty
-          ORDER BY
-            CASE difficulty
-              WHEN 'easy' THEN 1
-              WHEN 'moderate' THEN 2
-              WHEN 'hard' THEN 3
-              WHEN 'very hard' THEN 4
-            END`,
-    args: params
-  });
-  const byDifficulty = byDifficultyResult.rows as unknown as { difficulty: string; count: number }[];
-
-  return {
-    total_activities: overall.total_activities || 0,
-    completed_activities: overall.completed_activities || 0,
-    completion_rate:
-      overall.total_activities > 0
-        ? (overall.completed_activities / overall.total_activities) * 100
-        : 0,
-    total_duration: overall.total_duration || 0,
-    total_distance: overall.total_distance || 0,
-    avg_duration: overall.avg_duration || 0,
-    by_type: byType,
-    by_difficulty: byDifficulty,
-  };
+  const query = new URLSearchParams({ userId });
+  if (startDate) query.append("start", startDate);
+  if (endDate) query.append("end", endDate);
+  
+  const response = await earthboundFetch(`/api/workout-activities/stats?${query.toString()}`);
+  if (!response.ok) throw new Error("Failed to fetch activity stats");
+  return response.json() as Promise<WorkoutActivityStats>;
 }
 
 // Helper function to parse exercises from JSON string

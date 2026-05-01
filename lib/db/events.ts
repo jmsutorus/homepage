@@ -1,4 +1,5 @@
-import { execute, query, queryOne } from "./index";
+import { earthboundFetch } from "../api/earthbound";
+import { queryOne } from "./index";
 
 import {
   type EventNotification,
@@ -24,348 +25,120 @@ export type {
   TimelineEvent,
 };
 
-export interface UpdateEventInput {
-  slug?: string;
-  title?: string;
-  description?: string;
-  location?: string;
-  date?: string;
-  start_time?: string;
-  end_time?: string;
-  all_day?: boolean;
-  end_date?: string;
-  category?: string;
-  notifications?: EventNotification[];
-  notification_setting?: string;
-  content?: string;
-}
-
-export interface EventPhotoInput {
+export type EventPhotoInput = {
   url: string;
-  caption?: string;
-  date_taken?: string;
-  order_index?: number;
-}
+  caption?: string | null;
+  date_taken?: string | null;
+  order_index?: number | null;
+};
 
-// Helper to serialize notifications to JSON string
-function serializeNotifications(notifications?: EventNotification[]): string {
-  return JSON.stringify(notifications || []);
-}
+export type UpdateEventInput = Partial<CreateEventInput> & {
+  slug?: string;
+};
 
-// Helper to deserialize notifications from JSON string
-function deserializeNotifications(notificationsJson: string): EventNotification[] {
-  try {
-    return JSON.parse(notificationsJson);
-  } catch {
-    return [];
-  }
-}
-
-// Transform DB row to Event object
-interface DBEvent {
-  id: number;
-  userId: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  location: string | null;
-  date: string;
-  start_time: string | null;
-  end_time: string | null;
-  all_day: number;
-  end_date: string | null;
-  category: string | null;
-  notifications: string | null;
-  notification_setting: string | null;
-  content: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-function transformEvent(row: DBEvent): Event {
-  return {
-    ...row,
-    all_day: Boolean(row.all_day),
-    notifications: deserializeNotifications(row.notifications || "[]"),
-    notification_setting: row.notification_setting || null,
-  };
-}
+// ==================== Events ====================
 
 /**
  * Create a new event for a specific user
  */
 export async function createEvent(input: CreateEventInput, userId: string): Promise<Event> {
-  const result = await execute(
-    `INSERT INTO events (
-      userId, slug, title, description, location, date, start_time, end_time, all_day, end_date, category, notifications, notification_setting, content
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      userId,
-      input.slug,
-      input.title,
-      input.description || null,
-      input.location || null,
-      input.date,
-      input.start_time || null,
-      input.end_time || null,
-      input.all_day ? 1 : 0,
-      input.end_date || null,
-      input.category || null,
-      serializeNotifications(input.notifications),
-      input.notification_setting || null,
-      input.content || null,
-    ]
-  );
-
-  const event = await getEvent(Number(result.lastInsertRowid), userId);
-  if (!event) {
-    throw new Error("Failed to create event");
-  }
-
-  return event;
+  const response = await earthboundFetch("/api/events", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) throw new Error("Failed to create event");
+  return response.json() as Promise<Event>;
 }
 
 /**
  * Get event by ID for a specific user
  */
 export async function getEvent(id: number, userId: string): Promise<Event | undefined> {
-  const row = await queryOne<DBEvent>("SELECT * FROM events WHERE id = ? AND userId = ?", [id, userId]);
-  return row ? transformEvent(row) : undefined;
+  const response = await earthboundFetch(`/api/events/id/${id}?userId=${userId}`);
+  if (!response.ok) return undefined;
+  return response.json() as Promise<Event>;
 }
 
 /**
  * Get all events for a specific user
  */
 export async function getAllEvents(userId: string): Promise<Event[]> {
-  const rows = await query<DBEvent>("SELECT * FROM events WHERE userId = ? ORDER BY date ASC, start_time ASC", [userId]);
-  return rows.map(transformEvent);
-}
-
-// DB row type for events with cover photo
-interface DBEventWithCoverPhoto extends DBEvent {
-  cover_photo: string | null;
+  const response = await earthboundFetch(`/api/events?userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<Event[]>;
 }
 
 /**
  * Get all events with their cover photo (first photo) for a specific user
- * This is optimized for card display to avoid N+1 queries
  */
 export async function getAllEventsWithCoverPhoto(userId: string): Promise<EventWithCoverPhoto[]> {
-  const rows = await query<DBEventWithCoverPhoto>(
-    `SELECT 
-      e.*,
-      (SELECT url FROM event_photos WHERE eventId = e.id ORDER BY order_index ASC LIMIT 1) as cover_photo
-    FROM events e
-    WHERE e.userId = ?
-    ORDER BY e.date ASC, e.start_time ASC`,
-    [userId]
-  );
-  
-  return rows.map(row => ({
-    ...transformEvent(row),
-    cover_photo: row.cover_photo,
-  }));
+  // This could potentially be a specific optimized endpoint on the API
+  // but for now we can just use the regular listing or a specialized one if available.
+  // Assuming the API provides this info or we just use getAllEvents.
+  const response = await earthboundFetch(`/api/events?userId=${userId}&includeCover=true`);
+  if (!response.ok) return [];
+  return response.json() as Promise<EventWithCoverPhoto[]>;
 }
 
 /**
  * Get all events with cover photo and associated people for the timeline view
  */
 export async function getAllEventsForTimeline(userId: string): Promise<TimelineEvent[]> {
-  const events = await getAllEventsWithCoverPhoto(userId);
-  if (events.length === 0) return [];
-
-  const eventIds = events.map(e => e.id);
-  const placeholders = eventIds.map(() => '?').join(',');
-  
-  const peopleRows = await query<EventPerson>(
-    `SELECT
-      ep.id,
-      ep.eventId,
-      ep.personId,
-      p.name,
-      p.photo,
-      p.relationship,
-      rt.name as relationshipTypeName,
-      ep.created_at
-    FROM event_people ep
-    JOIN people p ON p.id = ep.personId
-    LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
-    WHERE ep.eventId IN (${placeholders})
-    ORDER BY p.name ASC`,
-    eventIds
-  );
-
-  const peopleMap = peopleRows.reduce((acc, person) => {
-    if (!acc[person.eventId]) acc[person.eventId] = [];
-    acc[person.eventId].push(person);
-    return acc;
-  }, {} as Record<number, EventPerson[]>);
-
-  return events.map(event => ({
-    ...event,
-    people: peopleMap[event.id] || []
-  }));
+  const response = await earthboundFetch(`/api/events/timeline?userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<TimelineEvent[]>;
 }
 
 /**
  * Get events for a specific date for a specific user (including multi-day events that span this date)
  */
 export async function getEventsForDate(date: string, userId: string): Promise<Event[]> {
-  const rows = await query<DBEvent>(
-    `SELECT * FROM events
-     WHERE userId = ? AND (
-       date = ?
-       OR (end_date IS NOT NULL AND date <= ? AND end_date >= ?)
-     )
-     ORDER BY all_day DESC, start_time ASC`,
-    [userId, date, date, date]
-  );
-  return rows.map(transformEvent);
+  const response = await earthboundFetch(`/api/events/date/${date}?userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<Event[]>;
 }
 
 /**
  * Get events in a date range for a specific user (including multi-day events that overlap)
  */
 export async function getEventsInRange(startDate: string, endDate: string, userId: string): Promise<EventWithCoverPhoto[]> {
-  const rows = await query<DBEventWithCoverPhoto>(
-    `SELECT 
-      e.*,
-      (SELECT url FROM event_photos WHERE eventId = e.id ORDER BY order_index ASC LIMIT 1) as cover_photo
-    FROM events e
-    WHERE e.userId = ? AND (
-      (e.date BETWEEN ? AND ?)
-      OR (e.end_date IS NOT NULL AND e.date <= ? AND e.end_date >= ?)
-    )
-    ORDER BY e.date ASC, e.all_day DESC, e.start_time ASC`,
-    [userId, startDate, endDate, endDate, startDate]
-  );
-  
-  return rows.map(row => ({
-    ...transformEvent(row),
-    cover_photo: row.cover_photo,
-  }));
+  const response = await earthboundFetch(`/api/events/range?start=${startDate}&end=${endDate}&userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<EventWithCoverPhoto[]>;
 }
 
 /**
  * Update event (with ownership verification)
  */
 export async function updateEvent(id: number, userId: string, updates: UpdateEventInput): Promise<boolean> {
-  // Verify ownership
-  const existing = await getEvent(id, userId);
-  if (!existing) {
-    return false;
-  }
-
-  const fields: string[] = [];
-  const params: unknown[] = [];
-
-  if (updates.title !== undefined) {
-    fields.push("title = ?");
-    params.push(updates.title);
-  }
-
-  if (updates.description !== undefined) {
-    fields.push("description = ?");
-    params.push(updates.description || null);
-  }
-
-  if (updates.location !== undefined) {
-    fields.push("location = ?");
-    params.push(updates.location || null);
-  }
-
-  if (updates.date !== undefined) {
-    fields.push("date = ?");
-    params.push(updates.date);
-  }
-
-  if (updates.start_time !== undefined) {
-    fields.push("start_time = ?");
-    params.push(updates.start_time || null);
-  }
-
-  if (updates.end_time !== undefined) {
-    fields.push("end_time = ?");
-    params.push(updates.end_time || null);
-  }
-
-  if (updates.all_day !== undefined) {
-    fields.push("all_day = ?");
-    params.push(updates.all_day ? 1 : 0);
-  }
-
-  if (updates.end_date !== undefined) {
-    fields.push("end_date = ?");
-    params.push(updates.end_date || null);
-  }
-
-  if (updates.category !== undefined) {
-    fields.push("category = ?");
-    params.push(updates.category || null);
-  }
-
-  if (updates.notifications !== undefined) {
-    fields.push("notifications = ?");
-    params.push(serializeNotifications(updates.notifications));
-  }
-
-  if (updates.notification_setting !== undefined) {
-    fields.push("notification_setting = ?");
-    params.push(updates.notification_setting || null);
-  }
-
-  if (updates.slug !== undefined) {
-    fields.push("slug = ?");
-    params.push(updates.slug);
-  }
-
-  if (updates.content !== undefined) {
-    fields.push("content = ?");
-    params.push(updates.content || null);
-  }
-
-  if (fields.length === 0) {
-    return false;
-  }
-
-  params.push(id, userId);
-  const sql = `UPDATE events SET ${fields.join(", ")} WHERE id = ? AND userId = ?`;
-  const result = await execute(sql, params);
-
-  return result.changes > 0;
+  const response = await earthboundFetch(`/api/events/id/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(updates),
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
  * Delete event (with ownership verification)
  */
 export async function deleteEvent(id: number, userId: string): Promise<boolean> {
-  // Verify ownership
-  const existing = await getEvent(id, userId);
-  if (!existing) {
-    return false;
-  }
-
-  const result = await execute("DELETE FROM events WHERE id = ? AND userId = ?", [id, userId]);
-  return result.changes > 0;
+  const response = await earthboundFetch(`/api/events/id/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
  * Get upcoming events for a specific user (from today onwards)
  */
 export async function getUpcomingEvents(userId: string, limit?: number): Promise<Event[]> {
-  const today = new Date().toISOString().split("T")[0];
-  const sql = limit
-    ? `SELECT * FROM events
-       WHERE userId = ? AND (date >= ? OR (end_date IS NOT NULL AND end_date >= ?))
-       ORDER BY date ASC, all_day DESC, start_time ASC
-       LIMIT ?`
-    : `SELECT * FROM events
-       WHERE userId = ? AND (date >= ? OR (end_date IS NOT NULL AND end_date >= ?))
-       ORDER BY date ASC, all_day DESC, start_time ASC`;
-
-  const params = limit ? [userId, today, today, limit] : [userId, today, today];
-  const rows = await query<DBEvent>(sql, params);
-  return rows.map(transformEvent);
+  const response = await earthboundFetch(`/api/events/upcoming?userId=${userId}${limit ? `&limit=${limit}` : ''}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<Event[]>;
 }
 
 // ==================== Event Categories ====================
@@ -374,148 +147,73 @@ export async function getUpcomingEvents(userId: string, limit?: number): Promise
  * Get all event categories for a specific user
  */
 export async function getAllEventCategories(userId: string): Promise<EventCategory[]> {
-  return await query<EventCategory>(
-    "SELECT * FROM event_categories WHERE userId = ? ORDER BY name ASC",
-    [userId]
-  );
+  const response = await earthboundFetch(`/api/events/categories?userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<EventCategory[]>;
 }
 
 /**
  * Create a new event category
  */
 export async function createEventCategory(userId: string, name: string): Promise<EventCategory> {
-  const result = await execute(
-    "INSERT INTO event_categories (userId, name) VALUES (?, ?)",
-    [userId, name]
-  );
-
-  const category = (await query<EventCategory>(
-    "SELECT * FROM event_categories WHERE id = ?",
-    [result.lastInsertRowid]
-  ))[0];
-
-  if (!category) {
-    throw new Error("Failed to create event category");
-  }
-
-  return category;
+  const response = await earthboundFetch("/api/events/categories", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) throw new Error("Failed to create event category");
+  return response.json() as Promise<EventCategory>;
 }
 
 /**
  * Delete an event category
- * This will set category to NULL for all events using this category
  */
 export async function deleteEventCategory(id: number, userId: string): Promise<boolean> {
-  // First, get the category to find its name
-  const category = (await query<EventCategory>(
-    "SELECT * FROM event_categories WHERE id = ? AND userId = ?",
-    [id, userId]
-  ))[0];
-
-  if (!category) {
-    return false;
-  }
-
-  // Clear the category from all events using it
-  await execute("UPDATE events SET category = NULL WHERE category = ? AND userId = ?", [category.name, userId]);
-
-  // Then delete the category
-  const result = await execute("DELETE FROM event_categories WHERE id = ? AND userId = ?", [id, userId]);
-  return result.changes > 0;
+  const response = await earthboundFetch(`/api/events/categories/id/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
  * Rename an event category
- * This will update all events using the old category name to the new name
  */
 export async function renameEventCategory(id: number, userId: string, newName: string): Promise<boolean> {
-  const category = (await query<EventCategory>(
-    "SELECT * FROM event_categories WHERE id = ? AND userId = ?",
-    [id, userId]
-  ))[0];
-
-  if (!category) {
-    return false;
-  }
-
-  // Update all events using this category
-  await execute("UPDATE events SET category = ? WHERE category = ? AND userId = ?", [newName, category.name, userId]);
-
-  // Update the category name
-  const result = await execute(
-    "UPDATE event_categories SET name = ? WHERE id = ? AND userId = ?",
-    [newName, id, userId]
-  );
-
-  return result.changes > 0;
+  const response = await earthboundFetch(`/api/events/categories/id/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ name: newName }),
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
  * Initialize default event categories for a user if they don't have any
- * This is idempotent - safe to call multiple times
  */
 export async function ensureDefaultEventCategories(userId: string): Promise<void> {
-  // Check if user already has categories
-  const existingCategories = await query<EventCategory>(
-    "SELECT * FROM event_categories WHERE userId = ? LIMIT 1",
-    [userId]
-  );
-
-  // If user already has categories, don't add defaults
-  if (existingCategories.length > 0) {
-    return;
-  }
-
-  // Default categories for events (activity-based)
-  const defaultCategories = [
-    "Work",
-    "Meeting",
-    "Appointment",
-    "Vacation",
-    "Holiday"
-  ];
-
-  // Create all default categories
-  for (const categoryName of defaultCategories) {
-    try {
-      await execute(
-        "INSERT OR IGNORE INTO event_categories (userId, name) VALUES (?, ?)",
-        [userId, categoryName]
-      );
-    } catch (error) {
-      // Silently ignore errors (e.g., if category already exists)
-      console.error(`Failed to create default event category "${categoryName}":`, error);
-    }
-  }
+  await earthboundFetch("/api/events/categories/ensure-defaults", {
+    method: "POST",
+  });
 }
-
-// ==================== Slug-based Event Queries ====================
 
 /**
  * Get event by slug for a specific user
  */
 export async function getEventBySlug(slug: string, userId: string): Promise<Event | undefined> {
-  const row = await queryOne<DBEvent>("SELECT * FROM events WHERE slug = ? AND userId = ?", [slug, userId]);
-  return row ? transformEvent(row) : undefined;
+  const response = await earthboundFetch(`/api/events/s/${slug}?userId=${userId}`);
+  if (!response.ok) return undefined;
+  return response.json() as Promise<Event>;
 }
 
 /**
  * Get event with all photos
  */
 export async function getEventWithDetails(slug: string, userId: string): Promise<EventWithDetails | undefined> {
-  const event = await getEventBySlug(slug, userId);
-  if (!event) return undefined;
-
-  const [photos, people] = await Promise.all([
-    getEventPhotos(event.id),
-    getEventPeople(event.id),
-  ]);
-
-  return {
-    event,
-    photos,
-    people,
-  };
+  const response = await earthboundFetch(`/api/events/s/${slug}/full?userId=${userId}`);
+  if (!response.ok) return undefined;
+  return response.json() as Promise<EventWithDetails>;
 }
 
 /**
@@ -547,54 +245,30 @@ export async function createEventPhoto(
   eventId: number,
   data: EventPhotoInput
 ): Promise<EventPhoto> {
-  // Get the next order index
-  const maxOrder = await queryOne<{ max_order: number | null }>(
-    "SELECT MAX(order_index) as max_order FROM event_photos WHERE eventId = ?",
-    [eventId]
-  );
-  const orderIndex = data.order_index ?? ((maxOrder?.max_order ?? -1) + 1);
-
-  const result = await execute(
-    `INSERT INTO event_photos (
-      eventId, url, caption, date_taken, order_index
-    ) VALUES (?, ?, ?, ?, ?)`,
-    [
-      eventId,
-      data.url,
-      data.caption || null,
-      data.date_taken || null,
-      orderIndex,
-    ]
-  );
-
-  const photo = await getEventPhoto(result.lastInsertRowid as number, eventId);
-  if (!photo) {
-    throw new Error("Failed to create event photo");
-  }
-  return photo;
+  const response = await earthboundFetch(`/api/events/id/${eventId}/photos`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error("Failed to create event photo");
+  return response.json() as Promise<EventPhoto>;
 }
 
 /**
- * Get all photos for an event, ordered by order_index
+ * Get a single photo for an event
+ */
+export async function getEventPhoto(id: number, eventId: number): Promise<EventPhoto | undefined> {
+  const response = await earthboundFetch(`/api/events/id/${eventId}/photos/${id}`);
+  if (!response.ok) return undefined;
+  return response.json() as Promise<EventPhoto>;
+}
+
+/**
+ * Get all photos for an event
  */
 export async function getEventPhotos(eventId: number): Promise<EventPhoto[]> {
-  return query<EventPhoto>(
-    "SELECT * FROM event_photos WHERE eventId = ? ORDER BY order_index ASC",
-    [eventId]
-  );
-}
-
-/**
- * Get a single event photo
- */
-export async function getEventPhoto(
-  id: number,
-  eventId: number
-): Promise<EventPhoto | undefined> {
-  return queryOne<EventPhoto>(
-    "SELECT * FROM event_photos WHERE id = ? AND eventId = ?",
-    [id, eventId]
-  );
+  const response = await earthboundFetch(`/api/events/id/${eventId}/photos`);
+  if (!response.ok) return [];
+  return response.json() as Promise<EventPhoto[]>;
 }
 
 /**
@@ -605,37 +279,13 @@ export async function updateEventPhoto(
   eventId: number,
   data: Partial<EventPhotoInput>
 ): Promise<boolean> {
-  const photo = await getEventPhoto(id, eventId);
-  if (!photo) return false;
-
-  const updates: string[] = [];
-  const values: (string | number | null)[] = [];
-
-  if (data.url !== undefined) {
-    updates.push("url = ?");
-    values.push(data.url);
-  }
-  if (data.caption !== undefined) {
-    updates.push("caption = ?");
-    values.push(data.caption || null);
-  }
-  if (data.date_taken !== undefined) {
-    updates.push("date_taken = ?");
-    values.push(data.date_taken || null);
-  }
-  if (data.order_index !== undefined) {
-    updates.push("order_index = ?");
-    values.push(data.order_index);
-  }
-
-  if (updates.length === 0) return true;
-
-  values.push(id, eventId);
-  await execute(
-    `UPDATE event_photos SET ${updates.join(", ")} WHERE id = ? AND eventId = ?`,
-    values
-  );
-  return true;
+  const response = await earthboundFetch(`/api/events/id/${eventId}/photos/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
@@ -645,22 +295,12 @@ export async function deleteEventPhoto(
   id: number,
   eventId: number
 ): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM event_photos WHERE id = ? AND eventId = ?",
-    [id, eventId]
-  );
-  return result.changes > 0;
-}
-
-/**
- * Delete all photos for an event
- */
-export async function deleteAllEventPhotos(eventId: number): Promise<number> {
-  const result = await execute(
-    "DELETE FROM event_photos WHERE eventId = ?",
-    [eventId]
-  );
-  return result.changes;
+  const response = await earthboundFetch(`/api/events/id/${eventId}/photos/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
@@ -671,83 +311,29 @@ export async function addPersonToEvent(
   personId: number,
   userId: string
 ): Promise<EventPerson> {
-  const result = await execute(
-    `INSERT INTO event_people (userId, eventId, personId) VALUES (?, ?, ?)`,
-    [userId, eventId, personId]
-  );
-
-  const person = await queryOne<EventPerson>(
-    `SELECT
-      ep.id,
-      ep.eventId,
-      ep.personId,
-      p.name,
-      p.photo,
-      p.relationship,
-      rt.name as relationshipTypeName,
-      ep.created_at
-    FROM event_people ep
-    JOIN people p ON p.id = ep.personId
-    LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
-    WHERE ep.id = ?`,
-    [Number(result.lastInsertRowid)]
-  );
-
-  if (!person) {
-    throw new Error('Failed to retrieve added person');
-  }
-
-  return person;
+  const response = await earthboundFetch(`/api/events/id/${eventId}/people`, {
+    method: "POST",
+    body: JSON.stringify({ personId }),
+  });
+  if (!response.ok) throw new Error("Failed to add person to event");
+  return response.json() as Promise<EventPerson>;
 }
 
 /**
  * Get all people associated with an event
  */
 export async function getEventPeople(eventId: number): Promise<EventPerson[]> {
-  const people = await query<EventPerson>(
-    `SELECT
-      ep.id,
-      ep.eventId,
-      ep.personId,
-      p.name,
-      p.photo,
-      p.relationship,
-      rt.name as relationshipTypeName,
-      ep.created_at
-    FROM event_people ep
-    JOIN people p ON p.id = ep.personId
-    LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
-    WHERE ep.eventId = ?
-    ORDER BY p.name ASC`,
-    [eventId]
-  );
-
-  return people;
+  const response = await earthboundFetch(`/api/events/id/${eventId}/people`);
+  if (!response.ok) return [];
+  return response.json() as Promise<EventPerson[]>;
 }
 
 /**
- * Get a single event-person association
+ * Check if a person is already associated with an event
  */
-export async function getEventPerson(
-  id: number,
-  eventId: number
-): Promise<EventPerson | undefined> {
-  return await queryOne<EventPerson>(
-    `SELECT
-      ep.id,
-      ep.eventId,
-      ep.personId,
-      p.name,
-      p.photo,
-      p.relationship,
-      rt.name as relationshipTypeName,
-      ep.created_at
-    FROM event_people ep
-    JOIN people p ON p.id = ep.personId
-    LEFT JOIN relationship_types rt ON rt.id = p.relationship_type_id
-    WHERE ep.id = ? AND ep.eventId = ?`,
-    [id, eventId]
-  );
+export async function isPersonOnEvent(eventId: number, personId: number): Promise<boolean> {
+  const people = await getEventPeople(eventId);
+  return people.some(p => p.personId === personId);
 }
 
 /**
@@ -758,11 +344,12 @@ export async function removePersonFromEvent(
   eventId: number,
   userId: string
 ): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM event_people WHERE id = ? AND eventId = ? AND userId = ?",
-    [id, eventId, userId]
-  );
-  return result.changes > 0;
+  const response = await earthboundFetch(`/api/events/id/${eventId}/people/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
@@ -773,34 +360,10 @@ export async function removePersonFromEventByPersonId(
   personId: number,
   userId: string
 ): Promise<boolean> {
-  const result = await execute(
-    "DELETE FROM event_people WHERE eventId = ? AND personId = ? AND userId = ?",
-    [eventId, personId, userId]
-  );
-  return result.changes > 0;
-}
-
-/**
- * Delete all people associations for an event
- */
-export async function deleteAllEventPeople(eventId: number): Promise<number> {
-  const result = await execute(
-    "DELETE FROM event_people WHERE eventId = ?",
-    [eventId]
-  );
-  return result.changes;
-}
-
-/**
- * Check if a person is already associated with an event
- */
-export async function isPersonOnEvent(
-  eventId: number,
-  personId: number
-): Promise<boolean> {
-  const result = await queryOne<{ count: number }>(
-    "SELECT COUNT(*) as count FROM event_people WHERE eventId = ? AND personId = ?",
-    [eventId, personId]
-  );
-  return (result?.count || 0) > 0;
+  const response = await earthboundFetch(`/api/events/id/${eventId}/people/person/${personId}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }

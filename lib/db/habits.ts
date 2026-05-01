@@ -1,10 +1,4 @@
-import { query, queryOne, execute } from "@/lib/db";
-import {
-  parseISO,
-  startOfWeek,
-  differenceInCalendarDays,
-} from "date-fns";
-import { checkAchievement } from "../achievements";
+import { earthboundFetch } from "../api/earthbound";
 
 import {
   type Habit,
@@ -24,46 +18,18 @@ export type {
  * Get all active habits for a user
  */
 export async function getHabits(userId: string): Promise<Habit[]> {
-  try {
-    const habits = await query<Habit>(
-      "SELECT * FROM habits WHERE userId = ? AND active = 1 ORDER BY order_index ASC, created_at DESC",
-      [userId]
-    );
-    return habits.map(habit => ({
-      ...habit,
-      is_infinite: Boolean(habit.is_infinite),
-      active: Boolean(habit.active),
-      completed: Boolean(habit.completed),
-      created_at: (habit.created_at as unknown) instanceof Date ? (habit.created_at as unknown as Date).toISOString() : String(habit.created_at),
-      updated_at: (habit.updated_at as unknown) instanceof Date ? (habit.updated_at as unknown as Date).toISOString() : String(habit.updated_at),
-    }));
-  } catch (error) {
-    console.error("Error getting habits:", error);
-    return [];
-  }
+  const response = await earthboundFetch(`/api/habits?userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<Habit[]>;
 }
 
 /**
  * Get all habits for a user (including archived)
  */
 export async function getAllHabits(userId: string): Promise<Habit[]> {
-  try {
-    const habits = await query<Habit>(
-      "SELECT * FROM habits WHERE userId = ? ORDER BY active DESC, order_index ASC, created_at DESC",
-      [userId]
-    );
-    return habits.map(habit => ({
-      ...habit,
-      is_infinite: Boolean(habit.is_infinite),
-      active: Boolean(habit.active),
-      completed: Boolean(habit.completed),
-      created_at: (habit.created_at as unknown) instanceof Date ? (habit.created_at as unknown as Date).toISOString() : String(habit.created_at),
-      updated_at: (habit.updated_at as unknown) instanceof Date ? (habit.updated_at as unknown as Date).toISOString() : String(habit.updated_at),
-    }));
-  } catch (error) {
-    console.error("Error getting all habits:", error);
-    return [];
-  }
+  const response = await earthboundFetch(`/api/habits/all?userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<Habit[]>;
 }
 
 /**
@@ -77,42 +43,13 @@ export async function createHabit(userId: string, data: {
   isInfinite?: boolean;
   createdAt?: string; // Optional client-provided timestamp in local time
 }): Promise<Habit> {
-  try {
-    // Use client-provided timestamp if available, otherwise format current time as local
-    let timestamp = data.createdAt;
-    if (!timestamp) {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      timestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    }
+  const response = await earthboundFetch(`/api/habits`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
-    const result = await execute(
-      `INSERT INTO habits (userId, title, description, frequency, target, is_infinite, active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)`,
-      [
-        userId,
-        data.title,
-        data.description || null,
-        data.frequency || 'daily',
-        data.target || 1,
-        data.isInfinite ? 1 : 0,
-        timestamp,
-        timestamp
-      ]
-    );
-
-    const habit = await queryOne<Habit>("SELECT * FROM habits WHERE id = ?", [result.lastInsertRowid]);
-    if (!habit) throw new Error("Failed to create habit");
-    return habit;
-  } catch (error) {
-    console.error("Error creating habit:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to create habit: ${response.statusText}`);
+  return response.json() as Promise<Habit>;
 }
 
 /**
@@ -128,134 +65,57 @@ export async function updateHabit(id: number, userId: string, data: {
   completed?: boolean;
   order_index?: number;
 }): Promise<Habit> {
-  try {
-    const updates: string[] = [];
-    const values: (string | number)[] = [];
+  const response = await earthboundFetch(`/api/habits/id/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 
-    if (data.title !== undefined) {
-      updates.push("title = ?");
-      values.push(data.title);
-    }
-    if (data.description !== undefined) {
-      updates.push("description = ?");
-      values.push(data.description);
-    }
-    if (data.frequency !== undefined) {
-      updates.push("frequency = ?");
-      values.push(data.frequency);
-    }
-    if (data.target !== undefined) {
-      updates.push("target = ?");
-      values.push(data.target);
-    }
-    if (data.is_infinite !== undefined) {
-      updates.push("is_infinite = ?");
-      values.push(data.is_infinite ? 1 : 0);
-    }
-    if (data.active !== undefined) {
-      updates.push("active = ?");
-      values.push(data.active ? 1 : 0);
-    }
-    if (data.completed !== undefined) {
-      updates.push("completed = ?");
-      values.push(data.completed ? 1 : 0);
-    }
-    if (data.order_index !== undefined) {
-      updates.push("order_index = ?");
-      values.push(data.order_index);
-    }
-
-    if (updates.length === 0) throw new Error("No updates provided");
-
-    values.push(id);
-    values.push(userId);
-
-    await execute(
-      `UPDATE habits SET ${updates.join(", ")} WHERE id = ? AND userId = ?`,
-      values
-    );
-
-    const habit = await queryOne<Habit>("SELECT * FROM habits WHERE id = ?", [id]);
-    if (!habit) throw new Error("Habit not found");
-    return habit;
-  } catch (error) {
-    console.error("Error updating habit:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to update habit: ${response.statusText}`);
+  return response.json() as Promise<Habit>;
 }
 
 /**
  * Delete a habit
  */
 export async function deleteHabit(id: number, userId: string): Promise<boolean> {
-  try {
-    const result = await execute("DELETE FROM habits WHERE id = ? AND userId = ?", [id, userId]);
-    return result.changes > 0;
-  } catch (error) {
-    console.error("Error deleting habit:", error);
-    return false;
-  }
+  const response = await earthboundFetch(`/api/habits/id/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
  * Get habit completions for a specific date
  */
 export async function getHabitCompletions(userId: string, date: string): Promise<HabitCompletion[]> {
-  try {
-    return await query<HabitCompletion>(
-      "SELECT * FROM habit_completions WHERE userId = ? AND date = ?",
-      [userId, date]
-    );
-  } catch (error) {
-    console.error("Error getting habit completions:", error);
-    return [];
-  }
+  const response = await earthboundFetch(`/api/habits/completions?userId=${userId}&date=${date}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<HabitCompletion[]>;
 }
 
 /**
  * Get habit completions for a date range
  */
 export async function getHabitCompletionsForRange(userId: string, startDate: string, endDate: string): Promise<HabitCompletion[]> {
-  try {
-    return await query<HabitCompletion>(
-      "SELECT * FROM habit_completions WHERE userId = ? AND date >= ? AND date <= ?",
-      [userId, startDate, endDate]
-    );
-  } catch (error) {
-    console.error("Error getting habit completions range:", error);
-    return [];
-  }
+  const response = await earthboundFetch(`/api/habits/completions?userId=${userId}&startDate=${startDate}&endDate=${endDate}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<HabitCompletion[]>;
 }
 
 /**
  * Toggle habit completion
  */
 export async function toggleHabitCompletion(habitId: number, userId: string, date: string): Promise<boolean> {
-  try {
-    // Check if already completed
-    const existing = await queryOne<HabitCompletion>(
-      "SELECT * FROM habit_completions WHERE habit_id = ? AND date = ?",
-      [habitId, date]
-    );
+  const response = await earthboundFetch(`/api/habits/completions/toggle`, {
+    method: "POST",
+    body: JSON.stringify({ habitId, date }),
+  });
 
-    if (existing) {
-      // Remove completion
-      await execute("DELETE FROM habit_completions WHERE id = ?", [existing.id]);
-      return false; // Not completed anymore
-    } else {
-      // Add completion
-      await execute(
-        "INSERT INTO habit_completions (habit_id, userId, date) VALUES (?, ?, ?)",
-        [habitId, userId, date]
-      );
-      // Check for achievements
-      checkAchievement(userId, 'habits').catch(console.error);
-      return true; // Completed
-    }
-  } catch (error) {
-    console.error("Error toggling habit completion:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to toggle habit completion: ${response.statusText}`);
+  const result = await response.json() as { completed: boolean };
+  return result.completed;
 }
 
 
@@ -263,142 +123,10 @@ export async function toggleHabitCompletion(habitId: number, userId: string, dat
 /**
  * Calculate habit statistics
  */
-/**
- * Calculate habit statistics
- */
 export async function getHabitStats(habit: Habit, userId: string): Promise<HabitStats> {
-  try {
-    const { frequency = 'daily', created_at, updated_at, completed } = habit;
-    
-    // Calculate days existed
-    const createdAtDateStr = created_at.split('T')[0].split(' ')[0];
-    const [year, month, day] = createdAtDateStr.split('-').map(Number);
-    const createdDate = new Date(year, month - 1, day);
-    
-    // For completed habits, use the completion date (updated_at) as the end date
-    let endDate: Date;
-    if (completed) {
-      const completedAtDateStr = updated_at.split('T')[0].split(' ')[0];
-      const [cYear, cMonth, cDay] = completedAtDateStr.split('-').map(Number);
-      endDate = new Date(cYear, cMonth - 1, cDay);
-    } else {
-      endDate = new Date();
-    }
-    
-    const createdMidnight = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
-    const endMidnight = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
-    const daysExisted = Math.floor((endMidnight.getTime() - createdMidnight.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
-    // Get all completions (sorted by date descending)
-    const completions = await query<HabitCompletion>(
-      "SELECT date FROM habit_completions WHERE habit_id = ? AND userId = ? ORDER BY date DESC",
-      [habit.id, userId]
-    );
-
-    if (completions.length === 0) {
-      return {
-        daysExisted,
-        currentStreak: 0,
-        longestStreak: 0,
-        totalCompletions: 0,
-      };
-    }
-
-    // Determine max allowed gap between completions based on frequency
-    let maxGapDays: number;
-    let streakAliveWindow: number; // Days from today to consider streak alive
-
-    switch (frequency) {
-      case 'daily':
-        maxGapDays = 1; // Must be consecutive days
-        streakAliveWindow = 1; // Today or yesterday
-        break;
-      case 'every_other_day':
-        maxGapDays = 2; // Can skip max 1 day between completions
-        streakAliveWindow = 2; // Within last 2 days
-        break;
-      case 'three_times_a_week':
-      case 'once_a_week':
-      case 'every_week':
-        maxGapDays = 7; // Can skip max 6 days between completions
-        streakAliveWindow = 7; // Within last week
-        break;
-      case 'monthly':
-        maxGapDays = 31; // Can skip max 30 days between completions
-        streakAliveWindow = 31; // Within last month
-        break;
-      default:
-        maxGapDays = 1;
-        streakAliveWindow = 1;
-    }
-
-    // Convert completion dates to Date objects
-    const completionDates = completions.map(c => parseISO(c.date));
-
-    // Check if streak is alive (most recent completion is within the window from end date)
-    const mostRecentCompletion = completionDates[0];
-    const daysSinceLastCompletion = differenceInCalendarDays(endDate, mostRecentCompletion);
-    const isStreakAlive = daysSinceLastCompletion <= streakAliveWindow;
-
-    // Calculate Current Streak
-    let currentStreak = 0;
-    if (isStreakAlive) {
-      currentStreak = 1; // Count the most recent completion
-
-      // Count backwards through completions
-      for (let i = 0; i < completionDates.length - 1; i++) {
-        const currentDate = completionDates[i];
-        const nextDate = completionDates[i + 1];
-
-        const gap = differenceInCalendarDays(currentDate, nextDate);
-
-        // If gap is within allowed range, continue the streak
-        if (gap <= maxGapDays) {
-          currentStreak++;
-        } else {
-          // Streak is broken
-          break;
-        }
-      }
-    }
-
-    // Calculate Longest Streak
-    let longestStreak = 0;
-    let tempStreak = 1;
-
-    // Iterate through completions in chronological order (oldest to newest)
-    const chronologicalDates = [...completionDates].reverse();
-
-    for (let i = 0; i < chronologicalDates.length - 1; i++) {
-      const currentDate = chronologicalDates[i];
-      const nextDate = chronologicalDates[i + 1];
-
-      const gap = differenceInCalendarDays(nextDate, currentDate);
-
-      if (gap <= maxGapDays) {
-        tempStreak++;
-      } else {
-        longestStreak = Math.max(longestStreak, tempStreak);
-        tempStreak = 1;
-      }
-    }
-    longestStreak = Math.max(longestStreak, tempStreak);
-
-    return {
-      daysExisted,
-      currentStreak,
-      longestStreak,
-      totalCompletions: completions.length,
-    };
-  } catch (error) {
-    console.error("Error calculating habit stats:", error);
-    return {
-      daysExisted: 0,
-      currentStreak: 0,
-      longestStreak: 0,
-      totalCompletions: 0,
-    };
-  }
+  const response = await earthboundFetch(`/api/habits/id/${habit.id}/stats?userId=${userId}`);
+  if (!response.ok) throw new Error(`Failed to get habit stats: ${response.statusText}`);
+  return response.json() as Promise<HabitStats>;
 }
 
 
@@ -407,85 +135,7 @@ export async function getHabitStats(habit: Habit, userId: string): Promise<Habit
  * Get habit completion data for charts (last 12 weeks)
  */
 export async function getHabitCompletionsForChart(userId: string): Promise<HabitCompletionChartData[]> {
-  try {
-    const habits = await getHabits(userId);
-    const today = new Date();
-
-    // Calculate the start of 12 weeks ago
-    const weeksToShow = 12;
-    const startDate = startOfWeek(new Date(today.getTime() - (weeksToShow - 1) * 7 * 24 * 60 * 60 * 1000), { weekStartsOn: 0 });
-    const startDateStr = startDate.toISOString().split('T')[0];
-    const endDateStr = today.toISOString().split('T')[0];
-
-    return await Promise.all(habits.map(async (habit) => {
-      const allCompletions = await getHabitCompletionsForRange(userId, startDateStr, endDateStr);
-      const completions = allCompletions.filter(c => c.habit_id === habit.id);
-
-      // Group completions by week
-      const weeklyMap: Map<string, number> = new Map();
-
-      // Initialize all weeks
-      for (let i = 0; i < weeksToShow; i++) {
-        const weekStart = new Date(startDate.getTime() + i * 7 * 24 * 60 * 60 * 1000);
-        const weekKey = weekStart.toISOString().split('T')[0];
-        weeklyMap.set(weekKey, 0);
-      }
-
-      // Count completions per week
-      completions.forEach(completion => {
-        const completionDate = parseISO(completion.date);
-        const weekStart = startOfWeek(completionDate, { weekStartsOn: 0 });
-        const weekKey = weekStart.toISOString().split('T')[0];
-        if (weeklyMap.has(weekKey)) {
-          weeklyMap.set(weekKey, (weeklyMap.get(weekKey) || 0) + 1);
-        }
-      });
-
-      // Calculate weekly target based on frequency
-      let weeklyTarget = 7; // Default for daily
-      switch (habit.frequency) {
-        case 'daily':
-          weeklyTarget = 7;
-          break;
-        case 'every_other_day':
-          weeklyTarget = 3;
-          break;
-        case 'three_times_a_week':
-          weeklyTarget = 3;
-          break;
-        case 'once_a_week':
-        case 'every_week':
-          weeklyTarget = 1;
-          break;
-        case 'monthly':
-          weeklyTarget = 0.25; // Roughly 1 per 4 weeks
-          break;
-        default:
-          weeklyTarget = 7;
-      }
-
-      // Convert map to array with labels
-      const weeklyData = Array.from(weeklyMap.entries())
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([week, count], index) => {
-          return {
-            week,
-            weekLabel: `W${index + 1}`,
-            completions: count,
-            target: Math.round(weeklyTarget),
-            rate: weeklyTarget > 0 ? Math.min(100, Math.round((count / weeklyTarget) * 100)) : 100,
-          };
-        });
-
-      return {
-        habitId: habit.id,
-        habitTitle: habit.title,
-        weeklyData,
-        stats: await getHabitStats(habit, userId),
-      };
-    }));
-  } catch (error) {
-    console.error("Error getting habit completions for chart:", error);
-    return [];
-  }
+  const response = await earthboundFetch(`/api/habits/charts?userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<HabitCompletionChartData[]>;
 }

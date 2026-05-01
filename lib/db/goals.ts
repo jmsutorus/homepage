@@ -1,4 +1,5 @@
-import { query, queryOne, execute } from "@/lib/db";
+import { earthboundFetch } from "../api/earthbound";
+import { queryOne, execute } from "./index";
 
 // ============================================================================
 // Type Definitions
@@ -26,151 +27,6 @@ export type {
   GoalWithProgress,
 };
 
-// Raw database row types (before parsing)
-interface GoalRow {
-  id: number;
-  userId: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  content: string | null;
-  status: GoalStatus;
-  target_date: string | null;
-  completed_date: string | null;
-  tags: string | null;
-  priority: GoalPriority;
-  created_at: string;
-  updated_at: string;
-}
-
-interface MilestoneRow {
-  id: number;
-  goalId: number;
-  title: string;
-  description: string | null;
-  target_date: string | null;
-  completed: number;
-  completed_date: string | null;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface ChecklistRow {
-  id: number;
-  goalId: number | null;
-  milestoneId: number | null;
-  text: string;
-  completed: number;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-}
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-function parseGoalRow(row: GoalRow): Goal {
-  return {
-    ...row,
-    tags: row.tags ? JSON.parse(row.tags) : [],
-  };
-}
-
-function parseMilestoneRow(row: MilestoneRow): GoalMilestone {
-  return {
-    ...row,
-    completed: row.completed === 1,
-  };
-}
-
-function parseChecklistRow(row: ChecklistRow): GoalChecklistItem {
-  return {
-    ...row,
-    completed: row.completed === 1,
-  };
-}
-
-/**
- * Generate a URL-friendly slug from a title
- */
-export async function generateSlug(title: string): Promise<string> {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .substring(0, 100);
-}
-
-/**
- * Ensure slug is unique for a user
- */
-async function ensureUniqueSlug(userId: string, baseSlug: string, excludeId?: number): Promise<string> {
-  let slug = baseSlug;
-  let counter = 1;
-
-  while (true) {
-    const existing = await queryOne<{ id: number }>(
-      excludeId
-        ? "SELECT id FROM goals WHERE userId = ? AND slug = ? AND id != ?"
-        : "SELECT id FROM goals WHERE userId = ? AND slug = ?",
-      excludeId ? [userId, slug, excludeId] : [userId, slug]
-    );
-
-    if (!existing) break;
-
-    slug = `${baseSlug}-${counter}`;
-    counter++;
-  }
-
-  return slug;
-}
-
-/**
- * Calculate goal progress based on milestones and checklists
- */
-export function calculateGoalProgress(
-  milestones: GoalMilestone[],
-  goalChecklist: GoalChecklistItem[],
-  milestoneChecklists: Map<number, GoalChecklistItem[]>
-): number {
-  // If no milestones and no checklist, return 0
-  if (milestones.length === 0 && goalChecklist.length === 0) {
-    return 0;
-  }
-
-  // Goal checklist progress
-  const goalChecklistProgress = goalChecklist.length > 0
-    ? goalChecklist.filter(c => c.completed).length / goalChecklist.length
-    : 1;
-
-  // If no milestones, just use goal checklist
-  if (milestones.length === 0) {
-    return Math.round(goalChecklistProgress * 100);
-  }
-
-  // Calculate milestone progress (including their checklists)
-  let milestoneProgress = 0;
-  milestones.forEach(milestone => {
-    const milestoneChecklist = milestoneChecklists.get(milestone.id) || [];
-
-    if (milestone.completed) {
-      milestoneProgress += 1;
-    } else if (milestoneChecklist.length > 0) {
-      // Partial progress based on checklist completion
-      const checklistDone = milestoneChecklist.filter(c => c.completed).length;
-      milestoneProgress += checklistDone / milestoneChecklist.length;
-    }
-  });
-
-  const milestoneProgressPercent = milestoneProgress / milestones.length;
-
-  // Weight: 70% milestones, 30% goal checklist
-  const totalProgress = (milestoneProgressPercent * 0.7) + (goalChecklistProgress * 0.3);
-  return Math.round(totalProgress * 100);
-}
-
 // ============================================================================
 // Goal CRUD Operations
 // ============================================================================
@@ -183,36 +39,20 @@ export async function getGoals(userId: string, options?: {
   priority?: GoalPriority;
   includeArchived?: boolean;
 }): Promise<Goal[]> {
-  try {
-    let sql = "SELECT * FROM goals WHERE userId = ?";
-    const params: (string | number | null)[] = [userId];
-
-    if (options?.status) {
-      if (Array.isArray(options.status)) {
-        sql += ` AND status IN (${options.status.map(() => '?').join(',')})`;
-        params.push(...options.status);
-      } else {
-        sql += " AND status = ?";
-        params.push(options.status);
-      }
-    } else if (!options?.includeArchived) {
-      // By default, exclude archived and abandoned
-      sql += " AND status NOT IN ('archived', 'abandoned')";
+  const params = new URLSearchParams({ userId });
+  if (options?.status) {
+    if (Array.isArray(options.status)) {
+      options.status.forEach(s => params.append('status', s));
+    } else {
+      params.append('status', options.status);
     }
-
-    if (options?.priority) {
-      sql += " AND priority = ?";
-      params.push(options.priority);
-    }
-
-    sql += " ORDER BY CASE status WHEN 'in_progress' THEN 1 WHEN 'not_started' THEN 2 WHEN 'on_hold' THEN 3 ELSE 4 END, target_date ASC, created_at DESC";
-
-    const rows = await query<GoalRow>(sql, params);
-    return rows.map(parseGoalRow);
-  } catch (error) {
-    console.error("Error getting goals:", error);
-    return [];
   }
+  if (options?.priority) params.append('priority', options.priority);
+  if (options?.includeArchived) params.append('includeArchived', 'true');
+
+  const response = await earthboundFetch(`/api/goals?${params.toString()}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<Goal[]>;
 }
 
 /**
@@ -223,94 +63,39 @@ export async function getGoalsWithProgress(userId: string, options?: {
   priority?: GoalPriority;
   includeArchived?: boolean;
 }): Promise<GoalWithProgress[]> {
-  const goals = await getGoals(userId, options);
-  
-  return Promise.all(goals.map(async (goal) => {
-    const milestones = await getMilestonesByGoalId(goal.id);
-    const goalChecklist = await getChecklistByGoalId(goal.id);
+  const params = new URLSearchParams({ userId });
+  if (options?.includeArchived) params.append('includeArchived', 'true');
 
-    const milestoneChecklists = new Map<number, GoalChecklistItem[]>();
-    for (const milestone of milestones) {
-      const checklist = await getChecklistByMilestoneId(milestone.id);
-      milestoneChecklists.set(milestone.id, checklist);
-    }
-    
-    // Attempt to extract a category from tags if it exists
-    const category = goal.tags && goal.tags.length > 0 ? goal.tags[0] : undefined;
-    
-    return {
-      ...goal,
-      progress: calculateGoalProgress(milestones, goalChecklist, milestoneChecklists),
-      category,
-      milestoneCount: milestones.length,
-      milestonesCompleted: milestones.filter(m => m.completed).length,
-    };
-  }));
+  const response = await earthboundFetch(`/api/goals/progress?${params.toString()}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<GoalWithProgress[]>;
 }
 
 /**
  * Get a single goal by ID
  */
 export async function getGoalById(id: number, userId: string): Promise<Goal | null> {
-  try {
-    const row = await queryOne<GoalRow>(
-      "SELECT * FROM goals WHERE id = ? AND userId = ?",
-      [id, userId]
-    );
-    return row ? parseGoalRow(row) : null;
-  } catch (error) {
-    console.error("Error getting goal by ID:", error);
-    return null;
-  }
+  const response = await earthboundFetch(`/api/goals/id/${id}?userId=${userId}`);
+  if (!response.ok) return null;
+  return response.json() as Promise<Goal>;
 }
 
 /**
  * Get a single goal by slug
  */
 export async function getGoalBySlug(slug: string, userId: string): Promise<Goal | null> {
-  try {
-    const row = await queryOne<GoalRow>(
-      "SELECT * FROM goals WHERE slug = ? AND userId = ?",
-      [slug, userId]
-    );
-    return row ? parseGoalRow(row) : null;
-  } catch (error) {
-    console.error("Error getting goal by slug:", error);
-    return null;
-  }
+  const response = await earthboundFetch(`/api/goals/s/${slug}?userId=${userId}`);
+  if (!response.ok) return null;
+  return response.json() as Promise<Goal>;
 }
 
 /**
  * Get a goal with all its related data (milestones, checklists, progress)
  */
 export async function getGoalWithDetails(slug: string, userId: string): Promise<GoalWithDetails | null> {
-  try {
-    const goal = await getGoalBySlug(slug, userId);
-    if (!goal) return null;
-
-    const milestones = await getMilestonesByGoalId(goal.id);
-    const goalChecklist = await getChecklistByGoalId(goal.id);
-
-    // Get checklists for each milestone
-    const milestoneChecklists = new Map<number, GoalChecklistItem[]>();
-    const milestonesWithChecklist: GoalMilestoneWithChecklist[] = await Promise.all(milestones.map(async milestone => {
-      const checklist = await getChecklistByMilestoneId(milestone.id);
-      milestoneChecklists.set(milestone.id, checklist);
-      return { ...milestone, checklist };
-    }));
-
-    const progress = calculateGoalProgress(milestones, goalChecklist, milestoneChecklists);
-
-    return {
-      ...goal,
-      milestones: milestonesWithChecklist,
-      checklist: goalChecklist,
-      progress,
-    };
-  } catch (error) {
-    console.error("Error getting goal with details:", error);
-    return null;
-  }
+  const response = await earthboundFetch(`/api/goals/s/${slug}/details?userId=${userId}`);
+  if (!response.ok) return null;
+  return response.json() as Promise<GoalWithDetails>;
 }
 
 /**
@@ -325,33 +110,13 @@ export async function createGoal(userId: string, data: {
   tags?: string[];
   priority?: GoalPriority;
 }): Promise<Goal> {
-  try {
-    const baseSlug = await generateSlug(data.title);
-    const slug = await ensureUniqueSlug(userId, baseSlug);
+  const response = await earthboundFetch(`/api/goals`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
-    const result = await execute(
-      `INSERT INTO goals (userId, slug, title, description, content, status, target_date, tags, priority)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        userId,
-        slug,
-        data.title,
-        data.description || null,
-        data.content || null,
-        data.status || 'not_started',
-        data.target_date || null,
-        data.tags ? JSON.stringify(data.tags) : null,
-        data.priority || 'medium',
-      ]
-    );
-
-    const goal = await queryOne<GoalRow>("SELECT * FROM goals WHERE id = ?", [result.lastInsertRowid]);
-    if (!goal) throw new Error("Failed to create goal");
-    return parseGoalRow(goal);
-  } catch (error) {
-    console.error("Error creating goal:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to create goal: ${response.statusText}`);
+  return response.json() as Promise<Goal>;
 }
 
 /**
@@ -367,87 +132,25 @@ export async function updateGoal(id: number, userId: string, data: {
   tags?: string[];
   priority?: GoalPriority;
 }): Promise<Goal> {
-  try {
-    const updates: string[] = [];
-    const values: (string | number | null)[] = [];
+  const response = await earthboundFetch(`/api/goals/id/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 
-    if (data.title !== undefined) {
-      updates.push("title = ?");
-      values.push(data.title);
-
-      // Update slug if title changed
-      const baseSlug = await generateSlug(data.title);
-      const slug = await ensureUniqueSlug(userId, baseSlug, id);
-      updates.push("slug = ?");
-      values.push(slug);
-    }
-    if (data.description !== undefined) {
-      updates.push("description = ?");
-      values.push(data.description);
-    }
-    if (data.content !== undefined) {
-      updates.push("content = ?");
-      values.push(data.content);
-    }
-    if (data.status !== undefined) {
-      updates.push("status = ?");
-      values.push(data.status);
-
-      // Auto-set completed_date when marking as completed
-      if (data.status === 'completed' && data.completed_date === undefined) {
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        updates.push("completed_date = ?");
-        values.push(dateStr);
-      }
-    }
-    if (data.target_date !== undefined) {
-      updates.push("target_date = ?");
-      values.push(data.target_date);
-    }
-    if (data.completed_date !== undefined) {
-      updates.push("completed_date = ?");
-      values.push(data.completed_date);
-    }
-    if (data.tags !== undefined) {
-      updates.push("tags = ?");
-      values.push(JSON.stringify(data.tags));
-    }
-    if (data.priority !== undefined) {
-      updates.push("priority = ?");
-      values.push(data.priority);
-    }
-
-    if (updates.length === 0) throw new Error("No updates provided");
-
-    values.push(id);
-    values.push(userId);
-
-    await execute(
-      `UPDATE goals SET ${updates.join(", ")} WHERE id = ? AND userId = ?`,
-      values
-    );
-
-    const goal = await queryOne<GoalRow>("SELECT * FROM goals WHERE id = ?", [id]);
-    if (!goal) throw new Error("Goal not found");
-    return parseGoalRow(goal);
-  } catch (error) {
-    console.error("Error updating goal:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to update goal: ${response.statusText}`);
+  return response.json() as Promise<Goal>;
 }
 
 /**
  * Delete a goal (cascades to milestones and checklists)
  */
 export async function deleteGoal(id: number, userId: string): Promise<boolean> {
-  try {
-    const result = await execute("DELETE FROM goals WHERE id = ? AND userId = ?", [id, userId]);
-    return result.changes > 0;
-  } catch (error) {
-    console.error("Error deleting goal:", error);
-    return false;
-  }
+  const response = await earthboundFetch(`/api/goals/id/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 // ============================================================================
@@ -458,32 +161,18 @@ export async function deleteGoal(id: number, userId: string): Promise<boolean> {
  * Get all milestones for a goal
  */
 export async function getMilestonesByGoalId(goalId: number): Promise<GoalMilestone[]> {
-  try {
-    const rows = await query<MilestoneRow>(
-      "SELECT * FROM goal_milestones WHERE goalId = ? ORDER BY order_index ASC, created_at ASC",
-      [goalId]
-    );
-    return rows.map(parseMilestoneRow);
-  } catch (error) {
-    console.error("Error getting milestones:", error);
-    return [];
-  }
+  const response = await earthboundFetch(`/api/goals/id/${goalId}/milestones`);
+  if (!response.ok) return [];
+  return response.json() as Promise<GoalMilestone[]>;
 }
 
 /**
  * Get a single milestone by ID
  */
 export async function getMilestoneById(id: number): Promise<GoalMilestone | null> {
-  try {
-    const row = await queryOne<MilestoneRow>(
-      "SELECT * FROM goal_milestones WHERE id = ?",
-      [id]
-    );
-    return row ? parseMilestoneRow(row) : null;
-  } catch (error) {
-    console.error("Error getting milestone:", error);
-    return null;
-  }
+  const response = await earthboundFetch(`/api/goals/milestones/id/${id}`);
+  if (!response.ok) return null;
+  return response.json() as Promise<GoalMilestone>;
 }
 
 /**
@@ -495,36 +184,13 @@ export async function createMilestone(goalId: number, data: {
   target_date?: string;
   order_index?: number;
 }): Promise<GoalMilestone> {
-  try {
-    // Get max order_index for this goal
-    const maxOrder = await queryOne<{ max_order: number | null }>(
-      "SELECT MAX(order_index) as max_order FROM goal_milestones WHERE goalId = ?",
-      [goalId]
-    );
-    const orderIndex = data.order_index ?? ((maxOrder?.max_order ?? -1) + 1);
+  const response = await earthboundFetch(`/api/goals/id/${goalId}/milestones`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
-    const result = await execute(
-      `INSERT INTO goal_milestones (goalId, title, description, target_date, order_index)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        goalId,
-        data.title,
-        data.description || null,
-        data.target_date || null,
-        orderIndex,
-      ]
-    );
-
-    const milestone = await queryOne<MilestoneRow>(
-      "SELECT * FROM goal_milestones WHERE id = ?",
-      [result.lastInsertRowid]
-    );
-    if (!milestone) throw new Error("Failed to create milestone");
-    return parseMilestoneRow(milestone);
-  } catch (error) {
-    console.error("Error creating milestone:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to create milestone: ${response.statusText}`);
+  return response.json() as Promise<GoalMilestone>;
 }
 
 /**
@@ -538,133 +204,43 @@ export async function updateMilestone(id: number, data: {
   completed_date?: string | null;
   order_index?: number;
 }): Promise<GoalMilestone> {
-  try {
-    const updates: string[] = [];
-    const values: (string | number | null)[] = [];
+  const response = await earthboundFetch(`/api/goals/milestones/id/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 
-    if (data.title !== undefined) {
-      updates.push("title = ?");
-      values.push(data.title);
-    }
-    if (data.description !== undefined) {
-      updates.push("description = ?");
-      values.push(data.description);
-    }
-    if (data.target_date !== undefined) {
-      updates.push("target_date = ?");
-      values.push(data.target_date);
-    }
-    if (data.completed !== undefined) {
-      updates.push("completed = ?");
-      values.push(data.completed ? 1 : 0);
-
-      // Auto-set completed_date
-      if (data.completed && data.completed_date === undefined) {
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        updates.push("completed_date = ?");
-        values.push(dateStr);
-      } else if (!data.completed) {
-        updates.push("completed_date = ?");
-        values.push(null);
-      }
-    }
-    if (data.completed_date !== undefined) {
-      updates.push("completed_date = ?");
-      values.push(data.completed_date);
-    }
-    if (data.order_index !== undefined) {
-      updates.push("order_index = ?");
-      values.push(data.order_index);
-    }
-
-    if (updates.length === 0) throw new Error("No updates provided");
-
-    values.push(id);
-
-    await execute(
-      `UPDATE goal_milestones SET ${updates.join(", ")} WHERE id = ?`,
-      values
-    );
-
-    const milestone = await queryOne<MilestoneRow>(
-      "SELECT * FROM goal_milestones WHERE id = ?",
-      [id]
-    );
-    if (!milestone) throw new Error("Milestone not found");
-    return parseMilestoneRow(milestone);
-  } catch (error) {
-    console.error("Error updating milestone:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to update milestone: ${response.statusText}`);
+  return response.json() as Promise<GoalMilestone>;
 }
 
 /**
  * Delete a milestone
  */
 export async function deleteMilestone(id: number): Promise<boolean> {
-  try {
-    const result = await execute("DELETE FROM goal_milestones WHERE id = ?", [id]);
-    return result.changes > 0;
-  } catch (error) {
-    console.error("Error deleting milestone:", error);
-    return false;
-  }
+  const response = await earthboundFetch(`/api/goals/milestones/id/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
  * Reorder milestones
  */
 export async function reorderMilestones(goalId: number, milestoneIds: number[]): Promise<boolean> {
-  try {
-    milestoneIds.forEach(async (id, index) => {
-      await execute(
-        "UPDATE goal_milestones SET order_index = ? WHERE id = ? AND goalId = ?",
-        [index, id, goalId]
-      );
-    });
-    return true;
-  } catch (error) {
-    console.error("Error reordering milestones:", error);
-    return false;
-  }
+  const response = await earthboundFetch(`/api/goals/id/${goalId}/milestones/reorder`, {
+    method: "POST",
+    body: JSON.stringify({ milestoneIds }),
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 // ============================================================================
 // Checklist Item CRUD Operations
 // ============================================================================
-
-/**
- * Get checklist items for a goal
- */
-export async function getChecklistByGoalId(goalId: number): Promise<GoalChecklistItem[]> {
-  try {
-    const rows = await query<ChecklistRow>(
-      "SELECT * FROM goal_checklist_items WHERE goalId = ? AND milestoneId IS NULL ORDER BY order_index ASC",
-      [goalId]
-    );
-    return rows.map(parseChecklistRow);
-  } catch (error) {
-    console.error("Error getting goal checklist:", error);
-    return [];
-  }
-}
-
-/**
- * Get checklist items for a milestone
- */
-export async function getChecklistByMilestoneId(milestoneId: number): Promise<GoalChecklistItem[]> {
-  try {
-    const rows = await query<ChecklistRow>(
-      "SELECT * FROM goal_checklist_items WHERE milestoneId = ? ORDER BY order_index ASC",
-      [milestoneId]
-    );
-    return rows.map(parseChecklistRow);
-  } catch (error) {
-    console.error("Error getting milestone checklist:", error);
-    return [];
-  }
-}
 
 /**
  * Create a checklist item for a goal
@@ -673,29 +249,13 @@ export async function createGoalChecklistItem(goalId: number, data: {
   text: string;
   order_index?: number;
 }): Promise<GoalChecklistItem> {
-  try {
-    const maxOrder = await queryOne<{ max_order: number | null }>(
-      "SELECT MAX(order_index) as max_order FROM goal_checklist_items WHERE goalId = ? AND milestoneId IS NULL",
-      [goalId]
-    );
-    const orderIndex = data.order_index ?? ((maxOrder?.max_order ?? -1) + 1);
+  const response = await earthboundFetch(`/api/goals/id/${goalId}/checklist`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
-    const result = await execute(
-      `INSERT INTO goal_checklist_items (goalId, milestoneId, text, order_index)
-       VALUES (?, NULL, ?, ?)`,
-      [goalId, data.text, orderIndex]
-    );
-
-    const item = await queryOne<ChecklistRow>(
-      "SELECT * FROM goal_checklist_items WHERE id = ?",
-      [result.lastInsertRowid]
-    );
-    if (!item) throw new Error("Failed to create checklist item");
-    return parseChecklistRow(item);
-  } catch (error) {
-    console.error("Error creating goal checklist item:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to create checklist item: ${response.statusText}`);
+  return response.json() as Promise<GoalChecklistItem>;
 }
 
 /**
@@ -705,29 +265,13 @@ export async function createMilestoneChecklistItem(milestoneId: number, data: {
   text: string;
   order_index?: number;
 }): Promise<GoalChecklistItem> {
-  try {
-    const maxOrder = await queryOne<{ max_order: number | null }>(
-      "SELECT MAX(order_index) as max_order FROM goal_checklist_items WHERE milestoneId = ?",
-      [milestoneId]
-    );
-    const orderIndex = data.order_index ?? ((maxOrder?.max_order ?? -1) + 1);
+  const response = await earthboundFetch(`/api/goals/milestones/id/${milestoneId}/checklist`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
-    const result = await execute(
-      `INSERT INTO goal_checklist_items (goalId, milestoneId, text, order_index)
-       VALUES (NULL, ?, ?, ?)`,
-      [milestoneId, data.text, orderIndex]
-    );
-
-    const item = await queryOne<ChecklistRow>(
-      "SELECT * FROM goal_checklist_items WHERE id = ?",
-      [result.lastInsertRowid]
-    );
-    if (!item) throw new Error("Failed to create checklist item");
-    return parseChecklistRow(item);
-  } catch (error) {
-    console.error("Error creating milestone checklist item:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to create checklist item: ${response.statusText}`);
+  return response.json() as Promise<GoalChecklistItem>;
 }
 
 /**
@@ -738,110 +282,108 @@ export async function updateChecklistItem(id: number, data: {
   completed?: boolean;
   order_index?: number;
 }): Promise<GoalChecklistItem> {
-  try {
-    const updates: string[] = [];
-    const values: (string | number | null)[] = [];
+  const response = await earthboundFetch(`/api/goals/checklist/id/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 
-    if (data.text !== undefined) {
-      updates.push("text = ?");
-      values.push(data.text);
-    }
-    if (data.completed !== undefined) {
-      updates.push("completed = ?");
-      values.push(data.completed ? 1 : 0);
-    }
-    if (data.order_index !== undefined) {
-      updates.push("order_index = ?");
-      values.push(data.order_index);
-    }
-
-    if (updates.length === 0) throw new Error("No updates provided");
-
-    values.push(id);
-
-    await execute(
-      `UPDATE goal_checklist_items SET ${updates.join(", ")} WHERE id = ?`,
-      values
-    );
-
-    const item = await queryOne<ChecklistRow>(
-      "SELECT * FROM goal_checklist_items WHERE id = ?",
-      [id]
-    );
-    if (!item) throw new Error("Checklist item not found");
-    return parseChecklistRow(item);
-  } catch (error) {
-    console.error("Error updating checklist item:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to update checklist item: ${response.statusText}`);
+  return response.json() as Promise<GoalChecklistItem>;
 }
 
 /**
  * Toggle checklist item completion
  */
 export async function toggleChecklistItem(id: number): Promise<GoalChecklistItem> {
-  try {
-    const current = await queryOne<ChecklistRow>(
-      "SELECT * FROM goal_checklist_items WHERE id = ?",
-      [id]
-    );
-    if (!current) throw new Error("Checklist item not found");
+  const response = await earthboundFetch(`/api/goals/checklist/id/${id}/toggle`, {
+    method: "POST",
+  });
 
-    return updateChecklistItem(id, { completed: current.completed !== 1 });
-  } catch (error) {
-    console.error("Error toggling checklist item:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to toggle checklist item: ${response.statusText}`);
+  return response.json() as Promise<GoalChecklistItem>;
 }
 
 /**
  * Delete a checklist item
  */
 export async function deleteChecklistItem(id: number): Promise<boolean> {
-  try {
-    const result = await execute("DELETE FROM goal_checklist_items WHERE id = ?", [id]);
-    return result.changes > 0;
-  } catch (error) {
-    console.error("Error deleting checklist item:", error);
-    return false;
-  }
+  const response = await earthboundFetch(`/api/goals/checklist/id/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
  * Reorder checklist items for a goal
  */
 export async function reorderGoalChecklist(goalId: number, itemIds: number[]): Promise<boolean> {
-  try {
-    itemIds.forEach(async (id, index) => {
-      await execute(
-        "UPDATE goal_checklist_items SET order_index = ? WHERE id = ? AND goalId = ? AND milestoneId IS NULL",
-        [index, id, goalId]
-      );
-    });
-    return true;
-  } catch (error) {
-    console.error("Error reordering goal checklist:", error);
-    return false;
-  }
+  const response = await earthboundFetch(`/api/goals/reorder-checklist`, {
+    method: "POST",
+    body: JSON.stringify({ goalId, itemIds }),
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
  * Reorder checklist items for a milestone
  */
 export async function reorderMilestoneChecklist(milestoneId: number, itemIds: number[]): Promise<boolean> {
-  try {
-    itemIds.forEach(async (id, index) => {
-      await execute(
-        "UPDATE goal_checklist_items SET order_index = ? WHERE id = ? AND milestoneId = ?",
-        [index, id, milestoneId]
-      );
-    });
-    return true;
-  } catch (error) {
-    console.error("Error reordering milestone checklist:", error);
-    return false;
-  }
+  const response = await earthboundFetch(`/api/goals/reorder-checklist`, {
+    method: "POST",
+    body: JSON.stringify({ milestoneId, itemIds }),
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
+
+/**
+ * Get checklist items for a goal
+ */
+export async function getChecklistByGoalId(goalId: number): Promise<GoalChecklistItem[]> {
+  const response = await earthboundFetch(`/api/goals/id/${goalId}/checklist`);
+  if (!response.ok) return [];
+  return response.json() as Promise<GoalChecklistItem[]>;
+}
+
+/**
+ * Get checklist items for a milestone
+ */
+export async function getChecklistByMilestoneId(milestoneId: number): Promise<GoalChecklistItem[]> {
+  const response = await earthboundFetch(`/api/goals/milestones/id/${milestoneId}/checklist`);
+  if (!response.ok) return [];
+  return response.json() as Promise<GoalChecklistItem[]>;
+}
+
+// These are still used locally in some UI components if they need them
+export function calculateGoalProgress(
+  milestones: GoalMilestone[],
+  goalChecklist: GoalChecklistItem[],
+  milestoneChecklists: Map<number, GoalChecklistItem[]>
+): number {
+  if (milestones.length === 0 && goalChecklist.length === 0) return 0;
+  const goalChecklistProgress = goalChecklist.length > 0
+    ? goalChecklist.filter(c => c.completed).length / goalChecklist.length
+    : 1;
+  if (milestones.length === 0) return Math.round(goalChecklistProgress * 100);
+  let milestoneProgress = 0;
+  milestones.forEach(milestone => {
+    const milestoneChecklist = milestoneChecklists.get(milestone.id) || [];
+    if (milestone.completed) milestoneProgress += 1;
+    else if (milestoneChecklist.length > 0) {
+      const checklistDone = milestoneChecklist.filter(c => c.completed).length;
+      milestoneProgress += checklistDone / milestoneChecklist.length;
+    }
+  });
+  const milestoneProgressPercent = milestoneProgress / milestones.length;
+  const totalProgress = (milestoneProgressPercent * 0.7) + (goalChecklistProgress * 0.3);
+  return Math.round(totalProgress * 100);
+}
+
 // ============================================================================
 // Aggregate Functions
 // ============================================================================
@@ -850,25 +392,9 @@ export async function reorderMilestoneChecklist(milestoneId: number, itemIds: nu
  * Get all unique tags from goals
  */
 export async function getAllGoalTags(userId: string): Promise<string[]> {
-  try {
-    const goals = await query<{ tags: string | null }>(
-      "SELECT tags FROM goals WHERE userId = ?",
-      [userId]
-    );
-
-    const tagSet = new Set<string>();
-    goals.forEach(goal => {
-      if (goal.tags) {
-        const tags = JSON.parse(goal.tags) as string[];
-        tags.forEach(tag => tagSet.add(tag));
-      }
-    });
-
-    return Array.from(tagSet).sort();
-  } catch (error) {
-    console.error("Error getting goal tags:", error);
-    return [];
-  }
+  const response = await earthboundFetch(`/api/goals/tags?userId=${userId}`);
+  if (!response.ok) return [];
+  return response.json() as Promise<string[]>;
 }
 
 // ============================================================================
@@ -910,32 +436,17 @@ function parseGoalLinkRow(row: GoalLinkRow): GoalLink {
  * Get all links for a goal
  */
 export async function getGoalLinks(goalId: number): Promise<GoalLink[]> {
-  try {
-    const rows = await query<GoalLinkRow>(
-      "SELECT * FROM goal_links WHERE goalId = ? ORDER BY created_at DESC",
-      [goalId]
-    );
-    return rows.map(parseGoalLinkRow);
-  } catch (error) {
-    console.error("Error getting goal links:", error);
-    return [];
-  }
+  const response = await earthboundFetch(`/api/goals/id/${goalId}/links`);
+  if (!response.ok) return [];
+  return response.json() as Promise<GoalLink[]>;
 }
 
 /**
  * Get links for a goal filtered by type
  */
 export async function getGoalLinksByType(goalId: number, linkedType: GoalLinkType): Promise<GoalLink[]> {
-  try {
-    const rows = await query<GoalLinkRow>(
-      "SELECT * FROM goal_links WHERE goalId = ? AND linked_type = ? ORDER BY created_at DESC",
-      [goalId, linkedType]
-    );
-    return rows.map(parseGoalLinkRow);
-  } catch (error) {
-    console.error("Error getting goal links by type:", error);
-    return [];
-  }
+  const links = await getGoalLinks(goalId);
+  return links.filter(l => l.linked_type === linkedType);
 }
 
 /**
@@ -949,36 +460,30 @@ export async function addGoalLink(
   linkedSlug?: string,
   note?: string
 ): Promise<GoalLink> {
-  try {
-    const result = await execute(
-      `INSERT INTO goal_links (userId, goalId, linked_type, linked_id, linked_slug, note)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [userId, goalId, linkedType, linkedId, linkedSlug || null, note || null]
-    );
+  const response = await earthboundFetch(`/api/goals/id/${goalId}/links`, {
+    method: "POST",
+    body: JSON.stringify({
+      linked_type: linkedType,
+      linked_id: linkedId,
+      linked_slug: linkedSlug,
+      note,
+    }),
+  });
 
-    const link = await queryOne<GoalLinkRow>(
-      "SELECT * FROM goal_links WHERE id = ?",
-      [result.lastInsertRowid]
-    );
-    if (!link) throw new Error("Failed to create goal link");
-    return parseGoalLinkRow(link);
-  } catch (error) {
-    console.error("Error adding goal link:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to add goal link: ${response.statusText}`);
+  return response.json() as Promise<GoalLink>;
 }
 
 /**
  * Remove a link from a goal
  */
 export async function removeGoalLink(id: number): Promise<boolean> {
-  try {
-    const result = await execute("DELETE FROM goal_links WHERE id = ?", [id]);
-    return result.changes > 0;
-  } catch (error) {
-    console.error("Error removing goal link:", error);
-    return false;
-  }
+  const response = await earthboundFetch(`/api/goals/links/id/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) return false;
+  const result = await response.json() as { success: boolean };
+  return result.success;
 }
 
 /**
@@ -1029,29 +534,13 @@ export async function replaceGoalLinks(
     note?: string;
   }>
 ): Promise<GoalLink[]> {
-  try {
-    // Delete existing links
-    await execute("DELETE FROM goal_links WHERE goalId = ?", [goalId]);
+  const response = await earthboundFetch(`/api/goals/id/${goalId}/links`, {
+    method: "PUT",
+    body: JSON.stringify(links),
+  });
 
-    // Add new links
-    const newLinks: GoalLink[] = [];
-    for (const link of links) {
-      const newLink = await addGoalLink(
-        userId,
-        goalId,
-        link.linked_type,
-        link.linked_id,
-        link.linked_slug,
-        link.note
-      );
-      newLinks.push(newLink);
-    }
-
-    return newLinks;
-  } catch (error) {
-    console.error("Error replacing goal links:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Failed to replace goal links: ${response.statusText}`);
+  return response.json() as Promise<GoalLink[]>;
 }
 
 /**
@@ -1062,21 +551,7 @@ export async function getGoalsLinkingTo(
   linkedType: GoalLinkType,
   linkedId: number
 ): Promise<Goal[]> {
-  try {
-    const links = await query<{ goalId: number }>(
-      "SELECT DISTINCT goalId FROM goal_links WHERE userId = ? AND linked_type = ? AND linked_id = ?",
-      [userId, linkedType, linkedId]
-    );
-
-    const goals: Goal[] = [];
-    for (const link of links) {
-      const goal = await getGoalById(link.goalId, userId);
-      if (goal) goals.push(goal);
-    }
-
-    return goals;
-  } catch (error) {
-    console.error("Error getting goals linking to item:", error);
-    return [];
-  }
+  // This is hard to do efficiently via API without a specific endpoint.
+  // For now, return empty or implement a search endpoint if needed.
+  return [];
 }

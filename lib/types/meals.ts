@@ -1,26 +1,29 @@
 import {
   type Meal,
-  type Difficulty,
 } from "@jmsutorus/earthbound-shared";
 
+export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
+
 // Parsing helpers
-export function parseSteps(stepsJson: string | null): string[] {
-  if (!stepsJson) return [];
+export function parseSteps(steps: string | string[] | null): string[] {
+  if (!steps) return [];
+  if (Array.isArray(steps)) return steps;
   try {
-    const parsed = JSON.parse(stepsJson);
+    const parsed = JSON.parse(steps);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return stepsJson.split("\n").filter(Boolean);
+    return steps.split("\n").filter(Boolean);
   }
 }
 
-export function parseTags(tagsJson: string | null): string[] {
-  if (!tagsJson) return [];
+export function parseTags(tags: string | string[] | null): string[] {
+  if (!tags) return [];
+  if (Array.isArray(tags)) return tags;
   try {
-    const parsed = JSON.parse(tagsJson);
+    const parsed = JSON.parse(tags);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return tagsJson.split(",").map((t) => t.trim()).filter(Boolean);
+    return tags.split(",").map((t) => t.trim()).filter(Boolean);
   }
 }
 
@@ -39,7 +42,6 @@ export type {
   DailyMeal,
   DailyMealWithRecipe,
   DailyMealInput,
-  Difficulty,
 } from "@jmsutorus/earthbound-shared";
 
 export {
