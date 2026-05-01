@@ -33,8 +33,9 @@ export async function earthboundFetch(path: string, options: RequestInit = {}) {
     // In many cases, baseUrl is the audience
     const client = await googleAuth.getIdTokenClient(baseUrl);
     const authHeaders = await client.getRequestHeaders(url);
-    if (authHeaders.Authorization) {
-      headers.set("Authorization", authHeaders.Authorization);
+    const authValue = (authHeaders as Record<string, any>)['Authorization'];
+    if (authValue) {
+      headers.set("Authorization", authValue);
     }
   } catch (err) {
     // Fallback or log error in non-GCP environments
