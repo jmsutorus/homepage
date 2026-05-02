@@ -17,6 +17,8 @@ import { TreeSuccess } from "@/components/ui/animations/tree-success";
 import { useSuccessDialog } from "@/hooks/use-success-dialog";
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 import { EditorialInput, EditorialTextarea } from '@/components/ui/editorial-input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface DrinkFormDialogProps {
   open: boolean;
@@ -50,6 +52,8 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
   const [bodyFeel, setBodyFeel] = useState('');
   const [servingTemp, setServingTemp] = useState('');
   const [pairings, setPairings] = useState('');
+  const [published, setPublished] = useState(true);
+  const [featured, setFeatured] = useState(false);
 
   // Photo upload state
   const [photoMode, setPhotoMode] = useState<'upload' | 'url'>('upload');
@@ -74,6 +78,8 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
       setBodyFeel(initialData.body_feel || '');
       setServingTemp(initialData.serving_temp || '');
       setPairings(initialData.pairings || '');
+      setPublished(initialData.published !== false);
+      setFeatured(initialData.featured || false);
     } else {
       setName('');
       setType('beer');
@@ -90,6 +96,8 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
       setBodyFeel('');
       setServingTemp('');
       setPairings('');
+      setPublished(true);
+      setFeatured(false);
     }
   }, [initialData, open]);
 
@@ -159,6 +167,8 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
         body_feel: bodyFeel || undefined,
         serving_temp: servingTemp || undefined,
         pairings: pairings || undefined,
+        published,
+        featured,
       };
 
       const url = initialData 
@@ -473,6 +483,56 @@ export function DrinkFormDialog({ open, onOpenChange, onSuccess, initialData }: 
                         )}
                       </div>
                     )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 04: Visibility */}
+              <div className="space-y-8">
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 04</span>
+                  <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Visibility & Presentation</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl min-h-[64px]">
+                    <Checkbox 
+                      id="published" 
+                      checked={published} 
+                      onCheckedChange={(checked) => setPublished(checked === true)}
+                      className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary h-5 w-5"
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label
+                        htmlFor="published"
+                        className="text-base font-lexend font-bold text-media-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Publish to Public Profile
+                      </Label>
+                      <p className="text-xs text-media-on-surface-variant font-lexend italic">
+                        Making this public allows others to see your collection.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl min-h-[64px]">
+                    <Checkbox 
+                      id="featured" 
+                      checked={featured} 
+                      onCheckedChange={(checked) => setFeatured(checked === true)}
+                      className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary h-5 w-5"
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label
+                        htmlFor="featured"
+                        className="text-base font-lexend font-bold text-media-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Feature on Homepage
+                      </Label>
+                      <p className="text-xs text-media-on-surface-variant font-lexend italic">
+                        Highlights this selection at the top of your public profile.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

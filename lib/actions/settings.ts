@@ -243,5 +243,76 @@ export async function updateProfileImage(formData: FormData): Promise<{ success:
   }
 }
 
+export async function updateShowProfile(enabled: boolean): Promise<{ success: boolean; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const db = getDatabase();
+    await db.execute({
+      sql: "UPDATE user SET showProfile = ?, updatedAt = ? WHERE id = ?",
+      args: [enabled ? 1 : 0, Date.now(), session.user.id]
+    });
+
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/settings");
+    revalidatePath(`/u/${session.user.id}`); // Clear cache for public profile if we know the slug
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update profile visibility:", error);
+    return { success: false, error: "Failed to update visibility" };
+  }
+}
+
+export async function updatePublishedPhoto(formData: FormData): Promise<{ success: boolean; error?: string; image?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const file = formData.get("file") as File | null;
+    if (!file || file.size === 0) {
+      return { success: false, error: "No file provided" };
+    }
+
+    const { convertToWebP } = await import("@/lib/services/image-processor");
+    const { getAdminStorage } = await import("@/lib/firebase/admin");
+    const { getDownloadURL } = await import("firebase-admin/storage");
+
+    const { buffer, fileName: convertedFileName, contentType } = await convertToWebP(file);
+    const fileExt = convertedFileName.split(".").pop() || "webp";
+    const fileName = `public-photos/${session.user.id}-${Date.now()}.${fileExt}`;
+    
+    const bucket = getAdminStorage().bucket();
+    const storageFile = bucket.file(fileName);
+
+    await storageFile.save(buffer, {
+      metadata: {
+        contentType: contentType,
+      },
+    });
+
+    const imageUrl = await getDownloadURL(storageFile);
+
+    const db = getDatabase();
+    await db.execute({
+      sql: "UPDATE user SET publishedPhoto = ?, updatedAt = ? WHERE id = ?",
+      args: [imageUrl, Date.now(), session.user.id]
+    });
+
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/settings");
+
+    return { success: true, image: imageUrl };
+  } catch (error) {
+    console.error("Failed to update published photo:", error);
+    return { success: false, error: "Failed to update published photo" };
+  }
+}
+
 
 

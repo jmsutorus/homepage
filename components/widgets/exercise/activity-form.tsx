@@ -8,6 +8,9 @@ import { toast } from "sonner";
 import { TreeSuccess } from "@/components/ui/animations/tree-success";
 import { useSuccessDialog } from "@/hooks/use-success-dialog";
 import { EditorialInput, EditorialTextarea } from "@/components/ui/editorial-input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+
 
 interface ActivityFormProps {
   editActivity?: WorkoutActivity | null;
@@ -37,6 +40,8 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete }: Ac
   const [type, setType] = useState<"run" | "cardio" | "strength" | "flexibility" | "sports" | "mixed" | "other">("cardio");
   const [notes, setNotes] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
+  const [published, setPublished] = useState(true);
+  const [featured, setFeatured] = useState(false);
 
   // Load edit activity data when provided
   useEffect(() => {
@@ -55,6 +60,8 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete }: Ac
       setType(validTypes.includes(rawType) ? (rawType as any) : "other");
       setNotes(editActivity.notes || "");
       setIsCompleted(editActivity.completed || false);
+      setPublished(editActivity.published !== false);
+      setFeatured(editActivity.featured || false);
     } else if (activityId !== null) {
         // Only reset if we were previously editing an activity
         resetForm();
@@ -71,6 +78,8 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete }: Ac
     setType("cardio");
     setNotes("");
     setIsCompleted(false);
+    setPublished(true);
+    setFeatured(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,6 +100,8 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete }: Ac
         notes,
         distance: type === 'run' ? distance : undefined,
         completed: isCompleted,
+        published,
+        featured,
       };
 
       const body = isEditing
@@ -284,6 +295,52 @@ export function ActivityForm({ editActivity, onSuccess, onCancel, onDelete }: Ac
                     <p className="text-[10px] font-bold uppercase tracking-widest text-media-on-surface-variant/60">
                       Mark this activity as completed
                     </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Visibility Section */}
+              <div className="space-y-6 pt-6 border-t border-media-outline-variant/10">
+                <h4 className="text-[10px] uppercase tracking-widest font-black text-media-secondary">Visibility & Presentation</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl min-h-[64px] border border-media-outline-variant/10">
+                    <Checkbox 
+                      id="published" 
+                      checked={published} 
+                      onCheckedChange={(checked) => setPublished(checked === true)}
+                      className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary h-5 w-5"
+                    />
+                    <div className="grid gap-1 leading-none">
+                      <Label
+                        htmlFor="published"
+                        className="text-sm font-bold text-media-primary leading-none cursor-pointer"
+                      >
+                        Publish to Public Profile
+                      </Label>
+                      <p className="text-[10px] text-media-on-surface-variant font-medium italic">
+                        Making this public allows others to see your progress.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl min-h-[64px] border border-media-outline-variant/10">
+                    <Checkbox 
+                      id="featured" 
+                      checked={featured} 
+                      onCheckedChange={(checked) => setFeatured(checked === true)}
+                      className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary h-5 w-5"
+                    />
+                    <div className="grid gap-1 leading-none">
+                      <Label
+                        htmlFor="featured"
+                        className="text-sm font-bold text-media-primary leading-none cursor-pointer"
+                      >
+                        Feature on Homepage
+                      </Label>
+                      <p className="text-[10px] text-media-on-surface-variant font-medium italic">
+                        Highlights this session at the top of your public profile.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

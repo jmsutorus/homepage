@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Star, Calendar, MapPin, Pencil, Trash2, Plus, Wine, Utensils } from 'lucide-react';
+import { ArrowLeft, Star, Calendar, MapPin, Pencil, Trash2, Plus, Wine, Utensils, Globe, Award, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { DrinkWithLogs } from '@/lib/db/drinks';
 import { DrinkFormDialog } from './drink-form-dialog';
 import { DrinkLogDialog } from './drink-log-dialog';
 import { DrinkPhotoEditDialog } from './drink-photo-edit-dialog';
+import { useHaptic } from '@/hooks/use-haptic';
 
 interface DrinkDetailClientProps {
   drink: DrinkWithLogs;
@@ -17,10 +18,35 @@ interface DrinkDetailClientProps {
 
 export function DrinkDetailClient({ drink }: DrinkDetailClientProps) {
   const router = useRouter();
+  const haptic = useHaptic();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<any>(null); // Using any for simplicity with log type matching
+  const [loadingField, setLoadingField] = useState<'published' | 'featured' | null>(null);
+  
+  const handleToggleField = async (field: 'published' | 'featured') => {
+    // Haptic feedback
+    haptic.trigger('light');
+
+    setLoadingField(field);
+    try {
+      const res = await fetch(`/api/drinks/${drink.slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: !((drink as any)[field]) }),
+      });
+
+      if (!res.ok) throw new Error('Failed to update');
+
+      toast.success(`${field.charAt(0).toUpperCase() + field.slice(1)} updated`);
+      router.refresh();
+    } catch (error) {
+      toast.error(`Failed to update ${field}`);
+    } finally {
+      setLoadingField(null);
+    }
+  };
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this drink?')) return;
@@ -186,6 +212,30 @@ export function DrinkDetailClient({ drink }: DrinkDetailClientProps) {
               <span className="text-media-on-surface-variant font-medium text-[10px] uppercase tracking-widest">Status:</span>
               <span className="text-media-primary font-bold ml-1 capitalize">{drink.status.replace('_', ' ')}</span>
             </div>
+            <button 
+              onClick={() => handleToggleField('published')}
+              disabled={loadingField === 'published'}
+              className={`px-4 py-2.5 rounded-full flex items-center gap-2 border transition-all cursor-pointer active:scale-95 disabled:opacity-50 ${drink.published ? 'bg-green-500/10 border-green-500/50 text-green-700' : 'bg-media-surface-container-low border-media-outline-variant/30 text-media-on-surface-variant opacity-60 hover:opacity-100'}`}
+            >
+              {loadingField === 'published' ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Globe className="w-4 h-4" />
+              )}
+              <span className="font-bold text-[10px] uppercase tracking-widest">{drink.published ? 'Published' : 'Private'}</span>
+            </button>
+            <button 
+              onClick={() => handleToggleField('featured')}
+              disabled={loadingField === 'featured'}
+              className={`px-4 py-2.5 rounded-full flex items-center gap-2 border transition-all cursor-pointer active:scale-95 disabled:opacity-50 ${drink.featured ? 'bg-amber-500/10 border-amber-500/50 text-amber-700' : 'bg-media-surface-container-low border-media-outline-variant/30 text-media-on-surface-variant opacity-60 hover:opacity-100'}`}
+            >
+              {loadingField === 'featured' ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Award className="w-4 h-4" />
+              )}
+              <span className="font-bold text-[10px] uppercase tracking-widest">{drink.featured ? 'Featured' : 'Standard'}</span>
+            </button>
           </div>
 
           <div className="mt-12 flex gap-4">

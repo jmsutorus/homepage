@@ -87,20 +87,24 @@ export function MediaVisibilityControls({
       </button>
 
       {/* Label for Published */}
-      {/* Publishing is not supported at this time. TODO: Implement publishing */}
-      {/* <button
-        onClick={togglePublished}
-        disabled={isLoading}
-        className={cn(
-          "px-6 py-2.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer",
-          published 
-            ? "bg-media-primary/10 border-media-primary/30 text-media-primary shadow-[0_0_20px_rgba(var(--media-primary),0.15)]" 
-            : "bg-media-surface-container border-media-outline-variant text-media-on-surface-variant hover:text-media-primary hover:border-media-primary/30"
-        )}
-        title={published ? "Published" : "Mark as Published"}
-      >
-        {published ? "Published" : "Draft"}
-      </button> */}
+      <div className="flex flex-col gap-1">
+        <button
+          onClick={togglePublished}
+          disabled={isLoading}
+          className={cn(
+            "px-6 py-2.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer",
+            published 
+              ? "bg-media-primary/10 border-media-primary/30 text-media-primary shadow-[0_0_20px_rgba(var(--media-primary),0.15)]" 
+              : "bg-media-surface-container border-media-outline-variant text-media-on-surface-variant hover:text-media-primary hover:border-media-primary/30"
+          )}
+          title={published ? "Published" : "Mark as Published"}
+        >
+          {published ? "Published" : "Draft"}
+        </button>
+        <p className="text-[9px] text-media-on-surface-variant font-lexend italic ml-2">
+          {published ? "Publicly visible" : "Private draft"}
+        </p>
+      </div>
     </div>
   );
 }

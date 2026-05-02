@@ -46,7 +46,11 @@ export async function createEvent(input: CreateEventInput, userId: string): Prom
     method: "POST",
     body: JSON.stringify(input),
   });
-  if (!response.ok) throw new Error("Failed to create event");
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error(`Earthbound API Error (${response.status}):`, errorBody);
+    throw new Error(`Failed to create event: ${errorBody}`);
+  }
   return response.json() as Promise<Event>;
 }
 

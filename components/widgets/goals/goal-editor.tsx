@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { TagInput } from "@/components/search/tag-input";
 import { Checklist } from "./checklist";
 import { MilestoneList } from "./milestone-list";
@@ -84,6 +85,8 @@ export function GoalEditor({ goal, milestones, checklist, links, mode }: GoalEdi
     goal.target_date ? parseISO(goal.target_date) : undefined
   );
   const [tags, setTags] = useState<string[]>(goal.tags || []);
+  const [published, setPublished] = useState(goal.published !== false);
+  const [featured, setFeatured] = useState(goal.featured || false);
 
   const [isSaving, setIsSaving] = useState(false);
   const [contentTab, setContentTab] = useState<"edit" | "preview">("edit");
@@ -133,6 +136,8 @@ export function GoalEditor({ goal, milestones, checklist, links, mode }: GoalEdi
           ? `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, "0")}-${String(targetDate.getDate()).padStart(2, "0")}`
           : null,
         tags,
+        published,
+        featured,
       });
 
       // Save links
@@ -332,6 +337,51 @@ export function GoalEditor({ goal, milestones, checklist, links, mode }: GoalEdi
                   label="Tags"
                   placeholder="Add tags..."
                 />
+              </div>
+
+              <div className="space-y-4 pt-4 border-t">
+                <h4 className="text-sm font-bold uppercase tracking-widest text-media-secondary">Visibility & Presentation</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl min-h-[64px] border border-media-outline-variant/10">
+                    <Checkbox 
+                      id="published" 
+                      checked={published} 
+                      onCheckedChange={(checked) => setPublished(checked === true)}
+                      className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary h-5 w-5"
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label
+                        htmlFor="published"
+                        className="text-sm font-bold text-media-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Publish to Public Profile
+                      </Label>
+                      <p className="text-[10px] text-media-on-surface-variant font-medium italic">
+                        Making this public allows others to see your vision.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl min-h-[64px] border border-media-outline-variant/10">
+                    <Checkbox 
+                      id="featured" 
+                      checked={featured} 
+                      onCheckedChange={(checked) => setFeatured(checked === true)}
+                      className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary h-5 w-5"
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label
+                        htmlFor="featured"
+                        className="text-sm font-bold text-media-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Feature on Homepage
+                      </Label>
+                      <p className="text-[10px] text-media-on-surface-variant font-medium italic">
+                        Highlights this goal at the top of your public profile.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

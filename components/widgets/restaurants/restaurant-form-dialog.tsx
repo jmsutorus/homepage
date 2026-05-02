@@ -19,6 +19,8 @@ import {
 
 import { X } from "lucide-react";
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { TreeSuccess } from "@/components/ui/animations/tree-success";
 import { useSuccessDialog } from "@/hooks/use-success-dialog";
@@ -88,6 +90,8 @@ export function RestaurantFormDialog({
   const [notes, setNotes] = useState(restaurant?.notes ?? '');
   const [favorite, setFavorite] = useState(restaurant?.favorite ?? false);
   const [status, setStatus] = useState<RestaurantStatus>(restaurant?.status ?? 'visited');
+  const [published, setPublished] = useState(restaurant?.published !== false);
+  const [featured, setFeatured] = useState(restaurant?.featured ?? false);
 
   const { showSuccess, triggerSuccess, resetSuccess } = useSuccessDialog({
     duration: 2000,
@@ -124,6 +128,8 @@ export function RestaurantFormDialog({
         notes: notes || undefined,
         favorite,
         status,
+        published,
+        featured,
       };
 
       const url = isEditing
@@ -395,6 +401,56 @@ export function RestaurantFormDialog({
                     onCheckedChange={setFavorite}
                     className="data-[state=checked]:bg-media-secondary"
                   />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 04: Visibility */}
+          <div className="space-y-8">
+            <div className="flex items-center gap-4">
+              <span className="text-[10px] uppercase tracking-[0.3em] font-black text-media-secondary px-3 py-1 bg-media-secondary/10 rounded-full">Section 04</span>
+              <h3 className="text-xl font-bold text-media-primary tracking-tight font-lexend">Visibility & Presentation</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl min-h-[64px]">
+                <Checkbox 
+                  id="published" 
+                  checked={published} 
+                  onCheckedChange={(checked) => setPublished(checked === true)}
+                  className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary h-5 w-5"
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label
+                    htmlFor="published"
+                    className="text-base font-lexend font-bold text-media-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Publish to Public Profile
+                  </Label>
+                  <p className="text-xs text-media-on-surface-variant font-lexend italic">
+                    Making this public allows others to see your registry.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl min-h-[64px]">
+                <Checkbox 
+                  id="featured" 
+                  checked={featured} 
+                  onCheckedChange={(checked) => setFeatured(checked === true)}
+                  className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary h-5 w-5"
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label
+                    htmlFor="featured"
+                    className="text-base font-lexend font-bold text-media-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Feature on Homepage
+                  </Label>
+                  <p className="text-xs text-media-on-surface-variant font-lexend italic">
+                    Highlights this entry at the top of your public profile.
+                  </p>
                 </div>
               </div>
             </div>

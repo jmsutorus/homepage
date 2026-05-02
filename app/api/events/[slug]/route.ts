@@ -79,6 +79,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (body.notification_setting !== undefined) updates.notification_setting = body.notification_setting;
     if (body.slug !== undefined) updates.slug = body.slug;
     if (body.content !== undefined) updates.content = body.content;
+    if (body.published !== undefined) (updates as any).published = body.published;
+    if (body.featured !== undefined) (updates as any).featured = body.featured;
 
     const success = await updateEvent(event.id, userId, updates);
 

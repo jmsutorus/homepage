@@ -54,6 +54,8 @@ export default {
         token.picture = user.image;
         token.role = (user as any).role || 'user';
         token.haptic = (user as any).haptic !== undefined ? (user as any).haptic : true;
+        token.showProfile = (user as any).showProfile !== undefined ? (user as any).showProfile : false;
+        token.publishedPhoto = (user as any).publishedPhoto || null;
         token.idToken = (user as any).idToken;
         token.refreshToken = (user as any).refreshToken;
 
@@ -79,6 +81,8 @@ export default {
         if (session?.haptic !== undefined) token.haptic = session.haptic;
         if (session?.name !== undefined) token.name = session.name;
         if (session?.image !== undefined) token.picture = session.image;
+        if (session?.showProfile !== undefined) token.showProfile = session.showProfile;
+        if (session?.publishedPhoto !== undefined) token.publishedPhoto = session.publishedPhoto;
       }
 
       // Check if token is expired and refresh if necessary
@@ -129,6 +133,8 @@ export default {
         session.user.email = token.email as string;
         session.user.name = token.name as string | null;
         session.user.image = token.picture as string | null;
+        session.user.publishedPhoto = token.publishedPhoto as string | null;
+        session.user.showProfile = token.showProfile as boolean;
         session.user.role = (token.role as string) || 'user';
         session.user.haptic = token.haptic !== undefined ? (token.haptic as boolean) : true;
         (session.user as any).idToken = token.idToken as string | undefined;
