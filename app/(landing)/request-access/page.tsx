@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { submitAccessRequest } from "@/app/actions/access";
+import { PublicHeader } from "@/components/layout/public-header";
+import { Footer } from "@/components/layout/footer";
 
 export default function RequestAccessPage() {
   const [name, setName] = useState("");
@@ -69,7 +71,9 @@ export default function RequestAccessPage() {
   };
 
   return (
-    <main className="min-h-screen bg-media-background text-media-on-surface font-lexend antialiased">
+    <div className="min-h-screen flex flex-col bg-media-background font-lexend">
+      <PublicHeader />
+      <main className="flex-grow text-media-on-surface antialiased">
       {/* Hero Section: Cinematic & Editorial */}
       <section className="relative w-full h-[870px] flex items-center overflow-hidden bg-media-surface-container-low">
         <div className="absolute inset-0 z-0">
@@ -255,6 +259,8 @@ export default function RequestAccessPage() {
           </div>
         </div>
       </section>
-    </main>
+      </main>
+      <Footer />
+    </div>
   );
 }

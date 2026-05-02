@@ -165,6 +165,8 @@ export async function POST(request: NextRequest) {
       notifications: body.notifications || [],
       notification_setting: body.notification_setting,
       content: body.content,
+      published: body.published !== undefined ? body.published : true,
+      featured: body.featured !== undefined ? body.featured : false,
     };
 
     const event = await createEvent(input, userId);
@@ -227,6 +229,8 @@ export async function PATCH(request: NextRequest) {
     if (body.notification_setting !== undefined) updates.notification_setting = body.notification_setting;
     if (body.slug !== undefined) updates.slug = body.slug;
     if (body.content !== undefined) updates.content = body.content;
+    if (body.published !== undefined) (updates as any).published = body.published;
+    if (body.featured !== undefined) (updates as any).featured = body.featured;
 
     const success = await updateEvent(parseInt(id, 10), userId, updates);
 

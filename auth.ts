@@ -67,16 +67,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           } else {
             // Create user in database
             const now = Date.now();
+            const slugifiedName = (firebaseUser.displayName || 'user')
+              .toString()
+              .toLowerCase()
+              .trim()
+              .replace(/\s+/g, '-')
+              .replace(/[^\w-]+/g, '')
+              .replace(/--+/g, '-');
+            const idHash = firebaseUser.uid.substring(0, 8);
+            const publicSlug = `${slugifiedName}+${idHash}`;
+
             await execute(
-              `INSERT INTO user (id, email, emailVerified, name, image, haptic, createdAt, updatedAt)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+              `INSERT INTO user (id, email, emailVerified, name, image, publishedPhoto, showProfile, haptic, public_slug, createdAt, updatedAt)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 firebaseUser.uid,
                 firebaseUser.email,
                 firebaseUser.emailVerified ? 1 : 0,
                 firebaseUser.displayName || null,
                 firebaseUser.photoURL || null,
-                1,
+                null, // publishedPhoto
+                0,    // showProfile
+                1,    // haptic
+                publicSlug,
                 now,
                 now
               ]
@@ -170,6 +183,8 @@ declare module "next-auth" {
       email: string;
       name?: string | null;
       image?: string | null;
+      publishedPhoto?: string | null;
+      showProfile: boolean;
       role: string;
       haptic: boolean;
     };

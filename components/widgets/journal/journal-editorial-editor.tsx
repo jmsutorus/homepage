@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { LinkPicker } from '@/components/widgets/shared/link-picker';
 import { JournalLink } from '@/lib/db/journals';
 import { showCreationSuccess, showCreationError } from '@/lib/success-toasts';
@@ -225,7 +227,7 @@ export function JournalEditorialEditor({
         </div>
 
         {/* Hero Image URL */}
-        <div className="md:col-span-3">
+        <div className="md:col-span-2">
           <label className="block text-[10px] font-lexend text-media-secondary uppercase tracking-[0.2em] mb-3">Hero Image URL</label>
           <div className="bg-media-surface-container-low px-4 py-2.5 rounded-xl flex items-center gap-2">
             <input
@@ -235,6 +237,30 @@ export function JournalEditorialEditor({
               value={frontmatter.image_url || ''}
               onChange={(e) => setFrontmatter({ ...frontmatter, image_url: e.target.value })}
             />
+          </div>
+        </div>
+
+        {/* Featured Toggle */}
+        <div className="flex flex-col">
+          <label className="block text-[10px] font-lexend text-media-secondary uppercase tracking-[0.2em] mb-3">Visibility Settings</label>
+          <div className="flex items-center space-x-3 bg-media-surface-container-low px-4 py-3 rounded-xl min-h-[44px]">
+            <Checkbox 
+              id="featured" 
+              checked={frontmatter.featured} 
+              onCheckedChange={(checked) => setFrontmatter({ ...frontmatter, featured: checked === true })}
+              className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary"
+            />
+            <div className="grid gap-1.5 leading-none">
+              <Label
+                htmlFor="featured"
+                className="text-sm font-lexend font-bold text-media-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Feature on Public Page
+              </Label>
+              <p className="text-[10px] text-media-outline-variant font-lexend">
+                Highlights this entry on your profile
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -286,8 +312,11 @@ export function JournalEditorialEditor({
               disabled={isSaving || (isDaily ? !frontmatter.daily_date : !frontmatter.title)}
               className="cursor-pointer w-full py-5 bg-media-secondary text-white rounded-2xl font-lexend font-bold text-lg shadow-xl shadow-media-secondary/10 active:scale-95 transition-transform disabled:opacity-50"
             >
-              {isSaving ? 'Processing...' : 'Publish to Journal'}
+              {isSaving ? 'Processing...' : 'Publish to Public Journal'}
             </button>
+            <p className="text-center text-[10px] text-media-outline-variant font-lexend mt-[-1rem] mb-2 px-4 italic">
+              Publishing makes this entry visible on your public profile.
+            </p>
             <button
               onClick={() => handleSave(false)}
               disabled={isSaving || (isDaily ? !frontmatter.daily_date : !frontmatter.title)}

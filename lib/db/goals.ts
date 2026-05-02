@@ -109,6 +109,8 @@ export async function createGoal(userId: string, data: {
   target_date?: string;
   tags?: string[];
   priority?: GoalPriority;
+  published?: boolean;
+  featured?: boolean;
 }): Promise<Goal> {
   const response = await earthboundFetch(`/api/goals`, {
     method: "POST",
@@ -131,6 +133,8 @@ export async function updateGoal(id: number, userId: string, data: {
   completed_date?: string | null;
   tags?: string[];
   priority?: GoalPriority;
+  published?: boolean;
+  featured?: boolean;
 }): Promise<Goal> {
   const response = await earthboundFetch(`/api/goals/id/${id}`, {
     method: "PATCH",

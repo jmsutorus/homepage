@@ -19,6 +19,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { SuccessOverlay } from '@/components/ui/animations/success-overlay';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface VacationFrontmatter {
   title: string;
@@ -438,6 +440,55 @@ export function EditorialVacationEditor({
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                 ></textarea>
+              </div>
+            </section>
+
+            {/* Section: Visibility & Presentation */}
+            <section>
+              <div className="flex items-baseline gap-4 mb-8">
+                <span className="font-bold text-sm tracking-widest uppercase" style={{ color: colors.secondary }}>05</span>
+                <h2 className="text-2xl font-bold tracking-tight" style={{ color: colors.primary }}>Visibility & Presentation</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl min-h-[64px]">
+                  <Checkbox 
+                    id="published" 
+                    checked={frontmatter.published} 
+                    onCheckedChange={(checked) => setFrontmatter({ ...frontmatter, published: checked === true })}
+                    className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary h-5 w-5"
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label
+                      htmlFor="published"
+                      className="text-base font-lexend font-bold text-media-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Publish to Public Profile
+                    </Label>
+                    <p className="text-xs text-media-on-surface-variant font-lexend italic">
+                      Making this public allows others to see your journey and memories.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl min-h-[64px]">
+                  <Checkbox 
+                    id="featured" 
+                    checked={frontmatter.featured} 
+                    onCheckedChange={(checked) => setFrontmatter({ ...frontmatter, featured: checked === true })}
+                    className="border-media-outline-variant data-[state=checked]:bg-media-secondary data-[state=checked]:border-media-secondary h-5 w-5"
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label
+                      htmlFor="featured"
+                      className="text-base font-lexend font-bold text-media-primary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Feature on Homepage
+                    </Label>
+                    <p className="text-xs text-media-on-surface-variant font-lexend italic">
+                      Highlights this journey at the top of your public profile.
+                    </p>
+                  </div>
+                </div>
               </div>
             </section>
           </div>

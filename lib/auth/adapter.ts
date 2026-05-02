@@ -3,6 +3,25 @@ import { randomUUID } from "crypto";
 import { populateUserColorsFromDefaults } from "../db/calendar-colors";
 import { getDatabase } from "../db";
 
+export type ExtendedAdapterUser = AdapterUser & {
+  role?: string;
+  haptic: boolean;
+  showProfile: boolean;
+  publishedPhoto: string | null;
+};
+
+function generatePublicSlug(name: string | null, id: string): string {
+  const slugifiedName = (name || 'user')
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
+  const idHash = id.substring(0, 8);
+  return `${slugifiedName}+${idHash}`;
+}
+
 export function SQLiteAdapter(): Adapter {
   return {
     async createUser(user) {
@@ -12,8 +31,8 @@ export function SQLiteAdapter(): Adapter {
 
       await db.execute({
         sql: `
-          INSERT INTO user (id, email, emailVerified, name, image, haptic, createdAt, updatedAt)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO user (id, email, emailVerified, name, image, publishedPhoto, showProfile, haptic, public_slug, createdAt, updatedAt)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         args: [
           id,
@@ -21,7 +40,10 @@ export function SQLiteAdapter(): Adapter {
           user.emailVerified ? 1 : 0,
           user.name || null,
           user.image || null,
-          1, // haptic default to true
+          null, // publishedPhoto
+          0,    // showProfile
+          1,    // haptic default to true
+          generatePublicSlug(user.name || null, id),
           now,
           now
         ]
@@ -51,8 +73,10 @@ export function SQLiteAdapter(): Adapter {
         emailVerified: user.emailVerified || null,
         name: user.name || null,
         image: user.image || null,
+        publishedPhoto: null,
+        showProfile: false,
         haptic: true,
-      } as AdapterUser & { haptic: boolean };
+      } as ExtendedAdapterUser;
     },
 
     async getUser(id) {
@@ -76,9 +100,11 @@ export function SQLiteAdapter(): Adapter {
         emailVerified: user.emailVerified ? new Date(user.emailVerified as number) : null,
         name: user.name,
         image: user.image,
+        publishedPhoto: user.publishedPhoto,
+        showProfile: user.showProfile === 1,
         role: user.role || 'user',
         haptic: user.haptic === 1 || user.haptic === true || user.haptic === null ? true : false,
-      } as AdapterUser & { role: string, haptic: boolean };
+      } as ExtendedAdapterUser;
     },
 
     async getUserByEmail(email) {
@@ -102,9 +128,11 @@ export function SQLiteAdapter(): Adapter {
         emailVerified: user.emailVerified ? new Date(user.emailVerified as number) : null,
         name: user.name,
         image: user.image,
+        publishedPhoto: user.publishedPhoto,
+        showProfile: user.showProfile === 1,
         role: user.role || 'user',
         haptic: user.haptic === 1 || user.haptic === true || user.haptic === null ? true : false,
-      } as AdapterUser & { role: string, haptic: boolean };
+      } as ExtendedAdapterUser;
     },
 
     async getUserByAccount({ providerAccountId, provider }) {
@@ -129,49 +157,51 @@ export function SQLiteAdapter(): Adapter {
         emailVerified: user.emailVerified ? new Date(user.emailVerified as number) : null,
         name: user.name,
         image: user.image,
+        publishedPhoto: user.publishedPhoto,
+        showProfile: user.showProfile === 1,
         role: user.role || 'user',
         haptic: user.haptic === 1 || user.haptic === true || user.haptic === null ? true : false,
-      } as AdapterUser & { role: string, haptic: boolean };
+      } as ExtendedAdapterUser;
     },
 
     async updateUser(user) {
       const db = getDatabase();
       const haptic = (user as any).haptic !== undefined ? ((user as any).haptic ? 1 : 0) : undefined;
+      const showProfile = (user as any).showProfile !== undefined ? ((user as any).showProfile ? 1 : 0) : undefined;
+      const publishedPhoto = (user as any).publishedPhoto !== undefined ? (user as any).publishedPhoto : undefined;
       
+      const fields: string[] = ["email = ?", "emailVerified = ?", "name = ?", "image = ?", "updatedAt = ?"];
+      const args: any[] = [
+        user.email!,
+        user.emailVerified ? 1 : 0,
+        user.name || null,
+        user.image || null,
+        Date.now()
+      ];
+
       if (haptic !== undefined) {
-        await db.execute({
-          sql: `
-            UPDATE user
-            SET email = ?, emailVerified = ?, name = ?, image = ?, haptic = ?, updatedAt = ?
-            WHERE id = ?
-          `,
-          args: [
-            user.email!,
-            user.emailVerified ? 1 : 0,
-            user.name || null,
-            user.image || null,
-            haptic,
-            Date.now(),
-            user.id
-          ]
-        });
-      } else {
-        await db.execute({
-          sql: `
-            UPDATE user
-            SET email = ?, emailVerified = ?, name = ?, image = ?, updatedAt = ?
-            WHERE id = ?
-          `,
-          args: [
-            user.email!,
-            user.emailVerified ? 1 : 0,
-            user.name || null,
-            user.image || null,
-            Date.now(),
-            user.id
-          ]
-        });
+        fields.push("haptic = ?");
+        args.push(haptic);
       }
+      if (showProfile !== undefined) {
+        fields.push("showProfile = ?");
+        args.push(showProfile);
+      }
+      if (publishedPhoto !== undefined) {
+        fields.push("publishedPhoto = ?");
+        args.push(publishedPhoto);
+      }
+
+      args.push(user.id);
+
+      await db.execute({
+        sql: `
+          UPDATE user
+          SET ${fields.join(", ")}
+          WHERE id = ?
+        `,
+        args
+      });
 
       return this.getUser!(user.id) as Promise<AdapterUser>;
     },
@@ -277,12 +307,14 @@ export function SQLiteAdapter(): Adapter {
         expires: new Date(row.expiresAt as number),
       };
 
-      const user: AdapterUser & { role: string, haptic: boolean } = {
+      const user: ExtendedAdapterUser = {
         id: row.userId,
         email: row.email,
         emailVerified: row.emailVerified ? new Date(row.emailVerified as number) : null,
         name: row.name,
         image: row.image,
+        publishedPhoto: row.publishedPhoto,
+        showProfile: row.showProfile === 1,
         role: row.role || 'user',
         haptic: row.haptic === 1 || row.haptic === true || row.haptic === null ? true : false,
       };

@@ -46,6 +46,8 @@ export function CreateEventClient() {
     notification_setting: '',
     custom_notification_date: '',
     custom_notification_time: '',
+    published: false,
+    featured: false,
   });
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -397,6 +399,42 @@ export function CreateEventClient() {
               placeholder="Transcribe the full journey narrative in Markdown..."
               className="min-h-[400px] bg-media-surface-container-low border-media-outline-variant focus:ring-media-primary font-mono text-sm leading-relaxed p-8 rounded-[2.5rem] editorial-shadow"
             />
+          </section>
+
+          {/* Visibility Section */}
+          <section className="space-y-4 pt-6 border-t border-media-outline-variant/10">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Visibility & Presentation</h4>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl border border-media-outline-variant/10">
+                <Checkbox 
+                  id="published" 
+                  checked={form.published} 
+                  onCheckedChange={(checked) => setForm({ ...form, published: checked === true })}
+                  className="border-media-primary data-[state=checked]:bg-media-primary rounded-md"
+                />
+                <div className="grid gap-1 leading-none">
+                  <Label htmlFor="published" className="cursor-pointer text-sm font-bold text-media-primary">Publish to Public Profile</Label>
+                  <p className="text-[10px] text-media-on-surface-variant font-medium italic">
+                    Making this public allows others to see your journey.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 bg-media-surface-container-low px-6 py-4 rounded-xl border border-media-outline-variant/10">
+                <Checkbox 
+                  id="featured" 
+                  checked={form.featured} 
+                  onCheckedChange={(checked) => setForm({ ...form, featured: checked === true })}
+                  className="border-media-primary data-[state=checked]:bg-media-primary rounded-md"
+                />
+                <div className="grid gap-1 leading-none">
+                  <Label htmlFor="featured" className="cursor-pointer text-sm font-bold text-media-primary">Feature on Homepage</Label>
+                  <p className="text-[10px] text-media-on-surface-variant font-medium italic">
+                    Highlights this journey at the top of your public profile.
+                  </p>
+                </div>
+              </div>
+            </div>
           </section>
         </div>
       </main>

@@ -4,6 +4,8 @@ import { createGoalAction } from "@/lib/actions/goals";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { X, CalendarIcon, Flag } from "lucide-react";
 import { useState } from "react";
@@ -84,9 +86,9 @@ export function CreateGoalForm({ open, onOpenChange, onCreated }: CreateGoalForm
         {showSuccess ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <TreeSuccess size={160} showText={false} />
-            <h3 className="text-3xl font-bold text-media-primary tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <DialogTitle className="text-3xl font-bold text-media-primary tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-500">
               Vision Manifested
-            </h3>
+            </DialogTitle>
             <p className="text-media-on-surface-variant text-center animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
               Opening your tactical dashboard...
             </p>
@@ -97,9 +99,9 @@ export function CreateGoalForm({ open, onOpenChange, onCreated }: CreateGoalForm
             {/* Premium Header */}
             <div className="bg-media-primary-container px-10 py-12 flex flex-col gap-2 relative shrink-0">
               <div className="flex justify-between items-start z-10 relative">
-                <h2 className="text-3xl font-bold tracking-tight text-media-on-primary-container uppercase">
+                <DialogTitle className="text-3xl font-bold tracking-tight text-media-on-primary-container uppercase">
                   Establish New Vision
-                </h2>
+                </DialogTitle>
                 <button 
                   type="button"
                   onClick={() => onOpenChange(false)}
@@ -108,9 +110,9 @@ export function CreateGoalForm({ open, onOpenChange, onCreated }: CreateGoalForm
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <p className="text-media-on-primary-container/80 text-sm max-w-lg z-10 relative font-medium leading-relaxed">
+              <DialogDescription className="text-media-on-primary-container/80 text-sm max-w-lg z-10 relative font-medium leading-relaxed">
                 Define the terminal state of your ambition. Setting clear parameters is the first stage of transmutation from dream to reality.
-              </p>
+              </DialogDescription>
               <div className="absolute bottom-0 right-0 w-64 h-64 bg-media-secondary opacity-10 blur-[80px] rounded-full translate-x-16 translate-y-16"></div>
             </div>
 

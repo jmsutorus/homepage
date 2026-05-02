@@ -11,7 +11,10 @@ CREATE TABLE IF NOT EXISTS user (
   emailVerified BOOLEAN DEFAULT 0,
   name TEXT,
   image TEXT,
+  publishedPhoto TEXT,
+  showProfile BOOLEAN DEFAULT 0,
   haptic BOOLEAN DEFAULT 1,
+  public_slug TEXT UNIQUE,
   createdAt INTEGER NOT NULL,
   updatedAt INTEGER NOT NULL
 );
@@ -173,6 +176,8 @@ CREATE TABLE IF NOT EXISTS workout_activities (
   completed BOOLEAN DEFAULT 0,
   completed_at TIMESTAMP,
   completion_notes TEXT, -- Post-activity notes when marked complete
+  featured BOOLEAN DEFAULT 0,
+  published BOOLEAN DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
@@ -184,6 +189,8 @@ CREATE INDEX IF NOT EXISTS idx_workout_activities_date ON workout_activities(dat
 CREATE INDEX IF NOT EXISTS idx_workout_activities_type ON workout_activities(type);
 CREATE INDEX IF NOT EXISTS idx_workout_activities_completed ON workout_activities(completed);
 CREATE INDEX IF NOT EXISTS idx_workout_activities_difficulty ON workout_activities(difficulty);
+CREATE INDEX IF NOT EXISTS idx_workout_activities_featured ON workout_activities(featured);
+CREATE INDEX IF NOT EXISTS idx_workout_activities_published ON workout_activities(published);
 
 -- Trigger to update updated_at timestamp on workout_activities
 CREATE TRIGGER IF NOT EXISTS update_workout_activities_timestamp
@@ -253,6 +260,8 @@ CREATE TABLE IF NOT EXISTS events (
   all_day BOOLEAN DEFAULT 0,
   end_date TEXT, -- ISO date string (YYYY-MM-DD) - for multi-day events
   notifications TEXT, -- JSON array of notification objects: [{type: string, time: number, timeObject: string}]
+  featured BOOLEAN DEFAULT 0,
+  published BOOLEAN DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
@@ -263,6 +272,8 @@ CREATE INDEX IF NOT EXISTS idx_events_userId ON events(userId);
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
 CREATE INDEX IF NOT EXISTS idx_events_end_date ON events(end_date);
 CREATE INDEX IF NOT EXISTS idx_events_all_day ON events(all_day);
+CREATE INDEX IF NOT EXISTS idx_events_featured ON events(featured);
+CREATE INDEX IF NOT EXISTS idx_events_published ON events(published);
 
 -- Trigger to update updated_at timestamp on events
 CREATE TRIGGER IF NOT EXISTS update_events_timestamp
@@ -609,6 +620,8 @@ CREATE TABLE IF NOT EXISTS goals (
   completed_date TEXT, -- ISO date string (YYYY-MM-DD) - when finished
   tags TEXT, -- JSON array of tag strings
   priority TEXT CHECK(priority IN ('low', 'medium', 'high')) DEFAULT 'medium',
+  featured BOOLEAN DEFAULT 0,
+  published BOOLEAN DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
@@ -621,6 +634,8 @@ CREATE INDEX IF NOT EXISTS idx_goals_slug ON goals(slug);
 CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(status);
 CREATE INDEX IF NOT EXISTS idx_goals_target_date ON goals(target_date);
 CREATE INDEX IF NOT EXISTS idx_goals_priority ON goals(priority);
+CREATE INDEX IF NOT EXISTS idx_goals_featured ON goals(featured);
+CREATE INDEX IF NOT EXISTS idx_goals_published ON goals(published);
 
 -- Trigger to update updated_at timestamp on goals
 CREATE TRIGGER IF NOT EXISTS update_goals_timestamp
@@ -803,6 +818,8 @@ CREATE TABLE IF NOT EXISTS goals (
   completed_date TEXT, -- ISO date string (YYYY-MM-DD) - when finished
   tags TEXT, -- JSON array of tag strings
   priority TEXT CHECK(priority IN ('low', 'medium', 'high')) DEFAULT 'medium',
+  featured BOOLEAN DEFAULT 0,
+  published BOOLEAN DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
@@ -815,6 +832,8 @@ CREATE INDEX IF NOT EXISTS idx_goals_slug ON goals(slug);
 CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(status);
 CREATE INDEX IF NOT EXISTS idx_goals_target_date ON goals(target_date);
 CREATE INDEX IF NOT EXISTS idx_goals_priority ON goals(priority);
+CREATE INDEX IF NOT EXISTS idx_goals_featured ON goals(featured);
+CREATE INDEX IF NOT EXISTS idx_goals_published ON goals(published);
 
 -- Trigger to update updated_at timestamp on goals
 CREATE TRIGGER IF NOT EXISTS update_goals_timestamp
@@ -1680,3 +1699,126 @@ BEGIN
   UPDATE workout_goals SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
 
+-- Restaurants Table
+-- Stores restaurant information (per user)
+CREATE TABLE IF NOT EXISTS restaurants (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  slug TEXT NOT NULL,
+  name TEXT NOT NULL,
+  cuisine TEXT,
+  price_range INTEGER CHECK(price_range >= 1 AND price_range <= 4),
+  address TEXT,
+  city TEXT,
+  state TEXT,
+  phone TEXT,
+  website TEXT,
+  poster TEXT,
+  rating INTEGER CHECK(rating >= 1 AND rating <= 10),
+  notes TEXT,
+  favorite INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'visited' CHECK(status IN ('visited', 'want_to_try', 'closed')),
+  featured BOOLEAN DEFAULT 0,
+  published BOOLEAN DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, slug)
+);
+
+-- Restaurant Visits Table
+-- Tracks visits to restaurants (per user)
+CREATE TABLE IF NOT EXISTS restaurant_visits (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  restaurantId INTEGER NOT NULL,
+  eventId INTEGER,
+  visit_date TEXT NOT NULL,
+  notes TEXT,
+  rating INTEGER CHECK(rating >= 1 AND rating <= 10),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (restaurantId) REFERENCES restaurants(id) ON DELETE CASCADE,
+  FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE SET NULL
+);
+
+-- Drinks Table
+-- Stores drinks information (beer/wine/etc) (per user)
+CREATE TABLE IF NOT EXISTS drinks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  slug TEXT NOT NULL,
+  name TEXT NOT NULL,
+  type TEXT CHECK(type IN ('beer', 'wine', 'cocktail', 'spirit', 'other', 'coffee', 'tea')),
+  producer TEXT,
+  year INTEGER,
+  abv REAL,
+  rating INTEGER CHECK(rating >= 1 AND rating <= 10),
+  notes TEXT,
+  image_url TEXT,
+  favorite INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'tasted' CHECK(status IN ('tasted', 'want_to_try', 'stocked')),
+  body_feel TEXT,
+  serving_temp TEXT,
+  pairings TEXT,
+  featured BOOLEAN DEFAULT 0,
+  published BOOLEAN DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  UNIQUE(userId, slug)
+);
+
+-- Drink Logs Table
+-- Tracks consumption logs for drinks (per user)
+CREATE TABLE IF NOT EXISTS drink_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT NOT NULL,
+  drinkId INTEGER NOT NULL,
+  date TEXT NOT NULL,
+  location TEXT,
+  notes TEXT,
+  rating INTEGER CHECK(rating >= 1 AND rating <= 10),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE,
+  FOREIGN KEY (drinkId) REFERENCES drinks(id) ON DELETE CASCADE
+);
+
+-- Indexes for restaurants and drinks
+CREATE INDEX IF NOT EXISTS idx_restaurants_userId ON restaurants(userId);
+CREATE INDEX IF NOT EXISTS idx_restaurants_slug ON restaurants(slug);
+CREATE INDEX IF NOT EXISTS idx_restaurants_cuisine ON restaurants(cuisine);
+CREATE INDEX IF NOT EXISTS idx_restaurants_status ON restaurants(status);
+CREATE INDEX IF NOT EXISTS idx_restaurants_favorite ON restaurants(favorite);
+CREATE INDEX IF NOT EXISTS idx_restaurants_featured ON restaurants(featured);
+CREATE INDEX IF NOT EXISTS idx_restaurants_published ON restaurants(published);
+
+CREATE INDEX IF NOT EXISTS idx_restaurant_visits_userId ON restaurant_visits(userId);
+CREATE INDEX IF NOT EXISTS idx_restaurant_visits_restaurantId ON restaurant_visits(restaurantId);
+CREATE INDEX IF NOT EXISTS idx_restaurant_visits_eventId ON restaurant_visits(eventId);
+CREATE INDEX IF NOT EXISTS idx_restaurant_visits_date ON restaurant_visits(visit_date);
+
+CREATE INDEX IF NOT EXISTS idx_drinks_userId ON drinks(userId);
+CREATE INDEX IF NOT EXISTS idx_drinks_slug ON drinks(slug);
+CREATE INDEX IF NOT EXISTS idx_drinks_type ON drinks(type);
+CREATE INDEX IF NOT EXISTS idx_drinks_status ON drinks(status);
+CREATE INDEX IF NOT EXISTS idx_drinks_favorite ON drinks(favorite);
+CREATE INDEX IF NOT EXISTS idx_drinks_featured ON drinks(featured);
+CREATE INDEX IF NOT EXISTS idx_drinks_published ON drinks(published);
+
+CREATE INDEX IF NOT EXISTS idx_drink_logs_userId ON drink_logs(userId);
+CREATE INDEX IF NOT EXISTS idx_drink_logs_drinkId ON drink_logs(drinkId);
+CREATE INDEX IF NOT EXISTS idx_drink_logs_date ON drink_logs(date);
+
+-- Triggers for restaurants and drinks
+CREATE TRIGGER IF NOT EXISTS update_restaurants_timestamp
+AFTER UPDATE ON restaurants
+BEGIN
+  UPDATE restaurants SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS update_drinks_timestamp
+AFTER UPDATE ON drinks
+BEGIN
+  UPDATE drinks SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;

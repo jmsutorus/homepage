@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
 
 
 import {
@@ -21,7 +22,10 @@ import {
   MoreVertical,
   Plus,
   Pencil,
+  Globe,
+  Award,
 } from 'lucide-react';
+import { useHaptic } from '@/hooks/use-haptic';
 import { EventPhotoGallery } from './event-photo-gallery';
 import { AddPersonToEventDialog } from './add-person-to-event-dialog';
 import { EventPhotoUploadDialog } from './event-photo-upload-dialog';
@@ -47,6 +51,8 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
   const [isSaving, setIsSaving] = useState(false);
   const [isAddPersonDialogOpen, setIsAddPersonDialogOpen] = useState(false);
   const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
+  const haptic = useHaptic();
+  const [loadingField, setLoadingField] = useState<'published' | 'featured' | null>(null);
   const { event, photos, people } = data;
   const isUpcoming = new Date(event.date) >= new Date(new Date().setHours(0, 0, 0, 0));
   const heroImage = photos.length > 0 ? photos[0].url : 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=1200';
@@ -66,6 +72,8 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
     notification_setting: event.notification_setting || '',
     custom_notification_date: (event.notification_setting && event.notification_setting.includes('T')) ? event.notification_setting.split('T')[0] : '',
     custom_notification_time: (event.notification_setting && event.notification_setting.includes('T')) ? event.notification_setting.split('T')[1].substring(0, 5) : '',
+    published: event.published !== false,
+    featured: event.featured || false,
   });
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -105,6 +113,30 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
       fetchCategories();
     }
   }, [isEditing]);
+  
+  const handleToggleField = async (field: 'published' | 'featured') => {
+    haptic.trigger('light');
+    setLoadingField(field);
+    try {
+      const response = await fetch(`/api/events/${event.slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: !((event as any)[field]) }),
+      });
+
+      if (response.ok) {
+        const updatedData = await response.json();
+        setData(updatedData);
+        toast.success(`${field.charAt(0).toUpperCase() + field.slice(1)} updated`);
+      } else {
+        toast.error(`Failed to update ${field}`);
+      }
+    } catch (error) {
+      toast.error(`Error updating ${field}`);
+    } finally {
+      setLoadingField(null);
+    }
+  };
 
   const handleUpdate = async () => {
     try {
@@ -158,6 +190,8 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
       notification_setting: event.notification_setting || '',
       custom_notification_date: (event.notification_setting && event.notification_setting.includes('T')) ? event.notification_setting.split('T')[0] : '',
       custom_notification_time: (event.notification_setting && event.notification_setting.includes('T')) ? event.notification_setting.split('T')[1].substring(0, 5) : '',
+      published: event.published !== false,
+      featured: event.featured || false,
     });
     setIsEditing(true);
   };
@@ -191,6 +225,8 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
           category: editForm.category || null,
           content: editForm.content || null,
           notification_setting: finalSetting || null,
+          published: editForm.published,
+          featured: editForm.featured,
         }),
       });
 
@@ -483,6 +519,41 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                       </div>
                     </>
                   )}
+
+                  <div className="space-y-4 sm:col-span-2 pt-6 border-t border-media-outline-variant/10">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-media-secondary ml-1">Visibility & Presentation</h4>
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <div className="flex items-center space-x-3 bg-media-surface px-6 py-4 rounded-xl border border-media-outline-variant/10">
+                        <Checkbox 
+                          id="published" 
+                          checked={editForm.published} 
+                          onCheckedChange={(checked) => setEditForm({ ...editForm, published: checked === true })}
+                          className="border-media-primary data-[state=checked]:bg-media-primary rounded-md"
+                        />
+                        <div className="grid gap-1 leading-none">
+                          <Label htmlFor="published" className="cursor-pointer text-sm font-bold text-media-primary">Publish to Public Profile</Label>
+                          <p className="text-[10px] text-media-on-surface-variant font-medium italic">
+                            Making this public allows others to see your journey.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3 bg-media-surface px-6 py-4 rounded-xl border border-media-outline-variant/10">
+                        <Checkbox 
+                          id="featured" 
+                          checked={editForm.featured} 
+                          onCheckedChange={(checked) => setEditForm({ ...editForm, featured: checked === true })}
+                          className="border-media-primary data-[state=checked]:bg-media-primary rounded-md"
+                        />
+                        <div className="grid gap-1 leading-none">
+                          <Label htmlFor="featured" className="cursor-pointer text-sm font-bold text-media-primary">Feature on Homepage</Label>
+                          <p className="text-[10px] text-media-on-surface-variant font-medium italic">
+                            Highlights this journey at the top of your public profile.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
@@ -607,6 +678,36 @@ export function EventDetailClient({ eventData: initialData }: EventDetailClientP
                   </div>
                 </div>
                 <div className="hidden md:flex items-center gap-4">
+                  <button 
+                    onClick={() => handleToggleField('published')}
+                    disabled={loadingField === 'published'}
+                    className={cn(
+                      "cursor-pointer px-6 py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all flex items-center gap-2 editorial-shadow",
+                      event.published ? "bg-green-500/10 text-green-700 border border-green-500/50" : "bg-media-surface-container text-media-on-surface-variant border border-media-outline-variant/30 opacity-60 hover:opacity-100"
+                    )}
+                  >
+                    {loadingField === 'published' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Globe className="w-4 h-4" />
+                    )}
+                    {event.published ? 'Published' : 'Private'}
+                  </button>
+                  <button 
+                    onClick={() => handleToggleField('featured')}
+                    disabled={loadingField === 'featured'}
+                    className={cn(
+                      "cursor-pointer px-6 py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all flex items-center gap-2 editorial-shadow",
+                      event.featured ? "bg-amber-500/10 text-amber-700 border border-amber-500/50" : "bg-media-surface-container text-media-on-surface-variant border border-media-outline-variant/30 opacity-60 hover:opacity-100"
+                    )}
+                  >
+                    {loadingField === 'featured' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Award className="w-4 h-4" />
+                    )}
+                    {event.featured ? 'Featured' : 'Standard'}
+                  </button>
                   <button 
                     onClick={handleStartEdit}
                     className="cursor-pointer bg-media-secondary text-white px-8 py-4 rounded-xl font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 editorial-shadow text-[10px]"

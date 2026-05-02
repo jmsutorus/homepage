@@ -13,7 +13,9 @@ import { CalendarColorsManager } from "@/components/widgets/settings/calendar-co
 import { HapticSettings } from "@/components/widgets/settings/haptic-settings";
 import { NotificationSettings } from "@/components/widgets/settings/notification-settings";
 import { ProfileManager } from "@/components/widgets/settings/profile-manager";
+import { PublicProfileManager } from "@/components/widgets/settings/public-profile-manager";
 import { ChevronDown, ChevronUp } from "lucide-react";
+
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface SettingsPageClientProps {
@@ -61,7 +63,9 @@ export function SettingsPageClient({ connectedAccounts }: SettingsPageClientProp
             </div>
             <div className="space-y-6 flex-1">
               <ProfileManager />
+              <PublicProfileManager />
               <BirthdayManager />
+
               <WeatherLocationManager />
               
               {/* Bio Field (Placeholder as requested by prototype but not in backend) */}

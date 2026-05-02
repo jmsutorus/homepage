@@ -1,24 +1,11 @@
-import Link from "next/link";
 import { Footer } from "@/components/layout/footer";
+import { PublicHeader } from "@/components/layout/public-header";
 
 export default function PrivacyPage() {
   return (
     <div className="bg-media-background text-media-on-background font-lexend selection:bg-media-secondary-fixed selection:text-media-on-secondary-fixed">
       {/* TopAppBar */}
-      <header className="bg-media-surface/80 backdrop-blur-xl font-lexend tracking-tight font-medium top-0 sticky z-50 border-b border-media-primary/5">
-        <div className="flex justify-between items-center px-8 py-6 w-full max-w-screen-2xl mx-auto">
-          <Link href="/">
-            <div className="text-2xl font-black tracking-tighter text-media-primary cursor-pointer">Earthbound</div>
-          </Link>
-          <div className="flex items-center">
-            <Link href="/sign-in">
-              <button className="cursor-pointer bg-media-secondary text-media-on-secondary px-5 py-2 rounded-lg text-sm font-bold hover:opacity-90 transition-all active:scale-95 shadow-sm">
-                Login
-              </button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       <div className="px-4 md:px-10 lg:px-20 xl:px-40 flex flex-1 justify-center py-16 mt-16">
         <div className="layout-content-container flex flex-col w-full max-w-[1200px] flex-1 bg-media-surface rounded-2xl overflow-hidden">

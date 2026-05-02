@@ -101,6 +101,8 @@ export async function createGoalAction(data: {
   target_date?: string;
   tags?: string[];
   priority?: GoalPriority;
+  published?: boolean;
+  featured?: boolean;
 }): Promise<Goal> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -131,6 +133,8 @@ export async function updateGoalAction(id: number, data: {
   completed_date?: string | null;
   tags?: string[];
   priority?: GoalPriority;
+  published?: boolean;
+  featured?: boolean;
 }): Promise<Goal> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
